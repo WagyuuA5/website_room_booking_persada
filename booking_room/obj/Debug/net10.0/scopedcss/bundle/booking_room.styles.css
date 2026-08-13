@@ -1,0 +1,355 @@
+/* /Components/Layout/MainLayout.razor.rz.scp.css */
+.page[b-lvaphi19u6] {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar[b-lvaphi19u6] {
+    width: 260px;
+    background-color: var(--sidebar-bg);
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    z-index: 20;
+    overflow-y: auto;
+}
+
+.sidebar-toggle[b-lvaphi19u6] {
+    background: none;
+    border: none;
+    color: var(--text-navy);
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    display: none;
+}
+
+.sidebar-toggle:hover[b-lvaphi19u6] {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-overlay[b-lvaphi19u6] {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 15;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.show[b-lvaphi19u6] {
+    display: block;
+    opacity: 1;
+}
+
+.main-content[b-lvaphi19u6] {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.dashboard-header[b-lvaphi19u6] {
+    background-color: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+.dashboard-body[b-lvaphi19u6] {
+    flex: 1;
+}
+
+@media (max-width: 767.98px) {
+    .sidebar[b-lvaphi19u6] {
+        width: 260px;
+        position: fixed;
+        left: -260px;
+        top: 0;
+        height: 100vh;
+        transition: left 0.3s ease;
+    }
+
+    .sidebar.show[b-lvaphi19u6] {
+        left: 0;
+    }
+
+    .sidebar-toggle[b-lvaphi19u6] {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 640.98px) {
+    .dashboard-header[b-lvaphi19u6] {
+        padding: 0.75rem 1rem;
+    }
+
+    .dashboard-body[b-lvaphi19u6] {
+        padding: 0 1rem 1.5rem 1rem;
+    }
+}
+
+#blazor-error-ui[b-lvaphi19u6] {
+    color-scheme: light only;
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+    #blazor-error-ui .dismiss[b-lvaphi19u6] {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
+/* /Components/Layout/NavMenu.razor.rz.scp.css */
+.navbar-brand-persada[b-z3tzwrhnog] {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    background: linear-gradient(135deg, #f59e0b, #ef4444, #3b82f6, #10b981);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.navbar-brand-logo[b-z3tzwrhnog] {
+    display: block;
+    max-width: 140px;
+    height: auto;
+}
+
+.navbar-brand-logo svg[b-z3tzwrhnog] {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.nav-menu-item[b-z3tzwrhnog] {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    color: #cbd5e1;
+    text-decoration: none;
+    border-radius: 0.5rem;
+    margin: 0.25rem 0.75rem;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.nav-menu-item:hover[b-z3tzwrhnog] {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+}
+
+.nav-menu-item.active[b-z3tzwrhnog] {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border-left: 4px solid var(--sidebar-active-border);
+    border-radius: 0 0.5rem 0.5rem 0;
+    margin-left: 0;
+    padding-left: 1.25rem;
+}
+
+.nav-menu-item svg[b-z3tzwrhnog] {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+}
+
+.sidebar-close[b-z3tzwrhnog] {
+    background: none;
+    border: none;
+    color: #ffffff;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    display: none;
+}
+
+.sidebar-close:hover[b-z3tzwrhnog] {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 767.98px) {
+    .sidebar-close[b-z3tzwrhnog] {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+/* /Components/Layout/ReconnectModal.razor.rz.scp.css */
+.components-reconnect-first-attempt-visible[b-6tw2sbkvtp],
+.components-reconnect-repeated-attempt-visible[b-6tw2sbkvtp],
+.components-reconnect-failed-visible[b-6tw2sbkvtp],
+.components-pause-visible[b-6tw2sbkvtp],
+.components-resume-failed-visible[b-6tw2sbkvtp],
+.components-rejoining-animation[b-6tw2sbkvtp] {
+    display: none;
+}
+
+#components-reconnect-modal.components-reconnect-show .components-reconnect-first-attempt-visible[b-6tw2sbkvtp],
+#components-reconnect-modal.components-reconnect-show .components-rejoining-animation[b-6tw2sbkvtp],
+#components-reconnect-modal.components-reconnect-paused .components-pause-visible[b-6tw2sbkvtp],
+#components-reconnect-modal.components-reconnect-resume-failed .components-resume-failed-visible[b-6tw2sbkvtp],
+#components-reconnect-modal.components-reconnect-retrying[b-6tw2sbkvtp],
+#components-reconnect-modal.components-reconnect-retrying .components-reconnect-repeated-attempt-visible[b-6tw2sbkvtp],
+#components-reconnect-modal.components-reconnect-retrying .components-rejoining-animation[b-6tw2sbkvtp],
+#components-reconnect-modal.components-reconnect-failed[b-6tw2sbkvtp],
+#components-reconnect-modal.components-reconnect-failed .components-reconnect-failed-visible[b-6tw2sbkvtp] {
+    display: block;
+}
+
+
+#components-reconnect-modal[b-6tw2sbkvtp] {
+    background-color: white;
+    width: 20rem;
+    margin: 20vh auto;
+    padding: 2rem;
+    border: 0;
+    border-radius: 0.5rem;
+    box-shadow: 0 3px 6px 2px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    transition: display 0.5s allow-discrete, overlay 0.5s allow-discrete;
+    animation: components-reconnect-modal-fadeOutOpacity-b-6tw2sbkvtp 0.5s both;
+    &[open]
+
+{
+    animation: components-reconnect-modal-slideUp-b-6tw2sbkvtp 1.5s cubic-bezier(.05, .89, .25, 1.02) 0.3s, components-reconnect-modal-fadeInOpacity-b-6tw2sbkvtp 0.5s ease-in-out 0.3s;
+    animation-fill-mode: both;
+}
+
+}
+
+#components-reconnect-modal[b-6tw2sbkvtp]::backdrop {
+    background-color: rgba(0, 0, 0, 0.4);
+    animation: components-reconnect-modal-fadeInOpacity-b-6tw2sbkvtp 0.5s ease-in-out;
+    opacity: 1;
+}
+
+@keyframes components-reconnect-modal-slideUp-b-6tw2sbkvtp {
+    0% {
+        transform: translateY(30px) scale(0.95);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
+
+@keyframes components-reconnect-modal-fadeInOpacity-b-6tw2sbkvtp {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes components-reconnect-modal-fadeOutOpacity-b-6tw2sbkvtp {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+.components-reconnect-container[b-6tw2sbkvtp] {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+#components-reconnect-modal p[b-6tw2sbkvtp] {
+    margin: 0;
+    text-align: center;
+}
+
+#components-reconnect-modal button[b-6tw2sbkvtp] {
+    border: 0;
+    background-color: #6b9ed2;
+    color: white;
+    padding: 4px 24px;
+    border-radius: 4px;
+}
+
+    #components-reconnect-modal button:hover[b-6tw2sbkvtp] {
+        background-color: #3b6ea2;
+    }
+
+    #components-reconnect-modal button:active[b-6tw2sbkvtp] {
+        background-color: #6b9ed2;
+    }
+
+.components-rejoining-animation[b-6tw2sbkvtp] {
+    position: relative;
+    width: 80px;
+    height: 80px;
+}
+
+    .components-rejoining-animation div[b-6tw2sbkvtp] {
+        position: absolute;
+        border: 3px solid #0087ff;
+        opacity: 1;
+        border-radius: 50%;
+        animation: components-rejoining-animation-b-6tw2sbkvtp 1.5s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+    }
+
+        .components-rejoining-animation div:nth-child(2)[b-6tw2sbkvtp] {
+            animation-delay: -0.5s;
+        }
+
+@keyframes components-rejoining-animation-b-6tw2sbkvtp {
+    0% {
+        top: 40px;
+        left: 40px;
+        width: 0;
+        height: 0;
+        opacity: 0;
+    }
+
+    4.9% {
+        top: 40px;
+        left: 40px;
+        width: 0;
+        height: 0;
+        opacity: 0;
+    }
+
+    5% {
+        top: 40px;
+        left: 40px;
+        width: 0;
+        height: 0;
+        opacity: 1;
+    }
+
+    100% {
+        top: 0px;
+        left: 0px;
+        width: 80px;
+        height: 80px;
+        opacity: 0;
+    }
+}

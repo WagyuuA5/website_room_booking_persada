@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "6CWf7Crcds0=",
+  "success": true,
+  "projectFilePath": "D:\\website_booking_room\\booking_room\\booking_room.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\ANGGORO RAVI\\.nuget\\packages\\microsoft.aspnetcore.app.internal.assets\\10.0.11\\microsoft.aspnetcore.app.internal.assets.10.0.11.nupkg.sha512"
+  ],
+  "logs": []
+}
