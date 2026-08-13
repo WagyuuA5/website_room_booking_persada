@@ -1,4 +1,7 @@
-﻿<div class="d-flex flex-column h-100">
+@using Microsoft.AspNetCore.Components.Routing
+@inject NavigationManager Navigation
+
+<div class="d-flex flex-column h-100">
     <div class="d-flex align-items-center justify-content-between p-4">
         <InlineSvg Src="/icons/logoo_psd-removebg-preview 2.svg" Class="navbar-brand-logo" />
         <button class="sidebar-close d-md-none" aria-label="Close sidebar">
@@ -9,40 +12,40 @@
     </div>
 
     <nav class="nav flex-column flex-grow-1 px-2">
-        <a href="/" class="nav-menu-item active" Match="NavLinkMatch.All">
+        <NavLink class="nav-menu-item" href="/" Match="NavLinkMatch.All" ActiveClass="nav-active">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M10 6V0H18V6H10ZM0 10V0H8V10H0ZM10 18V8H18V18H10ZM0 18V12H8V18H0ZM2 8H6V2H2V8ZM12 16H16V10H12V16ZM12 4H16V2H12V4ZM2 16H6V14H2V16Z" fill="white" fill-opacity="0.7"/>
             </svg>
             Dashboard
-        </a>
+        </NavLink>
 
-        <a href="/bookings" class="nav-menu-item">
+        <NavLink class="nav-menu-item" href="/bookings" ActiveClass="nav-active">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
             </svg>
             Bookings
-        </a>
+        </NavLink>
 
-        <a href="/status" class="nav-menu-item">
+        <NavLink class="nav-menu-item" href="/status" ActiveClass="nav-active">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             Status
-        </a>
+        </NavLink>
 
-        <a href="/history" class="nav-menu-item">
+        <NavLink class="nav-menu-item" href="/history" ActiveClass="nav-active">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             History
-        </a>
+        </NavLink>
 
-        <a href="/settings" class="nav-menu-item">
+        <NavLink class="nav-menu-item" href="/settings" ActiveClass="nav-active">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003 1.008c-.253.255-.427.577-.476.914l-.237 1.341c-.042.242.085.482.33.612.245.13.548.1.754-.053l1.102-.828c.315-.237.521-.592.561-.926l.213-1.281c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.09.542-.56.94-1.11.94h-2.593c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.09.542-.56.94-1.11.94h-2.593c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.09.542-.56.94-1.11.94h-2.593c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.09.542-.56.94-1.11.94h-2.593c-.55 0-1.02-.398-1.11-.94l-.213-1.281zM15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            Settings
-        </a>
+            Pengaturan
+        </NavLink>
     </nav>
 
     <div class="p-3 mt-auto">
@@ -50,7 +53,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
             </svg>
-            Logout
+            Keluar
         </a>
     </div>
 </div>

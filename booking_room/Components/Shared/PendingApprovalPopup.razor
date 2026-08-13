@@ -23,6 +23,23 @@
 
 <!-- List Items -->
 <div class="modal-body-custom" style="padding-top: 1rem;">
+    @if (_isLoading)
+    {
+        <div class="skeleton-popup-list">
+            @for (int i = 0; i < 3; i++)
+            {
+                <div class="skeleton-popup-item">
+                    <div class="skeleton-shimmer skeleton-icon"></div>
+                    <div class="skeleton-popup-content">
+                        <div class="skeleton-shimmer skeleton-title"></div>
+                        <div class="skeleton-shimmer skeleton-text short"></div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
     <div class="pending-list">
         @foreach (var item in PendingItems)
         {
@@ -48,6 +65,7 @@
             </div>
         }
     </div>
+    }
 </div>
 
 <!-- Footer -->
@@ -58,6 +76,14 @@
 
 @code {
     [Parameter] public EventCallback OnClose { get; set; }
+
+    private bool _isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(250);
+        _isLoading = false;
+    }
 
     private record PendingApprovalItemCustom(string RoomName, string RequestedBy, string DateStr, string TimeStr, string ColorClass, string IconPath);
 
