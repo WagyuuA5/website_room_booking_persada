@@ -1,8 +1,8 @@
 @implements IDisposable
 
-<div class="notification-banner @(IsActionRequired ? "action-required" : "reminder")">
+<div class="notification-banner @(BannerType == booking_room.Services.NotificationState.BannerType.ActionRequired ? "action-required" : "reminder")">
     <div class="banner-content">
-        @if (IsActionRequired)
+        @if (BannerType == booking_room.Services.NotificationState.BannerType.ActionRequired)
         {
             <div class="banner-icon-circle">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -26,20 +26,19 @@
                 </svg>
             </div>
             <span class="banner-bullet">•</span>
-            <span class="banner-text">@ReminderText</span>
+            <span class="banner-text">Upcoming: Alpha Room at 09:00 AM (in 15 min)</span>
             <button class="banner-link" @onclick="Dismiss">Nanti</button>
             <button class="banner-btn-checkin" @onclick="CheckInNow">Check-in Now</button>
         }
     </div>
-    @if (IsActionRequired && countdownPercentage > 0)
+    @if (BannerType == booking_room.Services.NotificationState.BannerType.ActionRequired && countdownPercentage > 0)
     {
         <div class="banner-countdown-bar" style="width: @countdownPercentage.ToString("0.0")%;"></div>
     }
 </div>
 
 @code {
-    [Parameter] public bool IsActionRequired { get; set; }
-    [Parameter] public string ReminderText { get; set; } = string.Empty;
+    [Parameter] public booking_room.Services.NotificationState.BannerType BannerType { get; set; }
     [Parameter] public EventCallback OnDismiss { get; set; }
     [Parameter] public EventCallback OnCheckIn { get; set; }
 
@@ -48,19 +47,27 @@
     private string RemainingTimeFormatted = "00:00";
     private double countdownPercentage = 100;
     private double totalSeconds = 0;
-    private Timer? _countdownTimer;
+    private System.Threading.Timer? _countdownTimer;
 
-    protected override void OnInitialized()
+    protected override void OnParametersSet()
     {
-        if (IsActionRequired && TargetTime.HasValue)
+        if (BannerType == booking_room.Services.NotificationState.BannerType.ActionRequired && TargetTime.HasValue)
         {
-            totalSeconds = (TargetTime.Value - DateTime.Now).TotalSeconds;
-            UpdateRemainingTime();
-            _countdownTimer = new Timer(_ =>
+            if (_countdownTimer == null)
             {
+                totalSeconds = (TargetTime.Value - DateTime.Now).TotalSeconds;
                 UpdateRemainingTime();
-                InvokeAsync(StateHasChanged);
-            }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+                _countdownTimer = new System.Threading.Timer(_ =>
+                {
+                    UpdateRemainingTime();
+                    InvokeAsync(StateHasChanged);
+                }, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+            }
+        }
+        else
+        {
+            _countdownTimer?.Dispose();
+            _countdownTimer = null;
         }
     }
 

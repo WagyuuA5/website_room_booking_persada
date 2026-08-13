@@ -645,98 +645,80 @@ h1:focus {
 .utilization-list {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1.5rem;
 }
 
 .utilization-item {
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
-    animation: fadeInLeft 0.4s var(--transition-smooth) both;
+    gap: 0.55rem;
+    animation: fadeInLeft 0.5s var(--transition-smooth) both;
 }
 
-.utilization-item:nth-child(1) { animation-delay: 0.1s; }
-.utilization-item:nth-child(2) { animation-delay: 0.2s; }
-.utilization-item:nth-child(3) { animation-delay: 0.3s; }
-.utilization-item:nth-child(4) { animation-delay: 0.4s; }
-.utilization-item:nth-child(5) { animation-delay: 0.5s; }
+.utilization-item:nth-child(1) { animation-delay: 0.08s; }
+.utilization-item:nth-child(2) { animation-delay: 0.16s; }
+.utilization-item:nth-child(3) { animation-delay: 0.24s; }
+.utilization-item:nth-child(4) { animation-delay: 0.32s; }
+.utilization-item:nth-child(5) { animation-delay: 0.4s; }
 
-.utilization-item-header {
+.utilization-meta-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.utilization-room-info {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.utilization-rank {
-    width: 1.5rem;
-    height: 1.5rem;
-    border-radius: 0.4rem;
-    background: linear-gradient(135deg, var(--text-navy), #1e40af);
-    color: #fff;
-    font-size: 0.65rem;
-    font-weight: 800;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.utilization-rank.rank-1 { background: linear-gradient(135deg, #0f1f3d, #1e40af); }
-.utilization-rank.rank-2 { background: linear-gradient(135deg, #1e40af, #3b82f6); }
-.utilization-rank.rank-3 { background: linear-gradient(135deg, #3b82f6, #60a5fa); }
-.utilization-rank.rank-4 { background: linear-gradient(135deg, #60a5fa, #93c5fd); }
-.utilization-rank.rank-5 { background: linear-gradient(135deg, #93c5fd, #bfdbfe); }
-
 .utilization-room-name {
     font-weight: 700;
     color: var(--text-navy);
-    font-size: 0.9rem;
+    font-size: 0.875rem;
+    letter-spacing: -0.01em;
 }
 
-.utilization-hours {
+.utilization-hours-pill {
+    font-size: 0.75rem;
     font-weight: 700;
     color: #64748b;
-    font-size: 0.85rem;
+    background: #f1f5f9;
+    padding: 0.2rem 0.65rem;
+    border-radius: 9999px;
+    letter-spacing: 0.01em;
 }
 
-.utilization-bar-bg {
+.utilization-bar-track {
     width: 100%;
-    height: 0.625rem;
-    background: linear-gradient(90deg, #f1f5f9, #e2e8f0);
-    border-radius: 9999px;
+    height: 2rem;
+    background: linear-gradient(90deg, #f0f4f8 0%, #e8edf5 100%);
+    border-radius: 0.5rem;
     overflow: hidden;
     position: relative;
+    box-shadow: inset 0 1px 3px rgba(15, 31, 61, 0.06);
 }
 
 .utilization-bar-fill {
     height: 100%;
-    border-radius: 9999px;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
     position: relative;
-    transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    min-width: 3.5rem;
+    transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.utilization-bar-fill.bar-1 { background: linear-gradient(90deg, #0f1f3d, #1e40af); }
-.utilization-bar-fill.bar-2 { background: linear-gradient(90deg, #1e40af, #3b82f6); }
-.utilization-bar-fill.bar-3 { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
-.utilization-bar-fill.bar-4 { background: linear-gradient(90deg, #60a5fa, #93c5fd); }
-.utilization-bar-fill.bar-5 { background: linear-gradient(90deg, #93c5fd, #bfdbfe); }
+.utilization-bar-fill.bar-1 { background: linear-gradient(90deg, #0f1f3d 0%, #1e3a8a 60%, #2563eb 100%); }
+.utilization-bar-fill.bar-2 { background: linear-gradient(90deg, #1e3a8a 0%, #2563eb 60%, #3b82f6 100%); }
+.utilization-bar-fill.bar-3 { background: linear-gradient(90deg, #2563eb 0%, #3b82f6 60%, #60a5fa 100%); }
+.utilization-bar-fill.bar-4 { background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 60%, #93c5fd 100%); }
+.utilization-bar-fill.bar-5 { background: linear-gradient(90deg, #60a5fa 0%, #93c5fd 60%, #bfdbfe 100%); }
 
-.utilization-bar-label {
+.utilization-bar-inner-label {
     position: absolute;
-    left: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 0.6rem;
+    left: 0.65rem;
+    font-size: 0.7rem;
     font-weight: 700;
     color: #ffffff;
     white-space: nowrap;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.01em;
 }
 
 /* ============================================ */
