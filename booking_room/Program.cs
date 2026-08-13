@@ -11,6 +11,7 @@ builder.Services.AddSingleton<IFileProvider>(sp =>
     sp.GetRequiredService<IWebHostEnvironment>().WebRootFileProvider);
 builder.Services.AddScoped<booking_room.Services.NotificationState>();
 builder.Services.AddScoped<booking_room.Services.INotificationService, booking_room.Services.NotificationService>();
+builder.Services.AddScoped<booking_room.Services.LoadingStateService>();
 
 var app = builder.Build();
 
