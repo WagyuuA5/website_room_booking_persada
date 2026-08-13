@@ -1,16 +1,17 @@
 @using booking_room.Components.Models
+@inject NavigationManager Navigation
 
+<!-- Header -->
 <div class="modal-header-custom">
     <div class="modal-header-left">
         <div class="modal-header-icon icon-amber">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M17 12C14.24 12 12 14.24 12 17C12 19.76 14.24 22 17 22C19.76 22 22 19.76 22 17C22 14.24 19.76 12 17 12ZM18.65 19.35L16.5 17.2V14H17.5V16.79L19.35 18.64L18.65 19.35Z" fill="#D97706"/>
-                <path d="M7 2V4H8V7.17C8 8.06 8.32 8.92 8.88 9.59L11 12.17V12.83L8.88 15.41C8.32 16.08 8 16.94 8 17.83V21H4V17.83C4 16.94 3.68 16.08 3.12 15.41L1 12.83V12.17L3.12 9.59C3.68 8.92 4 8.06 4 7.17V4H5V2H7Z" fill="#D97706"/>
+                <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" fill="#D97706"/>
             </svg>
         </div>
         <div class="modal-header-info">
-            <h3>Persetujuan Tertunda</h3>
-            <p>@DashboardData.PendingApprovalItems.Count permintaan menunggu</p>
+            <h3>Pending Approvals</h3>
+            <p>Review your recent booking requests.</p>
         </div>
     </div>
     <button class="modal-close-btn" @onclick="Close">
@@ -20,63 +21,63 @@
     </button>
 </div>
 
-<div class="modal-body-custom">
-    <div class="popup-scroll-area">
-        @foreach (var item in DashboardData.PendingApprovalItems)
+<!-- List Items -->
+<div class="modal-body-custom" style="padding-top: 1rem;">
+    <div class="pending-list">
+        @foreach (var item in PendingItems)
         {
-            var priorityClass = item.Priority switch
-            {
-                "Tinggi" => "high",
-                "Sedang" => "medium",
-                _ => "normal"
-            };
-
-            <div class="popup-approval-item">
-                <div class="popup-approval-header">
-                    <div class="popup-approval-room">@item.RoomName</div>
-                    <span class="popup-approval-priority @priorityClass">@item.Priority</span>
+            <div class="pending-item" @onclick="() => ViewDetail(item)">
+                <div class="pending-icon-wrap @item.ColorClass">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="@item.IconPath" fill="currentColor"/>
+                    </svg>
                 </div>
-                <div class="popup-approval-details">
-                    <div>Diminta oleh: <span>@item.RequestedBy</span></div>
-                    <div>Tanggal: <span>@item.Date</span></div>
-                    <div>Waktu: <span>@item.TimeSlot</span></div>
-                    <div>Tujuan: <span>@item.Purpose</span></div>
+                <div class="pending-content">
+                    <div class="pending-room-name">@item.RoomName</div>
+                    <div class="pending-meta">
+                        <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10z" fill="currentColor"/></svg> @item.DateStr</span>
+                        <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" fill="currentColor"/></svg> @item.TimeStr</span>
+                    </div>
                 </div>
-                <div class="popup-approval-actions">
-                    <button class="popup-btn popup-btn-primary" @onclick="() => ApproveItem(item)">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 4px; vertical-align: middle;">
-                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="currentColor"/>
-                        </svg>
-                        Setujui
-                    </button>
-                    <button class="popup-btn popup-btn-danger" @onclick="() => RejectItem(item)">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 4px; vertical-align: middle;">
-                            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        Tolak
-                    </button>
-                    <button class="popup-btn popup-btn-secondary">Detail</button>
+                <div class="pending-status-wrap">
+                    <span class="pending-badge">
+                        <span class="dot"></span> Pending
+                    </span>
+                    <span class="pending-req-by">Req. by @item.RequestedBy</span>
                 </div>
             </div>
         }
     </div>
 </div>
 
+<!-- Footer -->
+<div class="modal-footer-custom" style="justify-content: flex-start; display: flex; gap: 0.5rem; border-top: none;">
+    <button class="popup-footer-btn btn-close-gray" style="flex: 1;" @onclick="Close">Close</button>
+    <button class="popup-footer-btn btn-amber" style="flex: 1;" @onclick="ViewAll">View All Details</button>
+</div>
+
 @code {
     [Parameter] public EventCallback OnClose { get; set; }
 
-    private async Task Close()
+    private record PendingApprovalItemCustom(string RoomName, string RequestedBy, string DateStr, string TimeStr, string ColorClass, string IconPath);
+
+    private List<PendingApprovalItemCustom> PendingItems = new()
+    {
+        new("Executive Boardroom A", "J. Smith", "Oct 15, 2023", "10:00 AM - 12:00 PM", "icon-blue", "M19 2H5C3.9 2 3 2.9 3 4V20C3 21.1 3.9 22 5 22H19C20.1 22 21 21.1 21 20V4C21 2.9 20.1 2 19 2ZM15 20H9V12H15V20Z"),
+        new("Studio 4 (Webinar)", "A. Chen", "Oct 16, 2023", "2:30 PM - 4:00 PM", "icon-purple", "M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"),
+        new("Training Room C", "M. Davis", "Oct 18, 2023", "9:00 AM - 5:00 PM", "icon-light-blue", "M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z")
+    };
+
+    private async Task Close() => await OnClose.InvokeAsync();
+
+    private async Task ViewDetail(PendingApprovalItemCustom item)
+    {
+        // Implementation for view detail
+    }
+
+    private async Task ViewAll()
     {
         await OnClose.InvokeAsync();
-    }
-
-    private void ApproveItem(PendingApprovalItem item)
-    {
-        // TODO: Implement approval logic
-    }
-
-    private void RejectItem(PendingApprovalItem item)
-    {
-        // TODO: Implement rejection logic
+        Navigation.NavigateTo("/status");
     }
 }

@@ -1,0 +1,145 @@
+@using booking_room.Services
+@inject INotificationService NotificationService
+@inject NavigationManager Navigation
+@implements IDisposable
+
+@if (Visible)
+{
+    <div class="notification-panel-overlay" @onclick="ClosePanel">
+        <div class="notification-panel" @onclick:stopPropagation="true">
+            <!-- Header -->
+            <div class="notif-header">
+                <div class="notif-header-left">
+                    <div class="notif-header-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <h3>Notifikasi</h3>
+                </div>
+                <button class="notif-close-btn" @onclick="ClosePanel">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Tabs -->
+            <div class="notif-tabs">
+                <button class="notif-tab @(activeTab == "All" ? "active" : "")" @onclick='() => activeTab = "All"'>Semua</button>
+                <button class="notif-tab @(activeTab == "Unread" ? "active" : "")" @onclick='() => activeTab = "Unread"'>Belum Dibaca</button>
+                <button class="notif-tab @(activeTab == "System" ? "active" : "")" @onclick='() => activeTab = "System"'>Sistem</button>
+            </div>
+
+            <!-- List -->
+            <div class="notif-list">
+                @foreach (var item in FilteredNotifications)
+                {
+                    <div class="notif-item @(item.IsRead ? "" : "unread")" @onclick="() => HandleItemClick(item)">
+                        @if (item.IconType == "avatar" && !string.IsNullOrEmpty(item.AvatarUrl))
+                        {
+                            <img src="@item.AvatarUrl" class="notif-item-icon avatar" alt="Avatar" />
+                        }
+                        else
+                        {
+                            <div class="notif-item-icon @GetIconClass(item.IconType)">
+                                @if (item.IconType == "clock")
+                                {
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                }
+                                else if (item.IconType == "shield")
+                                {
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 22S12 22 12 22C12 22 4 18 4 12V5L12 2L20 5V12C20 18 12 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                }
+                                else if (item.IconType == "warning")
+                                {
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                }
+                            </div>
+                        }
+
+                        <div class="notif-item-content">
+                            <div class="notif-item-meta">
+                                <span class="notif-item-source">@item.SourceName</span>
+                                <span class="notif-item-time">@GetRelativeTime(item.Timestamp)</span>
+                            </div>
+                            <div class="notif-item-title">@item.Title</div>
+                            <div class="notif-item-desc">@item.Description</div>
+                        </div>
+
+                        @if (!item.IsRead)
+                        {
+                            <span class="notif-item-dot"></span>
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- Footer -->
+            <div class="notif-footer">
+                <button class="notif-mark-all" @onclick="MarkAllRead">Tandai Semua Dibaca</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private string activeTab = "All";
+
+    protected override void OnInitialized()
+    {
+        NotificationService.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        NotificationService.OnChange -= StateHasChanged;
+    }
+
+    private IEnumerable<NotificationItem> FilteredNotifications => activeTab switch
+    {
+        "Unread" => NotificationService.Notifications.Where(n => !n.IsRead).OrderByDescending(n => n.Timestamp),
+        "System" => NotificationService.Notifications.Where(n => n.Category == "System" || n.Category == "Security").OrderByDescending(n => n.Timestamp),
+        _ => NotificationService.Notifications.OrderByDescending(n => n.Timestamp)
+    };
+
+    private string GetIconClass(string iconType) => iconType switch
+    {
+        "clock" => "bg-amber",
+        "shield" => "bg-purple",
+        "warning" => "bg-red",
+        _ => "bg-navy"
+    };
+
+    private async Task HandleItemClick(NotificationItem item)
+    {
+        NotificationService.MarkAsRead(item.Id);
+        
+        if (item.Category == "Reminder")
+        {
+            await ClosePanel();
+            Navigation.NavigateTo("/");
+        }
+    }
+
+    private void MarkAllRead()
+    {
+        NotificationService.MarkAllAsRead();
+    }
+
+    private async Task ClosePanel()
+    {
+        await OnClose.InvokeAsync();
+    }
+
+    private string GetRelativeTime(DateTime time)
+    {
+        var span = DateTime.Now - time;
+        if (span.TotalMinutes < 60) return $"{(int)span.TotalMinutes} menit lalu";
+        if (span.TotalHours < 24) return $"{(int)span.TotalHours} jam lalu";
+        return $"{(int)span.TotalDays} hari lalu";
+    }
+}

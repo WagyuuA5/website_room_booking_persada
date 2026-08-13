@@ -1,16 +1,17 @@
 @using booking_room.Components.Models
+@inject NavigationManager Navigation
 
+<!-- Header -->
 <div class="modal-header-custom">
     <div class="modal-header-left">
         <div class="modal-header-icon icon-green">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M19 2H9C7.9 2 7 2.9 7 4V7H5C3.9 7 3 7.9 3 9V20C3 21.1 3.9 22 5 22H15C16.1 22 17 21.1 17 20V17H19C20.1 17 21 16.1 21 15V4C21 2.9 20.1 2 19 2ZM15 20H5V9H15V20ZM19 15H17V9C17 7.9 16.1 7 15 7H9V4H19V15Z" fill="#059669"/>
-                <circle cx="10" cy="14" r="1.5" fill="#059669"/>
+            <svg width="20" height="20" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0 18V16H2V0H12V1H16V16H18V18H14V3H12V18H0ZM4 2V16V2ZM8 10C8.28333 10 8.52083 9.90417 8.7125 9.7125C8.90417 9.52083 9 9.28333 9 9C9 8.71667 8.90417 8.47917 8.7125 8.2875C8.52083 8.09583 8.28333 8 8 8C7.71667 8 7.47917 8.09583 7.2875 8.2875C7.09583 8.47917 7 8.71667 7 9C7 9.28333 7.09583 9.52083 7.2875 9.7125C7.47917 9.90417 7.71667 10 8 10ZM4 16H10V2H4V16Z" fill="#059669"/>
             </svg>
         </div>
         <div class="modal-header-info">
-            <h3>Ruangan Tersedia</h3>
-            <p>@availableCount tersedia dari @totalCount total ruangan</p>
+            <h3>Available Rooms</h3>
+            <p>Select a space for your upcoming meeting.</p>
         </div>
     </div>
     <button class="modal-close-btn" @onclick="Close">
@@ -20,75 +21,83 @@
     </button>
 </div>
 
+<!-- Filter pills -->
 <div class="modal-body-custom">
-    <!-- Statistics -->
-    <div class="popup-stats-row">
-        <div class="popup-stat-card stat-green">
-            <div class="popup-stat-value">@availableCount</div>
-            <div class="popup-stat-label">Tersedia</div>
-        </div>
-        <div class="popup-stat-card stat-red">
-            <div class="popup-stat-value">@occupiedCount</div>
-            <div class="popup-stat-label">Digunakan</div>
-        </div>
-        <div class="popup-stat-card stat-gray">
-            <div class="popup-stat-value">@maintenanceCount</div>
-            <div class="popup-stat-label">Maintenance</div>
-        </div>
+    <div class="avail-filter-row">
+        <button class="avail-filter-pill pill-navy @(selectedDate == "Today" ? "active" : "")" @onclick='() => selectedDate = "Today"'>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Today
+        </button>
+        <button class="avail-filter-pill pill-amber @(capacityFilter == 0 ? "active" : "")" @onclick="ToggleCapacity">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="17" cy="11" r="3" stroke="currentColor" stroke-width="2"/><path d="M23 21v-1a3 3 0 0 0-3-3h-1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            @(capacityFilter == 0 ? "Any Capacity" : $"Min {capacityFilter} seats")
+        </button>
     </div>
 
-    <!-- Filter tabs -->
-    <div class="popup-filter-tabs">
-        <button class="popup-filter-tab @(activeFilter == "all" ? "active" : "")" @onclick='() => SetFilter("all")'>Semua</button>
-        <button class="popup-filter-tab @(activeFilter == "available" ? "active" : "")" @onclick='() => SetFilter("available")'>Tersedia</button>
-        <button class="popup-filter-tab @(activeFilter == "occupied" ? "active" : "")" @onclick='() => SetFilter("occupied")'>Digunakan</button>
-        <button class="popup-filter-tab @(activeFilter == "maintenance" ? "active" : "")" @onclick='() => SetFilter("maintenance")'>Maintenance</button>
-    </div>
-
-    <!-- Room list -->
-    <div class="popup-scroll-area">
-        <div class="popup-room-list">
-            @foreach (var room in filteredRooms)
-            {
-                <div class="popup-room-item">
-                    <div class="popup-room-status @room.StatusClass"></div>
-                    <div class="popup-room-details">
-                        <div class="popup-room-name">@room.RoomName</div>
-                        <div class="popup-room-meta">@room.Floor • @room.Facilities</div>
-                    </div>
-                    <div class="popup-room-capacity">@room.Capacity orang</div>
+    <!-- Room grid 2 columns -->
+    <div class="avail-room-grid">
+        @foreach (var room in DisplayRooms)
+        {
+            <div class="avail-room-card" @onclick="() => BookRoom(room)">
+                <!-- Photo / Placeholder -->
+                <div class="avail-room-photo @(room.HasPhoto ? "" : "avail-room-placeholder")">
+                    @if (room.HasPhoto)
+                    {
+                        <img src="@room.PhotoUrl" alt="@room.DisplayName" />
+                    }
+                    else
+                    {
+                        <svg width="32" height="32" viewBox="0 0 18 18" fill="none"><path d="M0 18V16H2V0H12V1H16V16H18V18H14V3H12V18H0ZM4 2V16V2ZM8 10C8.28 10 8.52 9.9 8.71 9.71C8.9 9.52 9 9.28 9 9C9 8.72 8.9 8.48 8.71 8.29C8.52 8.1 8.28 8 8 8C7.72 8 7.48 8.1 7.29 8.29C7.1 8.48 7 8.72 7 9C7 9.28 7.1 9.52 7.29 9.71C7.48 9.9 7.72 10 8 10ZM4 16H10V2H4V16Z" fill="#93c5fd"/></svg>
+                    }
+                    @if (room.IsPremium)
+                    {
+                        <span class="avail-badge-premium">★ Premium</span>
+                    }
                 </div>
-            }
-        </div>
+                <!-- Info -->
+                <div class="avail-room-info">
+                    <div class="avail-room-name">@room.DisplayName</div>
+                    <div class="avail-room-meta">@room.Seats Seats · @room.Feature</div>
+                    <span class="avail-status-badge @room.StatusClass">@room.StatusLabel</span>
+                </div>
+            </div>
+        }
     </div>
+</div>
+
+<!-- Footer -->
+<div class="modal-footer-custom" style="justify-content: flex-end;">
+    <button class="popup-footer-btn btn-close-gray" @onclick="Close">Close</button>
 </div>
 
 @code {
     [Parameter] public EventCallback OnClose { get; set; }
 
-    private string activeFilter = "all";
-    private List<RoomDetail> allRooms = DashboardData.AllRooms;
+    private string selectedDate = "Today";
+    private int capacityFilter = 0;
 
-    private int availableCount => allRooms.Count(r => r.StatusClass == "available");
-    private int occupiedCount => allRooms.Count(r => r.StatusClass == "occupied");
-    private int maintenanceCount => allRooms.Count(r => r.StatusClass == "maintenance");
-    private int totalCount => allRooms.Count;
+    private record RoomCard(string DisplayName, int Seats, string Feature, bool IsAvailableNow, string AvailableAt, bool IsPremium, bool HasPhoto, string PhotoUrl, string StatusClass, string StatusLabel);
 
-    private IEnumerable<RoomDetail> filteredRooms => activeFilter switch
+    private List<RoomCard> allCards = new()
     {
-        "available" => allRooms.Where(r => r.StatusClass == "available"),
-        "occupied" => allRooms.Where(r => r.StatusClass == "occupied"),
-        "maintenance" => allRooms.Where(r => r.StatusClass == "maintenance"),
-        _ => allRooms
+        new("Executive Suite A", 12, "Video", true, "", true, false, "", "status-available", "Available Now"),
+        new("Huddle Room 4", 4, "Display", false, "2:00 PM", false, false, "", "status-pending", "Avail: 2:00 PM"),
+        new("Workshop Space B", 24, "24 Seats", false, "3:30 PM", false, false, "", "status-pending", "Avail: 3:30 PM"),
     };
 
-    private void SetFilter(string filter)
+    private IEnumerable<RoomCard> DisplayRooms => capacityFilter == 0
+        ? allCards
+        : allCards.Where(r => r.Seats >= capacityFilter);
+
+    private void ToggleCapacity()
     {
-        activeFilter = filter;
+        capacityFilter = capacityFilter switch { 0 => 4, 4 => 12, 12 => 24, _ => 0 };
     }
 
-    private async Task Close()
+    private async Task BookRoom(RoomCard room)
     {
         await OnClose.InvokeAsync();
     }
+
+    private async Task Close() => await OnClose.InvokeAsync();
 }

@@ -1539,3 +1539,442 @@ h1:focus {
         grid-template-columns: 1fr;
     }
 }
+
+/* ============================================ */
+/* NOTIFICATION PANEL (POP-UP)                  */
+/* ============================================ */
+.notification-panel-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background: transparent;
+    display: flex;
+    justify-content: flex-end;
+    padding: 5rem 1.5rem 1rem 1rem;
+}
+
+.notification-panel {
+    background: #ffffff;
+    width: 380px;
+    max-height: calc(100vh - 6rem);
+    border-radius: 1rem;
+    box-shadow: var(--shadow-xl);
+    border: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    animation: slideInDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+    overflow: hidden;
+}
+
+.notif-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.notif-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.notif-header-icon {
+    width: 2rem;
+    height: 2rem;
+    background: var(--text-navy);
+    color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notif-header-icon svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.notif-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-navy);
+}
+
+.notif-close-btn {
+    background: none;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 0.25rem;
+    transition: color 0.2s;
+}
+
+.notif-close-btn:hover {
+    color: var(--text-navy);
+}
+
+.notif-tabs {
+    display: flex;
+    padding: 0.75rem 1.25rem;
+    gap: 0.5rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.notif-tab {
+    padding: 0.35rem 0.85rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border: none;
+    background: #f1f5f9;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.notif-tab.active {
+    background: var(--text-navy);
+    color: #ffffff;
+}
+
+.notif-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem 0;
+}
+
+.notif-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #f1f5f9;
+    cursor: pointer;
+    transition: background 0.2s;
+    position: relative;
+    background: #ffffff;
+}
+
+.notif-item:hover {
+    background: #f8fafc;
+}
+
+.notif-item.unread {
+    background: #fffbeb;
+    border-bottom: 1px solid #fef3c7;
+}
+
+.notif-item-icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.notif-item-icon.bg-amber { background: #fef3c7; color: #d97706; }
+.notif-item-icon.bg-purple { background: #f3e8ff; color: #7e22ce; }
+.notif-item-icon.bg-red { background: #fee2e2; color: #dc2626; }
+.notif-item-icon.avatar { object-fit: cover; border: 1px solid #e2e8f0; }
+
+.notif-item-content {
+    flex: 1;
+}
+
+.notif-item-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.25rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.notif-item-source {
+    color: #64748b;
+}
+
+.notif-item-time {
+    color: #94a3b8;
+}
+
+.notif-item-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-navy);
+    margin-bottom: 0.15rem;
+}
+
+.notif-item-desc {
+    font-size: 0.75rem;
+    color: #64748b;
+    line-height: 1.4;
+}
+
+.notif-item-dot {
+    position: absolute;
+    bottom: 1rem;
+    right: 1.25rem;
+    width: 0.5rem;
+    height: 0.5rem;
+    background: #3b82f6;
+    border-radius: 50%;
+}
+
+.notif-footer {
+    padding: 1rem;
+    text-align: center;
+    border-top: 1px solid #f1f5f9;
+}
+
+.notif-mark-all {
+    background: none;
+    border: none;
+    color: var(--text-navy);
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.notif-mark-all:hover {
+    text-decoration: underline;
+}
+
+/* ============================================ */
+/* NEW POPUPS (AVAILABLE & PENDING)            */
+/* ============================================ */
+
+/* Available Rooms */
+.avail-filter-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.avail-filter-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.avail-filter-pill.pill-navy {
+    background: var(--text-navy);
+    color: #ffffff;
+}
+
+.avail-filter-pill.pill-amber {
+    background: #fef3c7;
+    color: var(--text-navy);
+}
+
+.avail-room-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.avail-room-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.875rem;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.avail-room-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.avail-room-photo {
+    height: 120px;
+    background: #e2e8f0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avail-room-placeholder {
+    background: #dbeafe;
+}
+
+.avail-room-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avail-badge-premium {
+    position: absolute;
+    bottom: 0.5rem;
+    left: 0.5rem;
+    background: rgba(15, 31, 61, 0.75);
+    backdrop-filter: blur(4px);
+    color: #fcd34d;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+}
+
+.avail-room-info {
+    padding: 0.875rem;
+}
+
+.avail-room-name {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-navy);
+    margin-bottom: 0.25rem;
+}
+
+.avail-room-meta {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-bottom: 0.6rem;
+}
+
+.avail-status-badge {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.65rem;
+    font-weight: 700;
+}
+
+.avail-status-badge.status-available {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.avail-status-badge.status-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+/* Pending Approvals */
+.pending-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.pending-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.875rem;
+    background: #ffffff;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pending-item:hover {
+    border-color: #cbd5e1;
+    box-shadow: var(--shadow-sm);
+}
+
+.pending-icon-wrap {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.pending-icon-wrap.icon-blue { background: #dbeafe; color: #2563eb; }
+.pending-icon-wrap.icon-purple { background: #f3e8ff; color: #7e22ce; }
+.pending-icon-wrap.icon-light-blue { background: #e0f2fe; color: #0284c7; }
+
+.pending-content {
+    flex: 1;
+}
+
+.pending-room-name {
+    font-weight: 700;
+    color: var(--text-navy);
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.pending-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+.pending-meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.pending-status-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+}
+
+.pending-badge {
+    background: #fef3c7;
+    color: #d97706;
+    padding: 0.2rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.pending-badge .dot {
+    width: 4px;
+    height: 4px;
+    background: #d97706;
+    border-radius: 50%;
+}
+
+.pending-req-by {
+    font-size: 0.65rem;
+    color: #94a3b8;
+}
+
+.popup-footer-btn {
+    padding: 0.6rem 1rem;
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-close-gray {
+    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    color: #64748b;
+}
+
+.btn-amber {
+    background: var(--accent-amber);
+    color: var(--text-navy);
+}
+
