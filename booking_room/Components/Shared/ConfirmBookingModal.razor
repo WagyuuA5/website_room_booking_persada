@@ -1,0 +1,248 @@
+@using booking_room.Components.Models
+@inject booking_room.Services.LoadingStateService LoadingState
+@inject NavigationManager Navigation
+
+<div class="confirm-booking-modal">
+    @if (_isLoading)
+    {
+        <div class="skeleton-shimmer" style="height: 60px; margin-bottom: 2rem;"></div>
+        <div class="skeleton-grid" style="grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+            <div class="skeleton-shimmer" style="height: 45px;"></div>
+            <div class="skeleton-shimmer" style="height: 45px;"></div>
+        </div>
+        <div class="skeleton-shimmer" style="height: 120px; margin-bottom: 2rem;"></div>
+        <div class="skeleton-shimmer" style="height: 150px; margin-bottom: 2rem;"></div>
+    }
+    else
+    {
+        <div class="confirm-booking-layout content-fade-in">
+            <div class="confirm-header">
+                <h2>Confirm Booking</h2>
+                <p>Schedule a new resource or room</p>
+                <button class="modal-close-btn" @onclick="OnClose">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+            </div>
+
+            <div class="confirm-body">
+                <!-- Form Baris 1: Nama Pemesan & Divisi -->
+                <div class="form-row form-cols-2">
+                    <div class="form-group">
+                        <label>Nama Pemesan</label>
+                        <input type="text" class="form-control" @bind="_requesterName" />
+                    </div>
+                    <div class="form-group">
+                        <label>Division</label>
+                        <select class="form-select" @bind="_division">
+                            <option value="IT">IT</option>
+                            <option value="HR">HR</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Marketing">Marketing</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Room Selection -->
+                <div class="form-group">
+                    <label>Room Selection</label>
+                    <div class="room-selection-grid">
+                        @foreach (var room in _suggestedRooms)
+                        {
+                            var isSelected = room.Id == _selectedRoomId;
+                            var isAvailable = room.Status == "available";
+                            var cardClass = isSelected ? "room-select-card selected" : "room-select-card";
+                            if (!isAvailable) cardClass += " disabled";
+
+                            <div class="@cardClass" @onclick="() => SelectRoom(room)">
+                                <div class="room-select-header">
+                                    <span class="room-select-name">@room.Name</span>
+                                    <span class="badge @(isAvailable ? "badge-success" : "badge-danger")">
+                                        @(isAvailable ? "AVAILABLE" : "BOOKED")
+                                    </span>
+                                </div>
+                                <div class="room-select-meta">
+                                    <span class="meta-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 11C17.66 11 18.99 9.66 18.99 8C18.99 6.34 17.66 5 16 5C14.34 5 13 6.34 13 8C13 9.66 14.34 11 16 11ZM8 11C9.66 11 10.99 9.66 10.99 8C10.99 6.34 9.66 5 8 5C6.34 5 5 6.34 5 8C5 9.66 6.34 11 8 11ZM8 13C5.67 13 1 14.17 1 16.5V19H15V16.5C15 14.17 10.33 13 8 13ZM16 13C15.71 13 15.38 13.02 15.03 13.05C16.19 13.89 17 15.02 17 16.5V19H23V16.5C23 14.17 18.33 13 16 13Z"/></svg> @room.Capacity</span>
+                                    <span class="meta-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><path d="M17 2l-5 5-5-5"/></svg> @string.Join(", ", room.Amenities.Take(2))</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Date and Time -->
+                <div class="form-row form-cols-3">
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" class="form-control" @bind="_bookingDate" />
+                    </div>
+                    <div class="form-group">
+                        <label>Start Time</label>
+                        <input type="time" class="form-control" @bind="_startTime" />
+                    </div>
+                    <div class="form-group">
+                        <label>End Time</label>
+                        <input type="time" class="form-control" @bind="_endTime" />
+                    </div>
+                </div>
+
+                <!-- Invite Attendees -->
+                <div class="form-group">
+                    <label>Invite Attendees</label>
+                    <div class="autocomplete-wrapper">
+                        <input type="text" class="form-control" placeholder="Search by name or email..." @bind="_attendeeSearch" @bind:event="oninput" @onkeyup="HandleAttendeeInput" />
+                    </div>
+                    
+                    <div class="attendee-chips mt-2">
+                        @foreach (var attendee in _attendees)
+                        {
+                            <div class="attendee-chip">
+                                @attendee
+                                <button type="button" @onclick="() => RemoveAttendee(attendee)">&times;</button>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Capacity Indicator -->
+                    <div class="capacity-indicator mt-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="capacity-text">@_attendees.Count of @SelectedRoomCapacity Room Capacity</span>
+                            @if (_hasConflict)
+                            {
+                                <span class="conflict-warning"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01"/></svg> Potential schedule conflict</span>
+                            }
+                        </div>
+                        <div class="capacity-progress-bar">
+                            <div class="capacity-progress-fill @CapacityFillClass" style="width: @CapacityPercentage%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- External Guests -->
+                <div class="form-group d-flex align-items-center justify-content-between">
+                    <div>
+                        <label class="mb-0">Invite external guests</label>
+                        <div style="font-size: 0.8rem; color: #64748b;">Send invitations to users outside the organization</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" @bind="_allowExternalGuests" />
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                
+                @if (_allowExternalGuests)
+                {
+                    <div class="form-group">
+                        <input type="email" class="form-control" placeholder="Enter external email addresses..." />
+                    </div>
+                }
+
+                <!-- Notes -->
+                <div class="form-group">
+                    <label>Notes/Special Requests</label>
+                    <textarea class="form-control" rows="3" placeholder="Enter any specific requirements..."></textarea>
+                </div>
+            </div>
+
+            <div class="confirm-footer">
+                <button class="btn-cancel" @onclick="OnClose">Cancel</button>
+                <button class="btn-book-now" @onclick="SubmitBooking">
+                    Confirm Booking
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public RoomItem? InitialRoom { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private bool _isLoading = true;
+    private string _requesterName = "Admin User";
+    private string _division = "IT";
+    private string _selectedRoomId = "";
+    private DateTime? _bookingDate = DateTime.Today;
+    private TimeOnly? _startTime = new TimeOnly(10, 0);
+    private TimeOnly? _endTime = new TimeOnly(11, 0);
+    private string _attendeeSearch = "";
+    private List<string> _attendees = new() { "Andi Setiawan" };
+    private bool _hasConflict = false;
+    private bool _allowExternalGuests = false;
+
+    private List<RoomItem> _suggestedRooms = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_isLoading)
+        {
+            await Task.Delay(300);
+            
+            // Setup suggested rooms - one selected, others random
+            _suggestedRooms = DashboardData.AllRooms
+                .Select(r => new RoomItem(Guid.NewGuid().ToString(), r.RoomName, r.Capacity, "", r.Status, r.Facilities.Split(',').Select(x => x.Trim()).ToList(), r.Floor))
+                .Take(3).ToList();
+
+            if (InitialRoom != null)
+            {
+                _suggestedRooms[0] = InitialRoom;
+                _selectedRoomId = InitialRoom.Id;
+            }
+            else
+            {
+                _selectedRoomId = _suggestedRooms[0].Id;
+            }
+
+            _isLoading = false;
+        }
+    }
+
+    private void SelectRoom(RoomItem room)
+    {
+        if (room.Status == "available")
+        {
+            _selectedRoomId = room.Id;
+        }
+    }
+
+    private int SelectedRoomCapacity => _suggestedRooms.FirstOrDefault(r => r.Id == _selectedRoomId)?.Capacity ?? 10;
+    
+    private double CapacityPercentage => Math.Min(100.0, (_attendees.Count / (double)SelectedRoomCapacity) * 100);
+    
+    private string CapacityFillClass => CapacityPercentage > 90 ? "bg-red" : CapacityPercentage > 75 ? "bg-amber" : "bg-green";
+
+    private void HandleAttendeeInput(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(_attendeeSearch))
+        {
+            _attendees.Add(_attendeeSearch);
+            _attendeeSearch = "";
+            
+            // Simulasi deteksi konflik jadwal sederhana jika nambah Budi
+            if (_attendees.Any(a => a.Contains("Budi", StringComparison.OrdinalIgnoreCase)))
+            {
+                _hasConflict = true;
+            }
+            else
+            {
+                _hasConflict = false;
+            }
+        }
+    }
+
+    private void RemoveAttendee(string name)
+    {
+        _attendees.Remove(name);
+        if (!_attendees.Any(a => a.Contains("Budi", StringComparison.OrdinalIgnoreCase)))
+        {
+            _hasConflict = false;
+        }
+    }
+
+    private async Task SubmitBooking()
+    {
+        // TODO: Simpan booking, tampilkan toast, redirect
+        await OnClose.InvokeAsync();
+        Navigation.NavigateTo("/status");
+    }
+}

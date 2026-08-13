@@ -165,6 +165,12 @@ else
         OnBookNow="ProceedToBook" />
 </booking_room.Components.Shared.ModalOverlayBlur>
 
+<booking_room.Components.Shared.ModalOverlayBlur Visible="@_isConfirmBookingVisible" OnClose="CloseConfirm" Size="lg">
+    <booking_room.Components.Shared.ConfirmBookingModal 
+        InitialRoom="@_selectedRoomForBooking" 
+        OnClose="CloseConfirm" />
+</booking_room.Components.Shared.ModalOverlayBlur>
+
 @code {
     private string _searchQuery = string.Empty;
     private DateTime? _filterDate;
@@ -175,6 +181,9 @@ else
     
     private bool _isRoomDetailVisible = false;
     private RoomItem? _selectedRoomForDetail;
+
+    private bool _isConfirmBookingVisible = false;
+    private RoomItem? _selectedRoomForBooking;
 
     private readonly string[] _allAmenities = { "Pendingin Ruangan", "Proyektor", "Papan Tulis", "Konferensi Video", "Aksesibilitas" };
 
@@ -256,16 +265,22 @@ else
     private void ProceedToBook(RoomItem room)
     {
         CloseDetail();
-        // TODO: Buka Popup "Confirm Booking" (Bagian 3)
-        // Untuk sementara arahkan ke form atau state konfirmasi
-        Navigation.NavigateTo($"/bookings/form/{room.Id}");
+        _selectedRoomForBooking = room;
+        _isConfirmBookingVisible = true;
+    }
+
+    private void CloseConfirm()
+    {
+        _isConfirmBookingVisible = false;
+        _selectedRoomForBooking = null;
     }
 
     private void BookRoom(RoomItem room)
     {
         if (room.Status == "available")
         {
-            Navigation.NavigateTo($"/bookings/form/{room.Id}");
+            _selectedRoomForBooking = room;
+            _isConfirmBookingVisible = true;
         }
     }
 }
