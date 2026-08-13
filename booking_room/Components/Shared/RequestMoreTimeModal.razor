@@ -1,0 +1,47 @@
+<div class="request-more-time-modal">
+    <div class="request-header">
+        <div class="header-icon bg-amber-light">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="var(--accent-amber)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="header-text">
+            <h2>Request More Time</h2>
+            <p>@RoomName</p>
+        </div>
+    </div>
+
+    <div class="request-body">
+        <div class="info-box bg-slate-50">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="info-icon"><circle cx="12" cy="12" r="10" stroke="#f59e0b" stroke-width="2"/><path d="M12 16v-4M12 8h.01" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/></svg>
+            <p>You can extend your check-in window by exactly 10 minutes. This action can only be performed once per booking.</p>
+        </div>
+
+        <div class="form-group">
+            <label>Reason for extension <span class="text-danger">*</span></label>
+            <textarea class="form-control" rows="3" placeholder="e.g., In transit, Previous meeting running over" @bind="_reason" @bind:event="oninput"></textarea>
+        </div>
+    </div>
+
+    <div class="request-footer">
+        <button class="btn-cancel" @onclick="OnCancel">Cancel</button>
+        <button class="btn-extend @(string.IsNullOrWhiteSpace(_reason) ? "disabled" : "")" disabled="@string.IsNullOrWhiteSpace(_reason)" @onclick="SubmitExtension">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Request Extension
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string RoomName { get; set; } = "";
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback<string> OnRequestExtension { get; set; }
+
+    private string _reason = "";
+
+    private async Task SubmitExtension()
+    {
+        if (!string.IsNullOrWhiteSpace(_reason))
+        {
+            await OnRequestExtension.InvokeAsync(_reason);
+        }
+    }
+}

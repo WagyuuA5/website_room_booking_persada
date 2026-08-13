@@ -75,10 +75,21 @@
 
     <!-- Footer Links -->
     <div style="display: flex; justify-content: space-between; width: 100%; font-size: 0.875rem; font-weight: 600;">
-        <button @onclick="ExtendWindow" style="background: none; border: none; color: #94a3b8; cursor: pointer; padding: 0; text-decoration: none; transition: color 0.2s;">I need more time</button>
+        @if (!_hasExtended)
+        {
+            <button @onclick="OpenExtendModal" style="background: none; border: none; color: #94a3b8; cursor: pointer; padding: 0; text-decoration: none; transition: color 0.2s;">I need more time</button>
+        }
+        else
+        {
+            <span></span> <!-- Empty span to maintain flex spacing if button is hidden -->
+        }
         <button @onclick="CancelBooking" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0; text-decoration: none; transition: color 0.2s;">Cancel this booking</button>
     </div>
 </div>
+
+<ModalOverlayBlur Visible="@_isRequestingMoreTime" OnClose="CloseExtendModal" Size="default">
+    <RequestMoreTimeModal RoomName="@RoomName" OnCancel="CloseExtendModal" OnRequestExtension="HandleRequestExtension" />
+</ModalOverlayBlur>
 
 @code {
     [Parameter] public string RoomName { get; set; } = "Alpha Boardroom";
@@ -131,11 +142,34 @@
         await OnConfirm.InvokeAsync();
     }
 
+    private bool _hasExtended = false;
+    private bool _isRequestingMoreTime = false;
+
+    private void OpenExtendModal()
+    {
+        _isRequestingMoreTime = true;
+    }
+
+    private void CloseExtendModal()
+    {
+        _isRequestingMoreTime = false;
+    }
+
+    private void HandleRequestExtension(string reason)
+    {
+        CloseExtendModal();
+        ExtendWindow();
+    }
+
     private void ExtendWindow()
     {
-        TargetTime = TargetTime.AddMinutes(5);
-        _totalSeconds += 5 * 60;
-        UpdateCountdown();
+        if (!_hasExtended)
+        {
+            TargetTime = TargetTime.AddMinutes(10);
+            _totalSeconds += 10 * 60;
+            _hasExtended = true;
+            UpdateCountdown();
+        }
     }
 
     private async Task CancelBooking()
