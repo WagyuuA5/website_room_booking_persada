@@ -1,0 +1,144 @@
+@page "/"
+@using booking_room.Components.Models
+@inject NavigationManager Navigation
+
+<PageTitle>Dashboard - PADA Management</PageTitle>
+
+<div class="hero-card">
+    <h1 class="hero-title">Selamat Datang, Admin User</h1>
+    <p class="hero-subtitle">Kelola pemesanan ruangan perusahaan Anda secara efisien. Pantau penggunaan ruangan, reservasi mendatang, dan analitik sistem dalam satu tempat.</p>
+</div>
+
+<div class="summary-cards">
+    <div class="summary-card">
+        <div class="summary-card-icon" style="background-color: var(--accent-green-light);">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="color: var(--accent-green);">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+            </svg>
+        </div>
+        <div class="summary-card-content">
+            <div class="summary-card-label">Ruangan Tersedia</div>
+            <div class="summary-card-value">@DashboardData.AvailableRooms.Available <span>/ @DashboardData.AvailableRooms.Total</span></div>
+        </div>
+    </div>
+
+    <div class="summary-card" style="border-left: 4px solid var(--accent-amber);">
+        <div class="summary-card-icon" style="background-color: #fef3c7;">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="color: #d97706;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+            </svg>
+        </div>
+        <div class="summary-card-content">
+            <div class="summary-card-label">Persetujuan Tertunda</div>
+            <div class="summary-card-value">@DashboardData.PendingApprovals</div>
+        </div>
+    </div>
+
+    @if (nextRoom is not null)
+    {
+        <div class="summary-card next-available-card">
+            <div class="next-available-header">
+                <div class="next-available-title">Segera Tersedia</div>
+                <svg class="next-available-bolt" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+                </svg>
+            </div>
+            <div class="next-available-body">
+                <div class="next-available-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                    </svg>
+                </div>
+                <div class="next-available-info">
+                    <div class="next-available-room">@nextRoom.RoomName</div>
+                    <div class="next-available-meta">
+                        Tersedia dalam @nextRoom.AvailableInMinutes menit
+                        <span style="margin: 0 0.35rem;">•</span>
+                        Kapasitas: @nextRoom.Capacity
+                    </div>
+                </div>
+            </div>
+            <button class="next-available-btn" @onclick="BookNow">
+                Pesan Sekarang
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="summary-card next-available-card" style="justify-content: center; align-items: center; text-align: center;">
+            <div>
+                <div class="next-available-room" style="font-size: 1.1rem;">Semua ruangan tersedia sekarang</div>
+                <div class="next-available-meta" style="margin-bottom: 1rem;">Tidak ada ruangan yang sedang terpakai saat ini</div>
+                <button class="next-available-btn" @onclick="ViewAllRooms">
+                    Lihat Semua Ruangan
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="analytics-card">
+    <div class="analytics-header">
+        <div>
+            <h2 class="analytics-title">Analitik Penggunaan Ruangan</h2>
+            <p class="analytics-subtitle">5 ruangan yang paling sering dipesan</p>
+        </div>
+        <div class="period-toggle">
+            @foreach (var period in periods)
+            {
+                <button class="@(selectedPeriod == period ? "active" : "")" @onclick="() => SelectPeriod(period)">@period</button>
+            }
+        </div>
+    </div>
+
+    <div class="utilization-list">
+        @foreach (var room in analyticsData.Rooms)
+        {
+            var maxHours = analyticsData.Rooms.Max(r => r.HoursUsed);
+            var percentage = maxHours > 0 ? (double)room.HoursUsed / maxHours * 100 : 0;
+
+            <div class="utilization-item">
+                <div class="utilization-item-header">
+                    <span class="utilization-room-name">@room.RoomName</span>
+                    <span class="utilization-hours">@room.HoursUsed jam</span>
+                </div>
+                <div class="utilization-bar-bg">
+                    <div class="utilization-bar-fill" style="width: @percentage.ToString("0.0")%;">
+                        <span class="utilization-bar-label">@room.HoursUsed jam</span>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private NextAvailableRoom? nextRoom;
+    private AnalyticsData analyticsData = DashboardData.WeeklyData;
+    private string selectedPeriod = "Minggu";
+    private readonly string[] periods = { "Minggu", "Bulan", "Tahun" };
+
+    protected override void OnInitialized()
+    {
+        nextRoom = DashboardData.NextAvailableRooms.FirstOrDefault();
+    }
+
+    private void SelectPeriod(string period)
+    {
+        selectedPeriod = period;
+        analyticsData = DashboardData.GetAnalytics(period);
+    }
+
+    private void BookNow()
+    {
+        if (nextRoom is not null)
+        {
+            Navigation.NavigateTo($"/bookings?room={Uri.EscapeDataString(nextRoom.RoomName)}");
+        }
+    }
+
+    private void ViewAllRooms()
+    {
+        Navigation.NavigateTo("/bookings");
+    }
+}
