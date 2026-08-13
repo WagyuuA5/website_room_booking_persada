@@ -1,0 +1,31 @@
+@if (Visible)
+{
+    <div class="modal-overlay-blur" @onclick="CloseOnOverlay">
+        <div class="modal-shell @SizeClass" @onclick:stopPropagation="true">
+            @ChildContent
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public bool CloseOnOverlayClick { get; set; } = true;
+    [Parameter] public string Size { get; set; } = "default"; // "sm", "default", "lg"
+
+    private string SizeClass => Size switch
+    {
+        "sm" => "modal-sm",
+        "lg" => "modal-lg",
+        _ => ""
+    };
+
+    private async Task CloseOnOverlay()
+    {
+        if (CloseOnOverlayClick)
+        {
+            await OnClose.InvokeAsync();
+        }
+    }
+}

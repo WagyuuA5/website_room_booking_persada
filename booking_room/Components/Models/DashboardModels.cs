@@ -7,6 +7,10 @@ public record AnalyticsData(string Period, List<RoomUtilization> Rooms);
 public record ChartDataset(string Label, double[] Data, string BorderColor);
 public record ChartData(string[] Labels, ChartDataset[] Datasets);
 
+// New models for pop-up modals
+public record RoomDetail(string RoomName, string Floor, int Capacity, string Status, string StatusClass, string Facilities);
+public record PendingApprovalItem(string RoomName, string RequestedBy, string Date, string TimeSlot, string Purpose, string Priority);
+
 public static class DashboardData
 {
     public static RoomSummary AvailableRooms => new("Total Ruangan", 8, 20);
@@ -18,6 +22,39 @@ public static class DashboardData
         new("Boardroom A", 90, 20, false),
         new("Meeting Room 1", 120, 8, false),
         new("Training Center", 180, 30, false)
+    ];
+
+    // Room details for pop-up
+    public static List<RoomDetail> AllRooms =>
+    [
+        new("Boardroom A", "Lantai 3", 20, "Tersedia", "available", "Projector, Whiteboard, Video Conf"),
+        new("Meeting Room 1", "Lantai 2", 8, "Tersedia", "available", "TV Display, Whiteboard"),
+        new("Huddle Space C", "Lantai 1", 4, "Tersedia", "available", "TV Display"),
+        new("Focus Room B", "Lantai 2", 2, "Tersedia", "available", "Monitor"),
+        new("Training Center", "Lantai 4", 30, "Tersedia", "available", "Projector, Sound System, Podium"),
+        new("Executive Suite", "Lantai 5", 10, "Tersedia", "available", "Video Conf, Mini Bar"),
+        new("Conference Hall", "Lantai 1", 50, "Tersedia", "available", "Full AV System, Stage"),
+        new("Innovation Lab", "Lantai 3", 15, "Tersedia", "available", "Interactive Display, 3D Printer"),
+        new("Delta Boardroom", "Lantai 3", 12, "Digunakan", "occupied", "Projector, Video Conf"),
+        new("Alpha Room", "Lantai 2", 6, "Digunakan", "occupied", "TV Display, Whiteboard"),
+        new("Beta Room", "Lantai 4", 8, "Digunakan", "occupied", "Projector"),
+        new("Gamma Room", "Lantai 1", 10, "Digunakan", "occupied", "Video Conf, Whiteboard"),
+        new("Omega Suite", "Lantai 5", 16, "Digunakan", "occupied", "Full AV System"),
+        new("Sigma Room", "Lantai 2", 6, "Digunakan", "occupied", "TV Display"),
+        new("Workshop A", "Lantai 4", 25, "Maintenance", "maintenance", "Full AV System, Workshop Tools"),
+        new("Server Room", "Lantai 1", 4, "Maintenance", "maintenance", "Monitoring Screens"),
+        new("Studio Room", "Lantai 3", 8, "Digunakan", "occupied", "Green Screen, Lighting"),
+        new("Library Room", "Lantai 2", 12, "Digunakan", "occupied", "Projector, Quiet Zone"),
+        new("Zen Room", "Lantai 5", 6, "Digunakan", "occupied", "Ambient Lighting"),
+        new("Sky Lounge", "Lantai 5", 20, "Digunakan", "occupied", "Panoramic View, Mini Bar")
+    ];
+
+    // Pending approval items for pop-up
+    public static List<PendingApprovalItem> PendingApprovalItems =>
+    [
+        new("Boardroom A", "Budi Santoso", "14 Agustus 2026", "09:00 - 11:00", "Client Presentation", "Tinggi"),
+        new("Training Center", "Siti Rahayu", "14 Agustus 2026", "13:00 - 16:00", "Team Workshop", "Sedang"),
+        new("Meeting Room 1", "Ahmad Fauzi", "15 Agustus 2026", "10:00 - 11:30", "Sprint Planning", "Normal")
     ];
 
     public static AnalyticsData WeeklyData => new(

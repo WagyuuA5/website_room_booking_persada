@@ -1,0 +1,104 @@
+@using booking_room.Components.Models
+
+<div class="modal-header-custom">
+    <div class="modal-header-left">
+        <div class="modal-header-icon icon-blue">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="14" width="4" height="7" rx="1" fill="#1e40af"/>
+                <rect x="8.5" y="10" width="4" height="11" rx="1" fill="#3b82f6"/>
+                <rect x="14" y="6" width="4" height="15" rx="1" fill="#60a5fa"/>
+                <path d="M2 21H23" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div class="modal-header-info">
+            <h3>Analitik Penggunaan Detail</h3>
+            <p>Data periode: @SelectedPeriod</p>
+        </div>
+    </div>
+    <button class="modal-close-btn" @onclick="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </button>
+</div>
+
+<div class="modal-body-custom">
+    <!-- Summary stats -->
+    <div class="popup-stats-row">
+        <div class="popup-stat-card stat-green">
+            <div class="popup-stat-value">@totalHours</div>
+            <div class="popup-stat-label">Total Jam</div>
+        </div>
+        <div class="popup-stat-card stat-red">
+            <div class="popup-stat-value">@avgUtilization%</div>
+            <div class="popup-stat-label">Rata-rata</div>
+        </div>
+        <div class="popup-stat-card stat-gray">
+            <div class="popup-stat-value">@roomCount</div>
+            <div class="popup-stat-label">Ruangan</div>
+        </div>
+    </div>
+
+    <!-- Detailed analytics -->
+    <div class="popup-scroll-area">
+        <div class="popup-analytics-grid">
+            @{ int rank = 0; }
+            @foreach (var room in analyticsData.Rooms)
+            {
+                rank++;
+                var maxHours = analyticsData.Rooms.Max(r => r.HoursUsed);
+                var percentage = maxHours > 0 ? (double)room.HoursUsed / maxHours * 100 : 0;
+                var barClass = rank switch
+                {
+                    1 => "bar-1",
+                    2 => "bar-2",
+                    3 => "bar-3",
+                    4 => "bar-4",
+                    _ => "bar-5"
+                };
+                var rankClass = rank switch
+                {
+                    1 => "rank-1",
+                    2 => "rank-2",
+                    3 => "rank-3",
+                    4 => "rank-4",
+                    _ => "rank-5"
+                };
+
+                <div class="popup-analytics-item">
+                    <div class="popup-analytics-rank utilization-rank @rankClass">@rank</div>
+                    <div class="popup-analytics-info">
+                        <div class="popup-analytics-name">@room.RoomName</div>
+                        <div class="popup-analytics-bar-container">
+                            <div class="popup-analytics-bar-bg">
+                                <div class="popup-analytics-bar-fill utilization-bar-fill @barClass" style="width: @percentage.ToString("0.0")%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="popup-analytics-value">@room.HoursUsed jam</div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer-custom">
+    <button class="popup-btn popup-btn-secondary" @onclick="Close">Tutup</button>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public string SelectedPeriod { get; set; } = "Minggu";
+
+    private AnalyticsData analyticsData => DashboardData.GetAnalytics(SelectedPeriod);
+    private int totalHours => analyticsData.Rooms.Sum(r => r.HoursUsed);
+    private int avgUtilization => analyticsData.Rooms.Count > 0
+        ? (int)Math.Round((double)analyticsData.Rooms.Average(r => r.HoursUsed) / analyticsData.Rooms.Max(r => r.HoursUsed) * 100)
+        : 0;
+    private int roomCount => analyticsData.Rooms.Count;
+
+    private async Task Close()
+    {
+        await OnClose.InvokeAsync();
+    }
+}

@@ -1,0 +1,82 @@
+@using booking_room.Components.Models
+
+<div class="modal-header-custom">
+    <div class="modal-header-left">
+        <div class="modal-header-icon icon-amber">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17 12C14.24 12 12 14.24 12 17C12 19.76 14.24 22 17 22C19.76 22 22 19.76 22 17C22 14.24 19.76 12 17 12ZM18.65 19.35L16.5 17.2V14H17.5V16.79L19.35 18.64L18.65 19.35Z" fill="#D97706"/>
+                <path d="M7 2V4H8V7.17C8 8.06 8.32 8.92 8.88 9.59L11 12.17V12.83L8.88 15.41C8.32 16.08 8 16.94 8 17.83V21H4V17.83C4 16.94 3.68 16.08 3.12 15.41L1 12.83V12.17L3.12 9.59C3.68 8.92 4 8.06 4 7.17V4H5V2H7Z" fill="#D97706"/>
+            </svg>
+        </div>
+        <div class="modal-header-info">
+            <h3>Persetujuan Tertunda</h3>
+            <p>@DashboardData.PendingApprovalItems.Count permintaan menunggu</p>
+        </div>
+    </div>
+    <button class="modal-close-btn" @onclick="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </button>
+</div>
+
+<div class="modal-body-custom">
+    <div class="popup-scroll-area">
+        @foreach (var item in DashboardData.PendingApprovalItems)
+        {
+            var priorityClass = item.Priority switch
+            {
+                "Tinggi" => "high",
+                "Sedang" => "medium",
+                _ => "normal"
+            };
+
+            <div class="popup-approval-item">
+                <div class="popup-approval-header">
+                    <div class="popup-approval-room">@item.RoomName</div>
+                    <span class="popup-approval-priority @priorityClass">@item.Priority</span>
+                </div>
+                <div class="popup-approval-details">
+                    <div>Diminta oleh: <span>@item.RequestedBy</span></div>
+                    <div>Tanggal: <span>@item.Date</span></div>
+                    <div>Waktu: <span>@item.TimeSlot</span></div>
+                    <div>Tujuan: <span>@item.Purpose</span></div>
+                </div>
+                <div class="popup-approval-actions">
+                    <button class="popup-btn popup-btn-primary" @onclick="() => ApproveItem(item)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 4px; vertical-align: middle;">
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="currentColor"/>
+                        </svg>
+                        Setujui
+                    </button>
+                    <button class="popup-btn popup-btn-danger" @onclick="() => RejectItem(item)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 4px; vertical-align: middle;">
+                            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Tolak
+                    </button>
+                    <button class="popup-btn popup-btn-secondary">Detail</button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private async Task Close()
+    {
+        await OnClose.InvokeAsync();
+    }
+
+    private void ApproveItem(PendingApprovalItem item)
+    {
+        // TODO: Implement approval logic
+    }
+
+    private void RejectItem(PendingApprovalItem item)
+    {
+        // TODO: Implement rejection logic
+    }
+}

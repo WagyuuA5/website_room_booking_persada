@@ -1,0 +1,115 @@
+@using booking_room.Components.Models
+@inject NavigationManager Navigation
+
+<div class="modal-header-custom">
+    <div class="modal-header-left">
+        <div class="modal-header-icon icon-navy">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M11 21H5C3.9 21 3 20.1 3 19V5C3 3.9 3.9 3 5 3H19C20.1 3 21 3.9 21 5V11.5" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M7 7H17M7 11H13M7 15H11" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+                <circle cx="18" cy="18" r="4" fill="#f59e0b"/>
+                <path d="M16.5 18L17.5 19L19.5 17" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <div class="modal-header-info">
+            <h3>Pesan Ruangan — @RoomName</h3>
+            <p>Tersedia dalam @AvailableInMinutes menit • Kapasitas @Capacity orang</p>
+        </div>
+    </div>
+    <button class="modal-close-btn" @onclick="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </button>
+</div>
+
+<div class="modal-body-custom">
+    <div class="popup-form-group">
+        <label class="popup-form-label">Judul Rapat</label>
+        <input type="text" class="popup-form-input" placeholder="Contoh: Sprint Planning Q3" @bind="meetingTitle" />
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+        <div class="popup-form-group">
+            <label class="popup-form-label">Tanggal</label>
+            <input type="date" class="popup-form-input" @bind="meetingDate" />
+        </div>
+        <div class="popup-form-group">
+            <label class="popup-form-label">Durasi</label>
+            <select class="popup-form-select" @bind="duration">
+                <option value="30">30 Menit</option>
+                <option value="60">1 Jam</option>
+                <option value="90">1.5 Jam</option>
+                <option value="120">2 Jam</option>
+                <option value="180">3 Jam</option>
+            </select>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+        <div class="popup-form-group">
+            <label class="popup-form-label">Waktu Mulai</label>
+            <select class="popup-form-select" @bind="startTime">
+                <option value="08:00">08:00</option>
+                <option value="08:30">08:30</option>
+                <option value="09:00">09:00</option>
+                <option value="09:30">09:30</option>
+                <option value="10:00">10:00</option>
+                <option value="10:30">10:30</option>
+                <option value="11:00">11:00</option>
+                <option value="13:00">13:00</option>
+                <option value="13:30">13:30</option>
+                <option value="14:00">14:00</option>
+                <option value="14:30">14:30</option>
+                <option value="15:00">15:00</option>
+                <option value="15:30">15:30</option>
+                <option value="16:00">16:00</option>
+            </select>
+        </div>
+        <div class="popup-form-group">
+            <label class="popup-form-label">Jumlah Peserta</label>
+            <input type="number" class="popup-form-input" placeholder="Contoh: 8" @bind="attendees" min="1" />
+        </div>
+    </div>
+
+    <div class="popup-form-group">
+        <label class="popup-form-label">Catatan Tambahan</label>
+        <input type="text" class="popup-form-input" placeholder="Opsional: kebutuhan khusus..." @bind="notes" />
+    </div>
+</div>
+
+<div class="modal-footer-custom">
+    <button class="popup-btn popup-btn-secondary" @onclick="Close">Batal</button>
+    <button class="popup-btn popup-btn-amber" @onclick="SubmitBooking">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 4px; vertical-align: middle;">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="currentColor"/>
+        </svg>
+        Pesan Sekarang
+    </button>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public string RoomName { get; set; } = "";
+    [Parameter] public int AvailableInMinutes { get; set; }
+    [Parameter] public int Capacity { get; set; }
+
+    private string meetingTitle = "";
+    private DateTime meetingDate = DateTime.Today;
+    private string duration = "60";
+    private string startTime = "09:00";
+    private int attendees = 1;
+    private string notes = "";
+
+    private async Task Close()
+    {
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task SubmitBooking()
+    {
+        // TODO: Implement booking submission
+        await OnClose.InvokeAsync();
+        Navigation.NavigateTo("/bookings");
+    }
+}
