@@ -100,6 +100,7 @@
 
     [Parameter] public EventCallback OnConfirm { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback OnAutoReleased { get; set; }
 
     private Timer? _timer;
     private string RemainingTimeFormatted = "00:00";
@@ -126,6 +127,7 @@
         {
             remaining = TimeSpan.Zero;
             _timer?.Change(Timeout.Infinite, Timeout.Infinite);
+            InvokeAsync(() => OnAutoReleased.InvokeAsync());
         }
 
         RemainingTimeFormatted = remaining.ToString(@"mm\:ss");

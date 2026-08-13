@@ -204,7 +204,12 @@ else
         Capacity="12"
         TargetTime="@(NotificationState.NextBookingTime ?? DateTime.Now)"
         OnConfirm="HandleConfirmCheckIn"
-        OnCancel="ClosePopup" />
+        OnCancel="ClosePopup"
+        OnAutoReleased="HandleBookingAutoReleased" />
+</ModalOverlayBlur>
+
+<ModalOverlayBlur Visible="@(activePopup == "BookingAutoReleased")" OnClose="ClosePopup" Size="default">
+    <BookingAutoReleasedModal RoomName="Alpha Boardroom" OnClose="ClosePopup" OnBookAnother="HandleBookAnother" />
 </ModalOverlayBlur>
 
 <ModalOverlayBlur Visible="@(activePopup == "CheckInSuccess")" OnClose="HandleSuccessClose" Size="sm">
@@ -315,8 +320,19 @@ else
 
     private void HandleConfirmCheckIn()
     {
-        checkInTimestamp = DateTime.Now;
         activePopup = "CheckInSuccess";
+        checkInTimestamp = DateTime.Now;
+    }
+
+    private void HandleBookingAutoReleased()
+    {
+        activePopup = "BookingAutoReleased";
+        StateHasChanged();
+    }
+
+    private void HandleBookAnother()
+    {
+        Navigation.NavigateTo("/bookings");
     }
 
     private void HandleSuccessClose()
