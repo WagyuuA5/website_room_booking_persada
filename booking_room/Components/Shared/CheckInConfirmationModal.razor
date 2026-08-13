@@ -91,6 +91,10 @@
     <RequestMoreTimeModal RoomName="@RoomName" OnCancel="CloseExtendModal" OnRequestExtension="HandleRequestExtension" />
 </ModalOverlayBlur>
 
+<ModalOverlayBlur Visible="@_isCanceling" OnClose="CloseCancelModal" Size="default">
+    <CancelConfirmationModal RoomName="@RoomName" OnKeep="CloseCancelModal" OnConfirmCancel="HandleConfirmCancel" />
+</ModalOverlayBlur>
+
 @code {
     [Parameter] public string RoomName { get; set; } = "Alpha Boardroom";
     [Parameter] public string TimeSlot { get; set; } = "09:00 - 11:00 AM";
@@ -174,8 +178,21 @@
         }
     }
 
-    private async Task CancelBooking()
+    private bool _isCanceling = false;
+
+    private void CancelBooking()
     {
+        _isCanceling = true;
+    }
+
+    private void CloseCancelModal()
+    {
+        _isCanceling = false;
+    }
+
+    private async Task HandleConfirmCancel()
+    {
+        _isCanceling = false;
         _timer?.Change(Timeout.Infinite, Timeout.Infinite);
         await OnCancel.InvokeAsync();
     }

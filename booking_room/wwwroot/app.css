@@ -3063,4 +3063,13 @@ input:checked + .slider:before { transform: translateX(20px); }
 .btn-maybe { background: transparent; border: 1.5px solid #0f1f3d; color: #0f1f3d; }
 .btn-maybe:hover { background: #f8fafc; }
 .btn-accept { background: var(--accent-amber); border: 1.5px solid var(--accent-amber); color: #0f1f3d; }
-.btn-accept:hover { filter: brightness(0.95); transform: translateY(-1px); }
+.btn-accept:hover { filter: brightness(0.95); transform: translateY(-1px); }/* Cancel Confirmation Modal */
+.cancel-confirmation-modal { width: 100%; max-width: 450px; background: #fff; border-radius: 1.25rem; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+.cancel-header { display: flex; align-items: center; gap: 1rem; padding: 1.5rem; border-bottom: 1px solid #e2e8f0; }
+.bg-red-light { background: #fee2e2; }
+.cancel-body { padding: 1.5rem; color: #475569; font-size: 0.95rem; line-height: 1.5; }
+.cancel-footer { display: flex; gap: 1rem; padding: 1.25rem 1.5rem; background: #f8fafc; border-top: 1px solid #e2e8f0; }
+.btn-keep { flex: 1; padding: 0.75rem; border: 2px solid #e2e8f0; background: transparent; color: #0f1f3d; border-radius: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.btn-keep:hover { background: #f8fafc; border-color: #cbd5e1; }
+.btn-confirm-cancel { flex: 1; padding: 0.75rem; border: none; background: #ef4444; color: white; border-radius: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.btn-confirm-cancel:hover { background: #dc2626; }
