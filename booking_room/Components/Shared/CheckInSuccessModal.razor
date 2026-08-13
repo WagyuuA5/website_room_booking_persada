@@ -1,0 +1,30 @@
+@using booking_room.Components.Shared
+
+<div class="modal-body-custom checkin-success-modal" style="display: flex; flex-direction: column; align-items: center; padding: 3rem 2rem; background: var(--text-navy); color: white; border-radius: inherit; text-align: center;">
+    
+    <!-- Success Icon -->
+    <div style="margin-bottom: 1.5rem;">
+        <InlineSvg Src="/icons/icon_check_circle.svg" Style="width: 80px; height: 80px;" />
+    </div>
+
+    <!-- Title -->
+    <h2 style="font-weight: 800; font-size: 1.75rem; margin: 0 0 0.5rem 0; letter-spacing: -0.02em;">Check-in Successful</h2>
+    
+    <!-- Subtitle with dynamic timestamp -->
+    <p style="color: #cbd5e1; font-size: 1rem; font-weight: 500; margin: 0 0 2.5rem 0;">at @Timestamp.ToString("hh:mm tt")</p>
+
+    <!-- Close Button -->
+    <button @onclick="Close" style="width: 100%; padding: 0.875rem; border-radius: 9999px; border: none; background: var(--accent-amber); color: var(--text-navy); font-weight: 700; font-size: 1rem; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;">
+        Close
+    </button>
+</div>
+
+@code {
+    [Parameter] public DateTime Timestamp { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private async Task Close()
+    {
+        await OnClose.InvokeAsync();
+    }
+}
