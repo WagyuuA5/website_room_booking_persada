@@ -1,7 +1,6 @@
 @page "/"
 @using booking_room.Components.Models
 @inject NavigationManager Navigation
-@inject IJSRuntime JS
 
 <PageTitle>Dashboard - PADA Management</PageTitle>
 
@@ -95,10 +94,6 @@
         </div>
     </div>
 
-    <div class="chart-wrapper">
-        <canvas id="analyticsChart"></canvas>
-    </div>
-
     <div class="utilization-list">
         @foreach (var room in analyticsData.Rooms)
         {
@@ -120,33 +115,18 @@
 @code {
     private NextAvailableRoom? nextRoom;
     private AnalyticsData analyticsData = DashboardData.WeeklyData;
-    private ChartData chartData = DashboardData.GetChartData("Minggu");
     private string selectedPeriod = "Minggu";
     private readonly string[] periods = { "Minggu", "Bulan", "Tahun" };
-    private bool _chartInitialized;
 
     protected override void OnInitialized()
     {
         nextRoom = DashboardData.NextAvailableRooms.FirstOrDefault();
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender && !_chartInitialized)
-        {
-            _chartInitialized = true;
-            var datasets = chartData.Datasets.Select(d => new ChartJsDatasetDto { Label = d.Label, Data = d.Data, BorderColor = d.BorderColor }).ToArray();
-            await JS.InvokeVoidAsync("initAnalyticsChart", "analyticsChart", chartData.Labels, datasets);
-        }
-    }
-
-    private async Task SelectPeriod(string period)
+    private void SelectPeriod(string period)
     {
         selectedPeriod = period;
         analyticsData = DashboardData.GetAnalytics(period);
-        chartData = DashboardData.GetChartData(period);
-        var datasets = chartData.Datasets.Select(d => new ChartJsDatasetDto { Label = d.Label, Data = d.Data, BorderColor = d.BorderColor }).ToArray();
-        await JS.InvokeVoidAsync("updateAnalyticsChart", chartData.Labels, datasets);
     }
 
     private void BookNow()
