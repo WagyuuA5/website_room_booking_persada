@@ -4,6 +4,16 @@
 
 <PageTitle>Dashboard - PADA Management</PageTitle>
 
+@if (showReminderBanner)
+{
+    <NotificationBanner ReminderText="Upcoming: Alpha Room at 09:00 AM (in 15 min)" IsActionRequired="false" OnDismiss="DismissReminder" />
+}
+
+@if (showActionRequiredBanner)
+{
+    <NotificationBanner IsActionRequired="true" TargetTime="@actionRequiredTarget" OnCheckIn="HandleCheckIn" />
+}
+
 <div class="hero-card">
     <h1 class="hero-title">Selamat Datang, Admin User</h1>
     <p class="hero-subtitle">Kelola pemesanan ruangan perusahaan Anda secara efisien. Pantau penggunaan ruangan, reservasi mendatang, dan analitik sistem dalam satu tempat.</p>
@@ -113,6 +123,9 @@
     private AnalyticsData analyticsData = DashboardData.WeeklyData;
     private string selectedPeriod = "Minggu";
     private readonly string[] periods = { "Minggu", "Bulan", "Tahun" };
+    private bool showReminderBanner = true;
+    private bool showActionRequiredBanner = true;
+    private DateTime actionRequiredTarget = DateTime.Now.AddMinutes(8).AddSeconds(32);
 
     protected override void OnInitialized()
     {
@@ -135,6 +148,17 @@
 
     private void ViewAllRooms()
     {
+        Navigation.NavigateTo("/bookings");
+    }
+
+    private void DismissReminder()
+    {
+        showReminderBanner = false;
+    }
+
+    private void HandleCheckIn()
+    {
+        showActionRequiredBanner = false;
         Navigation.NavigateTo("/bookings");
     }
 }
