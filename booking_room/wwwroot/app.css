@@ -258,9 +258,16 @@ h1:focus {
 
 .summary-card-icon .icon-svg {
     position: relative;
-    width: 1.75rem;
-    height: 1.75rem;
     z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.summary-card-icon .icon-svg svg,
+.next-available-icon .icon-svg svg {
+    width: 38px;
+    height: 38px;
 }
 
 .summary-card-content {
@@ -344,9 +351,10 @@ h1:focus {
 
 .next-available-icon .icon-svg {
     position: relative;
-    width: 1.75rem;
-    height: 1.75rem;
     z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .next-available-room {
