@@ -12,7 +12,7 @@
 
 @if (showActionRequiredBanner)
 {
-    <NotificationBanner IsActionRequired="true" TargetTime="@actionRequiredTarget" OnCheckIn="HandleCheckIn" />
+    <NotificationBanner IsActionRequired="true" TargetTime="@actionRequiredTarget" OnCheckIn="HandleCheckInClick" />
 }
 
 <div class="hero-card">
@@ -168,6 +168,23 @@
     <AnalyticsDetailPopup OnClose="ClosePopup" SelectedPeriod="@selectedPeriod" />
 </ModalOverlayBlur>
 
+<ModalOverlayBlur Visible="@(activePopup == "CheckInConfirmation")" OnClose="ClosePopup" Size="sm">
+    <CheckInConfirmationModal 
+        RoomName="Alpha Boardroom"
+        TimeSlot="09:00 - 11:00 AM"
+        Location="Floor 2, Wing A"
+        Capacity="12"
+        TargetTime="@actionRequiredTarget"
+        OnConfirm="HandleConfirmCheckIn"
+        OnCancel="ClosePopup" />
+</ModalOverlayBlur>
+
+<ModalOverlayBlur Visible="@(activePopup == "CheckInSuccess")" OnClose="HandleSuccessClose" Size="sm">
+    <CheckInSuccessModal 
+        Timestamp="@checkInTimestamp"
+        OnClose="HandleSuccessClose" />
+</ModalOverlayBlur>
+
 
 @code {
     private NextAvailableRoom? nextRoom;
@@ -176,7 +193,8 @@
     private readonly string[] periods = { "Minggu", "Bulan", "Tahun" };
     private bool showReminderBanner = true;
     private bool showActionRequiredBanner = true;
-    private DateTime actionRequiredTarget = DateTime.Now.AddMinutes(8).AddSeconds(32);
+    private DateTime actionRequiredTarget = DateTime.Now.AddMinutes(15);
+    private DateTime checkInTimestamp;
 
     private string activePopup = ""; // "", "RoomAvailable", "PendingApproval", "QuickBook", "AnalyticsDetail"
 
@@ -201,10 +219,21 @@
         showReminderBanner = false;
     }
 
-    private void HandleCheckIn()
+    private void HandleCheckInClick()
+    {
+        activePopup = "CheckInConfirmation";
+    }
+
+    private void HandleConfirmCheckIn()
+    {
+        checkInTimestamp = DateTime.Now;
+        activePopup = "CheckInSuccess";
+    }
+
+    private void HandleSuccessClose()
     {
         showActionRequiredBanner = false;
-        // Navigation.NavigateTo("/bookings");
+        activePopup = "";
     }
 
     private void ShowPopup(string popupName)
