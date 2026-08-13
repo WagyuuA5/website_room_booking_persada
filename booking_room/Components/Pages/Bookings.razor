@@ -1,6 +1,8 @@
 @page "/bookings"
 @using booking_room.Components.Models
 @inject NavigationManager Navigation
+@inject booking_room.Services.LoadingStateService LoadingState
+@implements IDisposable
 
 <PageTitle>Cari Ruangan - PADA Management</PageTitle>
 
@@ -61,7 +63,7 @@
 </div>
 
 <!-- Grid Hasil -->
-@if (_isLoading)
+@if (LoadingState.IsLoading)
 {
     <div class="skeleton-grid">
         @for (int i = 0; i < 3; i++)
@@ -157,7 +159,6 @@ else
 }
 
 @code {
-    private bool _isLoading = true;
     private string _searchQuery = string.Empty;
     private DateTime? _filterDate;
     private TimeOnly? _filterTime;
@@ -181,12 +182,15 @@ else
 
     private List<RoomItem> _filteredRooms = new();
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        // Minimum skeleton duration: 200ms agar tidak flickering
-        await Task.Delay(300);
         _filteredRooms = _allRooms.ToList();
-        _isLoading = false;
+        LoadingState.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        LoadingState.OnChange -= StateHasChanged;
     }
 
     private void OnSearchInput(ChangeEventArgs e)
