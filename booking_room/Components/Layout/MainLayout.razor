@@ -47,11 +47,16 @@
     <span class="dismiss">🗙</span>
 </div>
 
-<booking_room.Components.Shared.NotificationPanel Visible="@_showNotificationPanel" OnClose="CloseNotificationPanel" />
+<booking_room.Components.Shared.NotificationPanel Visible="@_showNotificationPanel" OnClose="CloseNotificationPanel" OnInvitationClick="OpenInvitationModal" />
+
+<booking_room.Components.Shared.ModalOverlayBlur Visible="@_isInvitationModalVisible" OnClose="CloseInvitationModal" Size="default">
+    <booking_room.Components.Shared.InvitationModal OnClose="CloseInvitationModal" OnRsvp="HandleInvitationRsvp" />
+</booking_room.Components.Shared.ModalOverlayBlur>
 
 @code {
     private bool _sidebarOpen = false;
     private bool _showNotificationPanel = false;
+    private bool _isInvitationModalVisible = false;
 
     private void ToggleSidebar()
     {
@@ -71,6 +76,23 @@
     private void CloseNotificationPanel()
     {
         _showNotificationPanel = false;
+    }
+
+    private void OpenInvitationModal(booking_room.Services.NotificationItem item)
+    {
+        _showNotificationPanel = false;
+        _isInvitationModalVisible = true;
+    }
+
+    private void CloseInvitationModal()
+    {
+        _isInvitationModalVisible = false;
+    }
+
+    private void HandleInvitationRsvp(string rsvp)
+    {
+        // Handle RSVP logic here (simulate)
+        Console.WriteLine($"RSVP received: {rsvp}");
     }
 
     protected override void OnInitialized()

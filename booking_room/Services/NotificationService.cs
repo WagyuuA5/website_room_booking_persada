@@ -24,6 +24,18 @@ public class NotificationService : INotificationService
 
         _notifications.Add(new NotificationItem
         {
+            SourceName = "Budi Santoso",
+            Title = "Undangan Rapat",
+            Description = "Budi Santoso telah mengundang Anda ke sesi perencanaan Q3.",
+            Timestamp = DateTime.Now.AddMinutes(-5),
+            IsRead = false,
+            Category = "Invitation",
+            IconType = "avatar",
+            AvatarUrl = "https://ui-avatars.com/api/?name=Budi+Santoso&background=f59e0b&color=fff"
+        });
+
+        _notifications.Add(new NotificationItem
+        {
             SourceName = "Security System",
             Title = "Pembaruan Kata Sandi Berhasil",
             Description = "Keamanan akun Anda adalah prioritas kami. Kata sandi telah diperbarui melalui cloud.",

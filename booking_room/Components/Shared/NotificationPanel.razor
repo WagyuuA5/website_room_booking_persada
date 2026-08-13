@@ -104,6 +104,7 @@
 @code {
     [Parameter] public bool Visible { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback<NotificationItem> OnInvitationClick { get; set; }
 
     private string activeTab = "All";
     private bool _isLoading = true;
@@ -158,6 +159,10 @@
         {
             await ClosePanel();
             Navigation.NavigateTo("/");
+        }
+        else if (item.Category == "Invitation")
+        {
+            await OnInvitationClick.InvokeAsync(item);
         }
     }
 
