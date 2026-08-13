@@ -244,11 +244,23 @@ h1:focus {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
 }
 
-.summary-card-icon svg {
+.summary-card-icon .container-svg {
+    position: absolute;
+    width: 140%;
+    height: 140%;
+    opacity: 0.35;
+    pointer-events: none;
+}
+
+.summary-card-icon .icon-svg {
+    position: relative;
     width: 1.75rem;
     height: 1.75rem;
+    z-index: 1;
 }
 
 .summary-card-content {
@@ -318,6 +330,23 @@ h1:focus {
     justify-content: center;
     flex-shrink: 0;
     margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+}
+
+.next-available-icon .container-svg {
+    position: absolute;
+    width: 140%;
+    height: 140%;
+    opacity: 0.15;
+    pointer-events: none;
+}
+
+.next-available-icon .icon-svg {
+    position: relative;
+    width: 1.75rem;
+    height: 1.75rem;
+    z-index: 1;
 }
 
 .next-available-room {

@@ -8,6 +8,18 @@
     background-clip: text;
 }
 
+.navbar-brand-logo {
+    display: block;
+    max-width: 140px;
+    height: auto;
+}
+
+.navbar-brand-logo svg {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
 .nav-menu-item {
     display: flex;
     align-items: center;
