@@ -2,6 +2,7 @@
 @using booking_room.Services
 @inject NavigationManager Navigation
 @inject INotificationService NotificationService
+@inject booking_room.Services.LoadingStateService LoadingState
 @implements IDisposable
 
 <div class="page d-flex">
@@ -74,12 +75,23 @@
 
     protected override void OnInitialized()
     {
-        Navigation.LocationChanged += (_, _) => CloseSidebar();
+        Navigation.LocationChanged += OnLocationChanged;
         NotificationService.OnChange += StateHasChanged;
+    }
+
+    private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        CloseSidebar();
+        LoadingState.SetLoading(true);
+        await InvokeAsync(StateHasChanged);
+        await Task.Delay(250);
+        LoadingState.SetLoading(false);
+        await InvokeAsync(StateHasChanged);
     }
 
     public void Dispose()
     {
+        Navigation.LocationChanged -= OnLocationChanged;
         NotificationService.OnChange -= StateHasChanged;
     }
 }
