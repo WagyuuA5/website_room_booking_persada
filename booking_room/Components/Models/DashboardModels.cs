@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization;
-
 namespace booking_room.Components.Models;
 
 public record RoomSummary(string Name, int Available, int Total);
@@ -8,18 +6,6 @@ public record RoomUtilization(string RoomName, int HoursUsed);
 public record AnalyticsData(string Period, List<RoomUtilization> Rooms);
 public record ChartDataset(string Label, double[] Data, string BorderColor);
 public record ChartData(string[] Labels, ChartDataset[] Datasets);
-
-public class ChartJsDatasetDto
-{
-    [JsonPropertyName("label")]
-    public string Label { get; set; } = string.Empty;
-
-    [JsonPropertyName("data")]
-    public double[] Data { get; set; } = Array.Empty<double>();
-
-    [JsonPropertyName("borderColor")]
-    public string BorderColor { get; set; } = string.Empty;
-}
 
 public static class DashboardData
 {
