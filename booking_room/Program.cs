@@ -1,3 +1,4 @@
+using Microsoft.Extensions.FileProviders;
 using booking_room.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -5,6 +6,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddSingleton<IFileProvider>(sp =>
+    sp.GetRequiredService<IWebHostEnvironment>().WebRootFileProvider);
 
 var app = builder.Build();
 
