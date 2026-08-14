@@ -2,13 +2,12 @@
 @inject NavigationManager Navigation
 
 <div class="auto-release-modal-card">
-    <!-- Header Top Row -->
     <div class="auto-release-header-row">
         <div class="system-alert-badge">
             <span class="system-alert-icon">!</span>
-            <span class="system-alert-label">SYSTEM ALERT</span>
+            <span class="system-alert-label">PERINGATAN SISTEM</span>
         </div>
-        <button type="button" class="modal-close-icon-btn" @onclick="HandleClose" aria-label="Close">
+        <button type="button" class="modal-close-icon-btn" @onclick="HandleClose" aria-label="Tutup">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -16,50 +15,44 @@
         </button>
     </div>
 
-    <!-- Header Title -->
-    <h2 class="auto-release-title">Booking Auto-Released</h2>
+    <h2 class="auto-release-title">Pesanan Dibatalkan Otomatis</h2>
 
-    <!-- Body -->
     <div class="auto-release-body">
-        <!-- Badge -->
         <div class="noshow-pill-badge">
             <span class="noshow-dot">●</span>
-            <span>No-show</span>
+            <span>Tidak Hadir</span>
         </div>
 
-        <!-- Description -->
         <p class="auto-release-description">
-            Your booking for <strong class="highlight-room-name">@(string.IsNullOrWhiteSpace(RoomName) ? "Alpha Boardroom" : RoomName)</strong> has been automatically cancelled because the check-in window has expired. The room is now available for other users.
+            Pesanan Anda untuk <strong class="highlight-room-name">@(string.IsNullOrWhiteSpace(RoomName) ? "Alpha Boardroom" : RoomName)</strong> telah dibatalkan secara otomatis karena waktu check-in telah berakhir. Ruangan sekarang tersedia untuk pengguna lain.
         </p>
 
-        <!-- Info Card -->
         <div class="auto-release-info-card">
             <div class="info-row">
-                <span class="info-label">Room</span>
+                <span class="info-label">Ruangan</span>
                 <span class="info-value">@(string.IsNullOrWhiteSpace(RoomName) ? "Alpha Boardroom" : RoomName)</span>
             </div>
             <div class="info-row">
-                <span class="info-label">Original Time</span>
+                <span class="info-label">Waktu Awal</span>
                 <span class="info-value">@EffectiveTime</span>
             </div>
             <div class="info-row">
-                <span class="info-label">Date</span>
+                <span class="info-label">Tanggal</span>
                 <span class="info-value">@Date</span>
             </div>
         </div>
     </div>
 
-    <!-- Footer -->
     <div class="auto-release-footer">
         <button type="button" class="btn-history-outline" @onclick="HandleViewHistory">
-            View History
+            Lihat Riwayat
         </button>
         <button type="button" class="btn-new-booking-gold" @onclick="HandleNewBooking">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="btn-plus-icon">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
                 <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
-            <span>New Booking</span>
+            <span>Pesanan Baru</span>
         </button>
     </div>
 </div>
@@ -88,10 +81,10 @@
         flex-direction: column;
         text-align: left;
         margin: 0 auto;
-        font-family: inherit;
+        font-family: 'Inter', sans-serif;
+        box-shadow: 0 4px 24px rgba(16,48,92,0.08);
     }
 
-    /* Header */
     .auto-release-header-row {
         display: flex;
         justify-content: space-between;
@@ -157,7 +150,6 @@
         letter-spacing: -0.01em;
     }
 
-    /* Body */
     .auto-release-body {
         display: flex;
         flex-direction: column;
@@ -197,7 +189,6 @@
         font-weight: 700;
     }
 
-    /* Info Card */
     .auto-release-info-card {
         width: 100%;
         background-color: #F3F4F6;
@@ -229,7 +220,6 @@
         text-align: right;
     }
 
-    /* Footer */
     .auto-release-footer {
         display: flex;
         justify-content: flex-end;
@@ -272,14 +262,12 @@
         gap: 5px;
         transition: all 0.2s ease;
         line-height: 1.2;
-        box-shadow: 0 2px 6px rgba(234, 182, 60, 0.25);
     }
 
     .btn-new-booking-gold:hover {
         background: #D9A42B;
         border-color: #D9A42B;
         transform: translateY(-1px);
-        box-shadow: 0 4px 10px rgba(234, 182, 60, 0.35);
     }
 
     .btn-new-booking-gold:active,
@@ -297,7 +285,7 @@
     [Parameter] public string RoomName { get; set; } = "Alpha Boardroom";
     [Parameter] public string OriginalTime { get; set; } = "09:00 - 11:00 AM";
     [Parameter] public string? TimeSlot { get; set; }
-    [Parameter] public string Date { get; set; } = "Today, Oct 24, 2023";
+    [Parameter] public string Date { get; set; } = "Hari ini, 24 Okt 2023";
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback OnBookAnother { get; set; }
     [Parameter] public EventCallback OnViewHistory { get; set; }

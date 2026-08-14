@@ -1,0 +1,94 @@
+@page "/pengaturan/jam-operasional"
+
+<PageTitle>Jam Operasional</PageTitle>
+
+<div class="subpage-container">
+    <div class="header">
+        <a href="/pengaturan" class="back-link">‹ Kembali ke Pengaturan</a>
+        <h1 class="page-title">Jam Operasional</h1>
+    </div>
+
+    <div class="card">
+        <p class="description">Atur rentang waktu dimana ruangan dapat dipesan. Pemesanan di luar jam ini tidak akan diizinkan.</p>
+
+        <div class="days-list">
+            @foreach (var day in Days)
+            {
+                <div class="day-item">
+                    <div class="day-name">
+                        <input type="checkbox" @bind="day.IsActive" id="day_@day.Name" />
+                        <label for="day_@day.Name">@day.Name</label>
+                    </div>
+                    
+                    @if (day.IsActive)
+                    {
+                        <div class="time-inputs">
+                            <input type="time" @bind="day.StartTime" class="form-control time-input" />
+                            <span>-</span>
+                            <input type="time" @bind="day.EndTime" class="form-control time-input" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="closed-label">Tutup</div>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary">Simpan Perubahan</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    public class WorkingDay
+    {
+        public string Name { get; set; } = "";
+        public bool IsActive { get; set; } = true;
+        public TimeOnly? StartTime { get; set; } = new TimeOnly(8, 0);
+        public TimeOnly? EndTime { get; set; } = new TimeOnly(17, 0);
+    }
+
+    private List<WorkingDay> Days = new List<WorkingDay>
+    {
+        new WorkingDay { Name = "Senin" },
+        new WorkingDay { Name = "Selasa" },
+        new WorkingDay { Name = "Rabu" },
+        new WorkingDay { Name = "Kamis" },
+        new WorkingDay { Name = "Jumat" },
+        new WorkingDay { Name = "Sabtu", IsActive = false },
+        new WorkingDay { Name = "Minggu", IsActive = false }
+    };
+}
+
+<style>
+    .subpage-container { max-width: 600px; margin: 0 auto; padding: 2rem 1rem; }
+    .back-link { display: inline-block; color: #6B7280; text-decoration: none; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; transition: color 0.2s; }
+    .back-link:hover { color: #16305C; }
+    .page-title { font-size: 1.75rem; font-weight: 700; color: #16305C; margin-top: 0; margin-bottom: 2rem; }
+    
+    .card { background-color: white; border-radius: 14px; padding: 1.5rem; box-shadow: 0 4px 24px rgba(16, 48, 92, 0.04); }
+    .description { font-size: 0.875rem; color: #6B7280; margin-bottom: 2rem; }
+    
+    .days-list { display: flex; flex-direction: column; gap: 1rem; }
+    .day-item { display: flex; align-items: center; justify-content: space-between; padding-bottom: 1rem; border-bottom: 1px solid #F3F4F6; }
+    .day-item:last-child { border-bottom: none; padding-bottom: 0; }
+    
+    .day-name { display: flex; align-items: center; gap: 0.75rem; font-weight: 500; color: #16305C; width: 120px; }
+    .day-name input[type="checkbox"] { width: 1.25rem; height: 1.25rem; accent-color: #16305C; cursor: pointer; }
+    
+    .time-inputs { display: flex; align-items: center; gap: 0.5rem; }
+    .time-input { padding: 0.5rem; width: 110px; }
+    
+    .closed-label { color: #9CA3AF; font-size: 0.875rem; font-style: italic; width: 235px; text-align: center; }
+    
+    .form-control { border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; font-family: inherit; }
+    .form-control:focus { outline: none; border-color: #16305C; box-shadow: 0 0 0 1px #16305C; }
+    
+    .actions { margin-top: 2rem; display: flex; justify-content: flex-end; }
+    .btn { padding: 0.75rem 1.5rem; border-radius: 999px; font-size: 0.875rem; font-weight: 600; cursor: pointer; border: none; transition: background-color 0.2s; }
+    .btn-primary { background-color: #16305C; color: white; }
+    .btn-primary:hover { background-color: #0F2346; }
+</style>

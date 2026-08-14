@@ -6,14 +6,14 @@
     .confirm-booking-wrapper {
         display: flex;
         flex-direction: column;
-        max-width: 480px; 
+        max-width: 520px; 
         width: 100%;
         margin: 0 auto;
         background: #fff;
         border-radius: 24px;
         overflow: hidden;
-        max-height: 90vh;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        max-height: 88vh;
+        box-shadow: 0 4px 24px rgba(16,48,92,0.08);
         font-family: 'Inter', sans-serif;
     }
 
@@ -26,6 +26,7 @@
         position: sticky;
         top: 0;
         z-index: 10;
+        border-bottom: 1px solid #E5E7EB;
     }
     .modal-title {
         color: #16305C;
@@ -55,7 +56,7 @@
     }
 
     .modal-body-section {
-        padding: 0 24px 24px 24px;
+        padding: 24px;
         overflow-y: auto;
         flex: 1;
         display: flex;
@@ -151,7 +152,7 @@
     
     .room-card {
         border: 1px solid #E5E7EB;
-        border-radius: 12px;
+        border-radius: 14px;
         padding: 12px;
         cursor: pointer;
         position: relative;
@@ -392,8 +393,8 @@
 <div class="confirm-booking-wrapper">
     <div class="modal-header-section">
         <div>
-            <h2 class="modal-title">Confirm Booking</h2>
-            <p class="modal-subtitle">Schedule a new resource or room</p>
+            <h2 class="modal-title">Konfirmasi Pesanan</h2>
+            <p class="modal-subtitle">Jadwalkan sumber daya atau ruangan baru</p>
         </div>
         <button class="btn-close" @onclick="OnClose">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6L18 18"/></svg>
@@ -404,22 +405,22 @@
         <!-- Row 1: Nama Pemesan & Divisi -->
         <div class="grid-2-col">
             <div>
-                <label class="form-label">Nama Pemesan (Full Name)</label>
+                <label class="form-label">Nama Pemesan</label>
                 <div class="input-wrapper">
                     <span class="input-icon">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     </span>
-                    <input type="text" class="form-input" placeholder="Enter full name" @bind="_requesterName" />
+                    <input type="text" class="form-input" placeholder="Masukkan nama lengkap" @bind="_requesterName" />
                 </div>
             </div>
             <div>
-                <label class="form-label">Division</label>
+                <label class="form-label">Divisi</label>
                 <div class="input-wrapper">
                     <span class="input-icon">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>
                     </span>
                     <select class="form-select" @bind="_division">
-                        <option value="" disabled selected>Select division</option>
+                        <option value="" disabled selected>Pilih divisi</option>
                         <option value="IT">IT</option>
                         <option value="HR">HR</option>
                         <option value="Finance">Finance</option>
@@ -434,7 +435,7 @@
 
         <!-- Room Selection -->
         <div>
-            <label class="form-label">Room Selection</label>
+            <label class="form-label">Pilih Ruangan</label>
             <div class="room-cards-scroll">
                 @foreach (var room in _suggestedRooms)
                 {
@@ -445,7 +446,7 @@
 
                     <div class="@cardClass" @onclick="() => SelectRoom(room)">
                         <span class="room-badge @(isAvailable ? "badge-available" : "badge-booked")">
-                            @(isAvailable ? "AVAILABLE" : "BOOKED")
+                            @(isAvailable ? "TERSEDIA" : "DIPESAN")
                         </span>
                         
                         <div class="room-icon-name">
@@ -465,7 +466,7 @@
                             </span>
                             <div>
                                 <h3 class="room-name">@room.Name</h3>
-                                <div class="room-cap">Cap: @room.Capacity Pax</div>
+                                <div class="room-cap">Kapasitas: @room.Capacity Pax</div>
                             </div>
                         </div>
                         <div class="room-amenities">
@@ -479,16 +480,16 @@
         <!-- Date & Time -->
         <div class="grid-2-col">
             <div>
-                <label class="form-label">Date</label>
+                <label class="form-label">Tanggal</label>
                 <div class="input-wrapper">
                     <span class="input-icon">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
                     </span>
-                    <input type="date" class="form-input" placeholder="mm/dd/yyyy" @bind="_bookingDate" />
+                    <input type="date" class="form-input" placeholder="hh/bb/tttt" @bind="_bookingDate" />
                 </div>
             </div>
             <div>
-                <label class="form-label">Time (Start - End)</label>
+                <label class="form-label">Waktu (Mulai - Selesai)</label>
                 <div class="time-inputs">
                     <div class="input-wrapper" style="flex: 1;">
                         <span class="input-icon">
@@ -510,9 +511,9 @@
         <!-- Invite Attendees -->
         <div>
             <label class="form-label">
-                Invite Attendees
+                Undang Peserta
                 <div class="capacity-indicator">
-                    <span class="capacity-text">@_attendees.Count of @SelectedRoomCapacity Room Capacity</span>
+                    <span class="capacity-text">@_attendees.Count dari @SelectedRoomCapacity Kapasitas Ruangan</span>
                     <div class="capacity-bar-bg">
                         <div class="capacity-bar-fill" style="width: @CapacityPercentage%;"></div>
                     </div>
@@ -522,7 +523,7 @@
                 <span class="input-icon">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 </span>
-                <input type="text" class="form-input" placeholder="Invite colleagues..." @bind="_attendeeSearch" @bind:event="oninput" @onkeyup="HandleAttendeeInput" />
+                <input type="text" class="form-input" placeholder="Undang rekan kerja..." @bind="_attendeeSearch" @bind:event="oninput" @onkeyup="HandleAttendeeInput" />
             </div>
             
             <div class="attendee-chips">
@@ -541,7 +542,7 @@
                 {
                     <div class="conflict-badge">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                        Potential schedule conflict
+                        Potensi konflik jadwal
                     </div>
                 }
             </div>
@@ -550,7 +551,7 @@
         <!-- External Guests -->
         <div>
             <div class="external-guest-row">
-                <label class="form-label" style="margin-bottom: 0;">Invite external guests</label>
+                <label class="form-label" style="margin-bottom: 0;">Undang tamu eksternal</label>
                 <label class="toggle-switch">
                     <input type="checkbox" @bind="_allowExternalGuests" />
                     <span class="toggle-slider"></span>
@@ -563,23 +564,23 @@
                     <span class="input-icon">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                     </span>
-                    <input type="email" class="form-input" placeholder="Guest Email (e.g. guest@company.com)" />
+                    <input type="email" class="form-input" placeholder="Email Tamu (cth. tamu@perusahaan.com)" />
                 </div>
             }
         </div>
 
         <!-- Notes -->
         <div>
-            <label class="form-label">Notes / Special Requests</label>
-            <textarea class="form-input" placeholder="Equipment needs, catering, etc."></textarea>
+            <label class="form-label">Catatan / Permintaan Khusus</label>
+            <textarea class="form-input" placeholder="Kebutuhan peralatan, konsumsi, dll."></textarea>
         </div>
     </div>
 
     <div class="modal-footer-section">
-        <button class="btn-pill btn-cancel" @onclick="OnClose">Cancel</button>
+        <button class="btn-pill btn-cancel" @onclick="OnClose">Batal</button>
         <button class="btn-pill btn-confirm" @onclick="SubmitBooking">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-            Confirm Booking
+            Konfirmasi Pesanan
         </button>
     </div>
 </div>
@@ -596,14 +597,13 @@
     private TimeOnly? _endTime = new TimeOnly(11, 0);
     private string _attendeeSearch = "";
     private List<string> _attendees = new() { "Alex Mercer", "Nadia Pradipta" };
-    private bool _hasConflict = true; // explicitly set to true to show dummy badge based on instruction
-    private bool _allowExternalGuests = true; // explicitly set to ON based on instruction
+    private bool _hasConflict = true; 
+    private bool _allowExternalGuests = true; 
 
     private List<RoomItem> _suggestedRooms = new();
 
     protected override void OnInitialized()
     {
-        // Define dummy data exactly as requested by design
         _suggestedRooms = new List<RoomItem>
         {
             new RoomItem("1", "Alpha Boardroom", 12, "", "available", new List<string>{"TV", "WiFi", "Projector"}, "1"),
@@ -647,7 +647,7 @@
         _attendees.Remove(name);
         if (_attendees.Count < 2)
         {
-            _hasConflict = false; // toggle off for dummy realism
+            _hasConflict = false; 
         }
     }
 
@@ -657,4 +657,5 @@
         Navigation.NavigateTo("/status");
     }
 }
+
 

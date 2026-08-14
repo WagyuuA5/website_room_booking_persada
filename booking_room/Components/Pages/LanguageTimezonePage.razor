@@ -1,0 +1,63 @@
+@page "/pengaturan/bahasa-zona-waktu"
+
+<PageTitle>Bahasa & Zona Waktu</PageTitle>
+
+<div class="subpage-container">
+    <div class="header">
+        <a href="/pengaturan" class="back-link">‹ Kembali ke Pengaturan</a>
+        <h1 class="page-title">Bahasa & Zona Waktu</h1>
+    </div>
+
+    <div class="card">
+        <div class="form-group">
+            <label>Bahasa Antarmuka</label>
+            <select class="form-control">
+                <option value="id" selected>Bahasa Indonesia</option>
+                <option value="en">English</option>
+            </select>
+            <p class="help-text">Memilih bahasa untuk seluruh tampilan aplikasi.</p>
+        </div>
+
+        <div class="form-group">
+            <label>Zona Waktu</label>
+            <select class="form-control">
+                <option value="WIB" selected>WIB (Waktu Indonesia Barat) - UTC+7</option>
+                <option value="WITA">WITA (Waktu Indonesia Tengah) - UTC+8</option>
+                <option value="WIT">WIT (Waktu Indonesia Timur) - UTC+9</option>
+            </select>
+            <p class="help-text">Digunakan untuk menampilkan waktu pemesanan ruangan secara akurat.</p>
+        </div>
+
+        <div class="form-group">
+            <label>Format Waktu</label>
+            <select class="form-control">
+                <option value="24h" selected>24 Jam (14:30)</option>
+                <option value="12h">12 Jam (02:30 PM)</option>
+            </select>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary">Simpan Perubahan</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .subpage-container { max-width: 600px; margin: 0 auto; padding: 2rem 1rem; }
+    .back-link { display: inline-block; color: #6B7280; text-decoration: none; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; transition: color 0.2s; }
+    .back-link:hover { color: #16305C; }
+    .page-title { font-size: 1.75rem; font-weight: 700; color: #16305C; margin-top: 0; margin-bottom: 2rem; }
+    
+    .card { background-color: white; border-radius: 14px; padding: 1.5rem; box-shadow: 0 4px 24px rgba(16, 48, 92, 0.04); }
+    
+    .form-group { margin-bottom: 1.5rem; }
+    .form-group label { display: block; font-size: 0.875rem; font-weight: 600; color: #16305C; margin-bottom: 0.5rem; }
+    .form-control { width: 100%; padding: 0.75rem 1rem; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; box-sizing: border-box; font-family: inherit; background-color: white; }
+    .form-control:focus { outline: none; border-color: #16305C; box-shadow: 0 0 0 1px #16305C; }
+    .help-text { font-size: 0.75rem; color: #6B7280; margin-top: 0.25rem; margin-bottom: 0; }
+    
+    .actions { margin-top: 2rem; display: flex; justify-content: flex-end; }
+    .btn { padding: 0.75rem 1.5rem; border-radius: 999px; font-size: 0.875rem; font-weight: 600; cursor: pointer; border: none; transition: background-color 0.2s; }
+    .btn-primary { background-color: #16305C; color: white; }
+    .btn-primary:hover { background-color: #0F2346; }
+</style>

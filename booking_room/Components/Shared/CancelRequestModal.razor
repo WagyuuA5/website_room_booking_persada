@@ -5,24 +5,24 @@
         <div class="cancel-icon-bg">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
-        <h2 class="cancel-title">Cancel Request</h2>
+        <h2 class="cancel-title">Batalkan Pesanan</h2>
     </div>
 
     <div class="cancel-body">
-        <p class="cancel-desc">Please provide a reason for canceling this booking. This action cannot be undone.</p>
+        <p class="cancel-desc">Harap berikan alasan pembatalan pesanan ini. Tindakan ini tidak dapat dibatalkan.</p>
         
         <div class="form-group">
-            <label class="reason-label">REASON FOR CANCELLATION</label>
-            <textarea class="form-control-blue" rows="4" placeholder="e.g., Meeting rescheduled, room no longer needed..." @bind="_reason" @bind:event="oninput"></textarea>
+            <label class="reason-label">ALASAN PEMBATALAN</label>
+            <textarea class="form-control-blue" rows="4" placeholder="cth., Rapat dijadwalkan ulang, ruangan tidak lagi dibutuhkan..." @bind="_reason" @bind:event="oninput"></textarea>
         </div>
     </div>
 
     <div class="cancel-footer">
         <button class="btn-confirm-cancel @(string.IsNullOrWhiteSpace(_reason) ? "disabled" : "")" disabled="@string.IsNullOrWhiteSpace(_reason)" @onclick="SubmitCancel">
-            Confirm Cancellation
+            Konfirmasi Pembatalan
         </button>
         <button class="btn-keep-booking" @onclick="OnClose">
-            Keep Booking
+            Tetap Simpan Pesanan
         </button>
     </div>
 </div>
@@ -32,9 +32,9 @@
         width: 100%;
         max-width: 420px;
         background: #FFFFFF;
-        border-radius: 20px;
+        border-radius: 24px;
         padding: 32px;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 24px rgba(16,48,92,0.08);
         font-family: 'Inter', sans-serif;
     }
     .cancel-header {
@@ -79,7 +79,7 @@
         padding: 12px;
         background-color: #F8FAFC;
         border: 1px solid #E2E8F0;
-        border-radius: 12px;
+        border-radius: 14px;
         font-size: 14px;
         color: #1F2937;
         font-family: inherit;

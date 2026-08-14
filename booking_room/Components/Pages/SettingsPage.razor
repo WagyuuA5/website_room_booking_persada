@@ -1,0 +1,203 @@
+@page "/pengaturan"
+
+<PageTitle>Pengaturan</PageTitle>
+
+<div class="settings-container">
+    <h1 class="page-title">Pengaturan Akun</h1>
+    
+    <div class="settings-grid">
+        <!-- Profil dan Keamanan -->
+        <div class="settings-section">
+            <h2 class="section-title">Keamanan & Login</h2>
+            
+            <div class="settings-card" @onclick="() => ShowModal(nameof(ChangePasswordModal))">
+                <div class="card-icon">🔒</div>
+                <div class="card-content">
+                    <h3>Ubah Kata Sandi</h3>
+                    <p>Perbarui kata sandi Anda secara berkala untuk keamanan</p>
+                </div>
+                <div class="card-arrow">›</div>
+            </div>
+
+            <div class="settings-card" @onclick="() => ShowModal(nameof(TwoFactorAuthModal))">
+                <div class="card-icon">🛡️</div>
+                <div class="card-content">
+                    <h3>Autentikasi Dua Faktor</h3>
+                    <p>Tambahkan lapisan keamanan ekstra</p>
+                </div>
+                <div class="card-arrow">›</div>
+            </div>
+
+            <div class="settings-card" @onclick="() => ShowModal(nameof(ActiveSessionsModal))">
+                <div class="card-icon">📱</div>
+                <div class="card-content">
+                    <h3>Sesi Aktif</h3>
+                    <p>Kelola perangkat yang sedang masuk</p>
+                </div>
+                <div class="card-arrow">›</div>
+            </div>
+        </div>
+
+        <!-- Preferensi -->
+        <div class="settings-section">
+            <h2 class="section-title">Preferensi Sistem</h2>
+            
+            <a href="/pengaturan/bahasa-zona-waktu" class="settings-card">
+                <div class="card-icon">🌐</div>
+                <div class="card-content">
+                    <h3>Bahasa & Zona Waktu</h3>
+                    <p>Sesuaikan tampilan bahasa dan waktu</p>
+                </div>
+                <div class="card-arrow">›</div>
+            </a>
+
+            <div class="settings-card" @onclick="() => ShowModal(nameof(NotificationsSettingsModal))">
+                <div class="card-icon">🔔</div>
+                <div class="card-content">
+                    <h3>Notifikasi</h3>
+                    <p>Atur peringatan dan email yang Anda terima</p>
+                </div>
+                <div class="card-arrow">›</div>
+            </div>
+
+            <a href="/pengaturan/jam-operasional" class="settings-card">
+                <div class="card-icon">⏱️</div>
+                <div class="card-content">
+                    <h3>Jam Operasional</h3>
+                    <p>Atur waktu ketersediaan pemesanan</p>
+                </div>
+                <div class="card-arrow">›</div>
+            </a>
+        </div>
+
+        <!-- Data dan Dukungan -->
+        <div class="settings-section">
+            <h2 class="section-title">Data & Dukungan</h2>
+            
+            <div class="settings-card" @onclick="() => ShowModal(nameof(DownloadDataModal))">
+                <div class="card-icon">📥</div>
+                <div class="card-content">
+                    <h3>Unduh Data</h3>
+                    <p>Minta salinan informasi akun Anda</p>
+                </div>
+                <div class="card-arrow">›</div>
+            </div>
+            
+            <a href="/pengaturan/bantuan" class="settings-card">
+                <div class="card-icon">❓</div>
+                <div class="card-content">
+                    <h3>Pusat Bantuan</h3>
+                    <p>Temukan jawaban untuk pertanyaan umum</p>
+                </div>
+                <div class="card-arrow">›</div>
+            </a>
+
+            <div class="settings-card" @onclick="() => ShowModal(nameof(ReportBugModal))">
+                <div class="card-icon">🐞</div>
+                <div class="card-content">
+                    <h3>Laporkan Bug</h3>
+                    <p>Beritahu kami jika ada yang tidak beres</p>
+                </div>
+                <div class="card-arrow">›</div>
+            </div>
+        </div>
+        
+        <!-- Zona Bahaya -->
+        <div class="settings-section danger-zone">
+            <h2 class="section-title text-danger">Zona Bahaya</h2>
+            
+            <div class="settings-card" @onclick="() => ShowModal(nameof(DeactivateAccountModal))">
+                <div class="card-icon text-warning">⏸️</div>
+                <div class="card-content">
+                    <h3>Nonaktifkan Akun</h3>
+                    <p>Jeda akun Anda sementara</p>
+                </div>
+                <div class="card-arrow">›</div>
+            </div>
+
+            <div class="settings-card" @onclick="() => ShowModal(nameof(DeleteAccountModal))">
+                <div class="card-icon text-danger">⚠️</div>
+                <div class="card-content">
+                    <h3 class="text-danger">Hapus Akun</h3>
+                    <p>Hapus akun Anda secara permanen beserta datanya</p>
+                </div>
+                <div class="card-arrow">›</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<ModalOverlayBlur @bind-Visible="isModalVisible" Size="md">
+    @if (activeModal == nameof(ChangePasswordModal))
+    {
+        <ChangePasswordModal OnClose="CloseModal" />
+    }
+    else if (activeModal == nameof(TwoFactorAuthModal))
+    {
+        <TwoFactorAuthModal OnClose="CloseModal" />
+    }
+    else if (activeModal == nameof(ActiveSessionsModal))
+    {
+        <ActiveSessionsModal OnClose="CloseModal" />
+    }
+    else if (activeModal == nameof(NotificationsSettingsModal))
+    {
+        <NotificationsSettingsModal OnClose="CloseModal" />
+    }
+    else if (activeModal == nameof(DownloadDataModal))
+    {
+        <DownloadDataModal OnClose="CloseModal" />
+    }
+    else if (activeModal == nameof(DeactivateAccountModal))
+    {
+        <DeactivateAccountModal OnClose="CloseModal" />
+    }
+    else if (activeModal == nameof(DeleteAccountModal))
+    {
+        <DeleteAccountModal OnClose="CloseModal" />
+    }
+    else if (activeModal == nameof(ReportBugModal))
+    {
+        <ReportBugModal OnClose="CloseModal" />
+    }
+</ModalOverlayBlur>
+
+@code {
+    private bool isModalVisible = false;
+    private string activeModal = "";
+
+    private void ShowModal(string modalName)
+    {
+        activeModal = modalName;
+        isModalVisible = true;
+    }
+
+    private void CloseModal()
+    {
+        isModalVisible = false;
+        activeModal = "";
+    }
+}
+
+<style>
+    .settings-container { max-width: 800px; margin: 0 auto; padding: 2rem 1rem; }
+    .page-title { font-size: 1.75rem; font-weight: 700; color: #16305C; margin-bottom: 2rem; }
+    .settings-grid { display: flex; flex-direction: column; gap: 2rem; }
+    .settings-section { display: flex; flex-direction: column; gap: 0.75rem; }
+    .section-title { font-size: 1rem; font-weight: 600; color: #6B7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+    
+    .settings-card { display: flex; align-items: center; padding: 1.25rem; background-color: white; border-radius: 14px; box-shadow: 0 4px 24px rgba(16, 48, 92, 0.04); cursor: pointer; transition: all 0.2s ease; text-decoration: none; color: inherit; border: 1px solid transparent; }
+    .settings-card:hover { box-shadow: 0 4px 24px rgba(16, 48, 92, 0.12); transform: translateY(-2px); border-color: #E5E7EB; }
+    
+    .card-icon { font-size: 1.5rem; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background-color: #F3F4F6; border-radius: 50%; margin-right: 1rem; }
+    .card-content { flex: 1; }
+    .card-content h3 { font-size: 1rem; font-weight: 600; color: #16305C; margin: 0 0 0.25rem 0; }
+    .card-content p { font-size: 0.875rem; color: #6B7280; margin: 0; }
+    .card-arrow { font-size: 1.5rem; color: #9CA3AF; }
+    
+    .danger-zone .section-title { color: #DC2626; }
+    .danger-zone .settings-card { border: 1px solid #FEE2E2; }
+    .danger-zone .settings-card:hover { background-color: #FEF2F2; }
+    .text-danger { color: #DC2626 !important; }
+    .text-warning { color: #D97706 !important; }
+</style>

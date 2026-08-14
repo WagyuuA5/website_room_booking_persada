@@ -17,34 +17,34 @@
     {
         <div class="detail-modal-body">
             <h2 class="detail-room-title">@Booking.RoomName</h2>
-            <span class="detail-req-label">Request ID: @Booking.RequestId</span>
+            <span class="detail-req-label">ID Pesanan: @Booking.RequestId</span>
 
             <div class="detail-info-grid">
                 <div class="info-item">
-                    <span class="info-label">DATE</span>
+                    <span class="info-label">TANGGAL</span>
                     <span class="info-value">@Booking.Date</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">TIME</span>
+                    <span class="info-label">WAKTU</span>
                     <span class="info-value">@Booking.TimeSlot</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">DURATION</span>
+                    <span class="info-label">DURASI</span>
                     <span class="info-value">@Booking.Duration</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">ATTENDEES</span>
+                    <span class="info-label">PESERTA</span>
                     <span class="info-value">@Booking.Attendees / @Booking.Capacity</span>
                 </div>
             </div>
 
             <div class="detail-purpose-section">
-                <span class="info-label">PURPOSE</span>
+                <span class="info-label">TUJUAN</span>
                 <p class="purpose-text-detail">@Booking.Purpose</p>
             </div>
 
             <div class="detail-requester-section">
-                <span class="info-label">REQUESTED BY</span>
+                <span class="info-label">DIPESAN OLEH</span>
                 <div class="requester-row">
                     <div class="avatar-sm">@GetInitials(Booking.RequestedBy)</div>
                     <div>
@@ -56,10 +56,10 @@
         </div>
 
         <div class="detail-modal-footer">
-            <button class="btn-close-detail" @onclick="OnClose">Close</button>
+            <button class="btn-close-detail" @onclick="OnClose">Tutup</button>
             <button class="btn-book-again" @onclick="BookAgain">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                Book Again
+                Pesan Ulang
             </button>
         </div>
     }
@@ -70,9 +70,9 @@
         width: 100%;
         max-width: 500px;
         background: #FFFFFF;
-        border-radius: 20px;
+        border-radius: 24px;
         overflow: hidden;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 24px rgba(16,48,92,0.08);
         font-family: 'Inter', sans-serif;
     }
     .detail-modal-header {

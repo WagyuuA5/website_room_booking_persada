@@ -1,0 +1,64 @@
+@code {
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private bool EmailNotif { get; set; } = true;
+    private bool PushNotif { get; set; } = true;
+    private bool PromoNotif { get; set; } = false;
+
+    private async Task Save()
+    {
+        await OnClose.InvokeAsync();
+    }
+}
+
+<div>
+    <h3 class="modal-title">Pengaturan Notifikasi</h3>
+    <p class="modal-subtitle">Pilih notifikasi yang ingin Anda terima.</p>
+
+    <div class="toggle-list">
+        <label class="toggle-item">
+            <div class="toggle-info">
+                <span class="toggle-title">Notifikasi Email</span>
+                <span class="toggle-desc">Terima pembaruan pemesanan melalui email</span>
+            </div>
+            <input type="checkbox" @bind="EmailNotif" />
+        </label>
+        
+        <label class="toggle-item">
+            <div class="toggle-info">
+                <span class="toggle-title">Notifikasi Push</span>
+                <span class="toggle-desc">Terima peringatan di perangkat Anda</span>
+            </div>
+            <input type="checkbox" @bind="PushNotif" />
+        </label>
+        
+        <label class="toggle-item">
+            <div class="toggle-info">
+                <span class="toggle-title">Promosi & Penawaran</span>
+                <span class="toggle-desc">Terima email tentang penawaran terbaru</span>
+            </div>
+            <input type="checkbox" @bind="PromoNotif" />
+        </label>
+    </div>
+
+    <div class="modal-actions">
+        <button class="btn btn-secondary" @onclick="OnClose">Batal</button>
+        <button class="btn btn-primary" @onclick="Save">Simpan</button>
+    </div>
+</div>
+
+<style>
+    .modal-title { font-size: 1.25rem; font-weight: 600; color: #16305C; margin-bottom: 0.5rem; }
+    .modal-subtitle { font-size: 0.875rem; color: #6B7280; margin-bottom: 1.5rem; }
+    .toggle-list { display: flex; flex-direction: column; gap: 1rem; }
+    .toggle-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem; border: 1px solid #E5E7EB; border-radius: 14px; cursor: pointer; }
+    .toggle-info { display: flex; flex-direction: column; }
+    .toggle-title { font-weight: 500; color: #16305C; }
+    .toggle-desc { font-size: 0.75rem; color: #6B7280; margin-top: 0.25rem; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 2rem; }
+    .btn { padding: 0.5rem 1rem; border-radius: 999px; font-size: 0.875rem; font-weight: 500; cursor: pointer; border: none; transition: background-color 0.2s; }
+    .btn-secondary { background-color: #F3F4F6; color: #374151; }
+    .btn-secondary:hover { background-color: #E5E7EB; }
+    .btn-primary { background-color: #16305C; color: white; }
+    .btn-primary:hover { background-color: #0F2346; }
+</style>

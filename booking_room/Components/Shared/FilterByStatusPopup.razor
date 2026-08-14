@@ -2,7 +2,7 @@
     @if (ShowHeader)
     {
         <div class="filter-header">
-            <h3>Filter by Status</h3>
+            <h3>Filter Berdasarkan Status</h3>
             <button class="btn-close-sm" @onclick="OnClose">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
@@ -10,12 +10,12 @@
     }
 
     <div class="filter-list">
-        <label class="filter-option @(_tempStatus == "All Status" ? "selected" : "")">
-            <input type="radio" name="statusFilter" value="All Status" checked="@(_tempStatus == "All Status")" @onchange='() => _tempStatus = "All Status"' class="d-none" />
+        <label class="filter-option @(_tempStatus == "Semua Status" ? "selected" : "")">
+            <input type="radio" name="statusFilter" value="Semua Status" checked="@(_tempStatus == "Semua Status")" @onchange='() => _tempStatus = "Semua Status"' class="d-none" />
             <div class="filter-option-content">
                 <span class="filter-icon">≡</span>
-                <span class="filter-label">All Status</span>
-                @if (_tempStatus == "All Status")
+                <span class="filter-label">Semua Status</span>
+                @if (_tempStatus == "Semua Status")
                 {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="check-icon"><path d="M20 6L9 17l-5-5" stroke="#16305C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 }
@@ -26,7 +26,7 @@
             <input type="radio" name="statusFilter" value="pending" checked="@(_tempStatus == "pending")" @onchange='() => _tempStatus = "pending"' class="d-none" />
             <div class="filter-option-content">
                 <span class="status-dot-sm bg-pending"></span>
-                <span class="filter-label">Pending</span>
+                <span class="filter-label">Menunggu</span>
                 @if (_tempStatus == "pending")
                 {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="check-icon"><path d="M20 6L9 17l-5-5" stroke="#16305C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -38,7 +38,7 @@
             <input type="radio" name="statusFilter" value="approved" checked="@(_tempStatus == "approved")" @onchange='() => _tempStatus = "approved"' class="d-none" />
             <div class="filter-option-content">
                 <span class="status-dot-sm bg-approved"></span>
-                <span class="filter-label">Approved</span>
+                <span class="filter-label">Disetujui</span>
                 @if (_tempStatus == "approved")
                 {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="check-icon"><path d="M20 6L9 17l-5-5" stroke="#16305C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -50,7 +50,7 @@
             <input type="radio" name="statusFilter" value="rejected" checked="@(_tempStatus == "rejected")" @onchange='() => _tempStatus = "rejected"' class="d-none" />
             <div class="filter-option-content">
                 <span class="status-dot-sm bg-rejected"></span>
-                <span class="filter-label">Rejected</span>
+                <span class="filter-label">Ditolak</span>
                 @if (_tempStatus == "rejected")
                 {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="check-icon"><path d="M20 6L9 17l-5-5" stroke="#16305C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -62,7 +62,7 @@
             <input type="radio" name="statusFilter" value="completed" checked="@(_tempStatus == "completed")" @onchange='() => _tempStatus = "completed"' class="d-none" />
             <div class="filter-option-content">
                 <span class="status-dot-sm bg-completed"></span>
-                <span class="filter-label">Completed</span>
+                <span class="filter-label">Selesai</span>
                 @if (_tempStatus == "completed")
                 {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="check-icon"><path d="M20 6L9 17l-5-5" stroke="#16305C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -72,7 +72,7 @@
     </div>
 
     <div class="filter-footer">
-        <button class="btn-apply-filter" @onclick="SubmitFilter">Apply Filter</button>
+        <button class="btn-apply-filter" @onclick="SubmitFilter">Terapkan Filter</button>
         <button class="btn-reset-filter" @onclick="ResetFilter">Reset</button>
     </div>
 </div>
@@ -81,8 +81,8 @@
     .filter-popup {
         width: 340px;
         background: #FFFFFF;
-        border-radius: 16px;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        border-radius: 24px;
+        box-shadow: 0 4px 24px rgba(16,48,92,0.08);
         border: 1px solid #E5E7EB;
         font-family: 'Inter', sans-serif;
         overflow: hidden;
@@ -121,7 +121,7 @@
     }
     .filter-option {
         cursor: pointer;
-        border-radius: 8px;
+        border-radius: 14px;
         transition: background-color 0.2s;
     }
     .filter-option:hover {
@@ -202,16 +202,16 @@
 </style>
 
 @code {
-    [Parameter] public string CurrentStatus { get; set; } = "All Status";
+    [Parameter] public string CurrentStatus { get; set; } = "Semua Status";
     [Parameter] public bool ShowHeader { get; set; } = false;
     [Parameter] public EventCallback<string> OnApply { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
 
-    private string _tempStatus = "All Status";
+    private string _tempStatus = "Semua Status";
 
     protected override void OnInitialized()
     {
-        _tempStatus = CurrentStatus;
+        _tempStatus = CurrentStatus == "All Status" ? "Semua Status" : CurrentStatus;
     }
 
     private async Task SubmitFilter()
@@ -221,6 +221,6 @@
 
     private void ResetFilter()
     {
-        _tempStatus = "All Status";
+        _tempStatus = "Semua Status";
     }
 }

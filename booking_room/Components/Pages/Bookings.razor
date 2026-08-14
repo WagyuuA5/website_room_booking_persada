@@ -45,10 +45,6 @@
             <label>Jumlah Peserta</label>
             <input type="number" class="filter-input" placeholder="Min. peserta" min="1" @bind="_filterCapacity" />
         </div>
-        <button class="filter-search-btn" @onclick="ApplyFilter">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.134 17 3 13.866 3 10C3 6.134 6.134 3 10 3C13.866 3 17 6.134 17 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Cari Ruangan
-        </button>
     </div>
     <div class="amenities-row">
         @foreach (var amenity in _allAmenities)
@@ -142,15 +138,7 @@ else
                         </div>
                     </div>
                     <div class="room-card-footer">
-                        <button class="room-detail-btn" @onclick="() => ViewDetail(room)">LIHAT DETAIL</button>
-                        @if (room.Status == "available")
-                        {
-                            <button class="room-book-btn can-book" @onclick="() => BookRoom(room)">Pesan</button>
-                        }
-                        else
-                        {
-                            <button class="room-book-btn disabled" disabled title="Ruangan tidak tersedia untuk dipesan">Tidak Tersedia</button>
-                        }
+                        <button class="room-detail-btn" style="width: 100%; border-radius: 999px; background-color: #16305C; color: white; padding: 10px; font-weight: 600; border: none; cursor: pointer;" @onclick="() => ViewDetail(room)">LIHAT DETAIL RUANGAN</button>
                     </div>
                 </div>
             }

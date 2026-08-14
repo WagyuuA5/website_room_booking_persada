@@ -10,7 +10,7 @@
                 </svg>
             </div>
             <div class="header-title-group">
-                <h3 class="modal-main-title">Request More Time</h3>
+                <h3 class="modal-main-title">Minta Tambahan Waktu</h3>
                 <div class="modal-room-subtitle">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="location-pin-icon">
                         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
@@ -20,7 +20,7 @@
                 </div>
             </div>
         </div>
-        <button type="button" class="btn-modal-close" @onclick="HandleCancel" aria-label="Close">
+        <button type="button" class="btn-modal-close" @onclick="HandleCancel" aria-label="Tutup">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18" />
                 <line x1="6" y1="6" x2="18" y2="18" />
@@ -39,19 +39,19 @@
                 </svg>
             </div>
             <p class="info-alert-text">
-                You can extend your check-in window by exactly 10 minutes. This action can only be performed once per booking.
+                Anda dapat memperpanjang jendela check-in tepat 10 menit. Tindakan ini hanya dapat dilakukan satu kali per pesanan.
             </p>
         </div>
 
         <!-- Form Field -->
         <div class="form-group-reason">
             <label class="form-label-reason" for="extension-reason-input">
-                Reason for extension <span class="required-star">*</span>
+                Alasan perpanjangan <span class="required-star">*</span>
             </label>
             <textarea id="extension-reason-input"
                       class="form-textarea-reason"
                       rows="3"
-                      placeholder="e.g., In transit, Previous meeting running over"
+                      placeholder="cth., Sedang di perjalanan, Rapat sebelumnya belum selesai"
                       @bind="_reason"
                       @bind:event="oninput"></textarea>
         </div>
@@ -60,7 +60,7 @@
     <!-- Footer -->
     <div class="request-modal-footer">
         <button type="button" class="btn-ghost-cancel" @onclick="HandleCancel">
-            Cancel
+            Batal
         </button>
         <button type="button"
                 class="btn-gold-extend @(string.IsNullOrWhiteSpace(_reason) ? "disabled" : "")"
@@ -70,7 +70,7 @@
                 <circle cx="12" cy="12" r="10" />
                 <polyline points="12 6 12 12 16 14" />
             </svg>
-            <span>Request Extension</span>
+            <span>Minta Perpanjangan</span>
         </button>
     </div>
 </div>
@@ -87,8 +87,8 @@
         flex-direction: column;
         text-align: left;
         margin: 0 auto;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        font-family: 'Inter', sans-serif;
+        box-shadow: 0 4px 24px rgba(16,48,92,0.08);
     }
 
     /* Header */
@@ -295,7 +295,6 @@
         align-items: center;
         gap: 0.45rem;
         line-height: 1.25;
-        box-shadow: 0 2px 6px rgba(234, 182, 60, 0.28);
         transition: all 0.2s ease;
     }
 
@@ -303,7 +302,6 @@
         background: #D9A42B;
         border-color: #D9A42B;
         transform: translateY(-1px);
-        box-shadow: 0 4px 10px rgba(234, 182, 60, 0.38);
     }
 
     .btn-gold-extend:active:not(:disabled) {

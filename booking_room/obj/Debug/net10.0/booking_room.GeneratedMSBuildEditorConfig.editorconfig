@@ -39,12 +39,24 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xFcnJvci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/website_booking_room/booking_room/Components/Pages/HelpCenterPage.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xIZWxwQ2VudGVyUGFnZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/website_booking_room/booking_room/Components/Pages/History.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xIaXN0b3J5LnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/website_booking_room/booking_room/Components/Pages/LanguageTimezonePage.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xMYW5ndWFnZVRpbWV6b25lUGFnZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/website_booking_room/booking_room/Components/Pages/NotFound.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xOb3RGb3VuZC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/website_booking_room/booking_room/Components/Pages/OperationalHoursPage.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xPcGVyYXRpb25hbEhvdXJzUGFnZS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/website_booking_room/booking_room/Components/Pages/ProfilePage.razor]
@@ -53,6 +65,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [D:/website_booking_room/booking_room/Components/Pages/Settings.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xTZXR0aW5ncy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/website_booking_room/booking_room/Components/Pages/SettingsPage.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xTZXR0aW5nc1BhZ2UucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/website_booking_room/booking_room/Components/Pages/Status.razor]
@@ -71,6 +87,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xSb3V0ZXMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/website_booking_room/booking_room/Components/Shared/ActiveSessionsModal.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcQWN0aXZlU2Vzc2lvbnNNb2RhbC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/website_booking_room/booking_room/Components/Shared/AnalyticsDetailPopup.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcQW5hbHl0aWNzRGV0YWlsUG9wdXAucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
@@ -87,6 +107,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcQ2FuY2VsUmVxdWVzdE1vZGFsLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/website_booking_room/booking_room/Components/Shared/ChangePasswordModal.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcQ2hhbmdlUGFzc3dvcmRNb2RhbC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/website_booking_room/booking_room/Components/Shared/CheckInConfirmationModal.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcQ2hlY2tJbkNvbmZpcm1hdGlvbk1vZGFsLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
@@ -101,6 +125,18 @@ build_metadata.AdditionalFiles.CssScope =
 
 [D:/website_booking_room/booking_room/Components/Shared/DatePickerPopup.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcRGF0ZVBpY2tlclBvcHVwLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/website_booking_room/booking_room/Components/Shared/DeactivateAccountModal.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcRGVhY3RpdmF0ZUFjY291bnRNb2RhbC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/website_booking_room/booking_room/Components/Shared/DeleteAccountModal.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcRGVsZXRlQWNjb3VudE1vZGFsLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/website_booking_room/booking_room/Components/Shared/DownloadDataModal.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcRG93bmxvYWREYXRhTW9kYWwucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/website_booking_room/booking_room/Components/Shared/FilterByStatusPopup.razor]
@@ -135,12 +171,20 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcTm90aWZpY2F0aW9uUGFuZWwucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/website_booking_room/booking_room/Components/Shared/NotificationsSettingsModal.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcTm90aWZpY2F0aW9uc1NldHRpbmdzTW9kYWwucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/website_booking_room/booking_room/Components/Shared/PendingApprovalPopup.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcUGVuZGluZ0FwcHJvdmFsUG9wdXAucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/website_booking_room/booking_room/Components/Shared/QuickBookPopup.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcUXVpY2tCb29rUG9wdXAucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/website_booking_room/booking_room/Components/Shared/ReportBugModal.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcUmVwb3J0QnVnTW9kYWwucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/website_booking_room/booking_room/Components/Shared/RequestMoreTimeModal.razor]
@@ -153,6 +197,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [D:/website_booking_room/booking_room/Components/Shared/RoomDetailsModal.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcUm9vbURldGFpbHNNb2RhbC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/website_booking_room/booking_room/Components/Shared/TwoFactorAuthModal.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcVHdvRmFjdG9yQXV0aE1vZGFsLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/website_booking_room/booking_room/Components/Shared/UserProfilePanel.razor]
