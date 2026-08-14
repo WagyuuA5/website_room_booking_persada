@@ -1,10 +1,7 @@
 @page "/"
 @using booking_room.Components.Models
 @using booking_room.Components.Shared
-@using Microsoft.JSInterop
 @inject NavigationManager Navigation
-@inject IJSRuntime JSRuntime
-@inject ILogger<UserDashboard> Logger
 @inject booking_room.Services.NotificationState NotificationState
 @inject booking_room.Services.LoadingStateService LoadingState
 @implements IDisposable
@@ -111,22 +108,7 @@ else
     }
 </div>
 
-<!-- CHART ANALITIK INTERAKTIF -->
-<div class="analytics-chart-card" style="@(_chartFailed ? "display:none;" : "")">
-    <div class="analytics-header" style="padding: 1.25rem 1.5rem 0.75rem;">
-        <div>
-            <h2 class="analytics-title" style="color: #e2e8f0;">Analitik Penggunaan Ruangan</h2>
-            <p class="analytics-subtitle" style="color: #94a3b8;">Tren pemakaian harian ruangan utama</p>
-        </div>
-        <div class="period-toggle">
-            @foreach (var period in periods)
-            {
-                <button class="@(selectedPeriod == period ? "active" : "")" @onclick:stopPropagation="true" @onclick="() => SelectPeriodWithChart(period)">@period</button>
-            }
-        </div>
-    </div>
-    <div id="roomUsageChartEl" style="padding: 0 0.5rem 0.5rem;"></div>
-</div>
+
 
 <!-- ANALYTICS CARD: Progress Bar (selalu tampil) -->
 <div class="analytics-card" style="cursor: pointer;" @onclick='() => ShowPopup("AnalyticsDetail")'>
@@ -225,8 +207,7 @@ else
     private string selectedPeriod = "Minggu";
     private readonly string[] periods = { "Minggu", "Bulan", "Tahun" };
     private DateTime checkInTimestamp;
-    private bool _chartFailed = false;
-    private bool _chartInitialized = false;
+    // Chart removed
 
     private string activePopup = "";
 
@@ -237,35 +218,7 @@ else
         LoadingState.OnChange += StateHasChanged;
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender && !_chartFailed)
-        {
-            try
-            {
-                var chartData = DashboardData.GetChartData(selectedPeriod);
-                var payload = new
-                {
-                    labels = chartData.Labels,
-                    datasets = chartData.Datasets.Select(d => new { name = d.Label, data = d.Data }).ToArray()
-                };
-                await JSRuntime.InvokeVoidAsync("initRoomUsageChart", "roomUsageChartEl", payload);
-                _chartInitialized = true;
-            }
-            catch (JSException ex)
-            {
-                Logger.LogError(ex, "Gagal inisialisasi chart analitik");
-                _chartFailed = true;
-                StateHasChanged();
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Gagal inisialisasi chart analitik (error umum)");
-                _chartFailed = true;
-                StateHasChanged();
-            }
-        }
-    }
+    // Chart removed - OnAfterRenderAsync not needed
 
     public void Dispose()
     {
@@ -277,30 +230,6 @@ else
     {
         selectedPeriod = period;
         analyticsData = DashboardData.GetAnalytics(period);
-    }
-
-    // Dipanggil oleh toggle di Chart Card — update chart animasi + progress bar
-    private async Task SelectPeriodWithChart(string period)
-    {
-        selectedPeriod = period;
-        analyticsData = DashboardData.GetAnalytics(period);
-        if (_chartInitialized)
-        {
-            try
-            {
-                var chartData = DashboardData.GetChartData(period);
-                var payload = new
-                {
-                    labels = chartData.Labels,
-                    datasets = chartData.Datasets.Select(d => new { name = d.Label, data = d.Data }).ToArray()
-                };
-                await JSRuntime.InvokeVoidAsync("updateRoomUsageChart", payload);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Gagal update chart");
-            }
-        }
     }
 
     private void ViewAllRooms()

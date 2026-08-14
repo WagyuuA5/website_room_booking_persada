@@ -29,7 +29,9 @@
                         <span class="notification-dot" style="display: flex; align-items: center; justify-content: center; font-size: 0.5rem; color: white;">@NotificationService.UnreadCount</span>
                     }
                 </div>
-                <img src="https://ui-avatars.com/api/?name=Admin+User&background=0f1f3d&color=fff" alt="Profil Pengguna" class="profile-avatar" />
+                <div class="profile-avatar-wrapper" @onclick="ToggleProfilePanel" style="cursor: pointer; position: relative;">
+                    <img src="https://ui-avatars.com/api/?name=Admin+User&background=0f1f3d&color=fff" alt="Profil Pengguna" class="profile-avatar" />
+                </div>
             </div>
         </header>
 
@@ -49,6 +51,8 @@
 
 <booking_room.Components.Shared.NotificationPanel Visible="@_showNotificationPanel" OnClose="CloseNotificationPanel" OnInvitationClick="OpenInvitationModal" />
 
+<booking_room.Components.Shared.UserProfilePanel Visible="@_showProfilePanel" OnClose="CloseProfilePanel" />
+
 <booking_room.Components.Shared.ModalOverlayBlur Visible="@_isInvitationModalVisible" OnClose="CloseInvitationModal" Size="default">
     <booking_room.Components.Shared.InvitationModal OnClose="CloseInvitationModal" OnRsvp="HandleInvitationRsvp" />
 </booking_room.Components.Shared.ModalOverlayBlur>
@@ -56,6 +60,7 @@
 @code {
     private bool _sidebarOpen = false;
     private bool _showNotificationPanel = false;
+    private bool _showProfilePanel = false;
     private bool _isInvitationModalVisible = false;
 
     private void ToggleSidebar()
@@ -71,11 +76,23 @@
     private void ToggleNotificationPanel()
     {
         _showNotificationPanel = !_showNotificationPanel;
+        if (_showNotificationPanel) _showProfilePanel = false;
     }
 
     private void CloseNotificationPanel()
     {
         _showNotificationPanel = false;
+    }
+
+    private void ToggleProfilePanel()
+    {
+        _showProfilePanel = !_showProfilePanel;
+        if (_showProfilePanel) _showNotificationPanel = false;
+    }
+
+    private void CloseProfilePanel()
+    {
+        _showProfilePanel = false;
     }
 
     private void OpenInvitationModal(booking_room.Services.NotificationItem item)
