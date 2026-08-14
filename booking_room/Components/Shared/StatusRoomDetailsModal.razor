@@ -1,0 +1,196 @@
+@using booking_room.Components.Models
+
+@if (Visible && Booking != null)
+{
+    <div class="srd-modal-overlay" @onclick="HandleOverlayClick">
+        <div class="srd-modal-content" @onclick:stopPropagation>
+            <!-- Header Image Area -->
+            <div class="srd-modal-header">
+                <img src="@Booking.PhotoUrl" alt="@Booking.RoomName" class="srd-modal-img" />
+                <span class="srd-status-badge @GetStatusBadgeClass(Booking.Status)">
+                    <span class="srd-status-dot"></span>
+                    @GetStatusLabel(Booking.Status).ToUpper()
+                </span>
+                <button class="srd-close-btn" @onclick="OnClose">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+            </div>
+            
+            <!-- Body Content -->
+            <div class="srd-modal-body">
+                <h2 class="srd-room-title">@Booking.RoomName</h2>
+                <div class="srd-location-row">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-5.5-7-10a7 7 0 1114 0c0 4.5-7 10-7 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="11" r="3" stroke="currentColor" stroke-width="2"/></svg>
+                    <span>Lantai 42, Sayap Utara, Gedung Persada</span>
+                </div>
+                <p class="srd-room-desc">Ruangan pertemuan eksklusif dengan fasilitas lengkap, proyektor, dan pemandangan kota. Cocok untuk rapat strategis tingkat eksekutif.</p>
+                
+                <h3 class="srd-section-label">DETAIL PEMESANAN</h3>
+                <div class="srd-booking-detail-row">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2"/></svg>
+                    <span>@Booking.Date &bull; @Booking.TimeSlot</span>
+                </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="srd-modal-footer">
+                <button class="srd-btn-modify" @onclick="HandleModify">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Ubah
+                </button>
+                <button class="srd-btn-cancel" @onclick="HandleCancel">Batal</button>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .srd-modal-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(22, 48, 92, 0.4);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 1000; padding: 24px;
+        font-family: 'Inter', sans-serif;
+    }
+    .srd-modal-content {
+        background: #FFFFFF;
+        width: 100%; max-width: 480px;
+        max-height: 88vh;
+        border-radius: 24px;
+        box-shadow: 0 4px 24px rgba(16,48,92,0.08);
+        display: flex; flex-direction: column;
+        position: relative; overflow: hidden;
+    }
+    .srd-modal-header {
+        position: relative; height: 240px; flex-shrink: 0;
+    }
+    .srd-modal-img {
+        width: 100%; height: 100%; object-fit: cover;
+        border-top-left-radius: 24px; border-top-right-radius: 24px;
+    }
+    .srd-status-badge {
+        position: absolute; top: 16px; left: 16px;
+        background: rgba(0,0,0,0.6); color: white;
+        padding: 6px 14px; border-radius: 999px;
+        font-size: 11px; font-weight: 700;
+        display: flex; align-items: center; gap: 6px;
+        letter-spacing: 0.05em;
+    }
+    .srd-status-dot {
+        width: 6px; height: 6px; border-radius: 50%;
+        background: currentColor;
+    }
+    .srd-status-badge.badge-pending { color: #EAB63C; }
+    .srd-status-badge.badge-approved { color: #10B981; }
+    .srd-status-badge.badge-rejected { color: #EF4444; }
+    
+    .srd-close-btn {
+        position: absolute; top: 16px; right: 16px;
+        width: 32px; height: 32px; border-radius: 50%;
+        background: rgba(255,255,255,0.8); color: #16305C;
+        border: none; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: background 0.2s; z-index: 10;
+    }
+    .srd-close-btn:hover { background: #FFFFFF; }
+
+    .srd-modal-body {
+        padding: 24px; flex-grow: 1; overflow-y: auto;
+    }
+    .srd-room-title {
+        color: #16305C; font-size: 24px; font-weight: 700;
+        margin: 0 0 8px 0;
+    }
+    .srd-location-row {
+        display: flex; align-items: center; gap: 8px;
+        color: #6B7280; font-size: 14px; margin-bottom: 12px;
+    }
+    .srd-room-desc {
+        color: #6B7280; font-size: 14px; line-height: 1.5;
+        margin: 0 0 24px 0;
+    }
+    .srd-section-label {
+        color: #9CA3AF; font-size: 11px; font-weight: 700;
+        letter-spacing: 0.05em; margin: 0 0 12px 0;
+    }
+    .srd-booking-detail-row {
+        display: flex; align-items: center; gap: 12px;
+        color: #16305C; font-size: 14px; font-weight: 600;
+    }
+    .srd-booking-detail-row svg { color: #6B7280; }
+
+    .srd-modal-footer {
+        padding: 20px 24px; border-top: 1px solid #E5E7EB;
+        display: flex; gap: 12px; flex-shrink: 0;
+    }
+    .srd-btn-modify {
+        flex: 1; background: #16305C; color: #FFFFFF;
+        border: none; border-radius: 999px; padding: 12px;
+        font-size: 14px; font-weight: 600; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .srd-btn-modify:hover { opacity: 0.9; }
+    .srd-btn-cancel {
+        flex: 1; background: #EF4444; color: #FFFFFF;
+        border: none; border-radius: 999px; padding: 12px;
+        font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+    .srd-btn-cancel:hover { opacity: 0.9; }
+</style>
+
+@code {
+    [Parameter]
+    public bool Visible { get; set; }
+    
+    [Parameter]
+    public BookingItem? Booking { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+    
+    [Parameter]
+    public EventCallback<BookingItem> OnModify { get; set; }
+    
+    [Parameter]
+    public EventCallback<BookingItem> OnCancelRequest { get; set; }
+
+    private async Task HandleOverlayClick()
+    {
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task HandleModify()
+    {
+        if (Booking != null)
+        {
+            await OnModify.InvokeAsync(Booking);
+            await OnClose.InvokeAsync();
+        }
+    }
+
+    private async Task HandleCancel()
+    {
+        if (Booking != null)
+        {
+            await OnCancelRequest.InvokeAsync(Booking);
+            await OnClose.InvokeAsync();
+        }
+    }
+
+    private string GetStatusLabel(string status)
+    {
+        if (status.Equals("pending", StringComparison.OrdinalIgnoreCase)) return "Menunggu Persetujuan";
+        if (status.Equals("approved", StringComparison.OrdinalIgnoreCase)) return "Disetujui";
+        if (status.Equals("rejected", StringComparison.OrdinalIgnoreCase)) return "Ditolak";
+        if (status.Equals("completed", StringComparison.OrdinalIgnoreCase)) return "Selesai";
+        return status;
+    }
+
+    private string GetStatusBadgeClass(string status)
+    {
+        if (status.Equals("pending", StringComparison.OrdinalIgnoreCase)) return "badge-pending";
+        if (status.Equals("approved", StringComparison.OrdinalIgnoreCase)) return "badge-approved";
+        if (status.Equals("rejected", StringComparison.OrdinalIgnoreCase)) return "badge-rejected";
+        return "";
+    }
+}

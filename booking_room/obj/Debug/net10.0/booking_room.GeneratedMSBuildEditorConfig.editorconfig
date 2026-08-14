@@ -199,6 +199,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcUm9vbURldGFpbHNNb2RhbC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/website_booking_room/booking_room/Components/Shared/StatusRoomDetailsModal.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcU3RhdHVzUm9vbURldGFpbHNNb2RhbC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/website_booking_room/booking_room/Components/Shared/TwoFactorAuthModal.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcVHdvRmFjdG9yQXV0aE1vZGFsLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 

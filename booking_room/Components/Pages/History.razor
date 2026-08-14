@@ -3,12 +3,23 @@
 @using booking_room.Components.Models
 @using booking_room.Components.Shared
 
-<PageTitle>Booking History - PADA Management</PageTitle>
+<PageTitle>Riwayat Pemesanan - PADA Management</PageTitle>
 
 <div class="history-page">
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="topbar-actions">
+            <button class="notification-btn">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span class="notification-badge">3</span>
+            </button>
+            <div class="avatar-circle">AR</div>
+        </div>
+    </div>
+
     <div class="page-header">
         <h1 class="page-title">Riwayat Pemesanan</h1>
-        <p class="page-subtitle">Lihat reservasi masa lalu Anda dan hasilnya.</p>
+        <p class="page-subtitle">Lihat reservasi Anda sebelumnya beserta hasilnya.</p>
     </div>
 
     <div class="history-toolbar">
@@ -21,17 +32,14 @@
         <div class="toolbar-right">
             <div class="toolbar-btn-group">
                 <button class="btn-toolbar" @onclick="ToggleDatePicker">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2"/></svg>
                     Rentang Tanggal
                 </button>
                 
                 <button class="btn-toolbar" @onclick="ToggleFilter">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     Filter
                 </button>
 
-                <button class="btn-toolbar btn-export">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <button class="btn-toolbar">
                     Ekspor CSV
                 </button>
             </div>
@@ -57,11 +65,14 @@
         <table class="history-table">
             <thead>
                 <tr>
-                    <th>Nama Ruangan</th>
-                    <th>Tanggal</th>
-                    <th>Durasi</th>
-                    <th>Status</th>
-                    <th>Aksi</th>
+                    <th class="sortable-header" @onclick="ToggleSort">
+                        NAMA RUANGAN
+                        <svg class="sort-icon @(sortAscending ? "asc" : "desc")" width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M7 15l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </th>
+                    <th>TANGGAL</th>
+                    <th>DURASI</th>
+                    <th>STATUS</th>
+                    <th>AKSI</th>
                 </tr>
             </thead>
             <tbody>
@@ -76,7 +87,7 @@
                     @foreach (var booking in PagedBookings)
                     {
                         <tr>
-                            <td>
+                            <td data-label="NAMA RUANGAN">
                                 <div class="room-cell">
                                     <img src="@booking.PhotoUrl" alt="@booking.RoomName" class="room-thumb" />
                                     <div>
@@ -85,14 +96,14 @@
                                     </div>
                                 </div>
                             </td>
-                            <td>@booking.Date</td>
-                            <td>@booking.Duration</td>
-                            <td>
+                            <td data-label="TANGGAL" class="date-text">@booking.Date</td>
+                            <td data-label="DURASI" class="duration-text">@booking.Duration</td>
+                            <td data-label="STATUS">
                                 <span class="status-pill @BookingDataStore.GetStatusBadgeClass(booking.Status)">
                                     @BookingDataStore.GetStatusLabel(booking.Status)
                                 </span>
                             </td>
-                            <td>
+                            <td data-label="AKSI">
                                 <button class="btn-view-details" @onclick="() => OpenDetail(booking)">Lihat Detail</button>
                             </td>
                         </tr>
@@ -127,13 +138,64 @@
         font-family: 'Inter', sans-serif;
         max-width: 1200px;
         margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+    }
+    .topbar {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 24px;
+    }
+    .topbar-actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    .notification-btn {
+        background: none;
+        border: none;
+        position: relative;
+        color: #6B7280;
+        cursor: pointer;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .notification-badge {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background-color: #EF4444;
+        color: white;
+        font-size: 10px;
+        font-weight: bold;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid white;
+    }
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #16305C;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 14px;
     }
     .page-header {
         margin-bottom: 32px;
     }
     .page-title {
         color: #16305C;
-        font-size: 28px;
+        font-size: 32px;
         font-weight: 700;
         margin: 0 0 8px 0;
     }
@@ -163,9 +225,9 @@
     .search-bar-history input {
         padding: 10px 16px 10px 42px;
         border: 1px solid #E5E7EB;
-        border-radius: 12px;
+        border-radius: 999px;
         font-size: 14px;
-        width: 280px;
+        width: 320px;
         background: #FFFFFF;
         transition: border-color 0.2s;
     }
@@ -181,18 +243,18 @@
     }
     .toolbar-btn-group {
         display: flex;
-        gap: 8px;
+        gap: 12px;
     }
     .btn-toolbar {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        padding: 10px 16px;
+        padding: 8px 20px;
         border: 1px solid #E5E7EB;
         border-radius: 999px;
-        background: #FFFFFF;
-        color: #374151;
-        font-size: 13px;
+        background: transparent;
+        color: #16305C;
+        font-size: 14px;
         font-weight: 600;
         cursor: pointer;
         transition: background-color 0.2s, border-color 0.2s;
@@ -200,9 +262,6 @@
     .btn-toolbar:hover {
         background-color: #F9FAFB;
         border-color: #D1D5DB;
-    }
-    .btn-export {
-        color: #16305C;
     }
     .popup-anchor {
         position: absolute;
@@ -217,34 +276,47 @@
         background: #FFFFFF;
         border-radius: 16px;
         overflow: hidden;
-        border: 1px solid #F1F5F9;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+        border: 1px solid #E5E7EB;
+        box-shadow: 0 4px 24px rgba(16,48,92,0.04);
+        width: 100%;
     }
     .history-table {
         width: 100%;
         border-collapse: collapse;
     }
     .history-table thead tr {
-        background-color: #F8FAFC;
-        border-bottom: 2px solid #E2E8F0;
+        background-color: #F9FAFB;
+        border-bottom: 1px solid #E5E7EB;
     }
     .history-table th {
-        padding: 14px 20px;
+        padding: 16px 20px;
         text-align: left;
-        color: #64748B;
+        color: #6B7280;
         font-size: 12px;
-        font-weight: 700;
+        font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.05em;
     }
+    .sortable-header {
+        cursor: pointer;
+        user-select: none;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .sort-icon {
+        transition: transform 0.2s;
+    }
+    .sort-icon.desc {
+        transform: rotate(180deg);
+    }
     .history-table td {
         padding: 16px 20px;
-        color: #374151;
-        font-size: 14px;
-        border-bottom: 1px solid #F1F5F9;
+        border-bottom: 1px solid #E5E7EB;
+        vertical-align: middle;
     }
     .history-table tbody tr:nth-child(even) {
-        background-color: #FAFBFC;
+        background-color: #FFFFFF;
     }
     .history-table tbody tr:hover {
         background-color: #F0F4FF;
@@ -257,24 +329,29 @@
     .room-thumb {
         width: 40px;
         height: 40px;
-        border-radius: 8px;
+        border-radius: 40px;
         object-fit: cover;
     }
     .room-name-text {
         display: block;
-        font-weight: 600;
+        font-weight: 700;
         color: #16305C;
         font-size: 14px;
     }
     .room-floor-text {
         display: block;
-        color: #9CA3AF;
+        color: #6B7280;
         font-size: 12px;
+        margin-top: 2px;
+    }
+    .date-text, .duration-text {
+        color: #16305C;
+        font-size: 14px;
     }
     .status-pill {
         display: inline-flex;
         align-items: center;
-        padding: 4px 12px;
+        padding: 6px 16px;
         border-radius: 999px;
         font-size: 12px;
         font-weight: 600;
@@ -300,9 +377,10 @@
         border: none;
         color: #EAB63C;
         font-weight: 600;
-        font-size: 13px;
+        font-size: 14px;
         cursor: pointer;
         padding: 0;
+        text-decoration: none;
         transition: color 0.2s;
     }
     .btn-view-details:hover {
@@ -320,25 +398,24 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-top: 20px;
-        padding: 0 4px;
+        margin-top: 24px;
     }
     .page-info {
         color: #6B7280;
-        font-size: 13px;
+        font-size: 14px;
     }
     .page-buttons {
         display: flex;
-        gap: 4px;
+        gap: 8px;
     }
     .page-btn {
-        padding: 8px 14px;
+        padding: 8px 16px;
         border: 1px solid #E5E7EB;
-        border-radius: 8px;
+        border-radius: 999px;
         background: #FFFFFF;
-        color: #374151;
-        font-size: 13px;
-        font-weight: 500;
+        color: #16305C;
+        font-size: 14px;
+        font-weight: 600;
         cursor: pointer;
         transition: all 0.2s;
     }
@@ -351,8 +428,53 @@
         border-color: #16305C;
     }
     .page-btn:disabled {
-        opacity: 0.4;
+        opacity: 0.5;
         cursor: not-allowed;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .history-table thead {
+            display: none;
+        }
+        .history-table, .history-table tbody, .history-table tr, .history-table td {
+            display: block;
+            width: 100%;
+        }
+        .history-table tr {
+            margin-bottom: 16px;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+            padding: 16px;
+        }
+        .history-table td {
+            text-align: right;
+            padding: 8px 0;
+            border-bottom: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .history-table td::before {
+            content: attr(data-label);
+            font-size: 12px;
+            color: #6B7280;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .room-cell {
+            text-align: left;
+        }
+        .history-toolbar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .search-bar-history input {
+            width: 100%;
+        }
+        .toolbar-btn-group {
+            flex-wrap: wrap;
+        }
     }
 </style>
 
@@ -364,20 +486,29 @@
     private bool isDetailOpen = false;
     private BookingItem? selectedBooking;
     private int currentPage = 1;
-    private int pageSize = 5;
+    private int pageSize = 10;
+    private bool sortAscending = true;
 
     private IEnumerable<BookingItem> FilteredBookings
     {
         get
         {
             var query = BookingDataStore.AllBookings.AsEnumerable();
+            
             if (activeFilter != "All Status")
                 query = query.Where(b => b.Status.Equals(activeFilter, StringComparison.OrdinalIgnoreCase));
+            
             if (!string.IsNullOrWhiteSpace(searchQuery))
             {
                 var q = searchQuery.ToLower();
                 query = query.Where(b => b.RoomName.ToLower().Contains(q));
             }
+            
+            if (sortAscending)
+                query = query.OrderBy(b => b.RoomName);
+            else
+                query = query.OrderByDescending(b => b.RoomName);
+                
             return query;
         }
     }
@@ -386,6 +517,11 @@
         FilteredBookings.Skip((currentPage - 1) * pageSize).Take(pageSize);
 
     private int TotalPages => Math.Max(1, (int)Math.Ceiling((double)FilteredBookings.Count() / pageSize));
+
+    private void ToggleSort()
+    {
+        sortAscending = !sortAscending;
+    }
 
     private void ToggleFilter() { isFilterOpen = !isFilterOpen; isDatePickerOpen = false; }
     private void CloseFilter() { isFilterOpen = false; }
@@ -402,3 +538,4 @@
     private void NextPage() { if (currentPage < TotalPages) currentPage++; }
     private void GoToPage(int page) { currentPage = page; }
 }
+
