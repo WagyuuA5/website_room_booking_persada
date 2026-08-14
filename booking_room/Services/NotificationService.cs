@@ -10,7 +10,6 @@ public class NotificationService : INotificationService
 
     public NotificationService()
     {
-        // Seed initial notifications based on reference
         _notifications.Add(new NotificationItem
         {
             SourceName = "System",

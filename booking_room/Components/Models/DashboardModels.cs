@@ -7,7 +7,6 @@ public record AnalyticsData(string Period, List<RoomUtilization> Rooms);
 public record ChartDataset(string Label, double[] Data, string BorderColor);
 public record ChartData(string[] Labels, ChartDataset[] Datasets);
 
-// New models for pop-up modals
 public record RoomDetail(string RoomName, string Floor, int Capacity, string Status, string StatusClass, string Facilities);
 public record PendingApprovalItem(string RoomName, string RequestedBy, string Date, string TimeSlot, string Purpose, string Priority);
 public record RoomItem(string Id, string Name, int Capacity, string Description, string Status, List<string> Amenities, string Floor);
@@ -25,7 +24,6 @@ public static class DashboardData
         new("Training Center", 180, 30, false)
     ];
 
-    // Room details for pop-up
     public static List<RoomDetail> AllRooms =>
     [
         new("Boardroom A", "Lantai 3", 20, "Tersedia", "available", "Projector, Whiteboard, Video Conf"),
@@ -50,7 +48,6 @@ public static class DashboardData
         new("Sky Lounge", "Lantai 5", 20, "Digunakan", "occupied", "Panoramic View, Mini Bar")
     ];
 
-    // Pending approval items for pop-up
     public static List<PendingApprovalItem> PendingApprovalItems =>
     [
         new("Boardroom A", "Budi Santoso", "14 Agustus 2026", "09:00 - 11:00", "Client Presentation", "Tinggi"),
