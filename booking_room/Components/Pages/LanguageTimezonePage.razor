@@ -1,8 +1,13 @@
 @page "/pengaturan/bahasa-zona-waktu"
+@inject NavigationManager Navigation
 
 <PageTitle>Bahasa & Zona Waktu</PageTitle>
 
 <div class="subpage-container">
+    @if (_isToastVisible)
+    {
+        <div class="save-toast">Perubahan berhasil disimpan</div>
+    }
     <div class="header">
         <a href="/pengaturan" class="back-link">‹ Kembali ke Pengaturan</a>
         <h1 class="page-title">Bahasa & Zona Waktu</h1>
@@ -37,7 +42,7 @@
         </div>
 
         <div class="actions">
-            <button class="btn btn-primary">Simpan Perubahan</button>
+            <button class="btn btn-primary" @onclick="SaveAndNavigateBack">Simpan Perubahan</button>
         </div>
     </div>
 </div>
@@ -60,4 +65,45 @@
     .btn { padding: 0.75rem 1.5rem; border-radius: 999px; font-size: 0.875rem; font-weight: 600; cursor: pointer; border: none; transition: background-color 0.2s; }
     .btn-primary { background-color: #16305C; color: white; }
     .btn-primary:hover { background-color: #0F2346; }
+    .btn-primary:focus-visible { outline: 2px solid #16305C; outline-offset: 2px; }
+
+    .save-toast {
+        position: fixed;
+        bottom: 32px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #10B981;
+        color: #FFFFFF;
+        padding: 12px 24px;
+        border-radius: 999px;
+        font-size: 14px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        z-index: 1000;
+        animation: toastFade 3s forwards;
+    }
+
+    @@keyframes toastFade {
+        0% { opacity: 0; transform: translate(-50%, 20px); }
+        10% { opacity: 1; transform: translate(-50%, 0); }
+        90% { opacity: 1; transform: translate(-50%, 0); }
+        100% { opacity: 0; transform: translate(-50%, -20px); }
+    }
 </style>
+
+@code {
+    private bool _isToastVisible = false;
+
+    private async Task SaveAndNavigateBack()
+    {
+        _isToastVisible = true;
+        StateHasChanged();
+
+        await Task.Delay(3000);
+        _isToastVisible = false;
+        Navigation.NavigateTo("/pengaturan");
+    }
+}

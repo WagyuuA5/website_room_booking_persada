@@ -55,6 +55,15 @@ a, .btn-link {
     box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
+.btn:focus:not(:focus-visible) {
+    box-shadow: none;
+}
+
+.btn:focus-visible {
+    outline: 2px solid #16305C;
+    outline-offset: 2px;
+}
+
 .content {
     padding-top: 1.5rem;
 }
@@ -2386,18 +2395,24 @@ h1:focus {
 }
 
 .room-detail-btn {
-    font-size: 0.75rem;
-    font-weight: 800;
-    color: #3b82f6;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #16305C;
     text-decoration: none;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.02em;
     cursor: pointer;
     background: none;
     border: none;
-    transition: color 0.2s;
+    padding: 4px 8px;
+    border-radius: 8px;
+    transition: all 0.2s;
 }
 
-.room-detail-btn:hover { color: #1d4ed8; }
+.room-detail-btn:hover { 
+    color: #EAB63C; 
+    text-decoration: underline;
+    background-color: #F8FAFC;
+}
 
 .room-book-btn {
     padding: 0.4rem 0.9rem;

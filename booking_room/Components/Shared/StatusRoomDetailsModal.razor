@@ -3,23 +3,25 @@
 @if (Visible && Booking != null)
 {
     <div class="srd-modal-overlay" @onclick="HandleOverlayClick">
-        <div class="srd-modal-content" @onclick:stopPropagation>
-            <!-- Header Image Area -->
-            <div class="srd-modal-header">
-                <img src="@Booking.PhotoUrl" alt="@Booking.RoomName" class="srd-modal-img" />
+    <div class="srd-modal-content" @onclick:stopPropagation>
+        <!-- Header Image Area -->
+        <div class="srd-modal-header">
+            <img src="@Booking.PhotoUrl" alt="@Booking.RoomName" class="srd-modal-img" />
+            <button class="srd-close-btn" @onclick="OnClose">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+        </div>
+        
+        <!-- Body Content -->
+        <div class="srd-modal-body">
+            <div class="srd-title-row">
+                <h2 class="srd-room-title">@Booking.RoomName</h2>
                 <span class="srd-status-badge @GetStatusBadgeClass(Booking.Status)">
                     <span class="srd-status-dot"></span>
                     @GetStatusLabel(Booking.Status).ToUpper()
                 </span>
-                <button class="srd-close-btn" @onclick="OnClose">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </button>
             </div>
-            
-            <!-- Body Content -->
-            <div class="srd-modal-body">
-                <h2 class="srd-room-title">@Booking.RoomName</h2>
-                <div class="srd-location-row">
+            <div class="srd-location-row">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-5.5-7-10a7 7 0 1114 0c0 4.5-7 10-7 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="11" r="3" stroke="currentColor" stroke-width="2"/></svg>
                     <span>Lantai 42, Sayap Utara, Gedung Persada</span>
                 </div>
@@ -68,22 +70,6 @@
         width: 100%; height: 100%; object-fit: cover;
         border-top-left-radius: 24px; border-top-right-radius: 24px;
     }
-    .srd-status-badge {
-        position: absolute; top: 16px; left: 16px;
-        background: rgba(0,0,0,0.6); color: white;
-        padding: 6px 14px; border-radius: 999px;
-        font-size: 11px; font-weight: 700;
-        display: flex; align-items: center; gap: 6px;
-        letter-spacing: 0.05em;
-    }
-    .srd-status-dot {
-        width: 6px; height: 6px; border-radius: 50%;
-        background: currentColor;
-    }
-    .srd-status-badge.badge-pending { color: #EAB63C; }
-    .srd-status-badge.badge-approved { color: #10B981; }
-    .srd-status-badge.badge-rejected { color: #EF4444; }
-    
     .srd-close-btn {
         position: absolute; top: 16px; right: 16px;
         width: 32px; height: 32px; border-radius: 50%;
@@ -97,10 +83,28 @@
     .srd-modal-body {
         padding: 24px; flex-grow: 1; overflow-y: auto;
     }
+    .srd-title-row {
+        display: flex; justify-content: space-between; align-items: center;
+        gap: 16px; margin-bottom: 12px;
+    }
     .srd-room-title {
         color: #16305C; font-size: 24px; font-weight: 700;
-        margin: 0 0 8px 0;
+        margin: 0;
     }
+    .srd-status-badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 6px 14px; border-radius: 999px;
+        font-size: 11px; font-weight: 700;
+        letter-spacing: 0.05em; white-space: nowrap;
+    }
+    .srd-status-dot {
+        width: 6px; height: 6px; border-radius: 50%;
+        background: currentColor;
+    }
+    .srd-status-badge.badge-pending { background-color: #FEF3C7; color: #B45309; }
+    .srd-status-badge.badge-approved { background-color: #D1FAE5; color: #10B981; }
+    .srd-status-badge.badge-rejected { background-color: #FEE2E2; color: #EF4444; }
+    .srd-status-badge.badge-completed { background-color: #DBEAFE; color: #1E40AF; }
     .srd-location-row {
         display: flex; align-items: center; gap: 8px;
         color: #6B7280; font-size: 14px; margin-bottom: 12px;
@@ -191,6 +195,7 @@
         if (status.Equals("pending", StringComparison.OrdinalIgnoreCase)) return "badge-pending";
         if (status.Equals("approved", StringComparison.OrdinalIgnoreCase)) return "badge-approved";
         if (status.Equals("rejected", StringComparison.OrdinalIgnoreCase)) return "badge-rejected";
+        if (status.Equals("completed", StringComparison.OrdinalIgnoreCase)) return "badge-completed";
         return "";
     }
 }

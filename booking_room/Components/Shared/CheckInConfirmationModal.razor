@@ -13,7 +13,7 @@
     <!-- Badge -->
     <div style="background: #f1f5f9; padding: 0.35rem 0.75rem; border-radius: 9999px; display: inline-flex; align-items: center; gap: 0.4rem; margin-bottom: 2rem;">
         <span style="width: 8px; height: 8px; background: var(--accent-amber); border-radius: 50%; display: inline-block;"></span>
-        <span style="font-size: 0.75rem; font-weight: 700; color: #64748b; letter-spacing: 0.05em;">CHECK-IN OPEN</span>
+        <span style="font-size: 0.75rem; font-weight: 700; color: #64748b; letter-spacing: 0.05em;">CHECK-IN DIBUKA</span>
     </div>
 
     <!-- Countdown Ring -->
@@ -29,7 +29,7 @@
         </svg>
         <div style="z-index: 1; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
             <span style="font-size: 1.75rem; font-weight: 800; color: var(--text-navy); line-height: 1;">@RemainingTimeFormatted</span>
-            <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-top: 0.25rem;">Remaining</span>
+            <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-top: 0.25rem;">Sisa Waktu</span>
         </div>
     </div>
 
@@ -40,7 +40,7 @@
                 <InlineSvg Src="/icons/Icon_clndr.svg" Style="width: 20px; height: 20px; color: currentColor;" />
             </div>
             <div>
-                <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.1rem;">Time</div>
+                <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.1rem;">WAKTU</div>
                 <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-navy);">@TimeSlot</div>
             </div>
         </div>
@@ -49,7 +49,7 @@
                 <InlineSvg Src="/icons/icon_location.svg" Style="width: 20px; height: 20px; color: currentColor;" />
             </div>
             <div>
-                <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.1rem;">Location</div>
+                <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.1rem;">LOKASI</div>
                 <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-navy);">@Location</div>
             </div>
         </div>
@@ -58,8 +58,8 @@
                 <InlineSvg Src="/icons/icon_group.svg" Style="width: 20px; height: 20px; color: currentColor;" />
             </div>
             <div>
-                <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.1rem;">Capacity</div>
-                <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-navy);">@Capacity participants expected</div>
+                <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.1rem;">KAPASITAS</div>
+                <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-navy);">@Capacity peserta diharapkan</div>
             </div>
         </div>
     </div>
@@ -70,20 +70,20 @@
             <circle cx="12" cy="12" r="10" fill="currentColor" fill-opacity="0.2"/>
             <path d="M8 12L11 15L16 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        Confirm Check-in
+        Konfirmasi Check-in
     </button>
 
     <!-- Footer Links -->
     <div style="display: flex; justify-content: space-between; width: 100%; font-size: 0.875rem; font-weight: 600;">
         @if (!_hasExtended)
         {
-            <button @onclick="OpenExtendModal" style="background: none; border: none; color: #94a3b8; cursor: pointer; padding: 0; text-decoration: none; transition: color 0.2s;">I need more time</button>
+            <button @onclick="OpenExtendModal" style="background: none; border: none; color: #94a3b8; cursor: pointer; padding: 0; text-decoration: none; transition: color 0.2s;">Butuh waktu tambahan</button>
         }
         else
         {
             <span></span> <!-- Empty span to maintain flex spacing if button is hidden -->
         }
-        <button @onclick="CancelBooking" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0; text-decoration: none; transition: color 0.2s;">Cancel this booking</button>
+        <button @onclick="CancelBooking" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0; text-decoration: none; transition: color 0.2s;">Batalkan pemesanan ini</button>
     </div>
 </div>
 

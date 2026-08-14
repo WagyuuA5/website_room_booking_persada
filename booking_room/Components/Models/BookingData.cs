@@ -28,7 +28,8 @@ public record UserProfileData(
     string Initials
 )
 {
-    // Convenience properties used by ProfilePage
+    public string PhotoUrl { get; set; } = string.Empty;
+
     public string Name => FullName;
     public string Title => JobTitle;
     public int TotalBookings => 24;
@@ -96,10 +97,10 @@ public static class BookingDataStore
 
     public static string GetStatusLabel(string status) => status switch
     {
-        "pending" => "Pending",
-        "approved" => "Approved",
-        "rejected" => "Rejected",
-        "completed" => "Completed",
+        "pending" => "Menunggu",
+        "approved" => "Disetujui",
+        "rejected" => "Ditolak",
+        "completed" => "Selesai",
         _ => status
     };
 

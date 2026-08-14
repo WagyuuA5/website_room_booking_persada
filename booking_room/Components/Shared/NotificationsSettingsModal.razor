@@ -4,14 +4,23 @@
     private bool EmailNotif { get; set; } = true;
     private bool PushNotif { get; set; } = true;
     private bool PromoNotif { get; set; } = false;
+    private bool _isToastVisible = false;
 
     private async Task Save()
     {
+        _isToastVisible = true;
+        StateHasChanged();
+
+        await Task.Delay(1500);
         await OnClose.InvokeAsync();
     }
 }
 
 <div>
+    @if (_isToastVisible)
+    {
+        <div class="save-toast">Perubahan berhasil disimpan</div>
+    }
     <h3 class="modal-title">Pengaturan Notifikasi</h3>
     <p class="modal-subtitle">Pilih notifikasi yang ingin Anda terima.</p>
 
@@ -61,4 +70,31 @@
     .btn-secondary:hover { background-color: #E5E7EB; }
     .btn-primary { background-color: #16305C; color: white; }
     .btn-primary:hover { background-color: #0F2346; }
+    .btn-primary:focus-visible { outline: 2px solid #16305C; outline-offset: 2px; }
+
+    .save-toast {
+        position: fixed;
+        bottom: 32px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #10B981;
+        color: #FFFFFF;
+        padding: 12px 24px;
+        border-radius: 999px;
+        font-size: 14px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        z-index: 1000;
+        animation: toastFade 3s forwards;
+    }
+
+    @@keyframes toastFade {
+        0% { opacity: 0; transform: translate(-50%, 20px); }
+        10% { opacity: 1; transform: translate(-50%, 0); }
+        90% { opacity: 1; transform: translate(-50%, 0); }
+        100% { opacity: 0; transform: translate(-50%, -20px); }
+    }
 </style>
