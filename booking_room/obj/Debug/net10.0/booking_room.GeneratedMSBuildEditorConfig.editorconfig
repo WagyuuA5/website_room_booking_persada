@@ -47,6 +47,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xOb3RGb3VuZC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/website_booking_room/booking_room/Components/Pages/ProfilePage.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xQcm9maWxlUGFnZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/website_booking_room/booking_room/Components/Pages/Settings.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xTZXR0aW5ncy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
@@ -79,6 +83,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcQ2FuY2VsQ29uZmlybWF0aW9uTW9kYWwucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/website_booking_room/booking_room/Components/Shared/CancelRequestModal.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcQ2FuY2VsUmVxdWVzdE1vZGFsLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/website_booking_room/booking_room/Components/Shared/CheckInConfirmationModal.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcQ2hlY2tJbkNvbmZpcm1hdGlvbk1vZGFsLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
@@ -91,6 +99,18 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcQ29uZmlybUJvb2tpbmdNb2RhbC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/website_booking_room/booking_room/Components/Shared/DatePickerPopup.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcRGF0ZVBpY2tlclBvcHVwLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/website_booking_room/booking_room/Components/Shared/FilterByStatusPopup.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcRmlsdGVyQnlTdGF0dXNQb3B1cC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/website_booking_room/booking_room/Components/Shared/HistoryDetailModal.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcSGlzdG9yeURldGFpbE1vZGFsLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/website_booking_room/booking_room/Components/Shared/InlineSvg.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcSW5saW5lU3ZnLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
@@ -101,6 +121,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [D:/website_booking_room/booking_room/Components/Shared/ModalOverlayBlur.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcTW9kYWxPdmVybGF5Qmx1ci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/website_booking_room/booking_room/Components/Shared/ModifyBookingModal.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcTW9kaWZ5Qm9va2luZ01vZGFsLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/website_booking_room/booking_room/Components/Shared/NotificationBanner.razor]

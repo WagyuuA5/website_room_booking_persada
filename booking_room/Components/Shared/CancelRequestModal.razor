@@ -1,0 +1,149 @@
+@using booking_room.Components.Models
+
+<div class="cancel-modal">
+    <div class="cancel-header">
+        <div class="cancel-icon-bg">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h2 class="cancel-title">Cancel Request</h2>
+    </div>
+
+    <div class="cancel-body">
+        <p class="cancel-desc">Please provide a reason for canceling this booking. This action cannot be undone.</p>
+        
+        <div class="form-group">
+            <label class="reason-label">REASON FOR CANCELLATION</label>
+            <textarea class="form-control-blue" rows="4" placeholder="e.g., Meeting rescheduled, room no longer needed..." @bind="_reason" @bind:event="oninput"></textarea>
+        </div>
+    </div>
+
+    <div class="cancel-footer">
+        <button class="btn-confirm-cancel @(string.IsNullOrWhiteSpace(_reason) ? "disabled" : "")" disabled="@string.IsNullOrWhiteSpace(_reason)" @onclick="SubmitCancel">
+            Confirm Cancellation
+        </button>
+        <button class="btn-keep-booking" @onclick="OnClose">
+            Keep Booking
+        </button>
+    </div>
+</div>
+
+<style>
+    .cancel-modal {
+        width: 100%;
+        max-width: 420px;
+        background: #FFFFFF;
+        border-radius: 20px;
+        padding: 32px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        font-family: 'Inter', sans-serif;
+    }
+    .cancel-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .cancel-icon-bg {
+        width: 40px;
+        height: 40px;
+        background-color: #FEE2E2;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .cancel-title {
+        color: #16305C;
+        font-size: 20px;
+        font-weight: 700;
+        margin: 0;
+    }
+    .cancel-desc {
+        color: #6B7280;
+        font-size: 14px;
+        line-height: 1.5;
+        margin: 0 0 24px 0;
+    }
+    .reason-label {
+        display: block;
+        color: #6B7280;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 8px;
+    }
+    .form-control-blue {
+        width: 100%;
+        padding: 12px;
+        background-color: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        font-size: 14px;
+        color: #1F2937;
+        font-family: inherit;
+        resize: none;
+        transition: border-color 0.2s;
+        box-sizing: border-box;
+    }
+    .form-control-blue:focus {
+        outline: none;
+        border-color: #94A3B8;
+    }
+    .cancel-footer {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 32px;
+    }
+    .btn-confirm-cancel {
+        width: 100%;
+        background-color: #EF4444;
+        color: white;
+        border: none;
+        border-radius: 999px;
+        padding: 14px;
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+    .btn-confirm-cancel:hover:not(.disabled) {
+        opacity: 0.9;
+    }
+    .btn-confirm-cancel.disabled {
+        background-color: #FCA5A5;
+        cursor: not-allowed;
+    }
+    .btn-keep-booking {
+        width: 100%;
+        background: none;
+        border: none;
+        color: #6B7280;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        padding: 8px;
+        transition: color 0.2s;
+    }
+    .btn-keep-booking:hover {
+        color: #16305C;
+    }
+</style>
+
+@code {
+    [Parameter] public BookingItem? Booking { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback<BookingItem> OnConfirm { get; set; }
+
+    private string _reason = "";
+
+    private async Task SubmitCancel()
+    {
+        if (!string.IsNullOrWhiteSpace(_reason) && Booking != null)
+        {
+            await OnConfirm.InvokeAsync(Booking);
+        }
+    }
+}

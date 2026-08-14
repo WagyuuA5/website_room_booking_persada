@@ -1,0 +1,415 @@
+@page "/profile"
+@using booking_room.Components.Models
+
+<PageTitle>Profile - PADA Management</PageTitle>
+
+<div class="profile-page-wrapper">
+    <!-- Header Banner -->
+    <div class="profile-banner">
+        <div class="banner-gradient"></div>
+        
+        <div class="profile-header-content">
+            <div class="avatar-container">
+                <div class="avatar-img-placeholder">
+                    @GetInitials(UserProfile.Name)
+                </div>
+            </div>
+            <div class="profile-info-text">
+                <h1 class="profile-name">@UserProfile.Name</h1>
+                <p class="profile-title">@UserProfile.Title</p>
+                <p class="profile-email">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="22,6 12,13 2,6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    @UserProfile.Email
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="profile-content-area">
+        <div class="profile-grid">
+            
+            <!-- Card 1: Account Settings -->
+            <div class="profile-card">
+                <div class="card-header-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="#EAB63C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" stroke="#EAB63C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <h3>Account Settings</h3>
+                <ul class="settings-list">
+                    <li><a href="javascript:void(0)">Edit Profile <span class="arrow">›</span></a></li>
+                    <li><a href="javascript:void(0)">Change Password <span class="arrow">›</span></a></li>
+                    <li><a href="javascript:void(0)">Notification Preferences <span class="arrow">›</span></a></li>
+                </ul>
+            </div>
+
+            <!-- Card 2: My Stats -->
+            <div class="profile-card">
+                <div class="card-header-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M18 20V10M12 20V4M6 20v-6" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <h3>My Stats</h3>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <span class="stat-val">@UserProfile.TotalBookings</span>
+                        <span class="stat-lbl">Total Bookings</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-val red">@UserProfile.CanceledBookings</span>
+                        <span class="stat-lbl">Canceled</span>
+                    </div>
+                </div>
+                <div class="most-booked">
+                    <span class="most-lbl">Most Booked Room</span>
+                    <span class="most-val">@UserProfile.MostBookedRoom</span>
+                </div>
+            </div>
+
+            <!-- Card 3: Support/Help -->
+            <div class="profile-card">
+                <div class="card-header-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#3B82F6" stroke-width="2"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <h3>Support & Help</h3>
+                <ul class="settings-list">
+                    <li><a href="javascript:void(0)">Contact Admin <span class="arrow">›</span></a></li>
+                    <li><a href="javascript:void(0)">FAQ <span class="arrow">›</span></a></li>
+                    <li><a href="javascript:void(0)">Terms of Service <span class="arrow">›</span></a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="logout-container">
+            <button class="btn-logout">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Logout Account
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Default / Desktop Theme */
+    .profile-page-wrapper {
+        min-height: 100vh;
+        background-color: #F8FAFC;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .profile-banner {
+        position: relative;
+        height: 240px;
+        background: linear-gradient(135deg, #16305C 0%, #0F203C 100%);
+    }
+    
+    .profile-header-content {
+        position: absolute;
+        bottom: -60px; /* Offset to overlap content area */
+        left: 0;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .avatar-container {
+        margin-bottom: 16px;
+    }
+    
+    .avatar-img-placeholder {
+        width: 120px;
+        height: 120px;
+        background-color: #EAB63C;
+        border: 4px solid #FFFFFF;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        font-weight: 700;
+        color: #16305C;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .profile-info-text {
+        text-align: center;
+    }
+    
+    .profile-name {
+        color: #16305C;
+        font-size: 28px;
+        font-weight: 700;
+        margin: 0 0 4px 0;
+    }
+    
+    .profile-title {
+        color: #6B7280;
+        font-size: 15px;
+        font-weight: 500;
+        margin: 0 0 8px 0;
+    }
+    
+    .profile-email {
+        color: #9CA3AF;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        margin: 0;
+    }
+    
+    .profile-content-area {
+        padding: 100px 40px 60px 40px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .profile-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 24px;
+        margin-bottom: 40px;
+    }
+    
+    .profile-card {
+        background-color: #FFFFFF;
+        border-radius: 20px;
+        padding: 32px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        border: 1px solid #F1F5F9;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .profile-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card-header-icon {
+        width: 48px;
+        height: 48px;
+        background-color: #F8FAFC;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+    
+    .profile-card h3 {
+        color: #16305C;
+        font-size: 18px;
+        font-weight: 700;
+        margin: 0 0 20px 0;
+    }
+    
+    .settings-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .settings-list li {
+        margin-bottom: 12px;
+    }
+    
+    .settings-list li:last-child {
+        margin-bottom: 0;
+    }
+    
+    .settings-list a {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-decoration: none;
+        color: #4B5563;
+        font-size: 15px;
+        font-weight: 500;
+        padding: 10px 12px;
+        border-radius: 8px;
+        transition: background-color 0.2s, color 0.2s;
+    }
+    
+    .settings-list a:hover {
+        background-color: #F1F5F9;
+        color: #16305C;
+    }
+    
+    .arrow {
+        color: #9CA3AF;
+        font-size: 20px;
+        line-height: 1;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    
+    .stat-box {
+        background-color: #F8FAFC;
+        padding: 16px;
+        border-radius: 12px;
+        text-align: center;
+    }
+    
+    .stat-val {
+        display: block;
+        color: #16305C;
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+    
+    .stat-val.red {
+        color: #EF4444;
+    }
+    
+    .stat-lbl {
+        color: #6B7280;
+        font-size: 13px;
+        font-weight: 500;
+    }
+    
+    .most-booked {
+        background-color: #EEF2FF;
+        padding: 16px;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .most-lbl {
+        color: #4F46E5;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .most-val {
+        color: #1E3A8A;
+        font-size: 15px;
+        font-weight: 600;
+    }
+    
+    .logout-container {
+        text-align: center;
+        margin-top: 20px;
+    }
+    
+    .btn-logout {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: transparent;
+        color: #EF4444;
+        border: 2px solid #FEE2E2;
+        border-radius: 999px;
+        padding: 14px 32px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s, border-color 0.2s;
+    }
+    
+    .btn-logout:hover {
+        background-color: #FEF2F2;
+        border-color: #FECACA;
+    }
+
+    /* DARK THEME MOBILE PROFILE (Requirement) */
+    @@media (max-width: 768px) {
+        .profile-page-wrapper {
+            background-color: #0A1326; /* Dark Navy Background */
+        }
+        
+        .profile-banner {
+            background: linear-gradient(135deg, #0A1326 0%, #050A14 100%);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .avatar-img-placeholder {
+            border-color: #0A1326; /* Match dark bg */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+        
+        .profile-name {
+            color: #FFFFFF;
+        }
+        
+        .profile-title, .profile-email {
+            color: #94A3B8;
+        }
+        
+        /* Glassmorphism Cards */
+        .profile-card {
+            background-color: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header-icon {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .profile-card h3 {
+            color: #E2E8F0;
+        }
+        
+        .settings-list a {
+            color: #CBD5E1;
+        }
+        
+        .settings-list a:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #FFFFFF;
+        }
+        
+        .stat-box {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+        
+        .stat-val {
+            color: #FFFFFF;
+        }
+        
+        .most-booked {
+            background-color: rgba(234, 182, 60, 0.05); /* Gold tint */
+        }
+        
+        .most-lbl {
+            color: #EAB63C;
+        }
+        
+        .most-val {
+            color: #FDE68A;
+        }
+        
+        .btn-logout {
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+        
+        .btn-logout:hover {
+            background-color: rgba(239, 68, 68, 0.1);
+        }
+    }
+</style>
+
+@code {
+    private UserProfileData UserProfile { get; set; } = BookingDataStore.CurrentUser;
+
+    private string GetInitials(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "U";
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 1) return parts[0].Substring(0, 1).ToUpper();
+        return $"{parts[0].Substring(0, 1)}{parts[1].Substring(0, 1)}".ToUpper();
+    }
+}

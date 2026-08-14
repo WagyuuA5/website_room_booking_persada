@@ -2,198 +2,622 @@
 @inject booking_room.Services.LoadingStateService LoadingState
 @inject NavigationManager Navigation
 
-<div class="confirm-booking-modal">
-    @if (_isLoading)
-    {
-        <div class="skeleton-shimmer" style="height: 60px; margin-bottom: 2rem;"></div>
-        <div class="skeleton-grid" style="grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
-            <div class="skeleton-shimmer" style="height: 45px;"></div>
-            <div class="skeleton-shimmer" style="height: 45px;"></div>
-        </div>
-        <div class="skeleton-shimmer" style="height: 120px; margin-bottom: 2rem;"></div>
-        <div class="skeleton-shimmer" style="height: 150px; margin-bottom: 2rem;"></div>
+<style>
+    .confirm-booking-wrapper {
+        display: flex;
+        flex-direction: column;
+        max-width: 480px; 
+        width: 100%;
+        margin: 0 auto;
+        background: #fff;
+        border-radius: 24px;
+        overflow: hidden;
+        max-height: 90vh;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        font-family: 'Inter', sans-serif;
     }
-    else
-    {
-        <div class="confirm-booking-layout content-fade-in">
-            <div class="confirm-header">
-                <h2>Confirm Booking</h2>
-                <p>Schedule a new resource or room</p>
-                <button class="modal-close-btn" @onclick="OnClose">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </button>
+
+    .modal-header-section {
+        padding: 24px 24px 16px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        background: #fff;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    .modal-title {
+        color: #16305C;
+        font-weight: 700;
+        font-size: 1.25rem;
+        margin: 0 0 4px 0;
+    }
+    .modal-subtitle {
+        color: #6B7280;
+        font-size: 0.875rem;
+        margin: 0;
+    }
+    .btn-close {
+        background: transparent;
+        border: none;
+        color: #9CA3AF;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .btn-close:hover {
+        background: #F3F4F6;
+        color: #4B5563;
+    }
+
+    .modal-body-section {
+        padding: 0 24px 24px 24px;
+        overflow-y: auto;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .grid-2-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .form-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+    }
+
+    .input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    .input-icon {
+        position: absolute;
+        left: 12px;
+        color: #9CA3AF;
+        pointer-events: none;
+        display: flex;
+    }
+    .form-input {
+        width: 100%;
+        padding: 10px 12px 10px 36px;
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        color: #111827;
+        background: #fff;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+    .form-input::placeholder {
+        color: #9CA3AF;
+    }
+    .form-input:focus {
+        border-color: #EAB63C;
+        box-shadow: 0 0 0 2px rgba(234, 182, 60, 0.2);
+    }
+    .form-select {
+        width: 100%;
+        padding: 10px 32px 10px 36px;
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        color: #111827;
+        background: #fff;
+        outline: none;
+        appearance: none;
+    }
+    .form-select:focus {
+        border-color: #EAB63C;
+        box-shadow: 0 0 0 2px rgba(234, 182, 60, 0.2);
+    }
+    .select-chevron {
+        position: absolute;
+        right: 12px;
+        color: #9CA3AF;
+        pointer-events: none;
+        display: flex;
+    }
+
+    .time-inputs {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .time-inputs span {
+        color: #6B7280;
+        font-weight: 500;
+    }
+
+    /* Room Cards */
+    .room-cards-scroll {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: 12px;
+    }
+    
+    .room-card {
+        border: 1px solid #E5E7EB;
+        border-radius: 12px;
+        padding: 12px;
+        cursor: pointer;
+        position: relative;
+        background: #fff;
+        transition: all 0.2s;
+        display: flex;
+        flex-direction: column;
+    }
+    .room-card:hover:not(.disabled) {
+        border-color: #EAB63C;
+    }
+    .room-card.selected {
+        border: 2px solid #EAB63C;
+        background: #FEF9F0;
+    }
+    .room-card.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: #F9FAFB;
+    }
+    
+    .room-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 0.6rem;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+    .badge-available { background: #D1FAE5; color: #059669; }
+    .badge-booked { background: #FEE2E2; color: #DC2626; }
+
+    .room-icon-name {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 16px;
+    }
+    .room-icon {
+        color: #4B5563;
+    }
+    .room-card.selected .room-icon {
+        color: #EAB63C;
+    }
+    .room-name {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #111827;
+        margin: 0;
+        line-height: 1.2;
+    }
+    .room-cap {
+        font-size: 0.75rem;
+        color: #6B7280;
+        margin-top: 4px;
+    }
+    .room-amenities {
+        font-size: 0.7rem;
+        color: #6B7280;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: 6px;
+    }
+
+    /* Capacity Indicator */
+    .capacity-indicator {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .capacity-text {
+        font-size: 0.75rem;
+        color: #6B7280;
+    }
+    .capacity-bar-bg {
+        width: 80px;
+        height: 4px;
+        background: #E5E7EB;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+    .capacity-bar-fill {
+        height: 100%;
+        background: #EAB63C;
+        border-radius: 999px;
+        transition: width 0.3s ease;
+    }
+
+    /* Attendee Chips */
+    .attendee-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+        align-items: center;
+    }
+    .attendee-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #fff;
+        border: 1px solid #E5E7EB;
+        padding: 4px 8px 4px 4px;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: #374151;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .chip-avatar {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #DBEAFE;
+        color: #1D4ED8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.6rem;
+        font-weight: 700;
+    }
+    .chip-remove {
+        background: transparent;
+        border: none;
+        color: #9CA3AF;
+        cursor: pointer;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .chip-remove:hover { color: #EF4444; }
+
+    .conflict-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: #FDF2F8;
+        color: #DB2777;
+        padding: 4px 8px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    /* Toggle */
+    .external-guest-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 36px;
+        height: 20px;
+    }
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #E5E7EB;
+        transition: .3s;
+        border-radius: 20px;
+    }
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 2px;
+        bottom: 2px;
+        background-color: white;
+        transition: .3s;
+        border-radius: 50%;
+    }
+    input:checked + .toggle-slider {
+        background-color: #EAB63C;
+    }
+    input:checked + .toggle-slider:before {
+        transform: translateX(16px);
+    }
+
+    textarea.form-input {
+        resize: vertical;
+        min-height: 80px;
+        padding: 12px;
+    }
+
+    /* Footer */
+    .modal-footer-section {
+        padding: 16px 24px;
+        background: #fff;
+        border-top: 1px solid #E5E7EB;
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
+    }
+    .btn-pill {
+        border-radius: 999px;
+        padding: 8px 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+    }
+    .btn-cancel {
+        background: #fff;
+        border: 1px solid #D1D5DB;
+        color: #374151;
+    }
+    .btn-cancel:hover {
+        background: #F9FAFB;
+    }
+    .btn-confirm {
+        background: #EAB63C;
+        border: 1px solid #EAB63C;
+        color: #111827;
+    }
+    .btn-confirm:hover {
+        background: #D9A02A;
+    }
+</style>
+
+<div class="confirm-booking-wrapper">
+    <div class="modal-header-section">
+        <div>
+            <h2 class="modal-title">Confirm Booking</h2>
+            <p class="modal-subtitle">Schedule a new resource or room</p>
+        </div>
+        <button class="btn-close" @onclick="OnClose">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6L18 18"/></svg>
+        </button>
+    </div>
+
+    <div class="modal-body-section">
+        <!-- Row 1: Nama Pemesan & Divisi -->
+        <div class="grid-2-col">
+            <div>
+                <label class="form-label">Nama Pemesan (Full Name)</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </span>
+                    <input type="text" class="form-input" placeholder="Enter full name" @bind="_requesterName" />
+                </div>
             </div>
-
-            <div class="confirm-body">
-                <!-- Form Baris 1: Nama Pemesan & Divisi -->
-                <div class="form-row form-cols-2">
-                    <div class="form-group">
-                        <label>Nama Pemesan</label>
-                        <input type="text" class="form-control" @bind="_requesterName" />
-                    </div>
-                    <div class="form-group">
-                        <label>Division</label>
-                        <select class="form-select" @bind="_division">
-                            <option value="IT">IT</option>
-                            <option value="HR">HR</option>
-                            <option value="Finance">Finance</option>
-                            <option value="Marketing">Marketing</option>
-                        </select>
-                    </div>
+            <div>
+                <label class="form-label">Division</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>
+                    </span>
+                    <select class="form-select" @bind="_division">
+                        <option value="" disabled selected>Select division</option>
+                        <option value="IT">IT</option>
+                        <option value="HR">HR</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Marketing">Marketing</option>
+                    </select>
+                    <span class="select-chevron">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                    </span>
                 </div>
+            </div>
+        </div>
 
-                <!-- Room Selection -->
-                <div class="form-group">
-                    <label>Room Selection</label>
-                    <div class="room-selection-grid">
-                        @foreach (var room in _suggestedRooms)
-                        {
-                            var isSelected = room.Id == _selectedRoomId;
-                            var isAvailable = room.Status == "available";
-                            var cardClass = isSelected ? "room-select-card selected" : "room-select-card";
-                            if (!isAvailable) cardClass += " disabled";
-
-                            <div class="@cardClass" @onclick="() => SelectRoom(room)">
-                                <div class="room-select-header">
-                                    <span class="room-select-name">@room.Name</span>
-                                    <span class="badge @(isAvailable ? "badge-success" : "badge-danger")">
-                                        @(isAvailable ? "AVAILABLE" : "BOOKED")
-                                    </span>
-                                </div>
-                                <div class="room-select-meta">
-                                    <span class="meta-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 11C17.66 11 18.99 9.66 18.99 8C18.99 6.34 17.66 5 16 5C14.34 5 13 6.34 13 8C13 9.66 14.34 11 16 11ZM8 11C9.66 11 10.99 9.66 10.99 8C10.99 6.34 9.66 5 8 5C6.34 5 5 6.34 5 8C5 9.66 6.34 11 8 11ZM8 13C5.67 13 1 14.17 1 16.5V19H15V16.5C15 14.17 10.33 13 8 13ZM16 13C15.71 13 15.38 13.02 15.03 13.05C16.19 13.89 17 15.02 17 16.5V19H23V16.5C23 14.17 18.33 13 16 13Z"/></svg> @room.Capacity</span>
-                                    <span class="meta-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><path d="M17 2l-5 5-5-5"/></svg> @string.Join(", ", room.Amenities.Take(2))</span>
-                                </div>
-                            </div>
-                        }
-                    </div>
-                </div>
-
-                <!-- Date and Time -->
-                <div class="form-row form-cols-3">
-                    <div class="form-group">
-                        <label>Date</label>
-                        <input type="date" class="form-control" @bind="_bookingDate" />
-                    </div>
-                    <div class="form-group">
-                        <label>Start Time</label>
-                        <input type="time" class="form-control" @bind="_startTime" />
-                    </div>
-                    <div class="form-group">
-                        <label>End Time</label>
-                        <input type="time" class="form-control" @bind="_endTime" />
-                    </div>
-                </div>
-
-                <!-- Invite Attendees -->
-                <div class="form-group">
-                    <label>Invite Attendees</label>
-                    <div class="autocomplete-wrapper">
-                        <input type="text" class="form-control" placeholder="Search by name or email..." @bind="_attendeeSearch" @bind:event="oninput" @onkeyup="HandleAttendeeInput" />
-                    </div>
-                    
-                    <div class="attendee-chips mt-2">
-                        @foreach (var attendee in _attendees)
-                        {
-                            <div class="attendee-chip">
-                                @attendee
-                                <button type="button" @onclick="() => RemoveAttendee(attendee)">&times;</button>
-                            </div>
-                        }
-                    </div>
-
-                    <!-- Capacity Indicator -->
-                    <div class="capacity-indicator mt-3">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span class="capacity-text">@_attendees.Count of @SelectedRoomCapacity Room Capacity</span>
-                            @if (_hasConflict)
-                            {
-                                <span class="conflict-warning"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01"/></svg> Potential schedule conflict</span>
-                            }
-                        </div>
-                        <div class="capacity-progress-bar">
-                            <div class="capacity-progress-fill @CapacityFillClass" style="width: @CapacityPercentage%;"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- External Guests -->
-                <div class="form-group d-flex align-items-center justify-content-between">
-                    <div>
-                        <label class="mb-0">Invite external guests</label>
-                        <div style="font-size: 0.8rem; color: #64748b;">Send invitations to users outside the organization</div>
-                    </div>
-                    <label class="switch">
-                        <input type="checkbox" @bind="_allowExternalGuests" />
-                        <span class="slider round"></span>
-                    </label>
-                </div>
-                
-                @if (_allowExternalGuests)
+        <!-- Room Selection -->
+        <div>
+            <label class="form-label">Room Selection</label>
+            <div class="room-cards-scroll">
+                @foreach (var room in _suggestedRooms)
                 {
-                    <div class="form-group">
-                        <input type="email" class="form-control" placeholder="Enter external email addresses..." />
+                    var isSelected = room.Id == _selectedRoomId;
+                    var isAvailable = room.Status == "available";
+                    var cardClass = isSelected ? "room-card selected" : "room-card";
+                    if (!isAvailable) cardClass += " disabled";
+
+                    <div class="@cardClass" @onclick="() => SelectRoom(room)">
+                        <span class="room-badge @(isAvailable ? "badge-available" : "badge-booked")">
+                            @(isAvailable ? "AVAILABLE" : "BOOKED")
+                        </span>
+                        
+                        <div class="room-icon-name">
+                            <span class="room-icon">
+                                @if(room.Name.Contains("Boardroom", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>
+                                }
+                                else if(room.Name.Contains("Studio", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                                }
+                                else
+                                {
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 9v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9"/><path d="M9 22V12h6v10M2 10.6L12 2l10 8.6"/></svg>
+                                }
+                            </span>
+                            <div>
+                                <h3 class="room-name">@room.Name</h3>
+                                <div class="room-cap">Cap: @room.Capacity Pax</div>
+                            </div>
+                        </div>
+                        <div class="room-amenities">
+                            @string.Join(", ", room.Amenities.Take(3))
+                        </div>
                     </div>
                 }
-
-                <!-- Notes -->
-                <div class="form-group">
-                    <label>Notes/Special Requests</label>
-                    <textarea class="form-control" rows="3" placeholder="Enter any specific requirements..."></textarea>
-                </div>
-            </div>
-
-            <div class="confirm-footer">
-                <button class="btn-cancel" @onclick="OnClose">Cancel</button>
-                <button class="btn-book-now" @onclick="SubmitBooking">
-                    Confirm Booking
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </button>
             </div>
         </div>
-    }
+
+        <!-- Date & Time -->
+        <div class="grid-2-col">
+            <div>
+                <label class="form-label">Date</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+                    </span>
+                    <input type="date" class="form-input" placeholder="mm/dd/yyyy" @bind="_bookingDate" />
+                </div>
+            </div>
+            <div>
+                <label class="form-label">Time (Start - End)</label>
+                <div class="time-inputs">
+                    <div class="input-wrapper" style="flex: 1;">
+                        <span class="input-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                        </span>
+                        <input type="time" class="form-input" @bind="_startTime" />
+                    </div>
+                    <span>-</span>
+                    <div class="input-wrapper" style="flex: 1;">
+                        <span class="input-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                        </span>
+                        <input type="time" class="form-input" @bind="_endTime" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invite Attendees -->
+        <div>
+            <label class="form-label">
+                Invite Attendees
+                <div class="capacity-indicator">
+                    <span class="capacity-text">@_attendees.Count of @SelectedRoomCapacity Room Capacity</span>
+                    <div class="capacity-bar-bg">
+                        <div class="capacity-bar-fill" style="width: @CapacityPercentage%;"></div>
+                    </div>
+                </div>
+            </label>
+            <div class="input-wrapper">
+                <span class="input-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </span>
+                <input type="text" class="form-input" placeholder="Invite colleagues..." @bind="_attendeeSearch" @bind:event="oninput" @onkeyup="HandleAttendeeInput" />
+            </div>
+            
+            <div class="attendee-chips">
+                @foreach (var attendee in _attendees)
+                {
+                    <div class="attendee-chip">
+                        <div class="chip-avatar">@attendee[0]</div>
+                        @attendee
+                        <button type="button" class="chip-remove" @onclick="() => RemoveAttendee(attendee)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6L18 18"/></svg>
+                        </button>
+                    </div>
+                }
+                
+                @if (_hasConflict)
+                {
+                    <div class="conflict-badge">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        Potential schedule conflict
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- External Guests -->
+        <div>
+            <div class="external-guest-row">
+                <label class="form-label" style="margin-bottom: 0;">Invite external guests</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" @bind="_allowExternalGuests" />
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            
+            @if (_allowExternalGuests)
+            {
+                <div class="input-wrapper" style="margin-top: 12px;">
+                    <span class="input-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                    </span>
+                    <input type="email" class="form-input" placeholder="Guest Email (e.g. guest@company.com)" />
+                </div>
+            }
+        </div>
+
+        <!-- Notes -->
+        <div>
+            <label class="form-label">Notes / Special Requests</label>
+            <textarea class="form-input" placeholder="Equipment needs, catering, etc."></textarea>
+        </div>
+    </div>
+
+    <div class="modal-footer-section">
+        <button class="btn-pill btn-cancel" @onclick="OnClose">Cancel</button>
+        <button class="btn-pill btn-confirm" @onclick="SubmitBooking">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+            Confirm Booking
+        </button>
+    </div>
 </div>
 
 @code {
     [Parameter] public RoomItem? InitialRoom { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
 
-    private bool _isLoading = true;
-    private string _requesterName = "Admin User";
-    private string _division = "IT";
+    private string _requesterName = "";
+    private string _division = "";
     private string _selectedRoomId = "";
     private DateTime? _bookingDate = DateTime.Today;
     private TimeOnly? _startTime = new TimeOnly(10, 0);
     private TimeOnly? _endTime = new TimeOnly(11, 0);
     private string _attendeeSearch = "";
-    private List<string> _attendees = new() { "Andi Setiawan" };
-    private bool _hasConflict = false;
-    private bool _allowExternalGuests = false;
+    private List<string> _attendees = new() { "Alex Mercer", "Nadia Pradipta" };
+    private bool _hasConflict = true; // explicitly set to true to show dummy badge based on instruction
+    private bool _allowExternalGuests = true; // explicitly set to ON based on instruction
 
     private List<RoomItem> _suggestedRooms = new();
 
-    protected override async Task OnParametersSetAsync()
+    protected override void OnInitialized()
     {
-        if (_isLoading)
+        // Define dummy data exactly as requested by design
+        _suggestedRooms = new List<RoomItem>
         {
-            await Task.Delay(300);
-            
-            // Setup suggested rooms - one selected, others random
-            _suggestedRooms = DashboardData.AllRooms
-                .Select(r => new RoomItem(Guid.NewGuid().ToString(), r.RoomName, r.Capacity, "", r.Status, r.Facilities.Split(',').Select(x => x.Trim()).ToList(), r.Floor))
-                .Take(3).ToList();
+            new RoomItem("1", "Alpha Boardroom", 12, "", "available", new List<string>{"TV", "WiFi", "Projector"}, "1"),
+            new RoomItem("2", "Beta Studio", 4, "", "available", new List<string>{"Camera", "Mic", "WiFi"}, "1"),
+            new RoomItem("3", "Gamma Lounge", 8, "", "booked", new List<string>{"Sofa", "Coffee", "WiFi"}, "1")
+        };
 
-            if (InitialRoom != null)
-            {
-                _suggestedRooms[0] = InitialRoom;
-                _selectedRoomId = InitialRoom.Id;
-            }
-            else
-            {
-                _selectedRoomId = _suggestedRooms[0].Id;
-            }
-
-            _isLoading = false;
+        if (InitialRoom != null)
+        {
+            _selectedRoomId = InitialRoom.Id;
+        }
+        else
+        {
+            _selectedRoomId = "1";
         }
     }
 
@@ -208,8 +632,6 @@
     private int SelectedRoomCapacity => _suggestedRooms.FirstOrDefault(r => r.Id == _selectedRoomId)?.Capacity ?? 10;
     
     private double CapacityPercentage => Math.Min(100.0, (_attendees.Count / (double)SelectedRoomCapacity) * 100);
-    
-    private string CapacityFillClass => CapacityPercentage > 90 ? "bg-red" : CapacityPercentage > 75 ? "bg-amber" : "bg-green";
 
     private void HandleAttendeeInput(KeyboardEventArgs e)
     {
@@ -217,32 +639,22 @@
         {
             _attendees.Add(_attendeeSearch);
             _attendeeSearch = "";
-            
-            // Simulasi deteksi konflik jadwal sederhana jika nambah Budi
-            if (_attendees.Any(a => a.Contains("Budi", StringComparison.OrdinalIgnoreCase)))
-            {
-                _hasConflict = true;
-            }
-            else
-            {
-                _hasConflict = false;
-            }
         }
     }
 
     private void RemoveAttendee(string name)
     {
         _attendees.Remove(name);
-        if (!_attendees.Any(a => a.Contains("Budi", StringComparison.OrdinalIgnoreCase)))
+        if (_attendees.Count < 2)
         {
-            _hasConflict = false;
+            _hasConflict = false; // toggle off for dummy realism
         }
     }
 
     private async Task SubmitBooking()
     {
-        // TODO: Simpan booking, tampilkan toast, redirect
         await OnClose.InvokeAsync();
         Navigation.NavigateTo("/status");
     }
 }
+

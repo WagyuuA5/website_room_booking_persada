@@ -1,33 +1,337 @@
-<div class="auto-release-modal">
-    <div class="auto-release-icon-container">
-        <div class="auto-release-icon-bg">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+@using Microsoft.AspNetCore.Components
+@inject NavigationManager Navigation
+
+<div class="auto-release-modal-card">
+    <!-- Header Top Row -->
+    <div class="auto-release-header-row">
+        <div class="system-alert-badge">
+            <span class="system-alert-icon">!</span>
+            <span class="system-alert-label">SYSTEM ALERT</span>
         </div>
-    </div>
-    
-    <div class="auto-release-content">
-        <h2 class="auto-release-title">Booking Auto-Released</h2>
-        <h3 class="auto-release-subtitle">@RoomName</h3>
-        
-        <p class="auto-release-message">
-            This booking has been automatically released because the check-in window has expired. The room is now available for others to book.
-        </p>
+        <button type="button" class="modal-close-icon-btn" @onclick="HandleClose" aria-label="Close">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
     </div>
 
+    <!-- Header Title -->
+    <h2 class="auto-release-title">Booking Auto-Released</h2>
+
+    <!-- Body -->
+    <div class="auto-release-body">
+        <!-- Badge -->
+        <div class="noshow-pill-badge">
+            <span class="noshow-dot">●</span>
+            <span>No-show</span>
+        </div>
+
+        <!-- Description -->
+        <p class="auto-release-description">
+            Your booking for <strong class="highlight-room-name">@(string.IsNullOrWhiteSpace(RoomName) ? "Alpha Boardroom" : RoomName)</strong> has been automatically cancelled because the check-in window has expired. The room is now available for other users.
+        </p>
+
+        <!-- Info Card -->
+        <div class="auto-release-info-card">
+            <div class="info-row">
+                <span class="info-label">Room</span>
+                <span class="info-value">@(string.IsNullOrWhiteSpace(RoomName) ? "Alpha Boardroom" : RoomName)</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Original Time</span>
+                <span class="info-value">@EffectiveTime</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Date</span>
+                <span class="info-value">@Date</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
     <div class="auto-release-footer">
-        <button class="btn-book-another" @onclick="HandleBookAnother">Book Another Room</button>
-        <button class="btn-close-alert" @onclick="OnClose">Close</button>
+        <button type="button" class="btn-history-outline" @onclick="HandleViewHistory">
+            View History
+        </button>
+        <button type="button" class="btn-new-booking-gold" @onclick="HandleNewBooking">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="btn-plus-icon">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>New Booking</span>
+        </button>
     </div>
 </div>
 
+<style>
+    :root {
+        --modal-navy: #16305C;
+        --modal-gold: #EAB63C;
+        --modal-gold-hover: #D9A42B;
+        --modal-gray-text: #6B7280;
+        --modal-bg-light: #F3F4F6;
+        --modal-border: #E5E7EB;
+        --modal-red: #EF4444;
+        --modal-red-bg: #FEE2E2;
+        --modal-red-dark: #DC2626;
+    }
+
+    .auto-release-modal-card {
+        width: 100%;
+        max-width: 450px;
+        background: #FFFFFF;
+        border-radius: 24px;
+        padding: 1.5rem 1.5rem 1.25rem 1.5rem;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        text-align: left;
+        margin: 0 auto;
+        font-family: inherit;
+    }
+
+    /* Header */
+    .auto-release-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        margin-bottom: 0.75rem;
+    }
+
+    .system-alert-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .system-alert-icon {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background-color: #EF4444;
+        color: #FFFFFF;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 900;
+        line-height: 1;
+    }
+
+    .system-alert-label {
+        color: #EF4444;
+        font-size: 0.75rem;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    .modal-close-icon-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: none;
+        background: transparent;
+        color: #9CA3AF;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        padding: 0;
+    }
+
+    .modal-close-icon-btn:hover {
+        background: #F3F4F6;
+        color: #16305C;
+    }
+
+    .auto-release-title {
+        font-size: 1.45rem;
+        font-weight: 800;
+        color: #16305C;
+        margin: 0 0 0.85rem 0;
+        line-height: 1.25;
+        letter-spacing: -0.01em;
+    }
+
+    /* Body */
+    .auto-release-body {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
+    }
+
+    .noshow-pill-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background-color: #FEE2E2;
+        color: #DC2626;
+        padding: 3px 10px;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        margin-bottom: 0.85rem;
+    }
+
+    .noshow-dot {
+        font-size: 0.65rem;
+        color: #DC2626;
+        line-height: 1;
+    }
+
+    .auto-release-description {
+        color: #6B7280;
+        font-size: 0.875rem;
+        line-height: 1.55;
+        margin: 0 0 1rem 0;
+        text-align: left;
+    }
+
+    .highlight-room-name {
+        color: #16305C;
+        font-weight: 700;
+    }
+
+    /* Info Card */
+    .auto-release-info-card {
+        width: 100%;
+        background-color: #F3F4F6;
+        border: 1px solid #E5E7EB;
+        border-radius: 12px;
+        padding: 0.85rem 1rem;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.875rem;
+    }
+
+    .info-label {
+        color: #6B7280;
+        font-weight: 500;
+    }
+
+    .info-value {
+        color: #16305C;
+        font-weight: 700;
+        text-align: right;
+    }
+
+    /* Footer */
+    .auto-release-footer {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 0.65rem;
+        width: 100%;
+        margin-top: 0.25rem;
+    }
+
+    .btn-history-outline {
+        padding: 0.55rem 1.15rem;
+        border-radius: 9999px;
+        background: #FFFFFF;
+        border: 1.5px solid #CBD5E1;
+        color: #4B5563;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        line-height: 1.2;
+    }
+
+    .btn-history-outline:hover {
+        background: #F8FAFC;
+        border-color: #94A3B8;
+        color: #16305C;
+    }
+
+    .btn-new-booking-gold {
+        padding: 0.55rem 1.25rem;
+        border-radius: 9999px;
+        background: #EAB63C;
+        border: 1.5px solid #EAB63C;
+        color: #16305C;
+        font-size: 0.875rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.2s ease;
+        line-height: 1.2;
+        box-shadow: 0 2px 6px rgba(234, 182, 60, 0.25);
+    }
+
+    .btn-new-booking-gold:hover {
+        background: #D9A42B;
+        border-color: #D9A42B;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(234, 182, 60, 0.35);
+    }
+
+    .btn-new-booking-gold:active,
+    .btn-history-outline:active {
+        transform: translateY(0);
+    }
+
+    .btn-plus-icon {
+        display: inline-block;
+        flex-shrink: 0;
+    }
+</style>
+
 @code {
-    [Parameter] public string RoomName { get; set; } = "";
+    [Parameter] public string RoomName { get; set; } = "Alpha Boardroom";
+    [Parameter] public string OriginalTime { get; set; } = "09:00 - 11:00 AM";
+    [Parameter] public string? TimeSlot { get; set; }
+    [Parameter] public string Date { get; set; } = "Today, Oct 24, 2023";
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback OnBookAnother { get; set; }
+    [Parameter] public EventCallback OnViewHistory { get; set; }
 
-    private async Task HandleBookAnother()
+    private string EffectiveTime => !string.IsNullOrWhiteSpace(TimeSlot) ? TimeSlot : OriginalTime;
+
+    private async Task HandleClose()
     {
         await OnClose.InvokeAsync();
-        await OnBookAnother.InvokeAsync();
+    }
+
+    private async Task HandleViewHistory()
+    {
+        await OnClose.InvokeAsync();
+        if (OnViewHistory.HasDelegate)
+        {
+            await OnViewHistory.InvokeAsync();
+        }
+        else
+        {
+            Navigation.NavigateTo("/history");
+        }
+    }
+
+    private async Task HandleNewBooking()
+    {
+        await OnClose.InvokeAsync();
+        if (OnBookAnother.HasDelegate)
+        {
+            await OnBookAnother.InvokeAsync();
+        }
+        else
+        {
+            Navigation.NavigateTo("/bookings");
+        }
     }
 }

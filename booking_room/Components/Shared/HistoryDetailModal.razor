@@ -1,0 +1,262 @@
+@using booking_room.Components.Models
+@inject NavigationManager Navigation
+
+<div class="history-detail-modal">
+    <div class="detail-modal-header">
+        <div class="detail-status-row">
+            <span class="detail-status-badge @GetStatusClass()">
+                @BookingDataStore.GetStatusLabel(Booking?.Status ?? "completed")
+            </span>
+        </div>
+        <button class="modal-close-btn-detail" @onclick="OnClose">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+    </div>
+
+    @if (Booking != null)
+    {
+        <div class="detail-modal-body">
+            <h2 class="detail-room-title">@Booking.RoomName</h2>
+            <span class="detail-req-label">Request ID: @Booking.RequestId</span>
+
+            <div class="detail-info-grid">
+                <div class="info-item">
+                    <span class="info-label">DATE</span>
+                    <span class="info-value">@Booking.Date</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">TIME</span>
+                    <span class="info-value">@Booking.TimeSlot</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">DURATION</span>
+                    <span class="info-value">@Booking.Duration</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">ATTENDEES</span>
+                    <span class="info-value">@Booking.Attendees / @Booking.Capacity</span>
+                </div>
+            </div>
+
+            <div class="detail-purpose-section">
+                <span class="info-label">PURPOSE</span>
+                <p class="purpose-text-detail">@Booking.Purpose</p>
+            </div>
+
+            <div class="detail-requester-section">
+                <span class="info-label">REQUESTED BY</span>
+                <div class="requester-row">
+                    <div class="avatar-sm">@GetInitials(Booking.RequestedBy)</div>
+                    <div>
+                        <span class="requester-name-sm">@Booking.RequestedBy</span>
+                        <span class="requester-title-sm">@Booking.RequestedByTitle</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-modal-footer">
+            <button class="btn-close-detail" @onclick="OnClose">Close</button>
+            <button class="btn-book-again" @onclick="BookAgain">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Book Again
+            </button>
+        </div>
+    }
+</div>
+
+<style>
+    .history-detail-modal {
+        width: 100%;
+        max-width: 500px;
+        background: #FFFFFF;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        font-family: 'Inter', sans-serif;
+    }
+    .detail-modal-header {
+        background-color: #F8FAFC;
+        padding: 20px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #E2E8F0;
+    }
+    .detail-status-badge {
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+    .detail-status-badge.badge-completed {
+        background-color: #DBEAFE;
+        color: #1E40AF;
+    }
+    .detail-status-badge.badge-rejected {
+        background-color: #FEE2E2;
+        color: #991B1B;
+    }
+    .detail-status-badge.badge-approved {
+        background-color: #D1FAE5;
+        color: #065F46;
+    }
+    .detail-status-badge.badge-pending {
+        background-color: #FEF3C7;
+        color: #92400E;
+    }
+    .modal-close-btn-detail {
+        background: none;
+        border: none;
+        color: #9CA3AF;
+        cursor: pointer;
+        padding: 4px;
+        display: flex;
+        border-radius: 50%;
+        transition: background-color 0.2s;
+    }
+    .modal-close-btn-detail:hover {
+        background-color: #F3F4F6;
+        color: #4B5563;
+    }
+    .detail-modal-body {
+        padding: 24px;
+    }
+    .detail-room-title {
+        color: #16305C;
+        font-size: 22px;
+        font-weight: 700;
+        margin: 0 0 4px 0;
+    }
+    .detail-req-label {
+        color: #9CA3AF;
+        font-size: 13px;
+        display: block;
+        margin-bottom: 24px;
+    }
+    .detail-info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 24px;
+    }
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .info-label {
+        color: #9CA3AF;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .info-value {
+        color: #16305C;
+        font-size: 14px;
+        font-weight: 600;
+    }
+    .detail-purpose-section {
+        margin-bottom: 24px;
+    }
+    .purpose-text-detail {
+        color: #4B5563;
+        font-size: 14px;
+        line-height: 1.6;
+        margin: 8px 0 0 0;
+    }
+    .detail-requester-section {
+        margin-bottom: 8px;
+    }
+    .requester-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 8px;
+    }
+    .avatar-sm {
+        width: 36px;
+        height: 36px;
+        background-color: #16305C;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 700;
+    }
+    .requester-name-sm {
+        display: block;
+        color: #16305C;
+        font-size: 14px;
+        font-weight: 600;
+    }
+    .requester-title-sm {
+        display: block;
+        color: #9CA3AF;
+        font-size: 12px;
+    }
+    .detail-modal-footer {
+        padding: 16px 24px;
+        border-top: 1px solid #F1F5F9;
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+    }
+    .btn-close-detail {
+        padding: 10px 20px;
+        border: 1px solid #E5E7EB;
+        border-radius: 999px;
+        background: #FFFFFF;
+        color: #374151;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    .btn-close-detail:hover {
+        background-color: #F9FAFB;
+    }
+    .btn-book-again {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 20px;
+        background-color: #EAB63C;
+        color: #16305C;
+        border: none;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+    .btn-book-again:hover {
+        opacity: 0.9;
+    }
+</style>
+
+@code {
+    [Parameter] public BookingItem? Booking { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private string GetStatusClass()
+    {
+        return BookingDataStore.GetStatusBadgeClass(Booking?.Status ?? "completed");
+    }
+
+    private string GetInitials(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "U";
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 1) return parts[0].Substring(0, 1).ToUpper();
+        return $"{parts[0].Substring(0, 1)}{parts[1].Substring(0, 1)}".ToUpper();
+    }
+
+    private void BookAgain()
+    {
+        Navigation.NavigateTo("/bookings");
+    }
+}

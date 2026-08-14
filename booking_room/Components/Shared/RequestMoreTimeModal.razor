@@ -1,47 +1,354 @@
-<div class="request-more-time-modal">
-    <div class="request-header">
-        <div class="header-icon bg-amber-light">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="var(--accent-amber)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<div class="request-time-modal-card">
+    <!-- Header -->
+    <div class="request-modal-header">
+        <div class="header-left">
+            <div class="header-room-icon-circle">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16305C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 21h18" />
+                    <path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16" />
+                    <circle cx="14" cy="12" r="1" fill="#16305C" />
+                </svg>
+            </div>
+            <div class="header-title-group">
+                <h3 class="modal-main-title">Request More Time</h3>
+                <div class="modal-room-subtitle">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="location-pin-icon">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                        <circle cx="12" cy="10" r="3" />
+                    </svg>
+                    <span>@(string.IsNullOrWhiteSpace(RoomName) ? "Alpha Boardroom" : RoomName)</span>
+                </div>
+            </div>
         </div>
-        <div class="header-text">
-            <h2>Request More Time</h2>
-            <p>@RoomName</p>
+        <button type="button" class="btn-modal-close" @onclick="HandleCancel" aria-label="Close">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- Body -->
+    <div class="request-modal-body">
+        <!-- Info Box -->
+        <div class="info-alert-box">
+            <div class="info-alert-icon-wrapper">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EAB63C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                </svg>
+            </div>
+            <p class="info-alert-text">
+                You can extend your check-in window by exactly 10 minutes. This action can only be performed once per booking.
+            </p>
+        </div>
+
+        <!-- Form Field -->
+        <div class="form-group-reason">
+            <label class="form-label-reason" for="extension-reason-input">
+                Reason for extension <span class="required-star">*</span>
+            </label>
+            <textarea id="extension-reason-input"
+                      class="form-textarea-reason"
+                      rows="3"
+                      placeholder="e.g., In transit, Previous meeting running over"
+                      @bind="_reason"
+                      @bind:event="oninput"></textarea>
         </div>
     </div>
 
-    <div class="request-body">
-        <div class="info-box bg-slate-50">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="info-icon"><circle cx="12" cy="12" r="10" stroke="#f59e0b" stroke-width="2"/><path d="M12 16v-4M12 8h.01" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/></svg>
-            <p>You can extend your check-in window by exactly 10 minutes. This action can only be performed once per booking.</p>
-        </div>
-
-        <div class="form-group">
-            <label>Reason for extension <span class="text-danger">*</span></label>
-            <textarea class="form-control" rows="3" placeholder="e.g., In transit, Previous meeting running over" @bind="_reason" @bind:event="oninput"></textarea>
-        </div>
-    </div>
-
-    <div class="request-footer">
-        <button class="btn-cancel" @onclick="OnCancel">Cancel</button>
-        <button class="btn-extend @(string.IsNullOrWhiteSpace(_reason) ? "disabled" : "")" disabled="@string.IsNullOrWhiteSpace(_reason)" @onclick="SubmitExtension">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Request Extension
+    <!-- Footer -->
+    <div class="request-modal-footer">
+        <button type="button" class="btn-ghost-cancel" @onclick="HandleCancel">
+            Cancel
+        </button>
+        <button type="button"
+                class="btn-gold-extend @(string.IsNullOrWhiteSpace(_reason) ? "disabled" : "")"
+                disabled="@string.IsNullOrWhiteSpace(_reason)"
+                @onclick="SubmitExtension">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="btn-clock-icon">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+            </svg>
+            <span>Request Extension</span>
         </button>
     </div>
 </div>
 
+<style>
+    .request-time-modal-card {
+        width: 100%;
+        max-width: 420px;
+        background: #FFFFFF;
+        border-radius: 24px;
+        padding: 1.5rem;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        text-align: left;
+        margin: 0 auto;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    /* Header */
+    .request-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        width: 100%;
+        margin-bottom: 1.25rem;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .header-room-icon-circle {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background-color: #F3F4F6;
+        border: 1px solid #E5E7EB;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .header-title-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+    }
+
+    .modal-main-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #16305C;
+        margin: 0;
+        line-height: 1.25;
+        letter-spacing: -0.01em;
+    }
+
+    .modal-room-subtitle {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: #6B7280;
+        line-height: 1.2;
+    }
+
+    .location-pin-icon {
+        flex-shrink: 0;
+        display: inline-block;
+    }
+
+    .btn-modal-close {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: none;
+        background: transparent;
+        color: #9CA3AF;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        padding: 0;
+        flex-shrink: 0;
+        margin-top: -2px;
+        margin-right: -4px;
+    }
+
+    .btn-modal-close:hover {
+        background-color: #F3F4F6;
+        color: #16305C;
+    }
+
+    /* Body */
+    .request-modal-body {
+        display: flex;
+        flex-direction: column;
+        gap: 1.15rem;
+        width: 100%;
+    }
+
+    /* Info Alert Box */
+    .info-alert-box {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        background-color: #F3F4F6;
+        border: 1px solid #E5E7EB;
+        border-radius: 12px;
+        padding: 0.875rem 1rem;
+        box-sizing: border-box;
+    }
+
+    .info-alert-icon-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+    .info-alert-text {
+        font-size: 0.8125rem;
+        line-height: 1.45;
+        color: #4B5563;
+        margin: 0;
+        font-weight: 400;
+    }
+
+    /* Form Group */
+    .form-group-reason {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .form-label-reason {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        margin: 0;
+    }
+
+    .required-star {
+        color: #EF4444;
+        font-weight: 700;
+        margin-left: 2px;
+    }
+
+    .form-textarea-reason {
+        width: 100%;
+        border: 1px solid #E5E7EB;
+        border-radius: 12px;
+        padding: 0.75rem 0.875rem;
+        font-size: 0.875rem;
+        line-height: 1.45;
+        color: #111827;
+        background-color: #FFFFFF;
+        outline: none;
+        box-sizing: border-box;
+        resize: vertical;
+        min-height: 84px;
+        font-family: inherit;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .form-textarea-reason::placeholder {
+        color: #9CA3AF;
+        font-size: 0.85rem;
+    }
+
+    .form-textarea-reason:focus {
+        border-color: #EAB63C;
+        box-shadow: 0 0 0 3px rgba(234, 182, 60, 0.18);
+    }
+
+    /* Footer */
+    .request-modal-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        margin-top: 1.35rem;
+    }
+
+    .btn-ghost-cancel {
+        background: transparent;
+        border: none;
+        color: #6B7280;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 0.5rem 0.875rem;
+        border-radius: 9999px;
+        transition: all 0.2s ease;
+        line-height: 1.25;
+    }
+
+    .btn-ghost-cancel:hover {
+        background-color: #F3F4F6;
+        color: #16305C;
+    }
+
+    .btn-gold-extend {
+        background: #EAB63C;
+        border: 1.5px solid #EAB63C;
+        color: #16305C;
+        font-size: 0.875rem;
+        font-weight: 700;
+        cursor: pointer;
+        padding: 0.55rem 1.25rem;
+        border-radius: 9999px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        line-height: 1.25;
+        box-shadow: 0 2px 6px rgba(234, 182, 60, 0.28);
+        transition: all 0.2s ease;
+    }
+
+    .btn-gold-extend:hover:not(:disabled) {
+        background: #D9A42B;
+        border-color: #D9A42B;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(234, 182, 60, 0.38);
+    }
+
+    .btn-gold-extend:active:not(:disabled) {
+        transform: translateY(0);
+    }
+
+    .btn-gold-extend:disabled,
+    .btn-gold-extend.disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+    }
+
+    .btn-clock-icon {
+        flex-shrink: 0;
+        display: inline-block;
+    }
+</style>
+
 @code {
-    [Parameter] public string RoomName { get; set; } = "";
+    [Parameter] public string RoomName { get; set; } = "Alpha Boardroom";
     [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback<string> OnRequestExtension { get; set; }
 
     private string _reason = "";
+
+    private async Task HandleCancel()
+    {
+        if (OnCancel.HasDelegate)
+        {
+            await OnCancel.InvokeAsync();
+        }
+        else if (OnClose.HasDelegate)
+        {
+            await OnClose.InvokeAsync();
+        }
+    }
 
     private async Task SubmitExtension()
     {
         if (!string.IsNullOrWhiteSpace(_reason))
         {
-            await OnRequestExtension.InvokeAsync(_reason);
+            await OnRequestExtension.InvokeAsync(_reason.Trim());
         }
     }
 }

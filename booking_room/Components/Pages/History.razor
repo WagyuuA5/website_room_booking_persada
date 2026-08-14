@@ -1,9 +1,404 @@
 @page "/history"
-@inherits LayoutComponentBase
+@page "/bookings/history"
+@using booking_room.Components.Models
+@using booking_room.Components.Shared
 
-<PageTitle>History - PADA Management</PageTitle>
+<PageTitle>Booking History - PADA Management</PageTitle>
 
-<div class="hero-card">
-    <h1 class="hero-title">Riwayat Pemesanan</h1>
-    <p class="hero-subtitle">Fitur riwayat pemesanan akan segera tersedia.</p>
+<div class="history-page">
+    <div class="page-header">
+        <h1 class="page-title">Booking History</h1>
+        <p class="page-subtitle">View your past reservations and their outcomes.</p>
+    </div>
+
+    <div class="history-toolbar">
+        <div class="toolbar-left">
+            <div class="search-bar-history">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="search-icon"><path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.134 17 3 13.866 3 10C3 6.134 6.134 3 10 3C13.866 3 17 6.134 17 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <input type="text" placeholder="Search by room name..." @bind="searchQuery" @bind:event="oninput" />
+            </div>
+        </div>
+        <div class="toolbar-right">
+            <div class="toolbar-btn-group">
+                <button class="btn-toolbar" @onclick="ToggleDatePicker">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2"/></svg>
+                    Date Range
+                </button>
+                
+                <button class="btn-toolbar" @onclick="ToggleFilter">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Filter
+                </button>
+
+                <button class="btn-toolbar btn-export">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Export CSV
+                </button>
+            </div>
+
+            @if (isFilterOpen)
+            {
+                <div class="popup-anchor right">
+                    <FilterByStatusPopup CurrentStatus="@activeFilter" ShowHeader="true" OnApply="ApplyFilter" OnClose="CloseFilter" />
+                </div>
+            }
+
+            @if (isDatePickerOpen)
+            {
+                <div class="popup-anchor center">
+                    <DatePickerPopup OnApply="ApplyDateRange" OnClose="CloseDatePicker" />
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="history-table-container">
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>Room Name</th>
+                    <th>Date</th>
+                    <th>Duration</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!PagedBookings.Any())
+                {
+                    <tr>
+                        <td colspan="5" class="empty-row">No history records found.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var booking in PagedBookings)
+                    {
+                        <tr>
+                            <td>
+                                <div class="room-cell">
+                                    <img src="@booking.PhotoUrl" alt="@booking.RoomName" class="room-thumb" />
+                                    <div>
+                                        <span class="room-name-text">@booking.RoomName</span>
+                                        <span class="room-floor-text">@booking.Floor</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>@booking.Date</td>
+                            <td>@booking.Duration</td>
+                            <td>
+                                <span class="status-pill @BookingDataStore.GetStatusBadgeClass(booking.Status)">
+                                    @BookingDataStore.GetStatusLabel(booking.Status)
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn-view-details" @onclick="() => OpenDetail(booking)">View Details</button>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-bar">
+        <span class="page-info">Showing @((currentPage - 1) * pageSize + 1)–@Math.Min(currentPage * pageSize, FilteredBookings.Count()) of @FilteredBookings.Count()</span>
+        <div class="page-buttons">
+            <button class="page-btn" disabled="@(currentPage <= 1)" @onclick="PrevPage">← Prev</button>
+            @for (int i = 1; i <= TotalPages; i++)
+            {
+                var pg = i;
+                <button class="page-btn @(pg == currentPage ? "active" : "")" @onclick="() => GoToPage(pg)">@pg</button>
+            }
+            <button class="page-btn" disabled="@(currentPage >= TotalPages)" @onclick="NextPage">Next →</button>
+        </div>
+    </div>
 </div>
+
+<ModalOverlayBlur Visible="isDetailOpen" OnClose="CloseDetail" Size="default">
+    <HistoryDetailModal Booking="selectedBooking" OnClose="CloseDetail" />
+</ModalOverlayBlur>
+
+<style>
+    .history-page {
+        padding: 32px;
+        font-family: 'Inter', sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    .page-header {
+        margin-bottom: 32px;
+    }
+    .page-title {
+        color: #16305C;
+        font-size: 28px;
+        font-weight: 700;
+        margin: 0 0 8px 0;
+    }
+    .page-subtitle {
+        color: #6B7280;
+        font-size: 15px;
+        margin: 0;
+    }
+    .history-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+    .search-bar-history {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    .search-bar-history .search-icon {
+        position: absolute;
+        left: 14px;
+        color: #9CA3AF;
+    }
+    .search-bar-history input {
+        padding: 10px 16px 10px 42px;
+        border: 1px solid #E5E7EB;
+        border-radius: 12px;
+        font-size: 14px;
+        width: 280px;
+        background: #FFFFFF;
+        transition: border-color 0.2s;
+    }
+    .search-bar-history input:focus {
+        outline: none;
+        border-color: #16305C;
+    }
+    .toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: relative;
+    }
+    .toolbar-btn-group {
+        display: flex;
+        gap: 8px;
+    }
+    .btn-toolbar {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 16px;
+        border: 1px solid #E5E7EB;
+        border-radius: 999px;
+        background: #FFFFFF;
+        color: #374151;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s, border-color 0.2s;
+    }
+    .btn-toolbar:hover {
+        background-color: #F9FAFB;
+        border-color: #D1D5DB;
+    }
+    .btn-export {
+        color: #16305C;
+    }
+    .popup-anchor {
+        position: absolute;
+        top: 50px;
+        z-index: 100;
+    }
+    .popup-anchor.right { right: 0; }
+    .popup-anchor.center { right: 80px; }
+
+    /* Table Styles */
+    .history-table-container {
+        background: #FFFFFF;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid #F1F5F9;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+    }
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .history-table thead tr {
+        background-color: #F8FAFC;
+        border-bottom: 2px solid #E2E8F0;
+    }
+    .history-table th {
+        padding: 14px 20px;
+        text-align: left;
+        color: #64748B;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .history-table td {
+        padding: 16px 20px;
+        color: #374151;
+        font-size: 14px;
+        border-bottom: 1px solid #F1F5F9;
+    }
+    .history-table tbody tr:nth-child(even) {
+        background-color: #FAFBFC;
+    }
+    .history-table tbody tr:hover {
+        background-color: #F0F4FF;
+    }
+    .room-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .room-thumb {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        object-fit: cover;
+    }
+    .room-name-text {
+        display: block;
+        font-weight: 600;
+        color: #16305C;
+        font-size: 14px;
+    }
+    .room-floor-text {
+        display: block;
+        color: #9CA3AF;
+        font-size: 12px;
+    }
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .badge-pending {
+        background-color: #FEF3C7;
+        color: #92400E;
+    }
+    .badge-approved {
+        background-color: #D1FAE5;
+        color: #065F46;
+    }
+    .badge-rejected {
+        background-color: #FEE2E2;
+        color: #991B1B;
+    }
+    .badge-completed {
+        background-color: #DBEAFE;
+        color: #1E40AF;
+    }
+    .btn-view-details {
+        background: none;
+        border: none;
+        color: #EAB63C;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+        padding: 0;
+        transition: color 0.2s;
+    }
+    .btn-view-details:hover {
+        color: #16305C;
+        text-decoration: underline;
+    }
+    .empty-row {
+        text-align: center;
+        color: #9CA3AF;
+        padding: 40px 20px !important;
+    }
+
+    /* Pagination */
+    .pagination-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        padding: 0 4px;
+    }
+    .page-info {
+        color: #6B7280;
+        font-size: 13px;
+    }
+    .page-buttons {
+        display: flex;
+        gap: 4px;
+    }
+    .page-btn {
+        padding: 8px 14px;
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        background: #FFFFFF;
+        color: #374151;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .page-btn:hover:not(:disabled):not(.active) {
+        background-color: #F9FAFB;
+    }
+    .page-btn.active {
+        background-color: #16305C;
+        color: white;
+        border-color: #16305C;
+    }
+    .page-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+</style>
+
+@code {
+    private string searchQuery = "";
+    private string activeFilter = "All Status";
+    private bool isFilterOpen = false;
+    private bool isDatePickerOpen = false;
+    private bool isDetailOpen = false;
+    private BookingItem? selectedBooking;
+    private int currentPage = 1;
+    private int pageSize = 5;
+
+    private IEnumerable<BookingItem> FilteredBookings
+    {
+        get
+        {
+            var query = BookingDataStore.AllBookings.AsEnumerable();
+            if (activeFilter != "All Status")
+                query = query.Where(b => b.Status.Equals(activeFilter, StringComparison.OrdinalIgnoreCase));
+            if (!string.IsNullOrWhiteSpace(searchQuery))
+            {
+                var q = searchQuery.ToLower();
+                query = query.Where(b => b.RoomName.ToLower().Contains(q));
+            }
+            return query;
+        }
+    }
+
+    private IEnumerable<BookingItem> PagedBookings =>
+        FilteredBookings.Skip((currentPage - 1) * pageSize).Take(pageSize);
+
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling((double)FilteredBookings.Count() / pageSize));
+
+    private void ToggleFilter() { isFilterOpen = !isFilterOpen; isDatePickerOpen = false; }
+    private void CloseFilter() { isFilterOpen = false; }
+    private void ApplyFilter(string status) { activeFilter = status; isFilterOpen = false; currentPage = 1; }
+
+    private void ToggleDatePicker() { isDatePickerOpen = !isDatePickerOpen; isFilterOpen = false; }
+    private void CloseDatePicker() { isDatePickerOpen = false; }
+    private void ApplyDateRange(string range) { isDatePickerOpen = false; /* Placeholder */ }
+
+    private void OpenDetail(BookingItem booking) { selectedBooking = booking; isDetailOpen = true; }
+    private void CloseDetail() { isDetailOpen = false; }
+
+    private void PrevPage() { if (currentPage > 1) currentPage--; }
+    private void NextPage() { if (currentPage < TotalPages) currentPage++; }
+    private void GoToPage(int page) { currentPage = page; }
+}
