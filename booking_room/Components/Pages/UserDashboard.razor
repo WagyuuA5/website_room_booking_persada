@@ -108,59 +108,30 @@ else
     }
 </div>
 
-
-
-<!-- ANALYTICS CARD: Progress Bar (selalu tampil) -->
-<div class="analytics-card" style="cursor: pointer;" @onclick='() => ShowPopup("AnalyticsDetail")'>
-    <div class="analytics-header">
+<div class="analytics-trigger-card" @onclick='() => ShowPopup("AnalyticsDetail")'>
+    <div class="analytics-trigger-header">
+        <div class="analytics-trigger-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16305C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="14" width="4" height="7" rx="1" fill="#1e40af"/>
+                <rect x="8.5" y="10" width="4" height="11" rx="1" fill="#3b82f6"/>
+                <rect x="14" y="6" width="4" height="15" rx="1" fill="#60a5fa"/>
+                <path d="M2 21H23" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
+        </div>
         <div>
-            <h2 class="analytics-title">Analitik Penggunaan Ruangan</h2>
-            <p class="analytics-subtitle">5 ruangan yang paling sering dipesan</p>
+            <h2 class="analytics-title">Analitik Penggunaan Detail</h2>
+            <p class="analytics-subtitle">Lihat ringkasan total jam, rata-rata, dan ranking ruangan</p>
         </div>
-        <div class="period-toggle">
-            @foreach (var period in periods)
-            {
-                <button class="@(selectedPeriod == period ? "active" : "")" @onclick:stopPropagation="true" @onclick="() => SelectPeriod(period)">@period</button>
-            }
+        <div class="analytics-trigger-arrow">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
         </div>
-    </div>
-
-    <div class="utilization-list">
-        @{ int rank2 = 0; }
-        @foreach (var room in analyticsData.Rooms)
-        {
-            rank2++;
-            var maxHours2 = analyticsData.Rooms.Max(r => r.HoursUsed);
-            var percentage2 = maxHours2 > 0 ? (double)room.HoursUsed / maxHours2 * 100 : 0;
-            var barClass2 = rank2 switch
-            {
-                1 => "bar-1",
-                2 => "bar-2",
-                3 => "bar-3",
-                4 => "bar-4",
-                _ => "bar-5"
-            };
-
-            <div class="utilization-item">
-                <div class="utilization-meta-row">
-                    <span class="utilization-room-name">@room.RoomName</span>
-                    <span class="utilization-hours-pill">@room.HoursUsed jam</span>
-                </div>
-                <div class="utilization-bar-track">
-                    <div class="utilization-bar-fill @barClass2" style="width: @percentage2.ToString("0.0")%;">
-                        <span class="utilization-bar-inner-label">@room.HoursUsed jam</span>
-                    </div>
-                </div>
-            </div>
-        }
-    </div>
-
-    <!-- Area Chart for usage trend -->
-    <div class="room-usage-chart-container" style="margin-top: 2rem;">
-        <div id="room-usage-wave-chart"></div>
     </div>
 </div>
+
 </div>
+
 }
 
 <!-- Pop-ups -->
