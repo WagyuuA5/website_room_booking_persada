@@ -94,6 +94,24 @@
                 </div>
             }
         </div>
+
+        <!-- Crypto-style trend chart -->
+        <div class="popup-trend-chart">
+            <div class="popup-trend-title">Tren Penggunaan</div>
+            @{
+                var chartData = DashboardData.GetChartData(SelectedPeriod);
+                var trendSvg = BuildTrendChart(chartData);
+            }
+            <svg viewBox="0 0 400 160" class="popup-trend-svg" preserveAspectRatio="none">
+                <defs>
+                    <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.25"/>
+                        <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+                    </linearGradient>
+                </defs>
+                @trendSvg
+            </svg>
+        </div>
     </div>
 </div>
 
@@ -122,6 +140,28 @@
     .popup-stat-card {
         position: relative;
         overflow: hidden;
+    }
+
+    .popup-trend-chart {
+        margin-top: 1.5rem;
+        padding: 1rem;
+        background: #f8fafc;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .popup-trend-title {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.75rem;
+    }
+
+    .popup-trend-svg {
+        width: 100%;
+        height: 120px;
     }
 </style>
 
@@ -167,6 +207,51 @@
             await InvokeAsync(StateHasChanged);
             await Task.Delay(delay);
         }
+    }
+
+    private RenderFragment BuildTrendChart(ChartData chartData)
+    {
+        if (chartData == null || chartData.Labels == null || chartData.Datasets == null || chartData.Datasets.Length == 0)
+            return @<text></text>;
+
+        var primaryDataset = chartData.Datasets[0];
+        var data = primaryDataset.Data;
+        var labels = chartData.Labels;
+        if (data == null || data.Length == 0)
+            return @<text></text>;
+
+        var width = 400;
+        var height = 160;
+        var paddingX = 20;
+        var paddingY = 20;
+        var chartW = width - paddingX * 2;
+        var chartH = height - paddingY * 2;
+        var max = data.Max();
+        var min = data.Min();
+        var range = max - min;
+        if (range == 0) range = 1;
+
+        var points = new List<string>();
+        var circles = new List<string>();
+        for (int i = 0; i < data.Length; i++)
+        {
+            var x = paddingX + (i / (double)(data.Length - 1)) * chartW;
+            var y = paddingY + chartH - ((data[i] - min) / range) * chartH;
+            points.Add($"{x:F1},{y:F1}");
+            circles.Add($"<circle cx=\"{x:F1}\" cy=\"{y:F1}\" r=\"3\" fill=\"#3b82f6\" />");
+        }
+
+        var linePath = $"M {string.Join(" L ", points)}";
+        var areaPath = $"{linePath} L {paddingX + chartW:F1},{paddingY + chartH:F1} L {paddingX:F1},{paddingY + chartH:F1} Z";
+
+        return @<text>
+            <path d="@areaPath" fill="url(#trendGradient)" />
+            <path d="@linePath" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+            @foreach (var c in circles)
+            {
+                @c
+            }
+        </text>;
     }
 
     private async Task Close()
