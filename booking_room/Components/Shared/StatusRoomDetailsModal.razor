@@ -7,9 +7,6 @@
         <!-- Header Image Area -->
         <div class="srd-modal-header">
             <img src="@Booking.PhotoUrl" alt="@Booking.RoomName" class="srd-modal-img" />
-            <button class="srd-close-btn" @onclick="OnClose">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </button>
         </div>
         
         <!-- Body Content -->
@@ -40,7 +37,7 @@
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     Ubah
                 </button>
-                <button class="srd-btn-cancel" @onclick="HandleCancel">Batal</button>
+                <button class="srd-btn-cancel" @onclick="CloseModal">Batal</button>
             </div>
         </div>
     </div>
@@ -70,15 +67,6 @@
         width: 100%; height: 100%; object-fit: cover;
         border-top-left-radius: 24px; border-top-right-radius: 24px;
     }
-    .srd-close-btn {
-        position: absolute; top: 16px; right: 16px;
-        width: 32px; height: 32px; border-radius: 50%;
-        background: rgba(255,255,255,0.8); color: #16305C;
-        border: none; cursor: pointer;
-        display: flex; align-items: center; justify-content: center;
-        transition: background 0.2s; z-index: 10;
-    }
-    .srd-close-btn:hover { background: #FFFFFF; }
 
     .srd-modal-body {
         padding: 24px; flex-grow: 1; overflow-y: auto;
@@ -154,9 +142,11 @@
     
     [Parameter]
     public EventCallback<BookingItem> OnModify { get; set; }
-    
-    [Parameter]
-    public EventCallback<BookingItem> OnCancelRequest { get; set; }
+
+    private async Task CloseModal()
+    {
+        await OnClose.InvokeAsync();
+    }
 
     private async Task HandleOverlayClick()
     {
@@ -168,15 +158,6 @@
         if (Booking != null)
         {
             await OnModify.InvokeAsync(Booking);
-            await OnClose.InvokeAsync();
-        }
-    }
-
-    private async Task HandleCancel()
-    {
-        if (Booking != null)
-        {
-            await OnCancelRequest.InvokeAsync(Booking);
             await OnClose.InvokeAsync();
         }
     }
