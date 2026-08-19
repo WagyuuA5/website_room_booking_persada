@@ -20,16 +20,36 @@
 <div class="modal-body-custom">
     <!-- Summary stats -->
     <div class="popup-stats-row">
-        <div class="popup-stat-card stat-green">
-            <div class="popup-stat-value">@totalHours</div>
+        <div class="popup-stat-card stat-green popup-stat-card-hover">
+            <div class="popup-stat-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+            </div>
+            <div class="popup-stat-value">@_animatedTotalHours</div>
             <div class="popup-stat-label">Total Jam</div>
         </div>
-        <div class="popup-stat-card stat-red">
-            <div class="popup-stat-value">@avgUtilization%</div>
+        <div class="popup-stat-card stat-red popup-stat-card-hover">
+            <div class="popup-stat-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                </svg>
+            </div>
+            <div class="popup-stat-value">@_animatedAvgUtilization%</div>
             <div class="popup-stat-label">Rata-rata</div>
         </div>
-        <div class="popup-stat-card stat-gray">
-            <div class="popup-stat-value">@roomCount</div>
+        <div class="popup-stat-card stat-blue popup-stat-card-hover">
+            <div class="popup-stat-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+            </div>
+            <div class="popup-stat-value">@_animatedRoomCount</div>
             <div class="popup-stat-label">Ruangan</div>
         </div>
     </div>
@@ -66,7 +86,7 @@
                         <div class="popup-analytics-name">@room.RoomName</div>
                         <div class="popup-analytics-bar-container">
                             <div class="popup-analytics-bar-bg">
-                                <div class="popup-analytics-bar-fill utilization-bar-fill @barClass" style="width: @percentage.ToString("0.0")%;"></div>
+                                <div class="popup-analytics-bar-fill utilization-bar-fill @barClass" style="width: @(_barsAnimated ? percentage.ToString("0.0") : "0")%;"></div>
                             </div>
                         </div>
                     </div>
@@ -81,6 +101,30 @@
     <button class="popup-btn popup-btn-secondary" @onclick="Close">Tutup</button>
 </div>
 
+<style>
+    .popup-stat-card-hover {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        cursor: default;
+    }
+    .popup-stat-card-hover:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(16,48,92,0.12);
+    }
+    .popup-stat-card.stat-blue {
+        background: linear-gradient(135deg, #eff6ff, #bfdbfe);
+    }
+    .popup-stat-icon {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        opacity: 0.7;
+    }
+    .popup-stat-card {
+        position: relative;
+        overflow: hidden;
+    }
+</style>
+
 @code {
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public string SelectedPeriod { get; set; } = "Minggu";
@@ -91,6 +135,39 @@
         ? (int)Math.Round((double)analyticsData.Rooms.Average(r => r.HoursUsed) / analyticsData.Rooms.Max(r => r.HoursUsed) * 100)
         : 0;
     private int roomCount => analyticsData.Rooms.Count;
+
+    private int _animatedTotalHours;
+    private int _animatedAvgUtilization;
+    private int _animatedRoomCount;
+    private bool _barsAnimated;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await AnimateNumbers();
+            await Task.Delay(100);
+            _barsAnimated = true;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task AnimateNumbers()
+    {
+        var duration = 800;
+        var steps = 40;
+        var delay = duration / steps;
+
+        for (int i = 1; i <= steps; i++)
+        {
+            var progress = i / (double)steps;
+            _animatedTotalHours = (int)Math.Round(totalHours * progress);
+            _animatedAvgUtilization = (int)Math.Round(avgUtilization * progress);
+            _animatedRoomCount = (int)Math.Round(roomCount * progress);
+            await InvokeAsync(StateHasChanged);
+            await Task.Delay(delay);
+        }
+    }
 
     private async Task Close()
     {
