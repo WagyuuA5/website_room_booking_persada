@@ -1,114 +1,99 @@
 @using booking_room.Services
+@using booking_room.Components.Models
 @inject NavigationManager Navigation
-@inject INotificationService NotificationService
 
 @if (Visible)
 {
-    <div class="profile-panel-overlay" @onclick="ClosePanel">
-        <div class="profile-panel" @onclick:stopPropagation="true">
-            <!-- User Identity Section -->
-            <div class="profile-panel-user">
-                <div class="profile-panel-avatar-wrap">
-                    <img src="https://ui-avatars.com/api/?name=Admin+User&background=0f1f3d&color=fff&size=80" 
-                         alt="Avatar Pengguna" class="profile-panel-avatar" />
-                    <span class="profile-panel-status-dot"></span>
+    <div class="profile-glass-overlay" @onclick="ClosePanel">
+        <div class="profile-glass-modal" @onclick:stopPropagation="true">
+            <div class="profile-glass-header">
+                <div class="profile-glass-pill">profil</div>
+                <div class="profile-glass-subtitle">Data identitas @BookingDataStore.CurrentUser.FullName</div>
+            </div>
+            
+            <div class="profile-glass-avatar-section">
+                <div class="profile-glass-avatar-wrapper">
+                    @if (!string.IsNullOrEmpty(BookingDataStore.CurrentUser.PhotoUrl))
+                    {
+                        <img src="@BookingDataStore.CurrentUser.PhotoUrl" alt="Avatar" class="profile-glass-avatar" />
+                    }
+                    else
+                    {
+                        <div class="profile-glass-avatar-initials">@BookingDataStore.CurrentUser.Initials</div>
+                    }
+                    <button class="profile-glass-cam-btn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                    </button>
                 </div>
-                <div class="profile-panel-user-info">
-                    <div class="profile-panel-name">Admin User</div>
-                    <div class="profile-panel-role">
-                        <span class="profile-panel-role-badge">
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
-                                <path d="M12 2L3 7v10l9 5 9-5V7L12 2z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                            </svg>
-                            Administrator
-                        </span>
-                    </div>
-                    <div class="profile-panel-email">admin@padamanagement.id</div>
-                </div>
+                <div class="profile-glass-help-text">KETUK FOTO UNTUK GANTI</div>
             </div>
 
-            <!-- Stats Row -->
-            <div class="profile-panel-stats">
-                <div class="profile-stat-item">
-                    <div class="profile-stat-value">@NotificationService.UnreadCount</div>
-                    <div class="profile-stat-label">Notifikasi</div>
+            <div class="profile-glass-cards-grid">
+                <!-- Card 1: Full Name -->
+                <div class="profile-glass-card">
+                    <div class="profile-glass-card-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </div>
+                    <div class="profile-glass-card-content">
+                        <div class="profile-glass-card-label">FULL NAME</div>
+                        <div class="profile-glass-card-value">@BookingDataStore.CurrentUser.FullName</div>
+                    </div>
                 </div>
-                <div class="profile-stat-divider"></div>
-                <div class="profile-stat-item">
-                    <div class="profile-stat-value">8</div>
-                    <div class="profile-stat-label">Booking Aktif</div>
+
+                <!-- Card 2: Email -->
+                <div class="profile-glass-card">
+                    <div class="profile-glass-card-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                    </div>
+                    <div class="profile-glass-card-content">
+                        <div class="profile-glass-card-label">EMAIL</div>
+                        <div class="profile-glass-card-value">@BookingDataStore.CurrentUser.Email</div>
+                    </div>
                 </div>
-                <div class="profile-stat-divider"></div>
-                <div class="profile-stat-item">
-                    <div class="profile-stat-value">24</div>
-                    <div class="profile-stat-label">Total Bulan</div>
+
+                <!-- Card 3: Phone -->
+                <div class="profile-glass-card">
+                    <div class="profile-glass-card-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                    </div>
+                    <div class="profile-glass-card-content">
+                        <div class="profile-glass-card-label">NOMOR TELEPON</div>
+                        <div class="profile-glass-card-value">@BookingDataStore.CurrentUser.Phone</div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="profile-panel-divider"></div>
+                <!-- Card 4: Title & Dept -->
+                <div class="profile-glass-card">
+                    <div class="profile-glass-card-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                    </div>
+                    <div class="profile-glass-card-content">
+                        <div class="profile-glass-card-label">JABATAN & DEPARTEMEN</div>
+                        <div class="profile-glass-card-value">@BookingDataStore.CurrentUser.JobTitle - @BookingDataStore.CurrentUser.Department</div>
+                    </div>
+                </div>
 
-            <!-- Navigation Menu -->
-            <nav class="profile-panel-menu">
-                <button class="profile-menu-item" @onclick="GoToProfile">
-                    <div class="profile-menu-icon icon-blue">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                            <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/>
-                            <path d="M4 20c0-4 3.58-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
+                <!-- Card 5: Office Location -->
+                <div class="profile-glass-card">
+                    <div class="profile-glass-card-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                     </div>
-                    <div class="profile-menu-text">
-                        <span class="profile-menu-label">Profil Saya</span>
-                        <span class="profile-menu-desc">Kelola informasi akun</span>
+                    <div class="profile-glass-card-content">
+                        <div class="profile-glass-card-label">OFFICE LOCATION</div>
+                        <div class="profile-glass-card-value">@BookingDataStore.CurrentUser.OfficeLocation</div>
                     </div>
-                    <svg class="profile-menu-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none">
-                        <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
+                </div>
 
-                <button class="profile-menu-item" @onclick="GoToHistory">
-                    <div class="profile-menu-icon icon-green">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm.5 5v6l5.25 3.15-.75 1.23L11 13.5V7h1.5z" fill="currentColor"/>
-                        </svg>
+                <!-- Card 6: Last Login -->
+                <div class="profile-glass-card">
+                    <div class="profile-glass-card-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                     </div>
-                    <div class="profile-menu-text">
-                        <span class="profile-menu-label">Riwayat Booking</span>
-                        <span class="profile-menu-desc">Lihat semua pemesanan</span>
+                    <div class="profile-glass-card-content">
+                        <div class="profile-glass-card-label">RIWAYAT LOGIN TERAKHIR</div>
+                        <div class="profile-glass-card-value">@BookingDataStore.CurrentUser.LastLogin</div>
                     </div>
-                    <svg class="profile-menu-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none">
-                        <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
-
-                <button class="profile-menu-item" @onclick="GoToSettings">
-                    <div class="profile-menu-icon icon-amber">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                            <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="2"/>
-                            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="2"/>
-                        </svg>
-                    </div>
-                    <div class="profile-menu-text">
-                        <span class="profile-menu-label">Pengaturan</span>
-                        <span class="profile-menu-desc">Preferensi & konfigurasi</span>
-                    </div>
-                    <svg class="profile-menu-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none">
-                        <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
-            </nav>
-
-            <div class="profile-panel-divider"></div>
-
-            <!-- Logout -->
-            <div class="profile-panel-footer">
-                <button class="profile-logout-btn" @onclick="HandleLogout">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <polyline points="16 17 21 12 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    Keluar dari Akun
-                </button>
+                </div>
             </div>
         </div>
     </div>
@@ -119,29 +104,4 @@
     [Parameter] public EventCallback OnClose { get; set; }
 
     private async Task ClosePanel() => await OnClose.InvokeAsync();
-
-    private async Task GoToProfile()
-    {
-        await ClosePanel();
-        Navigation.NavigateTo("/profil");
-    }
-
-    private async Task GoToHistory()
-    {
-        await ClosePanel();
-        Navigation.NavigateTo("/history");
-    }
-
-    private async Task GoToSettings()
-    {
-        await ClosePanel();
-        Navigation.NavigateTo("/pengaturan");
-    }
-
-    private async Task HandleLogout()
-    {
-        await ClosePanel();
-        // TODO: Implement actual logout logic
-        Navigation.NavigateTo("/");
-    }
 }
