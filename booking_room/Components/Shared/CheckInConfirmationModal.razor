@@ -77,17 +77,29 @@
         Konfirmasi Check-in
     </button>
 
-    <!-- Footer Links -->
-    <div style="display: flex; justify-content: space-between; width: 100%; font-size: 0.875rem; font-weight: 600;">
+    <!-- Footer Actions -->
+    <div style="display: flex; align-items: center; justify-content: center; gap: 1.5rem; width: 100%; padding-top: 0.5rem; border-top: 1px solid #e5e7eb;">
         @if (!_hasExtended)
         {
-            <button @onclick="OpenExtendModal" style="background: none; border: none; color: #94a3b8; cursor: pointer; padding: 0; text-decoration: none; transition: color 0.2s;">Butuh waktu tambahan</button>
+            <button @onclick="OpenExtendModal" style="display: inline-flex; align-items: center; gap: 0.5rem; background: none; border: 1px solid #e5e7eb; color: #64748b; font-weight: 600; font-size: 0.875rem; padding: 0.625rem 1rem; border-radius: 9999px; cursor: pointer; transition: all 0.2s; min-height: 44px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                Saya butuh waktu tambahan
+            </button>
         }
         else
         {
-            <span></span> <!-- Empty span to maintain flex spacing if button is hidden -->
+            <div style="min-width: 1px; width: 1px;"></div>
         }
-        <button @onclick="CancelBooking" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0; text-decoration: none; transition: color 0.2s;">Batalkan pemesanan ini</button>
+        <button @onclick="CancelBooking" style="display: inline-flex; align-items: center; gap: 0.5rem; background: none; border: 1px solid #fecaca; color: #dc2626; font-weight: 600; font-size: 0.875rem; padding: 0.625rem 1rem; border-radius: 9999px; cursor: pointer; transition: all 0.2s; min-height: 44px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+            Batalkan pemesanan ini
+        </button>
     </div>
 </div>
 
