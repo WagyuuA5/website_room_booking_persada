@@ -5,7 +5,7 @@
 @inject booking_room.Services.NotificationState NotificationState
 @inject booking_room.Services.LoadingStateService LoadingState
 @implements IDisposable
-
+@inject IJSRuntime JSRuntime
 <PageTitle>Dashboard - PADA Management</PageTitle>
 
 @if (NotificationState.CurrentBannerType != booking_room.Services.NotificationState.BannerType.None)
@@ -154,6 +154,11 @@ else
             </div>
         }
     </div>
+
+    <!-- Area Chart for usage trend -->
+    <div class="room-usage-chart-container" style="margin-top: 2rem;">
+        <div id="room-usage-wave-chart"></div>
+    </div>
 </div>
 </div>
 }
@@ -207,7 +212,7 @@ else
     private string selectedPeriod = "Minggu";
     private readonly string[] periods = { "Minggu", "Bulan", "Tahun" };
     private DateTime checkInTimestamp;
-    // Chart removed
+    private ChartData? chartData;
 
     private string activePopup = "";
 
@@ -218,18 +223,28 @@ else
         LoadingState.OnChange += StateHasChanged;
     }
 
-    // Chart removed - OnAfterRenderAsync not needed
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !LoadingState.IsLoading)
+        {
+            chartData = DashboardData.GetChartData(selectedPeriod);
+            await JSRuntime.InvokeVoidAsync("initRoomUsageChart", "room-usage-wave-chart", chartData);
+        }
+    }
 
     public void Dispose()
     {
         NotificationState.OnChange -= StateHasChanged;
         LoadingState.OnChange -= StateHasChanged;
+        _ = JSRuntime.InvokeVoidAsync("destroyRoomUsageChart");
     }
 
-    private void SelectPeriod(string period)
+    private async Task SelectPeriod(string period)
     {
         selectedPeriod = period;
         analyticsData = DashboardData.GetAnalytics(period);
+        chartData = DashboardData.GetChartData(period);
+        await JSRuntime.InvokeVoidAsync("updateRoomUsageChart", chartData);
     }
 
     private void ViewAllRooms()

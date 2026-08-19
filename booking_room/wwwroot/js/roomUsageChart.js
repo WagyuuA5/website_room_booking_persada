@@ -60,12 +60,12 @@ window.initRoomUsageChart = function (elementId, data) {
             type: 'gradient',
             gradient: {
                 shadeIntensity: 1,
-                opacityFrom: 0.45,
-                opacityTo: 0.02,
+                opacityFrom: 0.7,
+                opacityTo: 0.0,
                 stops: [0, 95, 100]
             }
         },
-        colors: ['#3b82f6'],
+        colors: ['#0f1f3d'],
         xaxis: {
             categories: data.labels || [],
             labels: {
@@ -93,11 +93,26 @@ window.initRoomUsageChart = function (elementId, data) {
         },
         tooltip: {
             theme: 'dark',
-            x: { show: true },
-            y: {
-                formatter: (val) => `${val} jam pemakaian`
-            },
-            style: { fontFamily: 'Inter, sans-serif' }
+            custom: function({series, seriesIndex, dataPointIndex, w}) {
+                const date = w.globals.categoryLabels[dataPointIndex];
+                const hours = series[seriesIndex][dataPointIndex];
+                // Mock logic for most booked room/user based on dataPointIndex
+                const rooms = ["Executive Boardroom A", "Training Center", "Meeting Room 1", "Focus Room Alpha", "Studio Webinar"];
+                const users = ["Budi Santoso", "Sarah Jenkins", "Alex Mercer", "Nadia Pradipta"];
+                const topRoom = rooms[dataPointIndex % rooms.length];
+                const topUser = users[(dataPointIndex + 2) % users.length];
+                
+                return `
+                    <div style="padding: 10px; background: #0f1f3d; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+                        <div style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 4px;">${date}</div>
+                        <div style="font-size: 1.1rem; font-weight: 700; color: #ffffff; margin-bottom: 8px;">${hours} Jam</div>
+                        <div style="font-size: 0.75rem; color: #cbd5e1;">
+                            <div style="margin-bottom: 2px;"><span style="color:#94a3b8">Terbanyak:</span> ${topRoom}</div>
+                            <div><span style="color:#94a3b8">User:</span> ${topUser}</div>
+                        </div>
+                    </div>
+                `;
+            }
         },
         crosshairs: {
             show: true,
