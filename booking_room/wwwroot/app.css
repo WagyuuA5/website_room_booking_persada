@@ -1825,7 +1825,7 @@ h1:focus {
 }
 
 .profile-dropdown-panel {
-    width: 380px;
+    width: 340px;
     max-height: calc(100vh - 6rem);
     background: #0f1f3d;
     border-radius: 1rem;
@@ -1838,26 +1838,26 @@ h1:focus {
 }
 
 .profile-dropdown-header {
-    padding: 1.25rem;
+    padding: 1rem 1rem 0.75rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .profile-dropdown-pill {
     display: inline-flex;
     align-items: center;
-    padding: 0.25rem 0.75rem;
+    padding: 0.2rem 0.6rem;
     background: rgba(255, 255, 255, 0.12);
     color: rgba(255, 255, 255, 0.8);
     border-radius: 9999px;
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: lowercase;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.35rem;
 }
 
 .profile-dropdown-subtitle {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: rgba(255, 255, 255, 0.7);
     font-weight: 500;
 }
@@ -1866,13 +1866,13 @@ h1:focus {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 1.5rem 1.25rem;
+    padding: 1.25rem 1rem 1rem;
 }
 
 .profile-dropdown-avatar-wrapper {
     position: relative;
-    width: 80px;
-    height: 80px;
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
     border: 2px solid rgba(255, 255, 255, 0.25);
     overflow: hidden;
@@ -1924,17 +1924,17 @@ h1:focus {
 .profile-dropdown-cards-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    padding: 0 1.25rem 1.25rem;
+    gap: 10px;
+    padding: 0 1rem 1rem;
 }
 
 .profile-dropdown-card {
     display: flex;
     align-items: flex-start;
-    gap: 10px;
-    padding: 12px;
+    gap: 8px;
+    padding: 10px;
     background: rgba(255, 255, 255, 0.06);
-    border-radius: 12px;
+    border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
