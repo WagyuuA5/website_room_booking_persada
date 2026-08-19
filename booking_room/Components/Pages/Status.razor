@@ -12,16 +12,10 @@
 <div class="s-page-container">
     <!-- Topbar Halaman -->
     <div class="s-topbar">
-        <div class="s-topbar-left">
-            <span class="s-breadcrumb">Beranda / Status Pemesanan</span>
-        </div>
         <div class="s-topbar-right">
             <button class="s-btn-icon-refresh" @onclick="RefreshData" title="Muat Ulang">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
-            <div class="s-avatar-circle">
-                AU
-            </div>
         </div>
     </div>
 
@@ -47,7 +41,25 @@
             </div>
 
             <div class="s-cards-list">
-                @if (!FilteredBookings.Any())
+                @if (_isLoading)
+                {
+                    @for (int i = 0; i < 4; i++)
+                    {
+                        <div class="s-card skeleton-card">
+                            <div class="skeleton-shimmer skeleton-image" style="width: 64px; height: 64px; border-radius: 12px; flex-shrink: 0;"></div>
+                            <div class="s-card-content" style="flex: 1;">
+                                <div class="skeleton-shimmer skeleton-title" style="width: 60%; margin-bottom: 8px;"></div>
+                                <div class="skeleton-shimmer skeleton-text short" style="width: 40%; margin-bottom: 12px;"></div>
+                                <div style="display: flex; gap: 16px;">
+                                    <div class="skeleton-shimmer" style="height: 12px; width: 80px;"></div>
+                                    <div class="skeleton-shimmer" style="height: 12px; width: 80px;"></div>
+                                    <div class="skeleton-shimmer" style="height: 12px; width: 60px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else if (!FilteredBookings.Any())
                 {
                     <div class="s-empty-state">
                         <p>Tidak ditemukan pemesanan.</p>
@@ -60,7 +72,7 @@
                         var isSelected = booking.Id == selectedBooking?.Id;
                         <div class="s-card @(isSelected ? "selected" : "")" @onclick="() => SelectBooking(booking)">
                             <div class="s-card-thumbnail" @onclick="() => OpenDetailsModal(booking)" @onclick:stopPropagation>
-                                <img src="@booking.PhotoUrl" alt="@booking.RoomName" />
+                                <img src="@booking.PhotoUrl" alt="@booking.RoomName" onerror="this.style.display='none'" />
                             </div>
                             <div class="s-card-content">
                                 <div class="s-card-header-row">
@@ -95,7 +107,7 @@
                             <span class="s-pill-dot"></span>
                             @GetStatusLabel(selectedBooking.Status).ToUpper()
                         </span>
-                        <img src="@selectedBooking.PhotoUrl" alt="@selectedBooking.RoomName" class="s-detail-img" />
+                         <img src="@selectedBooking.PhotoUrl" alt="@selectedBooking.RoomName" class="s-detail-img" onerror="this.style.display='none'" />
                         <div class="s-detail-photo-overlay">
                             <span>Klik untuk detail</span>
                         </div>
@@ -165,15 +177,14 @@
     Visible="isDetailsModalOpen" 
     Booking="modalBooking" 
     OnClose="CloseDetailsModal"
-    OnModify="HandleDetailsModify"
-    OnCancelRequest="HandleDetailsCancel" />
+    OnModify="HandleDetailsModify" />
 
 <!-- Existing modifikasi & cancel modals -->
-<ModalOverlayBlur Visible="isModifyModalOpen" OnClose="CloseModifyModal" Size="default">
+<ModalOverlayBlur Visible="isModifyModalOpen" OnClose="CloseModifyModal" Size="default" ShowCloseButton="false">
     <ModifyBookingModal Booking="selectedBooking" OnClose="CloseModifyModal" OnUpdate="HandleModifyUpdate" />
 </ModalOverlayBlur>
 
-<ModalOverlayBlur Visible="isCancelModalOpen" OnClose="CloseCancelModal" Size="default">
+<ModalOverlayBlur Visible="isCancelModalOpen" OnClose="CloseCancelModal" Size="default" ShowCloseButton="false">
     <CancelRequestModal Booking="selectedBooking" OnClose="CloseCancelModal" OnConfirm="HandleCancelConfirm" />
 </ModalOverlayBlur>
 
@@ -183,7 +194,6 @@
     .s-page-title { color: #16305C; font-size: 32px; font-weight: 700; margin: 0 0 8px 0; }
     
     .s-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding: 0 8px; }
-    .s-breadcrumb { color: #6B7280; font-size: 14px; font-weight: 500; }
     .s-topbar-right { display: flex; align-items: center; gap: 16px; }
     .s-btn-icon-refresh { background: none; border: none; color: #6B7280; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: color 0.2s; padding: 4px; }
     .s-btn-icon-refresh:hover { color: #16305C; }
@@ -229,7 +239,7 @@
 
     /* Sticky Detail */
     .s-detail-sticky { position: sticky; top: 32px; background: #FFFFFF; border-radius: 24px; overflow: hidden; border: 1px solid #E5E7EB; box-shadow: 0 4px 24px rgba(16,48,92,0.08); }
-    .s-detail-photo-wrap { position: relative; height: 220px; overflow: hidden; }
+    .s-detail-photo-wrap { position: relative; height: 220px; overflow: hidden; background-color: #f3f4f6; }
     .s-detail-img { width: 100%; height: 100%; object-fit: cover; }
     .s-detail-badge { position: absolute; top: 16px; left: 16px; background: rgba(0,0,0,0.6); color: white; padding: 6px 14px; border-radius: 999px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 6px; z-index: 2; }
     .s-detail-photo-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(22,48,92,0.4); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; color: white; font-weight: 600; font-size: 14px; }
@@ -271,7 +281,7 @@
     private List<BookingItem> allBookings = new();
     private BookingItem? selectedBooking;
     private string searchQuery = "";
-    private string activeFilter = "All Status";
+    private string activeFilter = "Semua Status";
     private bool isFilterOpen = false;
     
     private bool isModifyModalOpen = false;
@@ -281,10 +291,14 @@
     private bool isDetailsModalOpen = false;
     private BookingItem? modalBooking;
 
-    protected override void OnInitialized()
+    private bool _isLoading = true;
+
+    protected override async Task OnInitializedAsync()
     {
+        await Task.Delay(400);
         allBookings = BookingDataStore.AllBookings;
         selectedBooking = allBookings.FirstOrDefault();
+        _isLoading = false;
     }
 
     private IEnumerable<BookingItem> FilteredBookings
@@ -293,7 +307,7 @@
         {
             var query = allBookings.AsEnumerable();
             
-            if (activeFilter != "All Status")
+            if (activeFilter != "Semua Status")
             {
                 query = query.Where(b => b.Status.Equals(activeFilter, StringComparison.OrdinalIgnoreCase));
             }
@@ -350,12 +364,6 @@
     {
         selectedBooking = booking;
         OpenModifyModal();
-    }
-
-    private void HandleDetailsCancel(BookingItem booking)
-    {
-        selectedBooking = booking;
-        OpenCancelModal();
     }
 
     private void OpenModifyModal()

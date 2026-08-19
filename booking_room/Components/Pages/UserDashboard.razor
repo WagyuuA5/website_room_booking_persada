@@ -6,7 +6,7 @@
 @inject booking_room.Services.LoadingStateService LoadingState
 @implements IDisposable
 @inject IJSRuntime JSRuntime
-<PageTitle>Dashboard - PADA Management</PageTitle>
+<PageTitle>Dasbor - PADA Management</PageTitle>
 
 @if (NotificationState.CurrentBannerType != booking_room.Services.NotificationState.BannerType.None)
 {
@@ -164,30 +164,30 @@ else
 }
 
 <!-- Pop-ups -->
-<ModalOverlayBlur Visible="@(activePopup == "RoomAvailable")" OnClose="ClosePopup" Size="default">
+<ModalOverlayBlur Visible="@(activePopup == "RoomAvailable")" OnClose="ClosePopup" Size="default" ShowCloseButton="false">
     <RoomAvailablePopup OnClose="ClosePopup" />
 </ModalOverlayBlur>
 
-<ModalOverlayBlur Visible="@(activePopup == "PendingApproval")" OnClose="ClosePopup" Size="default">
+<ModalOverlayBlur Visible="@(activePopup == "PendingApproval")" OnClose="ClosePopup" Size="default" ShowCloseButton="false">
     <PendingApprovalPopup OnClose="ClosePopup" />
 </ModalOverlayBlur>
 
-<ModalOverlayBlur Visible="@(activePopup == "QuickBook")" OnClose="ClosePopup" Size="default">
+<ModalOverlayBlur Visible="@(activePopup == "QuickBook")" OnClose="ClosePopup" Size="default" ShowCloseButton="false">
     @if (nextRoom != null)
     {
         <QuickBookPopup OnClose="ClosePopup" RoomName="@nextRoom.RoomName" AvailableInMinutes="nextRoom.AvailableInMinutes" Capacity="nextRoom.Capacity" />
     }
 </ModalOverlayBlur>
 
-<ModalOverlayBlur Visible="@(activePopup == "AnalyticsDetail")" OnClose="ClosePopup" Size="lg">
+<ModalOverlayBlur Visible="@(activePopup == "AnalyticsDetail")" OnClose="ClosePopup" Size="lg" ShowCloseButton="false">
     <AnalyticsDetailPopup OnClose="ClosePopup" SelectedPeriod="@selectedPeriod" />
 </ModalOverlayBlur>
 
 <ModalOverlayBlur Visible="@(activePopup == "CheckInConfirmation")" OnClose="ClosePopup" Size="sm">
     <CheckInConfirmationModal 
         RoomName="Alpha Boardroom"
-        TimeSlot="09:00 - 11:00 AM"
-        Location="Floor 2, Wing A"
+        TimeSlot="09:00 - 11:00"
+        Location="Lantai 2, Wing A"
         Capacity="12"
         TargetTime="@(NotificationState.NextBookingTime ?? DateTime.Now)"
         OnConfirm="HandleConfirmCheckIn"

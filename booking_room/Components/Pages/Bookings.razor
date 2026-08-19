@@ -50,6 +50,7 @@
                 <option value="13">13 Jam</option>
                 <option value="14">14 Jam</option>
                 <option value="15">15 Jam</option>
+                <option value="sehari">Seharian</option>
             </select>
         </div>
         <div class="filter-group">
@@ -164,7 +165,7 @@ else
         OnBookNow="ProceedToBook" />
 </booking_room.Components.Shared.ModalOverlayBlur>
 
-<booking_room.Components.Shared.ModalOverlayBlur Visible="@_isConfirmBookingVisible" OnClose="CloseConfirm" Size="lg">
+<booking_room.Components.Shared.ModalOverlayBlur Visible="@_isConfirmBookingVisible" OnClose="CloseConfirm" Size="lg" ShowCloseButton="false">
     <booking_room.Components.Shared.ConfirmBookingModal 
         InitialRoom="@_selectedRoomForBooking" 
         OnClose="CloseConfirm" />
