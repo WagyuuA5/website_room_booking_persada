@@ -58,7 +58,7 @@ public class NotificationService : INotificationService
 
         _notifications.Add(new NotificationItem
         {
-            SourceName = "Server Warning",
+            SourceName = "Peringatan Server",
             Title = "Beban Lalu Lintas Tinggi",
             Description = "Lonjakan penggunaan terdeteksi di klaster Asia Tenggara. Tim TI sedang memantau situasi.",
             Timestamp = DateTime.Now.AddHours(-2),

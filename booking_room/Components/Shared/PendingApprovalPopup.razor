@@ -11,7 +11,7 @@
         </div>
         <div class="modal-header-info">
             <h3>Menunggu Persetujuan</h3>
-            <p>Review your recent booking requests.</p>
+            <p>Tinjau permintaan pemesanan terbaru Anda.</p>
         </div>
     </div>
 </div>
@@ -65,8 +65,8 @@
 
 <!-- Footer -->
 <div class="modal-footer-custom" style="justify-content: flex-start; display: flex; gap: 0.5rem; border-top: none;">
-    <button class="popup-footer-btn btn-close-gray" style="flex: 1;" @onclick="Close">Close</button>
-    <button class="popup-footer-btn btn-amber" style="flex: 1;" @onclick="ViewAll">View All Details</button>
+    <button class="popup-footer-btn btn-close-gray" style="flex: 1;" @onclick="Close">Tutup</button>
+    <button class="popup-footer-btn btn-amber" style="flex: 1;" @onclick="ViewAll">Lihat Semua Detail</button>
 </div>
 
 @code {
@@ -84,9 +84,9 @@
 
     private List<PendingApprovalItemCustom> PendingItems = new()
     {
-        new("Executive Boardroom A", "J. Smith", "Oct 15, 2023", "10:00 AM - 12:00 PM", "icon-blue", "M19 2H5C3.9 2 3 2.9 3 4V20C3 21.1 3.9 22 5 22H19C20.1 22 21 21.1 21 20V4C21 2.9 20.1 2 19 2ZM15 20H9V12H15V20Z"),
-        new("Studio 4 (Webinar)", "A. Chen", "Oct 16, 2023", "2:30 PM - 4:00 PM", "icon-purple", "M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"),
-        new("Training Room C", "M. Davis", "Oct 18, 2023", "9:00 AM - 5:00 PM", "icon-light-blue", "M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z")
+        new("Executive Boardroom A", "J. Smith", "15 Okt 2023", "10:00 - 12:00", "icon-blue", "M19 2H5C3.9 2 3 2.9 3 4V20C3 21.1 3.9 22 5 22H19C20.1 22 21 21.1 21 20V4C21 2.9 20.1 2 19 2ZM15 20H9V12H15V20Z"),
+        new("Studio 4 (Webinar)", "A. Chen", "16 Okt 2023", "14:30 - 16:00", "icon-purple", "M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"),
+        new("Training Room C", "M. Davis", "18 Okt 2023", "09:00 - 17:00", "icon-light-blue", "M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z")
     };
 
     private async Task Close() => await OnClose.InvokeAsync();

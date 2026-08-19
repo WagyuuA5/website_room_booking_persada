@@ -73,7 +73,7 @@
 
     <div class="filter-footer">
         <button class="btn-apply-filter" @onclick="SubmitFilter">Terapkan Filter</button>
-        <button class="btn-reset-filter" @onclick="ResetFilter">Reset</button>
+        <button class="btn-reset-filter" @onclick="ResetFilter">Atur Ulang</button>
     </div>
 </div>
 
@@ -211,7 +211,7 @@
 
     protected override void OnInitialized()
     {
-        _tempStatus = CurrentStatus == "All Status" ? "Semua Status" : CurrentStatus;
+        _tempStatus = CurrentStatus == "Semua Status" ? "Semua Status" : CurrentStatus;
     }
 
     private async Task SubmitFilter()

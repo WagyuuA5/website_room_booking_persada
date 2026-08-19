@@ -35,7 +35,7 @@
     {
         <!-- Filter pills -->
         <div class="avail-filter-row">
-            <button class="avail-filter-pill pill-navy @(selectedDate == "Today" ? "active" : "")" @onclick='() => selectedDate = "Today"'>
+            <button class="avail-filter-pill pill-navy @(selectedDate == "Hari Ini" ? "active" : "")" @onclick='() => selectedDate = "Hari Ini"'>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                 Hari Ini
             </button>
@@ -83,7 +83,7 @@
 @code {
     [Parameter] public EventCallback OnClose { get; set; }
 
-    private string selectedDate = "Today";
+    private string selectedDate = "Hari Ini";
     private int capacityFilter = 0;
     private bool _isLoading = true;
 
@@ -98,8 +98,8 @@
     private List<RoomCard> allCards = new()
     {
         new("Executive Suite A", 12, "Video", true, "", true, false, "", "status-available", "Tersedia Sekarang"),
-        new("Huddle Room 4", 4, "Display", false, "14:00", false, false, "", "status-pending", "Avail: 14:00"),
-        new("Workshop Space B", 24, "24 Tempat", false, "15:30", false, false, "", "status-pending", "Avail: 15:30"),
+        new("Huddle Room 4", 4, "Display", false, "14:00", false, false, "", "status-pending", "Tersedia: 14:00"),
+        new("Workshop Space B", 24, "24 Tempat", false, "15:30", false, false, "", "status-pending", "Tersedia: 15:30"),
     };
 
     private IEnumerable<RoomCard> DisplayRooms => capacityFilter == 0
