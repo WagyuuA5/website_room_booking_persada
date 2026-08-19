@@ -65,7 +65,24 @@
                 </tr>
             </thead>
             <tbody>
-                @if (!PagedBookings.Any())
+                @if (_isLoading)
+                {
+                    @for (int i = 0; i < 5; i++)
+                    {
+                        <tr>
+                            <td data-label="NAMA RUANGAN" colspan="5">
+                                <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0;">
+                                    <div class="skeleton-shimmer" style="width: 40px; height: 40px; border-radius: 8px; flex-shrink: 0;"></div>
+                                    <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+                                        <div class="skeleton-shimmer" style="height: 14px; width: 50%;"></div>
+                                        <div class="skeleton-shimmer" style="height: 12px; width: 30%;"></div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else if (!PagedBookings.Any())
                 {
                     <tr>
                         <td colspan="5" class="empty-row">Tidak ada catatan riwayat ditemukan.</td>
@@ -469,7 +486,7 @@
 
 @code {
     private string searchQuery = "";
-    private string activeFilter = "All Status";
+    private string activeFilter = "Semua Status";
     private bool isFilterOpen = false;
     private bool isDatePickerOpen = false;
     private bool isDetailOpen = false;
@@ -477,6 +494,13 @@
     private int currentPage = 1;
     private int pageSize = 10;
     private bool sortAscending = true;
+    private bool _isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(400);
+        _isLoading = false;
+    }
 
     private IEnumerable<BookingItem> FilteredBookings
     {
@@ -484,7 +508,7 @@
         {
             var query = BookingDataStore.AllBookings.AsEnumerable();
             
-            if (activeFilter != "All Status")
+            if (activeFilter != "Semua Status")
                 query = query.Where(b => b.Status.Equals(activeFilter, StringComparison.OrdinalIgnoreCase));
             
             if (!string.IsNullOrWhiteSpace(searchQuery))
