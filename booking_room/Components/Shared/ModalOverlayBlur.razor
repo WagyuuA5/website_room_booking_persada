@@ -1,7 +1,7 @@
 @code {
     [Parameter] public bool Visible { get; set; }
     [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
-    [Parameter] public string Size { get; set; } = "md"; // sm, md, lg
+    [Parameter] public string Size { get; set; } = "md"; // sm, default, md, lg
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
 
@@ -38,8 +38,8 @@
         left: 0;
         width: 100vw;
         height: 100vh;
-        background-color: rgba(0, 0, 0, 0.4);
-        backdrop-filter: blur(6px);
+        background-color: rgba(0, 0, 0, 0.45);
+        backdrop-filter: blur(7px);
         display: flex;
         justify-content: center;
         align-items: center;
@@ -48,17 +48,18 @@
 
     .modal-content {
         background-color: white;
-        border-radius: 24px;
-        padding: 24px;
+        border-radius: 18px;
+        padding: 28px;
         position: relative;
-        box-shadow: 0 4px 24px rgba(16, 48, 92, 0.08);
+        box-shadow: 0 10px 40px rgba(16, 48, 92, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04);
         max-height: 90vh;
         overflow-y: auto;
     }
     
-    .modal-content.sm { width: 400px; }
-    .modal-content.md { width: 600px; }
-    .modal-content.lg { width: 800px; }
+    .modal-content.sm { max-width: 400px; width: 90vw; }
+    .modal-content.default { max-width: 520px; width: 90vw; }
+    .modal-content.md { max-width: 560px; width: 90vw; }
+    .modal-content.lg { max-width: 600px; width: 90vw; }
 
     .close-btn {
         position: absolute;
