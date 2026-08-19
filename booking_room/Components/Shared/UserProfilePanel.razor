@@ -15,7 +15,8 @@
                 <div class="profile-dropdown-avatar-wrapper">
                     @if (!string.IsNullOrEmpty(BookingDataStore.CurrentUser.PhotoUrl))
                     {
-                        <img src="@BookingDataStore.CurrentUser.PhotoUrl" alt="Avatar" class="profile-dropdown-avatar" />
+                        <img src="@BookingDataStore.CurrentUser.PhotoUrl" alt="Avatar" class="profile-dropdown-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'" />
+                        <div class="profile-dropdown-avatar-initials" style="display:none;">@BookingDataStore.CurrentUser.Initials</div>
                     }
                     else
                     {

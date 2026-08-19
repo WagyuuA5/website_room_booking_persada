@@ -33,7 +33,8 @@
                 <div class="profile-avatar-wrapper" @onclick="ToggleProfilePanel" style="cursor: pointer; position: relative;">
                     @if (!string.IsNullOrEmpty(BookingDataStore.CurrentUser.PhotoUrl))
                     {
-                        <img src="@BookingDataStore.CurrentUser.PhotoUrl" alt="Profil Pengguna" class="profile-avatar" />
+                        <img src="@BookingDataStore.CurrentUser.PhotoUrl" alt="Profil Pengguna" class="profile-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'" />
+                        <img src="https://ui-avatars.com/api/?name=Admin+User&background=0f1f3d&color=fff" alt="Profil Pengguna" class="profile-avatar" style="display:none; position:absolute; inset:0;" />
                     }
                     else
                     {
