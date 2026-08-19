@@ -1,27 +1,27 @@
 ﻿@page "/Error"
 @using System.Diagnostics
 
-<PageTitle>Error</PageTitle>
+<PageTitle>Kesalahan</PageTitle>
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+<h1 class="text-danger">Kesalahan.</h1>
+<h2 class="text-danger">Terjadi kesalahan saat memproses permintaan Anda.</h2>
 
 @if (ShowRequestId)
 {
     <p>
-        <strong>Request ID:</strong> <code>@RequestId</code>
+        <strong>ID Permintaan:</strong> <code>@RequestId</code>
     </p>
 }
 
-<h3>Development Mode</h3>
+<h3>Mode Pengembangan</h3>
 <p>
-    Swapping to <strong>Development</strong> environment will display more detailed information about the error that occurred.
+    Beralih ke lingkungan <strong>Pengembangan</strong> akan menampilkan informasi lebih detail tentang kesalahan yang terjadi.
 </p>
 <p>
-    <strong>The Development environment shouldn't be enabled for deployed applications.</strong>
-    It can result in displaying sensitive information from exceptions to end users.
-    For local debugging, enable the <strong>Development</strong> environment by setting the <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong>
-    and restarting the app.
+    <strong>Lingkungan Pengembangan tidak boleh diaktifkan untuk aplikasi yang diterapkan.</strong>
+    Ini dapat mengakibatkan penampilan informasi sensitif dari exception kepada pengguna akhir.
+    Untuk debug lokal, aktifkan lingkungan <strong>Pengembangan</strong> dengan mengatur variabel lingkungan <strong>ASPNETCORE_ENVIRONMENT</strong> menjadi <strong>Development</strong>
+    dan jalankan ulang aplikasi.
 </p>
 
 @code{
