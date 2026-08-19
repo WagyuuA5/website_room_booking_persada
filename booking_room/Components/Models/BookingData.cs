@@ -42,43 +42,43 @@ public static class BookingDataStore
     public static List<BookingItem> AllBookings => new()
     {
         new("1", "REQ-8942-BR", "Executive Boardroom A", "Level 42, North Wing",
-            "pending", "October 24, 2023", "09:00 - 12:00 PM", "3 Hours",
+            "pending", "24 Oktober 2023", "09:00 - 12:00", "3 Jam",
             12, 15, "Sarah Jenkins", "VP Operations",
             "Quarterly executive review meeting with all department heads to discuss Q4 strategy and budget allocation.",
             "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80"),
 
         new("2", "REQ-7731-MR", "Training Room B", "Level 2, East Wing",
-            "approved", "October 25, 2023", "13:00 - 16:00 PM", "3 Hours",
+            "approved", "25 Oktober 2023", "13:00 - 16:00", "3 Jam",
             25, 30, "Ahmad Fauzi", "Training Manager",
             "New employee onboarding workshop — technical skills assessment and team building activities.",
             "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=800&q=80"),
 
         new("3", "REQ-6650-HS", "Huddle Space C", "Level 1, South Wing",
-            "rejected", "October 22, 2023", "10:00 - 11:00 AM", "1 Hour",
+            "rejected", "22 Oktober 2023", "10:00 - 11:00", "1 Jam",
             4, 6, "Nadia Pradipta", "Product Designer",
             "Quick design sprint review with the UX team — feedback session on new mobile app prototype.",
             "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=800&q=80"),
 
         new("4", "REQ-5521-FC", "Focus Room Alpha", "Level 3, West Wing",
-            "completed", "October 20, 2023", "14:00 - 15:30 PM", "1.5 Hours",
+            "completed", "20 Oktober 2023", "14:00 - 15:30", "1 Jam 30 Menit",
             3, 4, "Budi Santoso", "Engineering Lead",
             "One-on-one performance review and career development planning session.",
             "https://images.unsplash.com/photo-1497215842964-222b430dc094?auto=format&fit=crop&w=800&q=80"),
 
         new("5", "REQ-4410-CR", "Conference Hall", "Level 1, Main Building",
-            "approved", "October 26, 2023", "09:00 - 17:00 PM", "8 Hours",
+            "approved", "26 Oktober 2023", "09:00 - 17:00", "8 Jam",
             45, 50, "Rina Wulandari", "Event Coordinator",
             "Annual company town hall meeting with keynote presentations and department showcases.",
             "https://images.unsplash.com/photo-1431540015160-0295aaa24f7f?auto=format&fit=crop&w=800&q=80"),
 
         new("6", "REQ-3309-IL", "Innovation Lab", "Level 3, North Wing",
-            "pending", "October 27, 2023", "10:00 - 12:00 PM", "2 Hours",
+            "pending", "27 Oktober 2023", "10:00 - 12:00", "2 Jam",
             10, 15, "Dimas Prasetyo", "R&D Manager",
             "Product innovation brainstorming session — exploring new AI integration possibilities.",
             "https://images.unsplash.com/photo-1497366754888-5a456d4b3447?auto=format&fit=crop&w=800&q=80"),
 
         new("7", "REQ-2200-ES", "Executive Suite", "Level 5, Top Floor",
-            "completed", "October 18, 2023", "11:00 - 12:30 PM", "1.5 Hours",
+            "completed", "18 Oktober 2023", "11:00 - 12:30", "1 Jam 30 Menit",
             8, 10, "Alex Mercer", "CTO",
             "Board of directors meeting — Q3 financial results presentation and strategic planning.",
             "https://images.unsplash.com/photo-1462826303086-329426d1aef5?auto=format&fit=crop&w=800&q=80"),
@@ -91,7 +91,7 @@ public static class BookingDataStore
         "System Admin",
         "IT Dept",
         "HQ - Floor 3",
-        "Today, 08:30 AM",
+        "Hari ini, 08:30",
         "WR"
     );
 
