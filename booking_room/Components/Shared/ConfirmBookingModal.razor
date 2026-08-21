@@ -378,7 +378,7 @@
 <div class="confirm-booking-wrapper">
     <div class="modal-header-section">
         <div>
-            <h2 class="modal-title">Konfirmasi Pesanan</h2>
+            <h2 class="modal-title">Konfirmasi Booking</h2>
             <p class="modal-subtitle">Jadwalkan sumber daya atau ruangan baru</p>
         </div>
     </div>
@@ -387,7 +387,7 @@
         <!-- Row 1: Nama Pemesan & Divisi -->
         <div class="grid-2-col">
             <div>
-                <label class="form-label">Nama Pemesan</label>
+                <label class="form-label">Nama Pemesan (Nama Lengkap)</label>
                 <div class="input-wrapper">
                     <span class="input-icon">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -448,7 +448,7 @@
                             </span>
                             <div>
                                 <h3 class="room-name">@room.Name</h3>
-                                <div class="room-cap">Kapasitas: @room.Capacity Pax</div>
+                                <div class="room-cap">Kapasitas: @room.Capacity Orang</div>
                             </div>
                         </div>
                         <div class="room-amenities">
@@ -467,7 +467,7 @@
                     <span class="input-icon">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
                     </span>
-                    <input type="date" class="form-input" placeholder="hh/bb/tttt" @bind="_bookingDate" />
+                    <input type="date" class="form-input" placeholder="dd/mm/yyyy" @bind="_bookingDate" />
                 </div>
             </div>
             <div>
@@ -505,7 +505,7 @@
                 <span class="input-icon">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 </span>
-                <input type="text" class="form-input" placeholder="Undang rekan kerja..." @bind="_attendeeSearch" @bind:event="oninput" @onkeyup="HandleAttendeeInput" />
+                <input type="text" class="form-input" placeholder="Undang kolega..." @bind="_attendeeSearch" @bind:event="oninput" @onkeyup="HandleAttendeeInput" />
             </div>
             
             <div class="attendee-chips">
@@ -524,7 +524,7 @@
                 {
                     <div class="conflict-badge">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                        Potensi konflik jadwal
+                        Potensi bentrok jadwal
                     </div>
                 }
             </div>
@@ -554,7 +554,7 @@
         <!-- Notes -->
         <div>
             <label class="form-label">Catatan / Permintaan Khusus</label>
-            <textarea class="form-input" placeholder="Kebutuhan peralatan, konsumsi, dll."></textarea>
+            <textarea class="form-input" placeholder="Kebutuhan peralatan, katering, dsb."></textarea>
         </div>
     </div>
 
@@ -562,7 +562,7 @@
         <button class="btn-pill btn-cancel" @onclick="OnClose">Batal</button>
         <button class="btn-pill btn-confirm" @onclick="SubmitBooking">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-            Konfirmasi Pesanan
+            Konfirmasi Booking
         </button>
     </div>
 </div>
@@ -588,9 +588,9 @@
     {
         _suggestedRooms = new List<RoomItem>
         {
-            new RoomItem("1", "Alpha Boardroom", 12, "", "available", new List<string>{"TV", "WiFi", "Projector"}, "1"),
-            new RoomItem("2", "Beta Studio", 4, "", "available", new List<string>{"Camera", "Mic", "WiFi"}, "1"),
-            new RoomItem("3", "Gamma Lounge", 8, "", "booked", new List<string>{"Sofa", "Coffee", "WiFi"}, "1")
+            new RoomItem("1", "Alpha Boardroom", 12, "", "available", new List<string>{"TV", "WiFi", "Proyektor"}, "1"),
+            new RoomItem("2", "Beta Studio", 4, "", "available", new List<string>{"Kamera", "Mikrofon", "WiFi"}, "1"),
+            new RoomItem("3", "Gamma Lounge", 8, "", "booked", new List<string>{"Sofa", "Kopi", "WiFi"}, "1")
         };
 
         if (InitialRoom != null)

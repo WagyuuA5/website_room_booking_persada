@@ -12,7 +12,7 @@
             <div class="rd-left">
                 <div class="rd-badge @(Room.Status == "available" ? "rd-badge-available" : "rd-badge-booked")">
                     <span class="rd-dot @(Room.Status == "available" ? "rd-dot-available" : "rd-dot-booked")"></span>
-                    @(Room.Status == "available" ? "Tersedia" : "Dipesan")
+                    @(Room.Status == "available" ? "Tersedia Sekarang" : "Dipesan")
                 </div>
                 
                 <div class="rd-photo-wrapper">
@@ -31,12 +31,11 @@
                             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                             <circle cx="12" cy="10" r="3"></circle>
                         </svg>
-                        <span>Lantai @Room.Floor, Persada HQ</span>
+                        <span>Lantai @Room.Floor, Sayap Utara, Persada HQ</span>
                     </div>
 
                     <p class="rd-desc @(isDescriptionExpanded ? "rd-desc-expanded" : "")">
                         @Room.Description
-                        Boardroom andalan kami dirancang untuk rapat eksekutif berisiko tinggi. Menampilkan konferensi video 4K, audio terintegrasi, dan tempat duduk ergonomis hingga 12 orang.
                     </p>
                     <button class="rd-desc-toggle" @onclick="ToggleDescription">
                         @(isDescriptionExpanded ? "Sembunyikan detail" : "Lihat lebih detail")
@@ -54,7 +53,7 @@
                                     <circle cx="12" cy="20" r="1"></circle>
                                 </svg>
                             </div>
-                            <span>Wi-Fi Berkecepatan Tinggi</span>
+                            <span>WiFi Berkecepatan Tinggi</span>
                         </div>
                         <div class="rd-amenity">
                             <div class="rd-amenity-icon">
@@ -63,7 +62,7 @@
                                     <polyline points="17 2 12 7 7 2"></polyline>
                                 </svg>
                             </div>
-                            <span>Layar 85"</span>
+                            <span>Layar 85 Inci</span>
                         </div>
                         <div class="rd-amenity">
                             <div class="rd-amenity-icon">
@@ -83,7 +82,7 @@
                                     <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                                 </svg>
                             </div>
-                            <span>Hingga @Room.Capacity Pax</span>
+                            <span>Hingga @Room.Capacity Orang</span>
                         </div>
                     </div>
                 </div>
@@ -96,7 +95,7 @@
                             <line x1="8" y1="2" x2="8" y2="6"></line>
                             <line x1="3" y1="10" x2="21" y2="10"></line>
                         </svg>
-                        Pesan Sekarang
+                        Booking Sekarang
                     </button>
                     <button class="rd-btn-cancel" @onclick="OnClose">Batal</button>
                 </div>

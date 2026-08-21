@@ -5,7 +5,6 @@
 @inject booking_room.Services.NotificationState NotificationState
 @inject booking_room.Services.LoadingStateService LoadingState
 @implements IDisposable
-@inject IJSRuntime JSRuntime
 <PageTitle>Beranda — Persada Room</PageTitle>
 
 @if (NotificationState.CurrentBannerType != booking_room.Services.NotificationState.BannerType.None)
@@ -122,19 +121,24 @@ else
         </div>
     </div>
 
-    <div class="analytics-bar-list">
-        @foreach (var room in analyticsData.Rooms.Take(5))
+    <div style="width: 100%; min-height: 280px;">
+        @if (_apexChartSeries != null && _apexChartSeries.Count > 0)
         {
-            var maxHours = analyticsData.Rooms.Max(r => r.HoursUsed);
-            var percentage = maxHours > 0 ? (double)room.HoursUsed / maxHours * 100 : 0;
-            
-            <div class="analytics-bar-item">
-                <div class="analytics-bar-name">@room.RoomName</div>
-                <div class="analytics-bar-track">
-                    <div class="analytics-bar-fill" style="width: @(percentage.ToString("0.0"))%;"></div>
-                    <div class="analytics-bar-value">@room.HoursUsed jam</div>
-                </div>
-            </div>
+            <ApexChart TItem="RoomUsagePoint"
+                       Options="_apexChartOptions"
+                       @ref="_apexChartRef"
+                       Height="280">
+                @foreach (var series in _apexChartSeries)
+                {
+                    <ApexPointSeries TItem="RoomUsagePoint"
+                                     Items="series.Points"
+                                     Name="@series.Name"
+                                     SeriesType="SeriesType.Area"
+                                     XValue="@(p => p.Label)"
+                                     YValue="@(p => p.Value)"
+                                     Stroke="@(new SeriesStroke { Width = 2, Color = series.Color })" />
+                }
+            </ApexChart>
         }
     </div>
 
@@ -198,7 +202,11 @@ else
     private string selectedPeriod = "Minggu";
     private readonly string[] periods = { "Minggu", "Bulan", "Tahun" };
     private DateTime checkInTimestamp;
-    private ChartData? chartData;
+
+    // ApexChart state
+    private ApexChart<RoomUsagePoint>? _apexChartRef;
+    private ApexChartOptions<RoomUsagePoint> _apexChartOptions = new();
+    private List<ApexChartSeries> _apexChartSeries = new();
 
     private string activePopup = "";
 
@@ -207,30 +215,112 @@ else
         nextRoom = DashboardData.NextAvailableRooms.FirstOrDefault();
         NotificationState.OnChange += StateHasChanged;
         LoadingState.OnChange += StateHasChanged;
+
+        ConfigureApexChartOptions();
+        LoadApexChartData(selectedPeriod);
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private void ConfigureApexChartOptions()
     {
-        if (firstRender && !LoadingState.IsLoading)
+        _apexChartOptions = new ApexChartOptions<RoomUsagePoint>
         {
-            chartData = DashboardData.GetChartData(selectedPeriod);
-            await JSRuntime.InvokeVoidAsync("initRoomUsageChart", "room-usage-wave-chart", chartData);
-        }
+            Chart = new Chart
+            {
+                Toolbar = new Toolbar { Show = false },
+                Animations = new Animations
+                {
+                    Enabled = true,
+                    Speed = 600,
+                    AnimateGradually = new AnimateGradually { Enabled = true, Delay = 150 }
+                },
+                FontFamily = "'Inter', 'Poppins', sans-serif"
+            },
+            Stroke = new Stroke
+            {
+                Curve = Curve.Smooth,
+                Width = 2
+            },
+            Fill = new Fill
+            {
+                Type = FillType.Gradient,
+                Gradient = new FillGradient
+                {
+                    ShadeIntensity = 1,
+                    OpacityFrom = 0.35,
+                    OpacityTo = 0.05,
+                    Stops = new List<double> { 0, 90, 100 }
+                }
+            },
+            Xaxis = new XAxis
+            {
+                Labels = new XAxisLabels
+                {
+                    Style = new AxisLabelStyle { FontSize = "11px", Colors = "#94a3b8" }
+                }
+            },
+            Yaxis = new List<YAxis>
+            {
+                new YAxis
+                {
+                    Labels = new YAxisLabels
+                    {
+                        Style = new AxisLabelStyle { FontSize = "11px", Colors = "#94a3b8" }
+                    }
+                }
+            },
+            Grid = new Grid
+            {
+                BorderColor = "#f1f5f9",
+                StrokeDashArray = 4
+            },
+            Legend = new Legend
+            {
+                Position = LegendPosition.Top,
+                HorizontalAlign = ApexCharts.Align.Left,
+                FontSize = "12px",
+                Labels = new LegendLabels { Colors = "#64748b" }
+            },
+            Tooltip = new Tooltip
+            {
+                Enabled = true,
+                Theme = Mode.Light
+            },
+            Colors = new List<string> { "#0f1f3d", "#1e40af", "#3b82f6", "#60a5fa", "#93c5fd" }
+        };
+    }
+
+    private void LoadApexChartData(string period)
+    {
+        var chartData = DashboardData.GetChartData(period);
+        _apexChartSeries = chartData.Datasets.Select(ds =>
+        {
+            var points = chartData.Labels.Select((label, i) => new RoomUsagePoint
+            {
+                Label = label,
+                Value = (decimal)ds.Data[i]
+            }).ToList();
+
+            return new ApexChartSeries
+            {
+                Name = ds.Label,
+                Color = ds.BorderColor,
+                Points = points
+            };
+        }).ToList();
     }
 
     public void Dispose()
     {
         NotificationState.OnChange -= StateHasChanged;
         LoadingState.OnChange -= StateHasChanged;
-        _ = JSRuntime.InvokeVoidAsync("destroyRoomUsageChart");
     }
 
     private async Task SelectPeriod(string period)
     {
         selectedPeriod = period;
         analyticsData = DashboardData.GetAnalytics(period);
-        chartData = DashboardData.GetChartData(period);
-        await JSRuntime.InvokeVoidAsync("updateRoomUsageChart", chartData);
+        LoadApexChartData(period);
+        StateHasChanged();
     }
 
     private void ViewAllRooms()
@@ -279,5 +369,19 @@ else
     private void ClosePopup()
     {
         activePopup = "";
+    }
+
+    // Data model for ApexCharts
+    public class RoomUsagePoint
+    {
+        public string Label { get; set; } = "";
+        public decimal Value { get; set; }
+    }
+
+    public class ApexChartSeries
+    {
+        public string Name { get; set; } = "";
+        public string Color { get; set; } = "";
+        public List<RoomUsagePoint> Points { get; set; } = new();
     }
 }

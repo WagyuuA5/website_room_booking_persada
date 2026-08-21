@@ -1,10 +1,13 @@
 @using booking_room.Components.Shared
 
-<div class="modal-body-custom checkin-success-modal" style="display: flex; flex-direction: column; align-items: center; padding: 3rem 2rem; background: var(--text-navy); color: white; border-radius: inherit; text-align: center;">
+<div class="modal-body-custom checkin-success-modal" style="display: flex; flex-direction: column; align-items: center; padding: 3rem 2rem; background: var(--persada-navy-900, #0f1f3d); color: white; border-radius: inherit; text-align: center;">
     
     <!-- Success Icon -->
     <div style="margin-bottom: 1.5rem;">
-        <InlineSvg Src="/icons/icon_check_circle.svg" Style="width: 80px; height: 80px;" />
+        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="var(--persada-yellow-500, #EAB63C)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="check-animation">
+            <circle cx="12" cy="12" r="10" class="circle-animation"></circle>
+            <path d="M8 12.5l3 3 5-6" class="check-path-animation"></path>
+        </svg>
     </div>
 
     <!-- Title -->
@@ -14,10 +17,34 @@
     <p style="color: #cbd5e1; font-size: 1rem; font-weight: 500; margin: 0 0 2.5rem 0;">pada @Timestamp.ToString("HH:mm")</p>
 
     <!-- Close Button -->
-    <button @onclick="Close" style="width: 100%; padding: 0.875rem; border-radius: 9999px; border: none; background: var(--accent-amber); color: var(--text-navy); font-weight: 700; font-size: 1rem; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;">
+    <button @onclick="Close" style="width: 100%; padding: 0.875rem; border-radius: 9999px; border: none; background: var(--persada-yellow-500, #EAB63C); color: var(--persada-navy-900, #0f1f3d); font-weight: 700; font-size: 1rem; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;">
         Tutup
     </button>
 </div>
+
+<style>
+    .check-animation {
+        display: block;
+        margin: 0 auto;
+    }
+    .circle-animation {
+        stroke-dasharray: 63;
+        stroke-dashoffset: 63;
+        animation: drawCircle 0.6s ease forwards;
+    }
+    .check-path-animation {
+        stroke-dasharray: 14;
+        stroke-dashoffset: 14;
+        animation: drawCheck 0.4s 0.5s ease forwards;
+    }
+
+    @@keyframes drawCircle {
+        to { stroke-dashoffset: 0; }
+    }
+    @@keyframes drawCheck {
+        to { stroke-dashoffset: 0; }
+    }
+</style>
 
 @code {
     [Parameter] public DateTime Timestamp { get; set; }
