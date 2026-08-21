@@ -1,23 +1,34 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+ï»¿@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
-    --sidebar-bg: #0f1f3d;
+    --persada-navy-900: #0f1f3d;
+    --persada-yellow-500: #f59e0b;
+    --persada-bg-neutral: #F5F5F7;
+    --persada-white: #FFFFFF;
+    --persada-text-primary: #1D1D1F;
+    --persada-text-secondary: #6E6E73;
+    --persada-accent-blue: #1F5D9A;
+    --persada-success-green: #00A372;
+    --persada-border-radius-card: 20px;
+    --persada-border-radius-pill: 999px;
+
+    --sidebar-bg: var(--persada-navy-900);
     --sidebar-hover: rgba(255, 255, 255, 0.08);
-    --sidebar-active-border: #f59e0b;
-    --accent-amber: #f59e0b;
+    --sidebar-active-border: var(--persada-yellow-500);
+    --accent-amber: var(--persada-yellow-500);
     --accent-amber-hover: #d97706;
-    --accent-green: #10b981;
+    --accent-green: var(--persada-success-green);
     --accent-green-light: #d1fae5;
-    --accent-blue: #3b82f6;
+    --accent-blue: var(--persada-accent-blue);
     --accent-blue-light: #dbeafe;
     --accent-red: #ef4444;
     --accent-red-light: #fee2e2;
-    --text-navy: #0f1f3d;
+    --text-navy: var(--persada-text-primary);
     --text-navy-light: #1e293b;
-    --bg-gradient-start: #f8fafc;
-    --bg-gradient-end: #e0e7ff;
-    --card-bg: #ffffff;
-    --card-radius: 20px;
+    --bg-gradient-start: var(--persada-bg-neutral);
+    --bg-gradient-end: var(--persada-white);
+    --card-bg: var(--persada-white);
+    --card-radius: var(--persada-border-radius-card);
     --shadow-sm: 0 1px 3px rgba(15, 31, 61, 0.06), 0 1px 2px rgba(15, 31, 61, 0.04);
     --shadow-md: 0 4px 6px -1px rgba(15, 31, 61, 0.08), 0 2px 4px -1px rgba(15, 31, 61, 0.04);
     --shadow-lg: 0 10px 25px -5px rgba(15, 31, 61, 0.12), 0 8px 10px -6px rgba(15, 31, 61, 0.06);
@@ -91,7 +102,7 @@ h1:focus {
 }
 
 .blazor-error-boundary::after {
-    content: "An error has occurred."
+    content: "Terjadi kesalahan."
 }
 
 .darker-border-checkbox.form-check-input {
@@ -234,11 +245,11 @@ h1:focus {
 /* HERO CARD                                    */
 /* ============================================ */
 .hero-card {
-    background: linear-gradient(135deg, #fffbeb 0%, #ffffff 60%, #f0fdf4 100%);
-    border-radius: var(--card-radius);
+    background: linear-gradient(135deg, var(--persada-bg-neutral) 0%, var(--persada-white) 100%);
+    border-radius: var(--persada-border-radius-card);
     padding: 2rem 2.5rem;
     margin-bottom: 1.5rem;
-    border: 1px solid rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(226, 232, 240, 0.6);
     box-shadow: var(--shadow-sm);
     position: relative;
     overflow: hidden;
@@ -258,16 +269,16 @@ h1:focus {
 }
 
 .hero-title {
-    font-size: 1.75rem;
-    font-weight: 800;
-    color: var(--text-navy);
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--persada-text-primary);
     margin-bottom: 0.5rem;
     letter-spacing: -0.02em;
 }
 
 .hero-subtitle {
-    color: #64748b;
-    font-size: 1rem;
+    color: var(--persada-text-secondary);
+    font-size: 15px;
     line-height: 1.7;
     max-width: 700px;
     font-weight: 400;
@@ -400,18 +411,18 @@ h1:focus {
 }
 
 .summary-card-label {
-    font-size: 0.8rem;
-    color: #64748b;
+    font-size: 0.75rem;
+    color: var(--persada-text-secondary);
     font-weight: 600;
     margin-bottom: 0.35rem;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
 }
 
 .summary-card-value {
-    font-size: 1.85rem;
+    font-size: 2.25rem;
     font-weight: 800;
-    color: var(--text-navy);
+    color: var(--persada-text-primary);
     line-height: 1.1;
     letter-spacing: -0.02em;
 }
@@ -561,11 +572,11 @@ h1:focus {
     justify-content: center;
     gap: 0.5rem;
     padding: 0.75rem 1.25rem;
-    background: linear-gradient(135deg, var(--accent-amber) 0%, #f97316 100%);
-    color: var(--text-navy);
+    background: linear-gradient(135deg, var(--persada-yellow-500) 0%, #f97316 100%);
+    color: var(--persada-navy-900);
     font-weight: 700;
     border: none;
-    border-radius: 0.75rem;
+    border-radius: var(--persada-border-radius-pill);
     cursor: pointer;
     font-size: 0.9rem;
     transition: all var(--transition-base);
@@ -1552,12 +1563,24 @@ h1:focus {
 
 @media (max-width: 767px) {
     .hero-card {
-        padding: 1.5rem;
-    }
+    background: linear-gradient(135deg, var(--persada-bg-neutral) 0%, var(--persada-white) 100%);
+    border-radius: var(--persada-border-radius-card);
+    padding: 2rem 2.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(226, 232, 240, 0.6);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+    animation: fadeInUp 0.5s var(--transition-smooth) both;
+}
 
     .hero-title {
-        font-size: 1.35rem;
-    }
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--persada-text-primary);
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+}
 
     .summary-card {
         padding: 1.25rem;
@@ -2330,7 +2353,7 @@ h1:focus {
 }
 
 /* ============================================ */
-/* HALAMAN BOOKINGS — CARI RUANGAN              */
+/* HALAMAN BOOKINGS ï¿½ CARI RUANGAN              */
 /* ============================================ */
 .bookings-page-header {
     margin-bottom: 1.5rem;
@@ -2672,7 +2695,7 @@ h1:focus {
 .no-results svg { margin-bottom: 1rem; opacity: 0.5; }
 
 /* ============================================ */
-/* NAVBAR ACTIVE STATE — border amber          */
+/* NAVBAR ACTIVE STATE ï¿½ border amber          */
 /* ============================================ */
 .nav-menu-item.nav-active {
     background-color: rgba(255, 255, 255, 0.08);
@@ -3463,16 +3486,162 @@ input:checked + .slider:before { transform: translateX(20px); }
 
 /* --- P&G MANAGEMENT GLOBAL DESIGN SYSTEM --- */
 :root {
-    --navy: #16305C;
-    --navy-dark: #1A3A63;
-    --gold: #EAB63C;
-    --gold-dark: #F0B429;
-    --gray-text: #6B7280;
-    --gray-label: #9CA3AF;
-    --bg-light: #F3F4F6;
-    --border-light: #E5E7EB;
-    --radius-modal: 24px;
-    --radius-pill: 9999px;
-    --shadow-soft: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --persada-navy-900: #0f1f3d;
+    --persada-yellow-500: #f59e0b;
+    --persada-bg-neutral: #F5F5F7;
+    --persada-white: #FFFFFF;
+    --persada-text-primary: #1D1D1F;
+    --persada-text-secondary: #6E6E73;
+    --persada-accent-blue: #1F5D9A;
+    --persada-success-green: #00A372;
+    --persada-border-radius-card: 20px;
+    --persada-border-radius-pill: 999px;
+
+    --sidebar-bg: var(--persada-navy-900);
+    --sidebar-hover: rgba(255, 255, 255, 0.08);
+    --sidebar-active-border: var(--persada-yellow-500);
+    --accent-amber: var(--persada-yellow-500);
+    --accent-amber-hover: #d97706;
+    --accent-green: var(--persada-success-green);
+    --accent-green-light: #d1fae5;
+    --accent-blue: var(--persada-accent-blue);
+    --accent-blue-light: #dbeafe;
+    --accent-red: #ef4444;
+    --accent-red-light: #fee2e2;
+    --text-navy: var(--persada-text-primary);
+    --text-navy-light: #1e293b;
+    --bg-gradient-start: var(--persada-bg-neutral);
+    --bg-gradient-end: var(--persada-white);
+    --card-bg: var(--persada-white);
+    --card-radius: var(--persada-border-radius-card);
+    --shadow-sm: 0 1px 3px rgba(15, 31, 61, 0.06), 0 1px 2px rgba(15, 31, 61, 0.04);
+    --shadow-md: 0 4px 6px -1px rgba(15, 31, 61, 0.08), 0 2px 4px -1px rgba(15, 31, 61, 0.04);
+    --shadow-lg: 0 10px 25px -5px rgba(15, 31, 61, 0.12), 0 8px 10px -6px rgba(15, 31, 61, 0.06);
+    --shadow-xl: 0 20px 40px -8px rgba(15, 31, 61, 0.18), 0 8px 16px -4px rgba(15, 31, 61, 0.08);
+    --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+
+/* ============================================ */
+/* INLINE ANALYTICS PANEL                       */
+/* ============================================ */
+.analytics-inline-panel {
+    background: var(--persada-white);
+    border-radius: var(--persada-border-radius-card);
+    padding: 2rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(226, 232, 240, 0.6);
+    animation: fadeInUp 0.6s var(--transition-smooth) 0.4s both;
+    margin-bottom: 1.5rem;
+}
+
+.analytics-inline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.analytics-inline-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--persada-text-primary);
+    margin-bottom: 0.35rem;
+}
+
+.analytics-inline-subtitle {
+    font-size: 14px;
+    color: var(--persada-text-secondary);
+    font-weight: 400;
+}
+
+.analytics-toggle {
+    display: inline-flex;
+    background-color: var(--persada-bg-neutral);
+    border-radius: var(--persada-border-radius-pill);
+    padding: 0.25rem;
+    border: 1px solid #e2e8f0;
+}
+
+.analytics-toggle button {
+    padding: 0.5rem 1.25rem;
+    border: none;
+    background: none;
+    border-radius: var(--persada-border-radius-pill);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--persada-text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.analytics-toggle button:hover {
+    color: var(--persada-text-primary);
+}
+
+.analytics-toggle button.active {
+    background-color: var(--persada-navy-900);
+    color: var(--persada-white);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.analytics-bar-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.analytics-bar-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.analytics-bar-name {
+    width: 140px;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--persada-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 0;
+}
+
+.analytics-bar-track {
+    flex: 1;
+    height: 32px;
+    background: var(--persada-bg-neutral);
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+}
+
+.analytics-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--persada-accent-blue) 0%, #3b82f6 100%);
+    border-radius: 6px;
+    transition: width 0.7s ease-out;
+}
+
+.analytics-bar-value {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--persada-white);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.analytics-inline-footer {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: flex-end;
 }
 

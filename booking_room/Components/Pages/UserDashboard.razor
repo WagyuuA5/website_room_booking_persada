@@ -6,7 +6,7 @@
 @inject booking_room.Services.LoadingStateService LoadingState
 @implements IDisposable
 @inject IJSRuntime JSRuntime
-<PageTitle>Dasbor - PADA Management</PageTitle>
+<PageTitle>Beranda — Persada Room</PageTitle>
 
 @if (NotificationState.CurrentBannerType != booking_room.Services.NotificationState.BannerType.None)
 {
@@ -36,7 +36,7 @@ else
 <div class="content-fade-in">
 <div class="hero-card">
     <h1 class="hero-title">Selamat Datang, Admin User</h1>
-    <p class="hero-subtitle">Kelola pemesanan ruangan perusahaan Anda secara efisien. Pantau penggunaan ruangan, reservasi mendatang, dan analitik sistem dalam satu tempat.</p>
+    <p class="hero-subtitle">Kelola pemesanan ruangan perusahaan Anda dengan efisien. Pantau penggunaan ruangan, reservasi mendatang, dan analitik sistem dalam satu tempat.</p>
 </div>
 
 <div class="summary-cards">
@@ -77,7 +77,7 @@ else
     {
         <div class="summary-card next-available-card" @onclick='() => ShowPopup("QuickBook")'>
             <div class="next-available-header">
-                <div class="next-available-title">Segera Tersedia</div>
+                <div class="next-available-title">Tersedia Berikutnya</div>
                 <svg class="next-available-bolt" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
                 </svg>
@@ -89,10 +89,10 @@ else
             <div class="next-available-meta">
                 Tersedia dalam @nextRoom.AvailableInMinutes menit
                 <span style="margin: 0 0.35rem;">•</span>
-                Kapasitas: @nextRoom.Capacity
+                Kapasitas: @nextRoom.Capacity Orang
             </div>
             <button class="next-available-btn">
-                Pesan Cepat
+                Booking Instan
             </button>
         </div>
     }
@@ -108,38 +108,40 @@ else
     }
 </div>
 
-<div class="analytics-trigger-card" @onclick='() => ShowPopup("AnalyticsDetail")'>
-    <div class="analytics-trigger-header">
-        <div class="analytics-trigger-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16305C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="14" width="4" height="7" rx="1" fill="#1e40af"/>
-                <rect x="8.5" y="10" width="4" height="11" rx="1" fill="#3b82f6"/>
-                <rect x="14" y="6" width="4" height="15" rx="1" fill="#60a5fa"/>
-                <path d="M2 21H23" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round"/>
-            </svg>
-        </div>
+<div class="analytics-inline-panel">
+    <div class="analytics-inline-header">
         <div>
-            <h2 class="analytics-title">Analitik Penggunaan Detail</h2>
-            <p class="analytics-subtitle">Lihat ringkasan total jam, rata-rata, dan ranking ruangan</p>
+            <h2 class="analytics-inline-title">Analitik Utilisasi Ruangan</h2>
+            <p class="analytics-inline-subtitle">5 Ruangan Paling Sering Dipesan</p>
         </div>
-        <div class="analytics-trigger-preview">
-            <svg viewBox="0 0 120 40" width="120" height="40" preserveAspectRatio="none">
-                <defs>
-                    <linearGradient id="miniChartGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.25"/>
-                        <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
-                    </linearGradient>
-                </defs>
-                <path d="M0 32 L15 28 L30 30 L45 18 L60 22 L75 10 L90 14 L105 6 L120 8 L120 40 L0 40 Z" fill="url(#miniChartGradient)"/>
-                <path d="M0 32 L15 28 L30 30 L45 18 L60 22 L75 10 L90 14 L105 6 L120 8" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
-                <circle cx="120" cy="8" r="3" fill="#3b82f6"/>
-            </svg>
+        <div class="analytics-toggle">
+            @foreach (var period in periods)
+            {
+                <button class="@(selectedPeriod == period ? "active" : "")" @onclick="() => SelectPeriod(period)">@period</button>
+            }
         </div>
-        <div class="analytics-trigger-arrow">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-        </div>
+    </div>
+
+    <div class="analytics-bar-list">
+        @foreach (var room in analyticsData.Rooms.Take(5))
+        {
+            var maxHours = analyticsData.Rooms.Max(r => r.HoursUsed);
+            var percentage = maxHours > 0 ? (double)room.HoursUsed / maxHours * 100 : 0;
+            
+            <div class="analytics-bar-item">
+                <div class="analytics-bar-name">@room.RoomName</div>
+                <div class="analytics-bar-track">
+                    <div class="analytics-bar-fill" style="width: @(percentage.ToString("0.0"))%;"></div>
+                    <div class="analytics-bar-value">@room.HoursUsed jam</div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="analytics-inline-footer">
+        <button class="btn btn-outline-primary" style="border-radius: 999px; font-weight: 600; padding: 0.5rem 1.25rem;" @onclick='() => ShowPopup("AnalyticsDetail")'>
+            Lihat Detail
+        </button>
     </div>
 </div>
 
