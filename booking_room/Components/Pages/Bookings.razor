@@ -155,8 +155,11 @@
                         _ => "Tidak Tersedia"
                     };
 
-                    <div class="room-result-card @cardClass">
-                        <div class="room-card-photo" @onclick="() => ViewDetail(room)" style="cursor:pointer; position:relative; overflow:hidden;">
+                    var isClickable = room.Status != "booked" && room.Status != "unavailable";
+                    var cursorStyle = isClickable ? "cursor:pointer;" : "cursor:not-allowed; opacity: 0.8;";
+
+                    <div class="room-result-card @cardClass" title="@(isClickable ? "" : "Ruangan tidak dapat dipesan saat ini")">
+                        <div class="room-card-photo" @onclick="() => { if (isClickable) ViewDetail(room); }" style="@cursorStyle position:relative; overflow:hidden;">
                             @if (!string.IsNullOrEmpty(room.PhotoUrl))
                             {
                                 <img src="@room.PhotoUrl" alt="@room.Name" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'" />
@@ -190,7 +193,7 @@
                             </div>
                         </div>
                         <div class="room-card-footer">
-                            <button class="room-detail-btn" style="text-transform: uppercase; font-weight: 600;" @onclick="() => ViewDetail(room)">LIHAT DETAIL</button>
+                            <button class="room-detail-btn" style="text-transform: uppercase; font-weight: 600; @(!isClickable ? "opacity:0.5; cursor:not-allowed;" : "")" @onclick="() => { if (isClickable) ViewDetail(room); }" disabled="@(!isClickable)">LIHAT DETAIL</button>
                         </div>
                     </div>
                 }
@@ -317,6 +320,7 @@ else if (_activeTab == "Peta")
 
     private void ViewDetail(RoomItem room)
     {
+        if (room.Status == "booked" || room.Status == "unavailable") return;
         _selectedRoomForDetail = room;
         _isRoomDetailVisible = true;
     }

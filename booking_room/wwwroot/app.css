@@ -2157,13 +2157,13 @@ h1:focus {
 }
 
 .avail-status-badge.status-available {
-    background: #dcfce7;
-    color: #166534;
+    background: #10b981;
+    color: #ffffff;
 }
 
 .avail-status-badge.status-pending {
-    background: #fef3c7;
-    color: #92400e;
+    background: #f59e0b;
+    color: #ffffff;
 }
 
 /* Pending Approvals */
@@ -2608,9 +2608,9 @@ h1:focus {
     backdrop-filter: blur(4px);
 }
 
-.room-card-status-badge.status-available { background: rgba(16,185,129,0.15); color: #065f46; border: 1px solid #a7f3d0; }
-.room-card-status-badge.status-booked { background: rgba(245,158,11,0.15); color: #92400e; border: 1px solid #fde68a; }
-.room-card-status-badge.status-unavailable { background: rgba(239,68,68,0.15); color: #7f1d1d; border: 1px solid #fecaca; }
+.room-card-status-badge.status-available { background: #10b981; color: #ffffff; border: none; }
+.room-card-status-badge.status-booked { background: #f59e0b; color: #ffffff; border: none; }
+.room-card-status-badge.status-unavailable { background: #ef4444; color: #ffffff; border: none; }
 
 .status-dot { width: 6px; height: 6px; border-radius: 50%; }
 .status-dot.available { background: #10b981; }
@@ -2829,8 +2829,8 @@ h1:focus {
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-.photo-badge.status-available { background: #dcfce7; color: #166534; }
-.photo-badge.status-booked { background: #fee2e2; color: #991b1b; }
+.photo-badge.status-available { background: #10b981; color: #ffffff; border: none; }
+.photo-badge.status-booked { background: #f59e0b; color: #ffffff; border: none; }
 
 .room-details-content {
     display: flex;
