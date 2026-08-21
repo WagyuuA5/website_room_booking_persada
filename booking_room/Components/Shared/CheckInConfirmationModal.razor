@@ -1,5 +1,6 @@
 @implements IDisposable
 @using booking_room.Components.Shared
+@using System.Globalization
 
 <div class="modal-body-custom checkin-confirmation-modal" style="display: flex; flex-direction: column; align-items: center; padding-top: 2rem;">
     <!-- Avatar -->
@@ -26,7 +27,7 @@
             <circle cx="60" cy="60" r="52" fill="none" stroke="@RingColorClass" stroke-width="8"
                     stroke-linecap="round"
                     stroke-dasharray="326.7"
-                    stroke-dashoffset="@RemainingOffset"
+                    stroke-dashoffset="@RemainingOffset.ToString(CultureInfo.InvariantCulture)"
                     transform="rotate(-90 60 60)" 
                      class="countdown-ring @(_remainingPercentage < 20 ? "pulse-ring" : "")"
                     style="transition: stroke-dashoffset 1s linear, stroke 0.5s ease;" />
