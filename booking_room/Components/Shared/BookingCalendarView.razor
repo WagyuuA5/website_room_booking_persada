@@ -1,0 +1,304 @@
+@using booking_room.Components.Models
+@using System.Globalization
+
+<!-- Date Strip -->
+<div class="cal-date-strip">
+    <button class="cal-nav-btn" @onclick="PrevWeek">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    @foreach (var day in _visibleDates)
+    {
+        var isSelected = day.Date == _selectedDate.Date;
+        var isToday = day.Date == DateTime.Today;
+        <button class="cal-date-item @(isSelected ? "selected" : "") @(isToday ? "today" : "")"
+                @onclick="() => SelectDate(day)">
+            <span class="cal-day-label">@day.ToString("ddd", new CultureInfo("id-ID")).ToUpper()</span>
+            <span class="cal-day-number">@day.Day</span>
+        </button>
+    }
+    <button class="cal-nav-btn" @onclick="NextWeek">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+</div>
+
+<div class="cal-month-label">
+    @_selectedDate.ToString("MMMM yyyy", new CultureInfo("id-ID"))
+</div>
+
+<!-- Hourly Grid -->
+<div class="cal-grid-wrapper">
+    <div class="cal-grid">
+        <!-- Header Row -->
+        <div class="cal-grid-header">
+            <div class="cal-grid-room-col">Ruangan</div>
+            @for (int h = 7; h <= 18; h++)
+            {
+                <div class="cal-grid-hour-col">@($"{h:D2}:00")</div>
+            }
+        </div>
+
+        <!-- Room Rows -->
+        @foreach (var room in Rooms)
+        {
+            var slots = GetSlotsForRoom(room.Id);
+            <div class="cal-grid-row">
+                <div class="cal-grid-room-cell" @onclick="() => OnRoomClick.InvokeAsync(room)" style="cursor: pointer;">
+                    <span class="cal-room-name">@room.Name</span>
+                    <span class="cal-room-floor">@room.Floor · @room.Capacity orang</span>
+                </div>
+                @for (int h = 7; h <= 18; h++)
+                {
+                    var hour = h;
+                    var slot = slots.FirstOrDefault(s => s.Hour == hour);
+                    var slotClass = slot?.Status switch
+                    {
+                        "booked" => "slot-booked",
+                        "mine" => "slot-mine",
+                        _ => "slot-free"
+                    };
+                    <div class="cal-grid-slot @slotClass" title="@(slot?.Label ?? "Tersedia")">
+                        @if (slot?.Status == "booked" || slot?.Status == "mine")
+                        {
+                            <span class="slot-label">@slot.Label</span>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Legend -->
+<div class="cal-legend">
+    <div class="cal-legend-item"><span class="cal-legend-dot slot-free"></span> Tersedia</div>
+    <div class="cal-legend-item"><span class="cal-legend-dot slot-booked"></span> Dipesan</div>
+    <div class="cal-legend-item"><span class="cal-legend-dot slot-mine"></span> Milik Saya</div>
+</div>
+
+<style>
+    .cal-date-strip {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        justify-content: center;
+        padding: 0 0 12px 0;
+    }
+    .cal-nav-btn {
+        background: white;
+        border: 1px solid #E2E8F0;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #64748B;
+        transition: all 0.2s;
+        flex-shrink: 0;
+    }
+    .cal-nav-btn:hover {
+        background: #F1F5F9;
+        color: #1E293B;
+    }
+    .cal-date-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding: 8px 14px;
+        border-radius: 14px;
+        border: 1px solid transparent;
+        background: transparent;
+        cursor: pointer;
+        transition: all 0.2s;
+        min-width: 52px;
+    }
+    .cal-date-item:hover {
+        background: #F1F5F9;
+    }
+    .cal-date-item.selected {
+        background: var(--persada-navy-900, #16305C);
+        color: white;
+        border-color: var(--persada-navy-900, #16305C);
+    }
+    .cal-date-item.selected .cal-day-label,
+    .cal-date-item.selected .cal-day-number {
+        color: white;
+    }
+    .cal-date-item.today:not(.selected) {
+        border-color: var(--persada-yellow-500, #EAB63C);
+    }
+    .cal-day-label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: #94A3B8;
+        letter-spacing: 0.05em;
+    }
+    .cal-day-number {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #1E293B;
+    }
+    .cal-month-label {
+        text-align: center;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #64748B;
+        margin-bottom: 16px;
+        text-transform: capitalize;
+    }
+
+    .cal-grid-wrapper {
+        overflow-x: auto;
+        border: 1px solid #E2E8F0;
+        border-radius: 16px;
+        background: white;
+    }
+    .cal-grid {
+        min-width: 900px;
+    }
+    .cal-grid-header {
+        display: grid;
+        grid-template-columns: 200px repeat(12, 1fr);
+        background: #F8FAFC;
+        border-bottom: 1px solid #E2E8F0;
+    }
+    .cal-grid-room-col {
+        padding: 12px 16px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #94A3B8;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+    .cal-grid-hour-col {
+        padding: 12px 8px;
+        text-align: center;
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #94A3B8;
+    }
+    .cal-grid-row {
+        display: grid;
+        grid-template-columns: 200px repeat(12, 1fr);
+        border-bottom: 1px solid #F1F5F9;
+        transition: background 0.15s;
+    }
+    .cal-grid-row:last-child {
+        border-bottom: none;
+    }
+    .cal-grid-row:hover {
+        background: #FAFBFC;
+    }
+    .cal-grid-room-cell {
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        border-right: 1px solid #E2E8F0;
+    }
+    .cal-room-name {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #1E293B;
+    }
+    .cal-room-floor {
+        font-size: 0.7rem;
+        color: #94A3B8;
+    }
+    .cal-grid-slot {
+        padding: 8px 4px;
+        margin: 6px 2px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 28px;
+        transition: all 0.15s;
+    }
+    .cal-grid-slot.slot-free {
+        background: #F0FDF4;
+        border: 1px solid #BBF7D0;
+    }
+    .cal-grid-slot.slot-booked {
+        background: #FEE2E2;
+        border: 1px solid #FECACA;
+    }
+    .cal-grid-slot.slot-mine {
+        background: #DBEAFE;
+        border: 1px solid #93C5FD;
+    }
+    .slot-label {
+        font-size: 0.6rem;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+        color: inherit;
+    }
+    .slot-booked .slot-label { color: #DC2626; }
+    .slot-mine .slot-label { color: #2563EB; }
+
+    .cal-legend {
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+        margin-top: 16px;
+        padding: 12px 0;
+    }
+    .cal-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #64748B;
+    }
+    .cal-legend-dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 4px;
+    }
+    .cal-legend-dot.slot-free { background: #F0FDF4; border: 1px solid #BBF7D0; }
+    .cal-legend-dot.slot-booked { background: #FEE2E2; border: 1px solid #FECACA; }
+    .cal-legend-dot.slot-mine { background: #DBEAFE; border: 1px solid #93C5FD; }
+</style>
+
+@code {
+    [Parameter] public List<RoomItem> Rooms { get; set; } = new();
+    [Parameter] public EventCallback<RoomItem> OnRoomClick { get; set; }
+
+    private DateTime _selectedDate = DateTime.Today;
+    private DateTime _weekStart = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek + (int)DayOfWeek.Monday);
+
+    private List<DateTime> _visibleDates => Enumerable.Range(0, 7).Select(i => _weekStart.AddDays(i)).ToList();
+
+    private void SelectDate(DateTime d) => _selectedDate = d;
+    private void PrevWeek() { _weekStart = _weekStart.AddDays(-7); if (_selectedDate < _weekStart) _selectedDate = _weekStart; }
+    private void NextWeek() { _weekStart = _weekStart.AddDays(7); if (_selectedDate > _weekStart.AddDays(6)) _selectedDate = _weekStart; }
+
+    // Mock slot data
+    private record SlotInfo(int Hour, string Status, string Label);
+
+    private List<SlotInfo> GetSlotsForRoom(string roomId)
+    {
+        // Generate deterministic mock bookings based on roomId + date
+        var slots = new List<SlotInfo>();
+        var seed = roomId.GetHashCode() ^ _selectedDate.DayOfYear;
+        var rng = new Random(seed);
+
+        for (int h = 7; h <= 18; h++)
+        {
+            var roll = rng.Next(100);
+            if (roll < 25)
+                slots.Add(new SlotInfo(h, "booked", "Rapat"));
+            else if (roll < 35)
+                slots.Add(new SlotInfo(h, "mine", "Saya"));
+            else
+                slots.Add(new SlotInfo(h, "free", "Tersedia"));
+        }
+        return slots;
+    }
+}
