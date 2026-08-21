@@ -79,27 +79,23 @@
     </button>
 
     <!-- Footer Actions -->
-    <div style="display: flex; align-items: center; justify-content: center; gap: 1.5rem; width: 100%; padding-top: 0.5rem; border-top: 1px solid #e5e7eb;">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
         @if (!_hasExtended)
         {
-            <button @onclick="OpenExtendModal" style="display: inline-flex; align-items: center; gap: 0.5rem; background: none; border: 1px solid #e5e7eb; color: #64748b; font-weight: 600; font-size: 0.875rem; padding: 0.625rem 1rem; border-radius: 9999px; cursor: pointer; transition: all 0.2s; min-height: 44px;">
+            <button @onclick="OpenExtendModal" style="display: flex; align-items: center; justify-content: center; gap: 8px; background: transparent; border: 1px solid #CBD5E1; color: #475569; font-weight: 600; font-size: 14px; padding: 0 20px; border-radius: 9999px; height: 44px; cursor: pointer; transition: all 0.2s;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
                     <polyline points="12 6 12 12 16 14"></polyline>
                 </svg>
-                Saya butuh waktu tambahan
+                Butuh Waktu
             </button>
         }
-        else
-        {
-            <div style="min-width: 1px; width: 1px;"></div>
-        }
-        <button @onclick="CancelBooking" style="display: inline-flex; align-items: center; gap: 0.5rem; background: none; border: 1px solid #fecaca; color: #dc2626; font-weight: 600; font-size: 0.875rem; padding: 0.625rem 1rem; border-radius: 9999px; cursor: pointer; transition: all 0.2s; min-height: 44px;">
+        <button @onclick="CancelBooking" style="display: flex; align-items: center; justify-content: center; gap: 8px; background: transparent; border: 1px solid #FECACA; color: #DC2626; font-weight: 600; font-size: 14px; padding: 0 20px; border-radius: 9999px; height: 44px; cursor: pointer; transition: all 0.2s;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
-            Batalkan pemesanan ini
+            Batalkan
         </button>
     </div>
 </div>
