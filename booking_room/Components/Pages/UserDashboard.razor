@@ -42,25 +42,25 @@ else
     <!-- Card Segera Tersedia (Now First) -->
     @if (nextRoom is not null)
     {
-        <div class="summary-card next-available-card" @onclick='() => ShowPopup("QuickBook")'>
-            <div class="next-available-header">
-                <div class="next-available-title">Ruangan Kosong Tercepat</div>
-                <svg class="next-available-bolt" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
-                </svg>
+        <div class="summary-card action-oriented-card" @onclick='() => ShowPopup("QuickBook")'>
+            <div class="action-card-bg"></div>
+            <div class="action-card-content">
+                <div class="action-header">
+                    <span class="action-badge">TERSEDIA DALAM @nextRoom.AvailableInMinutes MNT</span>
+                </div>
+                <div class="action-main">
+                    <div class="action-icon-wrapper">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+                    </div>
+                    <div>
+                        <div class="action-room">@nextRoom.RoomName</div>
+                        <div class="action-meta">Kapasitas @nextRoom.Capacity Org</div>
+                    </div>
+                </div>
+                <button class="btn-action-primary">
+                    Booking Instan Sekarang
+                </button>
             </div>
-            <div class="next-available-icon">
-                <InlineSvg Src="/icons/Icon_pnt.svg" Class="icon-main" />
-            </div>
-            <div class="next-available-room">@nextRoom.RoomName</div>
-            <div class="next-available-meta">
-                Tersedia dalam @nextRoom.AvailableInMinutes menit
-                <span style="margin: 0 0.35rem;">•</span>
-                Kapasitas: @nextRoom.Capacity Orang
-            </div>
-            <button class="next-available-btn">
-                Booking Instan
-            </button>
         </div>
     }
     else
@@ -161,10 +161,18 @@ else
         @if (DashboardData.UpcomingBookings.Any())
         {
             var nextBooking = DashboardData.UpcomingBookings.First();
-            <div class="next-booking-widget">
-                <div class="widget-label">BOOKING BERIKUTNYA</div>
-                <div class="widget-room">@nextBooking.RoomName</div>
-                <div class="widget-time">Besok, @nextBooking.TimeSlot.Split(" - ")[0]</div>
+            <div class="next-booking-widget compact-notification">
+                <div class="notification-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                </div>
+                <div class="notification-content">
+                    <div class="widget-label">BOOKING BERIKUTNYA</div>
+                    <div class="widget-room">@nextBooking.RoomName</div>
+                    <div class="widget-time">Besok, @nextBooking.TimeSlot.Split(" - ")[0]</div>
+                </div>
             </div>
         }
 
@@ -740,6 +748,128 @@ else
         font-size: 0.85rem;
         color: var(--persada-yellow-500);
         font-weight: 600;
+    }
+
+    .next-booking-widget.compact-notification {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 16px;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        box-shadow: none;
+    }
+    .compact-notification .notification-icon {
+        width: 36px;
+        height: 36px;
+        background: #EFF6FF;
+        color: #3B82F6;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .compact-notification .widget-label {
+        font-size: 0.7rem;
+        margin-bottom: 4px;
+        color: #64748B;
+        letter-spacing: 0.5px;
+    }
+    .compact-notification .widget-room {
+        font-size: 0.95rem;
+        margin-bottom: 2px;
+        color: #1E293B;
+    }
+    .compact-notification .widget-time {
+        font-size: 0.75rem;
+        color: #475569;
+        font-weight: 500;
+    }
+
+    .action-oriented-card {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+        color: white;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .action-oriented-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+    }
+    .action-card-bg {
+        position: absolute;
+        top: -20px;
+        right: -20px;
+        width: 100px;
+        height: 100px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+    }
+    .action-card-content {
+        position: relative;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        justify-content: space-between;
+    }
+    .action-header {
+        margin-bottom: 12px;
+    }
+    .action-badge {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(4px);
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+    .action-main {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+    .action-icon-wrapper {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .action-room {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 2px;
+    }
+    .action-meta {
+        font-size: 0.8rem;
+        opacity: 0.9;
+    }
+    .btn-action-primary {
+        background: white;
+        color: #059669;
+        border: none;
+        padding: 10px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: background 0.2s;
+        text-align: center;
+        width: 100%;
+    }
+    .btn-action-primary:hover {
+        background: #F0FDF4;
     }
     
     .stats-mini-row {
