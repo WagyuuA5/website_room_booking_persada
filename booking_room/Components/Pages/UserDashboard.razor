@@ -149,6 +149,78 @@ else
     </div>
 </div>
 
+<div class="dashboard-lower-layout">
+    <!-- Panel Booking Mendatang -->
+    <div class="upcoming-bookings-panel">
+        <div class="upcoming-header">
+            <h2 class="upcoming-title">Booking Mendatang</h2>
+            <span class="upcoming-badge">@DashboardData.UpcomingBookings.Count Terjadwal</span>
+        </div>
+        <div class="upcoming-list">
+            @foreach (var booking in (showAllUpcoming ? DashboardData.UpcomingBookings : DashboardData.UpcomingBookings.Take(4)))
+            {
+                <div class="upcoming-card">
+                    <div class="upcoming-accent" style="background-color: @booking.AccentColor;"></div>
+                    <div class="upcoming-content">
+                        <div class="upcoming-top">
+                            <div class="upcoming-info">
+                                <h3 class="upcoming-room-name">@booking.RoomName</h3>
+                                <p class="upcoming-location">@booking.Location</p>
+                            </div>
+                            <span class="upcoming-status-badge">Akan Datang</span>
+                        </div>
+                        <div class="upcoming-bottom">
+                            <div class="upcoming-schedule">
+                                <span class="upcoming-time"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> @booking.TimeSlot</span>
+                                <span class="upcoming-date"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> @booking.Date</span>
+                            </div>
+                            <div class="upcoming-actions">
+                                <button class="btn-action-text delete" @onclick="() => OpenCancelModal(booking)">Hapus</button>
+                                <button class="btn-action-text modify" @onclick="() => OpenModifyModal(booking)">Ubah &rarr;</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        @if (DashboardData.UpcomingBookings.Count > 4)
+        {
+            <button class="btn-show-more" @onclick="ToggleShowAllUpcoming">
+                @(showAllUpcoming ? "Tampilkan Lebih Sedikit" : "Tampilkan Semua")
+            </button>
+        }
+    </div>
+
+    <!-- Panel Info Samping -->
+    <div class="side-info-panel">
+        <div class="clock-card">
+            <div class="clock-time">@currentTime.ToString("HH:mm")</div>
+            <div class="clock-date">@currentTime.ToString("dddd, dd MMMM yyyy", new System.Globalization.CultureInfo("id-ID"))</div>
+        </div>
+        
+        @if (DashboardData.UpcomingBookings.Any())
+        {
+            var nextBooking = DashboardData.UpcomingBookings.First();
+            <div class="next-booking-widget">
+                <div class="widget-label">BOOKING BERIKUTNYA</div>
+                <div class="widget-room">@nextBooking.RoomName</div>
+                <div class="widget-time">Besok, @nextBooking.TimeSlot.Split(" - ")[0]</div>
+            </div>
+        }
+
+        <div class="stats-mini-row">
+            <div class="stat-mini-card">
+                <div class="stat-mini-val">4</div>
+                <div class="stat-mini-lbl">Booking Hari Ini</div>
+            </div>
+            <div class="stat-mini-card">
+                <div class="stat-mini-val">@DashboardData.UpcomingBookings.Count</div>
+                <div class="stat-mini-lbl">Total Booking</div>
+            </div>
+        </div>
+    </div>
+</div>
+
 </div>
 
 }
@@ -202,6 +274,11 @@ else
     private string selectedPeriod = "Minggu";
     private readonly string[] periods = { "Minggu", "Bulan", "Tahun" };
     private DateTime checkInTimestamp;
+    
+    // State for upcoming bookings & clock
+    private bool showAllUpcoming = false;
+    private DateTime currentTime = DateTime.Now;
+    private PeriodicTimer? clockTimer;
 
     // ApexChart state
     private ApexChart<RoomUsagePoint>? _apexChartRef;
@@ -218,6 +295,19 @@ else
 
         ConfigureApexChartOptions();
         LoadApexChartData(selectedPeriod);
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            clockTimer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+            while (await clockTimer.WaitForNextTickAsync())
+            {
+                currentTime = DateTime.Now;
+                await InvokeAsync(StateHasChanged);
+            }
+        }
     }
 
     private void ConfigureApexChartOptions()
@@ -313,6 +403,24 @@ else
     {
         NotificationState.OnChange -= StateHasChanged;
         LoadingState.OnChange -= StateHasChanged;
+        clockTimer?.Dispose();
+    }
+
+    private void ToggleShowAllUpcoming()
+    {
+        showAllUpcoming = !showAllUpcoming;
+    }
+
+    private void OpenModifyModal(UpcomingBookingItem booking)
+    {
+        // For demo, just redirect to bookings
+        Navigation.NavigateTo("/bookings");
+    }
+
+    private void OpenCancelModal(UpcomingBookingItem booking)
+    {
+        // For demo, just show some alert or redirect
+        Navigation.NavigateTo("/status");
     }
 
     private async Task SelectPeriod(string period)
@@ -385,3 +493,260 @@ else
         public List<RoomUsagePoint> Points { get; set; } = new();
     }
 }
+
+<style>
+    .dashboard-lower-layout {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 24px;
+        margin-top: 24px;
+    }
+    
+    .upcoming-bookings-panel {
+        background: var(--persada-white);
+        border-radius: var(--persada-border-radius-card);
+        padding: 24px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid #E5E7EB;
+    }
+    
+    .upcoming-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .upcoming-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: var(--persada-navy-900);
+        margin: 0;
+    }
+    
+    .upcoming-badge {
+        background: #F3F4F6;
+        color: #4B5563;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 999px;
+    }
+    
+    .upcoming-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .upcoming-card {
+        display: flex;
+        background: #FFFFFF;
+        border: 1px solid #E5E7EB;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: var(--transition-fast);
+    }
+    
+    .upcoming-card:hover {
+        border-color: #CBD5E1;
+        box-shadow: var(--shadow-md);
+    }
+    
+    .upcoming-accent {
+        width: 4px;
+        flex-shrink: 0;
+    }
+    
+    .upcoming-content {
+        padding: 16px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .upcoming-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+    
+    .upcoming-room-name {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--persada-navy-900);
+        margin: 0 0 4px 0;
+    }
+    
+    .upcoming-location {
+        font-size: 0.8rem;
+        color: #6B7280;
+        margin: 0;
+    }
+    
+    .upcoming-status-badge {
+        font-size: 0.7rem;
+        font-weight: 700;
+        background: #F0FDF4;
+        color: #166534;
+        padding: 4px 8px;
+        border-radius: 6px;
+    }
+    
+    .upcoming-bottom {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid #F3F4F6;
+        padding-top: 12px;
+    }
+    
+    .upcoming-schedule {
+        display: flex;
+        gap: 16px;
+        font-size: 0.8rem;
+        color: #4B5563;
+        font-weight: 500;
+    }
+    
+    .upcoming-schedule span {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .upcoming-schedule svg {
+        color: #9CA3AF;
+    }
+    
+    .upcoming-actions {
+        display: flex;
+        gap: 12px;
+    }
+    
+    .btn-action-text {
+        background: none;
+        border: none;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 0;
+        transition: opacity 0.2s;
+    }
+    
+    .btn-action-text:hover { opacity: 0.7; }
+    .btn-action-text.delete { color: #EF4444; }
+    .btn-action-text.modify { color: var(--persada-accent-blue); }
+    
+    .btn-show-more {
+        width: 100%;
+        background: #F9FAFB;
+        border: 1px solid #E5E7EB;
+        color: #4B5563;
+        font-weight: 600;
+        font-size: 0.85rem;
+        padding: 10px;
+        border-radius: 8px;
+        margin-top: 16px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    
+    .btn-show-more:hover {
+        background: #F3F4F6;
+    }
+    
+    .side-info-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .clock-card {
+        background: linear-gradient(135deg, var(--persada-navy-900), #1e3a8a);
+        border-radius: var(--persada-border-radius-card);
+        padding: 24px;
+        color: white;
+        text-align: center;
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .clock-time {
+        font-size: 3.5rem;
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -1px;
+        margin-bottom: 8px;
+    }
+    
+    .clock-date {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #93C5FD;
+    }
+    
+    .next-booking-widget {
+        background: var(--persada-white);
+        border-radius: var(--persada-border-radius-card);
+        padding: 20px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid #E5E7EB;
+    }
+    
+    .widget-label {
+        font-size: 0.7rem;
+        font-weight: 800;
+        color: #9CA3AF;
+        letter-spacing: 1px;
+        margin-bottom: 12px;
+    }
+    
+    .widget-room {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--persada-navy-900);
+        margin-bottom: 4px;
+    }
+    
+    .widget-time {
+        font-size: 0.85rem;
+        color: var(--persada-yellow-500);
+        font-weight: 600;
+    }
+    
+    .stats-mini-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+    
+    .stat-mini-card {
+        background: var(--persada-white);
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid #E5E7EB;
+        text-align: center;
+    }
+    
+    .stat-mini-val {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--persada-navy-900);
+        line-height: 1;
+        margin-bottom: 8px;
+    }
+    
+    .stat-mini-lbl {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #6B7280;
+    }
+    
+    @@media (max-width: 992px) {
+        .dashboard-lower-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>

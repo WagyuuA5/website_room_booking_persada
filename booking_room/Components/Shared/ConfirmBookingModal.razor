@@ -559,9 +559,9 @@
         </div>
     </div>
 
-    <div class="modal-footer-section">
-        <button class="btn-pill btn-cancel" @onclick="OnClose">Batal</button>
-        <button class="btn-pill btn-confirm" @onclick="SubmitBooking">
+    <div class="modal-footer-section" style="display: flex; gap: 16px; margin-top: 24px;">
+        <button class="btn-modal-outline" @onclick="OnClose">Batal</button>
+        <button class="btn-modal-primary" @onclick="SubmitBooking">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
             Konfirmasi Booking
         </button>

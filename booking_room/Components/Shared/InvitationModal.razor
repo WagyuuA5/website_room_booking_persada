@@ -28,14 +28,14 @@
         </div>
     </div>
 
-    <div class="invitation-footer-v2">
-        <button class="btn-accept-v2" @onclick='() => HandleRsvp("Accept")'>
+    <div class="invitation-footer-v2" style="margin-top: 24px;">
+        <button class="btn-modal-primary" style="width: 100%; margin-bottom: 12px;" @onclick='() => HandleRsvp("Accept")'>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Terima
         </button>
-        <div class="footer-actions-row">
-            <button class="btn-maybe-v2" @onclick='() => HandleRsvp("Maybe")'>Mungkin</button>
-            <button class="btn-decline-v2" @onclick='() => HandleRsvp("Decline")'>Tolak</button>
+        <div class="footer-actions-row" style="display: flex; gap: 12px; width: 100%;">
+            <button class="btn-modal-outline" style="flex: 1;" @onclick='() => HandleRsvp("Maybe")'>Mungkin</button>
+            <button class="btn-modal-outline" style="flex: 1; border-color: transparent; color: #6B7280;" @onclick='() => HandleRsvp("Decline")'>Tolak</button>
         </div>
     </div>
 

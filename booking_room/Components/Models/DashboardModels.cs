@@ -10,6 +10,7 @@ public record ChartData(string[] Labels, ChartDataset[] Datasets);
 public record RoomDetail(string RoomName, string Floor, int Capacity, string Status, string StatusClass, string Facilities);
 public record PendingApprovalItem(string RoomName, string RequestedBy, string Date, string TimeSlot, string Purpose, string Priority);
 public record RoomItem(string Id, string Name, int Capacity, string Description, string Status, List<string> Amenities, string Floor, string PhotoUrl = "");
+public record UpcomingBookingItem(string Id, string Category, string IconType, string AccentColor, string RoomName, string Location, string Date, string TimeSlot);
 
 public static class DashboardData
 {
@@ -26,33 +27,42 @@ public static class DashboardData
 
     public static List<RoomDetail> AllRooms =>
     [
-        new("Boardroom A", "Lantai 3", 20, "Tersedia", "available", "Projector, Whiteboard, Video Conf"),
-        new("Meeting Room 1", "Lantai 2", 8, "Tersedia", "available", "TV Display, Whiteboard"),
-        new("Huddle Space C", "Lantai 1", 4, "Tersedia", "available", "TV Display"),
+        new("Boardroom A", "Lantai 3", 20, "Tersedia", "available", "Proyektor, Papan Tulis, Konferensi Video"),
+        new("Meeting Room 1", "Lantai 2", 8, "Tersedia", "available", "Layar TV, Papan Tulis"),
+        new("Huddle Space C", "Lantai 1", 4, "Tersedia", "available", "Layar TV"),
         new("Focus Room B", "Lantai 2", 2, "Tersedia", "available", "Monitor"),
-        new("Training Center", "Lantai 4", 30, "Tersedia", "available", "Projector, Sound System, Podium"),
-        new("Executive Suite", "Lantai 5", 10, "Tersedia", "available", "Video Conf, Mini Bar"),
-        new("Conference Hall", "Lantai 1", 50, "Tersedia", "available", "Full AV System, Stage"),
-        new("Innovation Lab", "Lantai 3", 15, "Tersedia", "available", "Interactive Display, 3D Printer"),
-        new("Delta Boardroom", "Lantai 3", 12, "Digunakan", "occupied", "Projector, Video Conf"),
-        new("Alpha Room", "Lantai 2", 6, "Digunakan", "occupied", "TV Display, Whiteboard"),
-        new("Beta Room", "Lantai 4", 8, "Digunakan", "occupied", "Projector"),
-        new("Gamma Room", "Lantai 1", 10, "Digunakan", "occupied", "Video Conf, Whiteboard"),
-        new("Omega Suite", "Lantai 5", 16, "Digunakan", "occupied", "Full AV System"),
-        new("Sigma Room", "Lantai 2", 6, "Digunakan", "occupied", "TV Display"),
-        new("Workshop A", "Lantai 4", 25, "Maintenance", "maintenance", "Full AV System, Workshop Tools"),
-        new("Server Room", "Lantai 1", 4, "Maintenance", "maintenance", "Monitoring Screens"),
-        new("Studio Room", "Lantai 3", 8, "Digunakan", "occupied", "Green Screen, Lighting"),
-        new("Library Room", "Lantai 2", 12, "Digunakan", "occupied", "Projector, Quiet Zone"),
-        new("Zen Room", "Lantai 5", 6, "Digunakan", "occupied", "Ambient Lighting"),
-        new("Sky Lounge", "Lantai 5", 20, "Digunakan", "occupied", "Panoramic View, Mini Bar")
+        new("Training Center", "Lantai 4", 30, "Tersedia", "available", "Proyektor, Sistem Audio, Podium"),
+        new("Executive Suite", "Lantai 5", 10, "Tersedia", "available", "Konferensi Video, Mini Bar"),
+        new("Conference Hall", "Lantai 1", 50, "Tersedia", "available", "Sistem AV Lengkap, Panggung"),
+        new("Innovation Lab", "Lantai 3", 15, "Tersedia", "available", "Layar Interaktif, Printer 3D"),
+        new("Delta Boardroom", "Lantai 3", 12, "Digunakan", "occupied", "Proyektor, Konferensi Video"),
+        new("Alpha Room", "Lantai 2", 6, "Digunakan", "occupied", "Layar TV, Papan Tulis"),
+        new("Beta Room", "Lantai 4", 8, "Digunakan", "occupied", "Proyektor"),
+        new("Gamma Room", "Lantai 1", 10, "Digunakan", "occupied", "Konferensi Video, Papan Tulis"),
+        new("Omega Suite", "Lantai 5", 16, "Digunakan", "occupied", "Sistem AV Lengkap"),
+        new("Sigma Room", "Lantai 2", 6, "Digunakan", "occupied", "Layar TV"),
+        new("Workshop A", "Lantai 4", 25, "Perawatan", "maintenance", "Sistem AV Lengkap, Peralatan Workshop"),
+        new("Server Room", "Lantai 1", 4, "Perawatan", "maintenance", "Layar Monitoring"),
+        new("Studio Room", "Lantai 3", 8, "Digunakan", "occupied", "Green Screen, Pencahayaan"),
+        new("Library Room", "Lantai 2", 12, "Digunakan", "occupied", "Proyektor, Zona Tenang"),
+        new("Zen Room", "Lantai 5", 6, "Digunakan", "occupied", "Pencahayaan Ambient"),
+        new("Sky Lounge", "Lantai 5", 20, "Digunakan", "occupied", "Pemandangan Panoramik, Mini Bar")
     ];
 
     public static List<PendingApprovalItem> PendingApprovalItems =>
     [
-        new("Boardroom A", "Budi Santoso", "14 Agustus 2026", "09:00 - 11:00", "Client Presentation", "Tinggi"),
-        new("Training Center", "Siti Rahayu", "14 Agustus 2026", "13:00 - 16:00", "Team Workshop", "Sedang"),
-        new("Meeting Room 1", "Ahmad Fauzi", "15 Agustus 2026", "10:00 - 11:30", "Sprint Planning", "Normal")
+        new("Boardroom A", "Budi Santoso", "14 Agustus 2026", "09:00 - 11:00", "Presentasi Klien", "Tinggi"),
+        new("Training Center", "Siti Rahayu", "14 Agustus 2026", "13:00 - 16:00", "Workshop Tim", "Sedang"),
+        new("Meeting Room 1", "Ahmad Fauzi", "15 Agustus 2026", "10:00 - 11:30", "Perencanaan Sprint", "Normal")
+    ];
+
+    public static List<UpcomingBookingItem> UpcomingBookings =>
+    [
+        new("B-101", "Ruang Rapat", "meeting", "#3b82f6", "Rapat Strategi Q3", "Executive Boardroom A (Lantai 3)", "Jumat, 27 Mar 2026", "09:00 - 11:00"),
+        new("B-102", "Area Kolaborasi", "huddle", "#10b981", "Sesi Brainstorming UI/UX", "Huddle Space C (Lantai 1)", "Jumat, 27 Mar 2026", "13:30 - 15:00"),
+        new("B-103", "Fasilitas Khusus", "training", "#f59e0b", "Orientasi Karyawan Baru", "Training Center (Lantai 4)", "Senin, 30 Mar 2026", "09:00 - 16:00"),
+        new("B-104", "Ruang Rapat", "meeting", "#3b82f6", "Sinkronisasi Tim Mingguan", "Meeting Room 1 (Lantai 2)", "Selasa, 31 Mar 2026", "10:00 - 11:00"),
+        new("B-105", "Fokus", "focus", "#8b5cf6", "Wawancara Kandidat 1-on-1", "Focus Room B (Lantai 2)", "Rabu, 1 Apr 2026", "14:00 - 15:00")
     ];
 
     public static AnalyticsData WeeklyData => new(

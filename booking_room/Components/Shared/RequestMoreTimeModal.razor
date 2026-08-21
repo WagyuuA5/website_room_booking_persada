@@ -58,19 +58,19 @@
     </div>
 
     <!-- Footer -->
-    <div class="request-modal-footer">
-        <button type="button" class="btn-ghost-cancel" @onclick="HandleCancel">
+    <div class="request-modal-footer" style="display: flex; gap: 16px; margin-top: 24px;">
+        <button type="button" class="btn-modal-outline" @onclick="HandleCancel">
             Batal
         </button>
         <button type="button"
-                class="btn-gold-extend @(string.IsNullOrWhiteSpace(_reason) ? "disabled" : "")"
+                class="btn-modal-primary @(string.IsNullOrWhiteSpace(_reason) ? "disabled" : "")"
                 disabled="@string.IsNullOrWhiteSpace(_reason)"
                 @onclick="SubmitExtension">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="btn-clock-icon">
                 <circle cx="12" cy="12" r="10" />
                 <polyline points="12 6 12 12 16 14" />
             </svg>
-            <span>Minta Perpanjangan</span>
+            Minta Perpanjangan
         </button>
     </div>
 </div>

@@ -37,16 +37,16 @@
         </div>
     </div>
 
-    <div class="auto-release-footer">
-        <button type="button" class="btn-history-outline" @onclick="HandleViewHistory">
+    <div class="auto-release-footer" style="display: flex; gap: 16px; margin-top: 24px;">
+        <button type="button" class="btn-modal-outline" @onclick="HandleViewHistory">
             Lihat Riwayat
         </button>
-        <button type="button" class="btn-new-booking-gold" @onclick="HandleNewBooking">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="btn-plus-icon">
+        <button type="button" class="btn-modal-primary" @onclick="HandleNewBooking">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
                 <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
-            <span>Pesanan Baru</span>
+            Pesanan Baru
         </button>
     </div>
 </div>
