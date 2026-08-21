@@ -13,86 +13,133 @@
     </div>
 
     <!-- SVG Floor Plan -->
-    <div class="map-canvas">
-        <svg viewBox="0 0 800 500" class="floor-plan-svg" xmlns="http://www.w3.org/2000/svg">
-            <!-- Building outline -->
-            <rect x="40" y="40" width="720" height="420" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5"/>
+    <div class="map-canvas-wrapper" style="position: relative;">
+        <div class="map-canvas">
+            <svg viewBox="0 0 800 500" class="floor-plan-svg" xmlns="http://www.w3.org/2000/svg" style="background-color: #F8FAFC; background-image: radial-gradient(#CBD5E1 1px, transparent 1px); background-size: 20px 20px;">
+                <defs>
+                    <filter id="room-shadow" x="-10%" y="-10%" width="120%" height="120%">
+                        <feDropShadow dx="0" dy="4" stdDeviation="4" flood-opacity="0.06" flood-color="#0F1F3D"/>
+                    </filter>
+                </defs>
+                
+                <!-- Building outline -->
+                <rect x="10" y="10" width="780" height="480" rx="8" fill="transparent" stroke="#94A3B8" stroke-width="2"/>
+                
+                <!-- Corridor -->
+                <rect x="10" y="210" width="780" height="80" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1"/>
+                <text x="400" y="254" text-anchor="middle" fill="#64748B" font-size="14" font-weight="700" letter-spacing="0.25em">KORIDOR UTAMA</text>
+                <path d="M 10 210 L 790 210 M 10 290 L 790 290" stroke="#94A3B8" stroke-width="2" />
 
-            <!-- Corridor -->
-            <rect x="40" y="220" width="720" height="60" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="1"/>
-            <text x="400" y="254" text-anchor="middle" fill="#94A3B8" font-size="11" font-weight="600" letter-spacing="0.15em">KORIDOR UTAMA</text>
-
-            <!-- Room cells -->
-            @{ int idx = 0; }
-            @foreach (var room in _floorRooms)
-            {
-                var (x, y, w, h) = GetRoomPosition(idx, _floorRooms.Count);
-                var fillColor = room.Status switch
-                {
-                    "available" => "#DCFCE7",
-                    "booked" => "#FEE2E2",
-                    _ => "#F1F5F9"
-                };
-                var strokeColor = room.Status switch
-                {
-                    "available" => "#86EFAC",
-                    "booked" => "#FECACA",
-                    _ => "#CBD5E1"
-                };
-                var textColor = room.Status switch
-                {
-                    "available" => "#166534",
-                    "booked" => "#991B1B",
-                    _ => "#64748B"
-                };
-                var statusText = room.Status switch
-                {
-                    "available" => "Tersedia",
-                    "booked" => "Dipesan",
-                    _ => "Tidak Tersedia"
-                };
-
-                <g class="map-room-group" @onclick="() => OnRoomClick.InvokeAsync(room)" style="cursor: pointer;">
-                    <rect x="@x.ToString(System.Globalization.CultureInfo.InvariantCulture)"
-                          y="@y.ToString(System.Globalization.CultureInfo.InvariantCulture)"
-                          width="@w.ToString(System.Globalization.CultureInfo.InvariantCulture)"
-                          height="@h.ToString(System.Globalization.CultureInfo.InvariantCulture)"
-                          rx="8" fill="@fillColor" stroke="@strokeColor" stroke-width="1.5"/>
-                    <!-- Room name -->
-                    <text x="@((x + w / 2).ToString(System.Globalization.CultureInfo.InvariantCulture))"
-                          y="@((y + h / 2 - 8).ToString(System.Globalization.CultureInfo.InvariantCulture))"
-                          text-anchor="middle" fill="@textColor" font-size="12" font-weight="700">
-                        @TruncateName(room.Name, 18)
-                    </text>
-                    <!-- Capacity -->
-                    <text x="@((x + w / 2).ToString(System.Globalization.CultureInfo.InvariantCulture))"
-                          y="@((y + h / 2 + 8).ToString(System.Globalization.CultureInfo.InvariantCulture))"
-                          text-anchor="middle" fill="@textColor" font-size="9" font-weight="500" opacity="0.7">
-                        @room.Capacity orang
-                    </text>
-                    <!-- Status pill -->
-                    <rect x="@((x + w / 2 - 30).ToString(System.Globalization.CultureInfo.InvariantCulture))"
-                          y="@((y + h / 2 + 16).ToString(System.Globalization.CultureInfo.InvariantCulture))"
-                          width="60" height="16" rx="8" fill="@strokeColor" opacity="0.5"/>
-                    <text x="@((x + w / 2).ToString(System.Globalization.CultureInfo.InvariantCulture))"
-                          y="@((y + h / 2 + 27).ToString(System.Globalization.CultureInfo.InvariantCulture))"
-                          text-anchor="middle" fill="@textColor" font-size="8" font-weight="700">
-                        @statusText
-                    </text>
+                <!-- Amenities markers (Integrated into plan) -->
+                <g transform="translate(20, 20)">
+                    <rect x="0" y="0" width="80" height="170" rx="4" fill="#F1F5F9" stroke="#94A3B8" stroke-width="1"/>
+                    <svg x="28" y="60" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    <text x="40" y="100" text-anchor="middle" fill="#475569" font-size="10" font-weight="700">LIFT</text>
                 </g>
-                idx++;
-            }
+                <g transform="translate(20, 310)">
+                    <rect x="0" y="0" width="80" height="170" rx="4" fill="#F1F5F9" stroke="#94A3B8" stroke-width="1"/>
+                    <svg x="28" y="60" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2"><path d="M3 10h18M3 14h18M5 10V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/></svg>
+                    <text x="40" y="100" text-anchor="middle" fill="#475569" font-size="10" font-weight="700">PANTRY</text>
+                </g>
+                <g transform="translate(700, 20)">
+                    <rect x="0" y="0" width="80" height="170" rx="4" fill="#F1F5F9" stroke="#94A3B8" stroke-width="1"/>
+                    <svg x="28" y="60" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2v20M2 12h20"/></svg>
+                    <text x="40" y="100" text-anchor="middle" fill="#475569" font-size="10" font-weight="700">WC</text>
+                </g>
 
-            <!-- Amenities markers -->
-            <g opacity="0.5">
-                <rect x="680" y="60" width="60" height="40" rx="6" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1"/>
-                <text x="710" y="84" text-anchor="middle" fill="#3B82F6" font-size="8" font-weight="600">WC</text>
-            </g>
-            <g opacity="0.5">
-                <rect x="680" y="400" width="60" height="40" rx="6" fill="#FEF3C7" stroke="#FDE68A" stroke-width="1"/>
-                <text x="710" y="424" text-anchor="middle" fill="#B45309" font-size="8" font-weight="600">LIFT</text>
-            </g>
-        </svg>
+                <!-- Room cells -->
+                @{ int idx = 0; }
+                @foreach (var room in _floorRooms)
+                {
+                    var (x, y, w, h) = GetRoomPosition(idx, _floorRooms.Count);
+                    var fillColor = room.Status switch
+                    {
+                        "available" => "#F0FDF4",
+                        "booked" => "#FEF2F2",
+                        _ => "#F8FAFC"
+                    };
+                    var strokeColor = room.Status switch
+                    {
+                        "available" => "#22C55E",
+                        "booked" => "#EF4444",
+                        _ => "#CBD5E1"
+                    };
+                    var textColor = room.Status switch
+                    {
+                        "available" => "#166534",
+                        "booked" => "#991B1B",
+                        _ => "#64748B"
+                    };
+                    var dotColor = strokeColor;
+                    
+                    <g class="map-room-group" @onclick="() => HandleRoomClick(room)" style="cursor: pointer;">
+                        <rect x="@x.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                              y="@y.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                              width="@w.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                              height="@h.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                              rx="12" fill="@fillColor" stroke="@strokeColor" stroke-width="2" filter="url(#room-shadow)"/>
+                              
+                        <!-- Status Dot -->
+                        <circle cx="@((x + 16).ToString(System.Globalization.CultureInfo.InvariantCulture))" 
+                                cy="@((y + 16).ToString(System.Globalization.CultureInfo.InvariantCulture))" 
+                                r="4" fill="@dotColor" />
+                                
+                        <!-- Room name -->
+                        <text x="@((x + w / 2).ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                              y="@((y + h / 2 - 8).ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                              text-anchor="middle" fill="#1E293B" font-size="13" font-weight="800">
+                            @TruncateName(room.Name, 18)
+                        </text>
+                        
+                        <!-- Capacity -->
+                        <svg x="@((x + w / 2 - 20).ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                             y="@((y + h / 2 + 4).ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                             width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                        <text x="@((x + w / 2 + 2).ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                              y="@((y + h / 2 + 14).ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                              fill="#64748B" font-size="10" font-weight="600">
+                            @room.Capacity org
+                        </text>
+                    </g>
+                    idx++;
+                }
+                
+                <text x="780" y="480" text-anchor="end" fill="#94A3B8" font-size="9" font-style="italic" class="dev-only">
+                    Denah sementara — menunggu aset resmi dari tim fasilitas
+                </text>
+            </svg>
+        </div>
+        
+        <!-- Popover -->
+        @if (_activePopoverRoom != null)
+        {
+            var isAvailable = _activePopoverRoom.Status == "available";
+            <div class="map-popover">
+                <div class="popover-header">
+                    <h4>@_activePopoverRoom.Name</h4>
+                    <span class="room-card-status-badge @(isAvailable ? "status-available" : "status-booked")">
+                        <span class="status-dot @(isAvailable ? "available" : "booked")"></span>
+                        @(isAvailable ? "Tersedia" : "Dipesan")
+                    </span>
+                </div>
+                <div class="popover-body">
+                    <p><strong>Kapasitas:</strong> @_activePopoverRoom.Capacity Orang</p>
+                    <p><strong>Lantai:</strong> @_activePopoverRoom.Floor</p>
+                </div>
+                <div class="popover-footer">
+                    @if (isAvailable)
+                    {
+                        <button class="btn-popover-book" @onclick="() => OnRoomClick.InvokeAsync(_activePopoverRoom)">Booking Sekarang</button>
+                    }
+                    <button class="btn-popover-close" @onclick="() => _activePopoverRoom = null">Tutup</button>
+                </div>
+            </div>
+        }
     </div>
 
     <!-- Legend -->
@@ -133,11 +180,13 @@
     .map-floor-btn:hover:not(.active) {
         background: #F1F5F9;
     }
+    .map-canvas-wrapper {
+        position: relative;
+    }
     .map-canvas {
         background: white;
         border: 1px solid #E2E8F0;
         border-radius: 16px;
-        padding: 16px;
         overflow: hidden;
     }
     .floor-plan-svg {
@@ -145,12 +194,85 @@
         height: auto;
         max-height: 460px;
     }
-    .map-room-group rect {
-        transition: all 0.2s;
+    .map-room-group {
+        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .map-room-group:hover {
+        transform: translateY(-2px);
     }
     .map-room-group:hover rect:first-child {
-        filter: brightness(0.95);
+        filter: brightness(0.98);
         stroke-width: 2.5;
+    }
+    .map-popover {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: white;
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: 0 10px 25px -5px rgba(15, 31, 61, 0.15);
+        border: 1px solid #E2E8F0;
+        width: 320px;
+        z-index: 10;
+        animation: popoverFadeIn 0.2s ease-out;
+    }
+    @@keyframes popoverFadeIn {
+        from { opacity: 0; transform: translate(-50%, 10px); }
+        to { opacity: 1; transform: translate(-50%, 0); }
+    }
+    .popover-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+    }
+    .popover-header h4 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1E293B;
+    }
+    .popover-body p {
+        margin: 0 0 4px 0;
+        font-size: 0.85rem;
+        color: #475569;
+    }
+    .popover-footer {
+        display: flex;
+        gap: 8px;
+        margin-top: 16px;
+    }
+    .btn-popover-book {
+        flex: 1;
+        background: #EAB63C;
+        color: #111827;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-popover-book:hover {
+        background: #D9A02A;
+    }
+    .btn-popover-close {
+        flex: 1;
+        background: #F1F5F9;
+        color: #475569;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-popover-close:hover {
+        background: #E2E8F0;
     }
     .map-legend {
         display: flex;
@@ -179,29 +301,34 @@
 
     private string _selectedFloor = "Lantai 1";
     private string[] _floors = { "Lantai 1", "Lantai 2", "Lantai 3", "Lantai 4" };
+    private RoomItem? _activePopoverRoom;
+
+    private void HandleRoomClick(RoomItem room)
+    {
+        _activePopoverRoom = room;
+    }
 
     private List<RoomItem> _floorRooms => Rooms.Where(r => r.Floor == _selectedFloor).ToList();
 
     private (int x, int y, int w, int h) GetRoomPosition(int index, int total)
     {
-        // Layout rooms in two rows: top row and bottom row, separated by corridor
         int roomW = 160;
-        int roomH = 140;
-        int gap = 20;
-        int startX = 60;
+        int roomH = 170;
+        int gap = 24;
+        int startX = 120; // after lift/pantry
 
         bool topRow = index % 2 == 0;
         int col = index / 2;
 
         int x = startX + col * (roomW + gap);
-        int y = topRow ? 60 : 300;
+        int y = topRow ? 20 : 310;
 
         // Wrap if too far right
-        if (x + roomW > 740)
+        if (x + roomW > 700)
         {
             col = 0;
             x = startX;
-            y = topRow ? 60 : 300;
+            y = topRow ? 20 : 310;
         }
 
         return (x, y, roomW, roomH);
