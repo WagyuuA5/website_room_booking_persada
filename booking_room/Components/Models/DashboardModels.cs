@@ -9,7 +9,7 @@ public record ChartData(string[] Labels, ChartDataset[] Datasets);
 
 public record RoomDetail(string RoomName, string Floor, int Capacity, string Status, string StatusClass, string Facilities);
 public record PendingApprovalItem(string RoomName, string RequestedBy, string Date, string TimeSlot, string Purpose, string Priority);
-public record RoomItem(string Id, string Name, int Capacity, string Description, string Status, List<string> Amenities, string Floor);
+public record RoomItem(string Id, string Name, int Capacity, string Description, string Status, List<string> Amenities, string Floor, string PhotoUrl = "");
 
 public static class DashboardData
 {

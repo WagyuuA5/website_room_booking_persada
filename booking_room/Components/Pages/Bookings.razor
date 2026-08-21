@@ -114,9 +114,19 @@ else
                 };
 
                 <div class="room-result-card @cardClass">
-                    <div class="room-card-photo" @onclick="() => ViewDetail(room)" style="cursor:pointer;">
-                        <svg width="40" height="40" viewBox="0 0 18 18" fill="none"><path d="M0 18V16H2V0H12V1H16V16H18V18H14V3H12V18H0ZM4 2V16V2ZM8 10C8.28 10 8.52 9.9 8.71 9.71C8.9 9.52 9 9.28 9 9C9 8.72 8.9 8.48 8.71 8.29C8.52 8.1 8.28 8 8 8C7.72 8 7.48 8.1 7.29 8.29C7.1 8.48 7 8.72 7 9C7 9.28 7.1 9.52 7.29 9.71C7.48 9.9 7.72 10 8 10ZM4 16H10V2H4V16Z" fill="#93c5fd"/></svg>
-                        <div class="room-card-status-badge @badgeClass">
+                    <div class="room-card-photo" @onclick="() => ViewDetail(room)" style="cursor:pointer; position:relative; overflow:hidden;">
+                        @if (!string.IsNullOrEmpty(room.PhotoUrl))
+                        {
+                            <img src="@room.PhotoUrl" alt="@room.Name" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'" />
+                            <div style="display:none; position:absolute; inset:0; align-items:center; justify-content:center; background:#f1f5f9;">
+                                <svg width="40" height="40" viewBox="0 0 18 18" fill="none"><path d="M0 18V16H2V0H12V1H16V16H18V18H14V3H12V18H0ZM4 2V16V2ZM8 10C8.28 10 8.52 9.9 8.71 9.71C8.9 9.52 9 9.28 9 9C9 8.72 8.9 8.48 8.71 8.29C8.52 8.1 8.28 8 8 8C7.72 8 7.48 8.1 7.29 8.29C7.1 8.48 7 8.72 7 9C7 9.28 7.1 9.52 7.29 9.71C7.48 9.9 7.72 10 8 10ZM4 16H10V2H4V16Z" fill="#93c5fd"/></svg>
+                            </div>
+                        }
+                        else
+                        {
+                            <svg width="40" height="40" viewBox="0 0 18 18" fill="none"><path d="M0 18V16H2V0H12V1H16V16H18V18H14V3H12V18H0ZM4 2V16V2ZM8 10C8.28 10 8.52 9.9 8.71 9.71C8.9 9.52 9 9.28 9 9C9 8.72 8.9 8.48 8.71 8.29C8.52 8.1 8.28 8 8 8C7.72 8 7.48 8.1 7.29 8.29C7.1 8.48 7 8.72 7 9C7 9.28 7.1 9.52 7.29 9.71C7.48 9.9 7.72 10 8 10ZM4 16H10V2H4V16Z" fill="#93c5fd"/></svg>
+                        }
+                        <div class="room-card-status-badge @badgeClass" style="z-index: 1;">
                             <span class="status-dot @dotClass"></span>
                             @statusLabel
                         </div>
@@ -177,12 +187,12 @@ else
 
     private List<RoomItem> _allRooms = new()
     {
-        new("1", "Executive Boardroom A", 12, "Ruang rapat unggulan kami yang dirancang untuk pertemuan eksekutif tingkat tinggi. Dilengkapi konferensi video 4K, audio terintegrasi, dan kursi ergonomis untuk hingga 12 orang.", "available", new() { "AC", "Proyektor", "Konferensi Video", "Papan Tulis" }, "Lantai 3"),
-        new("2", "Training Room B", 30, "Ruang pelatihan kapasitas besar dengan konfigurasi fleksibel dan layar ganda.", "booked", new() { "AC", "Proyektor", "Papan Tulis", "Sistem Audio" }, "Lantai 2"),
-        new("3", "Huddle Space C", 6, "Ruang kolaborasi kecil yang nyaman untuk diskusi tim cepat.", "available", new() { "AC", "Papan Tulis" }, "Lantai 1"),
-        new("4", "Studio Webinar", 15, "Ruang siaran langsung dan rekaman dengan pencahayaan profesional.", "unavailable", new() { "AC", "Konferensi Video", "Proyektor" }, "Lantai 4"),
-        new("5", "Focus Room Alpha", 4, "Ruang sunyi untuk kerja konsentrasi tinggi atau sesi 1-on-1.", "available", new() { "AC" }, "Lantai 1"),
-        new("6", "Meeting Room Prime", 8, "Ruang rapat standar dengan peralatan presentasi lengkap.", "booked", new() { "AC", "Proyektor", "Aksesibilitas" }, "Lantai 2"),
+        new("1", "Executive Boardroom A", 12, "Ruang rapat unggulan kami yang dirancang untuk pertemuan eksekutif tingkat tinggi. Dilengkapi konferensi video 4K, audio terintegrasi, dan kursi ergonomis untuk hingga 12 orang.", "available", new() { "AC", "Proyektor", "Konferensi Video", "Papan Tulis" }, "Lantai 3", "https://images.unsplash.com/photo-1517502884422-41eaead166d4?w=400&q=80"),
+        new("2", "Training Room B", 30, "Ruang pelatihan kapasitas besar dengan konfigurasi fleksibel dan layar ganda.", "booked", new() { "AC", "Proyektor", "Papan Tulis", "Sistem Audio" }, "Lantai 2", "https://images.unsplash.com/photo-1572025442646-866d16c84a54?w=400&q=80"),
+        new("3", "Huddle Space C", 6, "Ruang kolaborasi kecil yang nyaman untuk diskusi tim cepat.", "available", new() { "AC", "Papan Tulis" }, "Lantai 1", "https://images.unsplash.com/photo-1556761175-5973dc0f32b7?w=400&q=80"),
+        new("4", "Studio Webinar", 15, "Ruang siaran langsung dan rekaman dengan pencahayaan profesional.", "unavailable", new() { "AC", "Konferensi Video", "Proyektor" }, "Lantai 4", "https://images.unsplash.com/photo-1600508774634-4e11d34730e2?w=400&q=80"),
+        new("5", "Focus Room Alpha", 4, "Ruang sunyi untuk kerja konsentrasi tinggi atau sesi 1-on-1.", "available", new() { "AC" }, "Lantai 1", "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=80"),
+        new("6", "Meeting Room Prime", 8, "Ruang rapat standar dengan peralatan presentasi lengkap.", "booked", new() { "AC", "Proyektor", "Aksesibilitas" }, "Lantai 2", "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400&q=80"),
     };
 
     private List<RoomItem> _filteredRooms = new();
