@@ -1,4 +1,5 @@
 @using booking_room.Components.Models
+@using System.Globalization
 
 <div class="modal-header-custom">
     <div class="modal-header-left">
@@ -86,7 +87,7 @@
                         <div class="popup-analytics-name">@room.RoomName</div>
                         <div class="popup-analytics-bar-container">
                             <div class="popup-analytics-bar-bg">
-                                <div class="popup-analytics-bar-fill utilization-bar-fill @barClass" style="width: @(_barsAnimated ? percentage.ToString("0.0") : "0")%;"></div>
+                                <div class="popup-analytics-bar-fill utilization-bar-fill @barClass" style="width: @(_barsAnimated ? percentage.ToString("0.0", CultureInfo.InvariantCulture) : "0")%;"></div>
                             </div>
                         </div>
                     </div>
@@ -237,12 +238,16 @@
         {
             var x = paddingX + (i / (double)(data.Length - 1)) * chartW;
             var y = paddingY + chartH - ((data[i] - min) / range) * chartH;
-            points.Add($"{x:F1},{y:F1}");
-            circles.Add($"<circle cx=\"{x:F1}\" cy=\"{y:F1}\" r=\"3\" fill=\"#3b82f6\" />");
+            
+            var xStr = x.ToString("F1", CultureInfo.InvariantCulture);
+            var yStr = y.ToString("F1", CultureInfo.InvariantCulture);
+            
+            points.Add($"{xStr},{yStr}");
+            circles.Add($"<circle cx=\"{xStr}\" cy=\"{yStr}\" r=\"3\" fill=\"#3b82f6\" />");
         }
 
         var linePath = $"M {string.Join(" L ", points)}";
-        var areaPath = $"{linePath} L {paddingX + chartW:F1},{paddingY + chartH:F1} L {paddingX:F1},{paddingY + chartH:F1} Z";
+        var areaPath = $"{linePath} L {paddingX + chartW.ToString("F1", CultureInfo.InvariantCulture)},{paddingY + chartH.ToString("F1", CultureInfo.InvariantCulture)} L {paddingX.ToString("F1", CultureInfo.InvariantCulture)},{paddingY + chartH.ToString("F1", CultureInfo.InvariantCulture)} Z";
 
         return @<text>
             <!-- Grid lines -->
