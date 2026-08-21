@@ -24,25 +24,47 @@
 
                 <div class="rd-floor-map-container">
                     <h4 class="rd-map-title">CARA MENUJU RUANGAN — @Room.Floor.ToUpper()</h4>
-                    <svg class="rd-floor-map-svg" viewBox="0 0 400 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Lift / Lobby (Kiri) -->
-                        <g transform="translate(10, 20)">
+                    <svg class="rd-floor-map-svg" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Latar Koridor -->
+                        <path d="M 0 100 L 400 100" stroke="#CBD5E1" stroke-width="40" stroke-opacity="0.3" />
+                        <path d="M 0 80 L 400 80 M 0 120 L 400 120" stroke="#94A3B8" stroke-width="1" stroke-dasharray="4 4" />
+                        
+                        <!-- Lift / Pintu Masuk (Kiri) -->
+                        <g transform="translate(10, 70)">
                             <rect x="0" y="0" width="60" height="60" rx="8" fill="#EFF6FF" stroke="#3B82F6" stroke-width="2" />
-                            <text x="30" y="34" fill="#1D4ED8" font-size="12" font-weight="700" font-family="sans-serif" text-anchor="middle">LIFT</text>
+                            <text x="30" y="24" fill="#1D4ED8" font-size="12" font-weight="700" font-family="sans-serif" text-anchor="middle">LIFT</text>
+                            <svg x="20" y="30" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1D4ED8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                                <path d="M12 8v8" />
+                                <path d="M8 12h8" />
+                            </svg>
                         </g>
 
-                        <!-- Panah Penunjuk Arah (Tengah) -->
-                        <path d="M 80 50 L 220 50" stroke="#94A3B8" stroke-width="2" stroke-dasharray="6 4" stroke-linecap="round" />
-                        <polygon points="220,45 230,50 220,55" fill="#94A3B8" />
+                        <!-- Panah Rute -->
+                        <path d="M 80 100 L 260 100" stroke="#3B82F6" stroke-width="3" stroke-dasharray="6 4" stroke-linecap="round" />
+                        <polygon points="260,95 270,100 260,105" fill="#3B82F6" />
 
-                        <!-- Ruangan Lain (Konteks) -->
-                        <rect x="120" y="10" width="80" height="30" rx="4" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.5" />
-                        <rect x="120" y="60" width="80" height="30" rx="4" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.5" />
+                        <!-- Ruangan Konteks -->
+                        <rect x="90" y="20" width="80" height="50" rx="4" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.5" />
+                        <rect x="180" y="20" width="60" height="50" rx="4" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.5" />
+                        <rect x="90" y="130" width="80" height="50" rx="4" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.5" />
+                        <rect x="180" y="130" width="60" height="50" rx="4" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.5" />
 
-                        <!-- Ruangan Target (Kanan, Highlighted) -->
-                        <g transform="translate(250, 20)">
-                            <rect x="0" y="0" width="120" height="60" rx="8" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2.5" />
-                            <text x="60" y="34" fill="#B45309" font-size="12" font-weight="700" font-family="sans-serif" text-anchor="middle">DI SINI</text>
+                        <!-- Ruangan Target (Kanan) -->
+                        <g transform="translate(260, 20)">
+                            <rect x="0" y="0" width="120" height="160" rx="8" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2.5" />
+                            <circle cx="60" cy="50" r="20" fill="#F59E0B" fill-opacity="0.2" />
+                            <svg x="46" y="36" width="28" height="28" viewBox="0 0 24 24" fill="#F59E0B" stroke="#B45309" stroke-width="1.5">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3" fill="#FFF"></circle>
+                            </svg>
+                            <text x="60" y="100" fill="#B45309" font-size="14" font-weight="800" font-family="sans-serif" text-anchor="middle">DI SINI</text>
+                            
+                            <foreignObject x="10" y="115" width="100" height="40">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: sans-serif; font-size: 10px; font-weight: 600; color: #92400E; text-align: center; line-height: 1.2; word-wrap: break-word;">
+                                    @Room.Name
+                                </div>
+                            </foreignObject>
                         </g>
                     </svg>
                 </div>
@@ -269,7 +291,7 @@
 
     .rd-amenities-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(2, minmax(180px, 1fr));
         gap: 16px 16px;
     }
 
