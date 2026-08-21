@@ -62,7 +62,7 @@
 
 <booking_room.Components.Shared.UserProfilePanel Visible="@_showProfilePanel" OnClose="CloseProfilePanel" />
 
-<booking_room.Components.Shared.ModalOverlayBlur Visible="@_isInvitationModalVisible" OnClose="CloseInvitationModal" Size="default">
+<booking_room.Components.Shared.ModalOverlayBlur Visible="@_isInvitationModalVisible" OnClose="CloseInvitationModal" Size="default" ShowCloseButton="false">
     <booking_room.Components.Shared.InvitationModal OnClose="CloseInvitationModal" OnRsvp="HandleInvitationRsvp" />
 </booking_room.Components.Shared.ModalOverlayBlur>
 

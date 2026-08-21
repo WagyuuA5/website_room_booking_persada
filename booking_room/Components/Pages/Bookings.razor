@@ -156,7 +156,7 @@ else
     </div>
 }
 
-<booking_room.Components.Shared.ModalOverlayBlur Visible="@_isRoomDetailVisible" OnClose="CloseDetail" Size="lg">
+<booking_room.Components.Shared.ModalOverlayBlur Visible="@_isRoomDetailVisible" OnClose="CloseDetail" Size="lg" ShowCloseButton="false">
     <booking_room.Components.Shared.RoomDetailsModal 
         Room="@_selectedRoomForDetail" 
         OnClose="CloseDetail" 

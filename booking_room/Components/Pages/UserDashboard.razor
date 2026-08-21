@@ -185,11 +185,11 @@ else
         OnAutoReleased="HandleBookingAutoReleased" />
 </ModalOverlayBlur>
 
-<ModalOverlayBlur Visible="@(activePopup == "BookingAutoReleased")" OnClose="ClosePopup" Size="default">
+<ModalOverlayBlur Visible="@(activePopup == "BookingAutoReleased")" OnClose="ClosePopup" Size="default" ShowCloseButton="false">
     <BookingAutoReleasedModal RoomName="Alpha Boardroom" OnClose="ClosePopup" OnBookAnother="HandleBookAnother" />
 </ModalOverlayBlur>
 
-<ModalOverlayBlur Visible="@(activePopup == "CheckInSuccess")" OnClose="HandleSuccessClose" Size="sm">
+<ModalOverlayBlur Visible="@(activePopup == "CheckInSuccess")" OnClose="HandleSuccessClose" Size="sm" ShowCloseButton="false">
     <CheckInSuccessModal 
         Timestamp="@checkInTimestamp"
         OnClose="HandleSuccessClose" />
