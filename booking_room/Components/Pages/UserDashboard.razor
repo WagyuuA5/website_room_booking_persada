@@ -224,7 +224,7 @@ else
 </div>
 
 <div class="dashboard-room-calendar" style="margin-top: 24px;">
-    <!-- Room Calendar Component Placeholder for Kasus 7 -->
+    <RoomCalendarView Rooms="_allRooms" />
 </div>
 
 </div>
@@ -285,6 +285,16 @@ else
     private bool showAllUpcoming = false;
     private DateTime currentTime = DateTime.Now;
     private PeriodicTimer? clockTimer;
+
+    private List<RoomItem> _allRooms = new()
+    {
+        new("1", "Executive Boardroom A", 12, "Ruang rapat unggulan.", "available", new() { "AC" }, "Lantai 3", ""),
+        new("2", "Training Room B", 30, "Ruang pelatihan kapasitas besar.", "booked", new() { "AC" }, "Lantai 2", ""),
+        new("3", "Huddle Space C", 6, "Ruang kolaborasi kecil.", "available", new() { "AC" }, "Lantai 1", ""),
+        new("4", "Studio Webinar", 15, "Ruang siaran.", "unavailable", new() { "AC" }, "Lantai 4", ""),
+        new("5", "Focus Room Alpha", 4, "Ruang sunyi.", "available", new() { "AC" }, "Lantai 1", ""),
+        new("6", "Meeting Room Prime", 8, "Ruang rapat standar.", "booked", new() { "AC" }, "Lantai 2", ""),
+    };
 
     // ApexChart state
     private ApexChart<RoomUsagePoint>? _apexChartRef;
