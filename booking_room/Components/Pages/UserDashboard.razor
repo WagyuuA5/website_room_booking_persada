@@ -194,7 +194,9 @@ else
     <!-- Panel Info Samping -->
     <div class="side-info-panel">
         <div class="clock-card">
-            <div class="clock-time">@currentTime.ToString("HH:mm")</div>
+            <div class="clock-time">
+                @currentTime.ToString("HH")<span class="colon-blink">:</span>@currentTime.ToString("mm")<span style="font-size:0.5em; opacity:0.7; margin-left:4px;">@currentTime.ToString("ss")</span>
+            </div>
             <div class="clock-date">@currentTime.ToString("dddd, dd MMMM yyyy", new System.Globalization.CultureInfo("id-ID"))</div>
         </div>
         
@@ -664,7 +666,7 @@ else
     }
     
     .clock-card {
-        background: linear-gradient(135deg, var(--persada-navy-900), #1e3a8a);
+        background: linear-gradient(135deg, var(--persada-navy-900), #081629);
         border-radius: var(--persada-border-radius-card);
         padding: 24px;
         color: white;
@@ -678,12 +680,23 @@ else
         line-height: 1;
         letter-spacing: -1px;
         margin-bottom: 8px;
+        display: flex;
+        align-items: baseline;
+        justify-content: center;
     }
     
     .clock-date {
         font-size: 0.9rem;
         font-weight: 500;
-        color: #93C5FD;
+        color: var(--persada-yellow-500);
+    }
+
+    .colon-blink {
+        animation: blinker 1s linear infinite;
+    }
+
+    @keyframes blinker {
+        50% { opacity: 0; }
     }
     
     .next-booking-widget {
