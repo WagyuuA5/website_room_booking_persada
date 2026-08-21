@@ -23,26 +23,27 @@
                 </div>
 
                 <div class="rd-floor-map-container">
-                    <h4 class="rd-map-title">Cara Menuju Ruangan (@Room.Floor)</h4>
-                    <svg class="rd-floor-map-svg" viewBox="0 0 300 150" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Latar belakang koridor -->
-                        <path d="M 40 75 L 260 75" stroke="#E5E7EB" stroke-width="40" stroke-linecap="round" />
-                        <path d="M 150 75 L 150 20" stroke="#E5E7EB" stroke-width="40" stroke-linecap="round" />
+                    <h4 class="rd-map-title">CARA MENUJU RUANGAN — @Room.Floor.ToUpper()</h4>
+                    <svg class="rd-floor-map-svg" viewBox="0 0 400 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Lift / Lobby (Kiri) -->
+                        <g transform="translate(10, 20)">
+                            <rect x="0" y="0" width="60" height="60" rx="8" fill="#EFF6FF" stroke="#3B82F6" stroke-width="2" />
+                            <text x="30" y="34" fill="#1D4ED8" font-size="12" font-weight="700" font-family="sans-serif" text-anchor="middle">LIFT</text>
+                        </g>
 
-                        <!-- Lift / Lobby -->
-                        <rect x="230" y="55" width="40" height="40" rx="8" fill="#3B82F6" />
-                        <text x="250" y="79" fill="white" font-size="12" font-weight="bold" font-family="sans-serif" text-anchor="middle">LIFT</text>
+                        <!-- Panah Penunjuk Arah (Tengah) -->
+                        <path d="M 80 50 L 220 50" stroke="#94A3B8" stroke-width="2" stroke-dasharray="6 4" stroke-linecap="round" />
+                        <polygon points="220,45 230,50 220,55" fill="#94A3B8" />
 
-                        <!-- Ruangan Biasa (Kiri Bawah) -->
-                        <rect x="50" y="95" width="60" height="40" rx="4" fill="#F3F4F6" stroke="#D1D5DB" stroke-width="2" />
-                        <!-- Ruangan Target (Highlighted) -->
-                        <rect x="120" y="20" width="60" height="40" rx="4" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2" />
-                        <!-- Teks Target -->
-                        <text x="150" y="44" fill="#D97706" font-size="10" font-weight="bold" font-family="sans-serif" text-anchor="middle">SINI</text>
+                        <!-- Ruangan Lain (Konteks) -->
+                        <rect x="120" y="10" width="80" height="30" rx="4" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.5" />
+                        <rect x="120" y="60" width="80" height="30" rx="4" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.5" />
 
-                        <!-- Rute Path dengan panah -->
-                        <path d="M 230 75 L 150 75 L 150 45" stroke="#3B82F6" stroke-width="3" stroke-dasharray="6 4" stroke-linecap="round" />
-                        <polygon points="150,40 145,48 155,48" fill="#3B82F6" />
+                        <!-- Ruangan Target (Kanan, Highlighted) -->
+                        <g transform="translate(250, 20)">
+                            <rect x="0" y="0" width="120" height="60" rx="8" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2.5" />
+                            <text x="60" y="34" fill="#B45309" font-size="12" font-weight="700" font-family="sans-serif" text-anchor="middle">DI SINI</text>
+                        </g>
                     </svg>
                 </div>
             </div>
@@ -132,7 +133,7 @@
     .room-details-v2 {
         position: relative;
         width: 100%;
-        max-width: 750px;
+        max-width: 1000px;
         height: auto;
         min-height: 420px;
         max-height: 90vh;
@@ -155,12 +156,18 @@
         width: 50%;
         position: relative;
         height: 100%;
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid #E5E7EB;
+        overflow-y: auto;
+        background: #F8FAFC;
     }
 
     .rd-photo-wrapper {
         position: relative;
         width: 100%;
-        height: 100%;
+        height: 280px;
+        flex-shrink: 0;
     }
 
     .rd-photo-placeholder {
@@ -247,6 +254,8 @@
         -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
         overflow: hidden;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
     }
 
     .rd-amenities-label {
@@ -287,6 +296,9 @@
         color: #4B5563;
         font-weight: 500;
         white-space: normal;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        line-height: 1.4;
     }
 
     .rd-footer {
@@ -356,33 +368,28 @@
     }
 
     .rd-floor-map-container {
-        position: absolute;
-        bottom: 20px;
-        left: 20px;
-        right: 20px;
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(8px);
-        border-radius: 16px;
-        padding: 16px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        z-index: 10;
-        border: 1px solid rgba(255, 255, 255, 0.5);
+        padding: 24px;
+        background: #F8FAFC;
     }
 
     .rd-map-title {
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
-        color: #1F2937;
-        margin: 0 0 12px 0;
+        color: #64748B;
+        margin: 0 0 16px 0;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.05em;
     }
 
     .rd-floor-map-svg {
         width: 100%;
         height: auto;
-        max-height: 100px;
         display: block;
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #E2E8F0;
+        padding: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.02);
     }
 
     @@media (max-width: 600px) {
