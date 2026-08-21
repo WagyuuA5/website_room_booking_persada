@@ -245,11 +245,16 @@
         var areaPath = $"{linePath} L {paddingX + chartW:F1},{paddingY + chartH:F1} L {paddingX:F1},{paddingY + chartH:F1} Z";
 
         return @<text>
+            <!-- Grid lines -->
+            <line x1="@paddingX" y1="@paddingY" x2="@(paddingX + chartW)" y2="@paddingY" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4" />
+            <line x1="@paddingX" y1="@(paddingY + chartH/2)" x2="@(paddingX + chartW)" y2="@(paddingY + chartH/2)" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4" />
+            <line x1="@paddingX" y1="@(paddingY + chartH)" x2="@(paddingX + chartW)" y2="@(paddingY + chartH)" stroke="#e2e8f0" stroke-width="1" />
+            
             <path d="@areaPath" fill="url(#trendGradient)" />
             <path d="@linePath" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
             @foreach (var c in circles)
             {
-                @c
+                @((MarkupString)c)
             }
         </text>;
     }
