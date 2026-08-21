@@ -39,6 +39,41 @@ else
 </div>
 
 <div class="summary-cards">
+    <!-- Card Segera Tersedia (Now First) -->
+    @if (nextRoom is not null)
+    {
+        <div class="summary-card next-available-card" @onclick='() => ShowPopup("QuickBook")'>
+            <div class="next-available-header">
+                <div class="next-available-title">Ruangan Kosong Tercepat</div>
+                <svg class="next-available-bolt" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+                </svg>
+            </div>
+            <div class="next-available-icon">
+                <InlineSvg Src="/icons/Icon_pnt.svg" Class="icon-main" />
+            </div>
+            <div class="next-available-room">@nextRoom.RoomName</div>
+            <div class="next-available-meta">
+                Tersedia dalam @nextRoom.AvailableInMinutes menit
+                <span style="margin: 0 0.35rem;">•</span>
+                Kapasitas: @nextRoom.Capacity Orang
+            </div>
+            <button class="next-available-btn">
+                Booking Instan
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="summary-card next-available-card" style="align-items: center; text-align: center;">
+            <div class="next-available-room" style="font-size: 1.1rem;">Semua ruangan tersedia sekarang</div>
+            <div class="next-available-meta" style="margin-bottom: 1rem;">Tidak ada ruangan yang sedang terpakai saat ini</div>
+            <button class="next-available-btn" @onclick:stopPropagation="true" @onclick="ViewAllRooms">
+                Lihat Semua Ruangan
+            </button>
+        </div>
+    }
+
     <!-- Card Ruangan Tersedia -->
     <div class="summary-card" @onclick='() => ShowPopup("RoomAvailable")'>
         <div class="summary-card-icon icon-green">
@@ -69,83 +104,6 @@ else
                 <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
         </div>
-    </div>
-
-    <!-- Card Segera Tersedia -->
-    @if (nextRoom is not null)
-    {
-        <div class="summary-card next-available-card" @onclick='() => ShowPopup("QuickBook")'>
-            <div class="next-available-header">
-                <div class="next-available-title">Tersedia Berikutnya</div>
-                <svg class="next-available-bolt" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
-                </svg>
-            </div>
-            <div class="next-available-icon">
-                <InlineSvg Src="/icons/Icon_pnt.svg" Class="icon-main" />
-            </div>
-            <div class="next-available-room">@nextRoom.RoomName</div>
-            <div class="next-available-meta">
-                Tersedia dalam @nextRoom.AvailableInMinutes menit
-                <span style="margin: 0 0.35rem;">•</span>
-                Kapasitas: @nextRoom.Capacity Orang
-            </div>
-            <button class="next-available-btn">
-                Booking Instan
-            </button>
-        </div>
-    }
-    else
-    {
-        <div class="summary-card next-available-card" style="align-items: center; text-align: center;">
-            <div class="next-available-room" style="font-size: 1.1rem;">Semua ruangan tersedia sekarang</div>
-            <div class="next-available-meta" style="margin-bottom: 1rem;">Tidak ada ruangan yang sedang terpakai saat ini</div>
-            <button class="next-available-btn" @onclick:stopPropagation="true" @onclick="ViewAllRooms">
-                Lihat Semua Ruangan
-            </button>
-        </div>
-    }
-</div>
-
-<div class="analytics-inline-panel">
-    <div class="analytics-inline-header">
-        <div>
-            <h2 class="analytics-inline-title">Analitik Utilisasi Ruangan</h2>
-            <p class="analytics-inline-subtitle">5 Ruangan Paling Sering Dipesan</p>
-        </div>
-        <div class="analytics-toggle">
-            @foreach (var period in periods)
-            {
-                <button class="@(selectedPeriod == period ? "active" : "")" @onclick="() => SelectPeriod(period)">@period</button>
-            }
-        </div>
-    </div>
-
-    <div style="width: 100%; min-height: 280px;">
-        @if (_apexChartSeries != null && _apexChartSeries.Count > 0)
-        {
-            <ApexChart TItem="RoomUsagePoint"
-                       Options="_apexChartOptions"
-                       @ref="_apexChartRef"
-                       Height="280">
-                @foreach (var series in _apexChartSeries)
-                {
-                    <ApexPointSeries TItem="RoomUsagePoint"
-                                     Items="series.Points"
-                                     Name="@series.Name"
-                                     SeriesType="SeriesType.Area"
-                                     XValue="@(p => p.Label)"
-                                     YValue="@(p => p.Value)"
-                                     Stroke="@(new SeriesStroke { Width = 2, Color = series.Color })" />
-                }
-            </ApexChart>
-        }
-    </div>
-
-    <div class="analytics-inline-footer">
-        <button class="btn btn-outline-primary" style="border-radius: 999px; font-weight: 600; padding: 0.5rem 1.25rem;" @onclick='() => ShowPopup("AnalyticsDetail")'>
-            Lihat Detail
-        </button>
     </div>
 </div>
 
@@ -221,6 +179,52 @@ else
             </div>
         </div>
     </div>
+</div>
+
+<div class="analytics-inline-panel" style="margin-top: 24px;">
+    <div class="analytics-inline-header">
+        <div>
+            <h2 class="analytics-inline-title">Analitik Utilisasi Ruangan</h2>
+            <p class="analytics-inline-subtitle">5 Ruangan Paling Sering Dipesan</p>
+        </div>
+        <div class="analytics-toggle">
+            @foreach (var period in periods)
+            {
+                <button class="@(selectedPeriod == period ? "active" : "")" @onclick="() => SelectPeriod(period)">@period</button>
+            }
+        </div>
+    </div>
+
+    <div style="width: 100%; min-height: 280px;">
+        @if (_apexChartSeries != null && _apexChartSeries.Count > 0)
+        {
+            <ApexChart TItem="RoomUsagePoint"
+                       Options="_apexChartOptions"
+                       @ref="_apexChartRef"
+                       Height="280">
+                @foreach (var series in _apexChartSeries)
+                {
+                    <ApexPointSeries TItem="RoomUsagePoint"
+                                     Items="series.Points"
+                                     Name="@series.Name"
+                                     SeriesType="SeriesType.Area"
+                                     XValue="@(p => p.Label)"
+                                     YValue="@(p => p.Value)"
+                                     Stroke="@(new SeriesStroke { Width = 2, Color = series.Color })" />
+                }
+            </ApexChart>
+        }
+    </div>
+
+    <div class="analytics-inline-footer">
+        <button class="btn btn-outline-primary" style="border-radius: 999px; font-weight: 600; padding: 0.5rem 1.25rem;" @onclick='() => ShowPopup("AnalyticsDetail")'>
+            Lihat Detail
+        </button>
+    </div>
+</div>
+
+<div class="dashboard-room-calendar" style="margin-top: 24px;">
+    <!-- Room Calendar Component Placeholder for Kasus 7 -->
 </div>
 
 </div>
