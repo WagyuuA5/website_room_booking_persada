@@ -108,47 +108,6 @@ else
 </div>
 
 <div class="dashboard-lower-layout">
-    <!-- Panel Pemesanan Mendatang -->
-    <div class="upcoming-bookings-panel">
-        <div class="upcoming-header">
-            <h2 class="upcoming-title">Pemesanan Mendatang</h2>
-            <span class="upcoming-badge">@DashboardData.UpcomingBookings.Count Terjadwal</span>
-        </div>
-        <div class="upcoming-list">
-            @foreach (var booking in (showAllUpcoming ? DashboardData.UpcomingBookings : DashboardData.UpcomingBookings.Take(4)))
-            {
-                <div class="upcoming-card">
-                    <div class="upcoming-accent" style="background-color: @booking.AccentColor;"></div>
-                    <div class="upcoming-content">
-                        <div class="upcoming-top">
-                            <div class="upcoming-info">
-                                <h3 class="upcoming-room-name">@booking.RoomName</h3>
-                                <p class="upcoming-location">@booking.Location</p>
-                            </div>
-                            <span class="upcoming-status-badge">Akan Datang</span>
-                        </div>
-                        <div class="upcoming-bottom">
-                            <div class="upcoming-schedule">
-                                <span class="upcoming-time"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> @booking.TimeSlot</span>
-                                <span class="upcoming-date"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> @booking.Date</span>
-                            </div>
-                            <div class="upcoming-actions">
-                                <button class="btn-action-text delete" @onclick="() => OpenCancelModal(booking)">Hapus</button>
-                                <button class="btn-action-text modify" @onclick="() => OpenModifyModal(booking)">Ubah &rarr;</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            }
-        </div>
-        @if (DashboardData.UpcomingBookings.Count > 4)
-        {
-            <button class="btn-show-more" @onclick="ToggleShowAllUpcoming">
-                @(showAllUpcoming ? "Tampilkan Lebih Sedikit" : "Tampilkan Semua")
-            </button>
-        }
-    </div>
-
     <!-- Panel Info Samping -->
     <div class="side-info-panel">
         <div class="clock-card">
@@ -158,32 +117,14 @@ else
             <div class="clock-date">@currentTime.ToString("dddd, dd MMMM yyyy", new System.Globalization.CultureInfo("id-ID"))</div>
         </div>
         
-        @if (DashboardData.UpcomingBookings.Any())
-        {
-            var nextBooking = DashboardData.UpcomingBookings.First();
-            <div class="next-booking-widget compact-notification">
-                <div class="notification-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                    </svg>
-                </div>
-                <div class="notification-content">
-                    <div class="widget-label">BOOKING BERIKUTNYA</div>
-                    <div class="widget-room">@nextBooking.RoomName</div>
-                    <div class="widget-time">Besok, @nextBooking.TimeSlot.Split(" - ")[0]</div>
-                </div>
-            </div>
-        }
-
         <div class="stats-mini-row">
             <div class="stat-mini-card">
-                <div class="stat-mini-val">4</div>
-                <div class="stat-mini-lbl">Pemesanan Hari Ini</div>
+                <div class="stat-mini-val">@DashboardData.AvailableRooms.Available</div>
+                <div class="stat-mini-lbl">Ruangan Tersedia</div>
             </div>
             <div class="stat-mini-card">
-                <div class="stat-mini-val">@DashboardData.UpcomingBookings.Count</div>
-                <div class="stat-mini-lbl">Total Pemesanan</div>
+                <div class="stat-mini-val">@DashboardData.PendingApprovals</div>
+                <div class="stat-mini-lbl">Menunggu Persetujuan</div>
             </div>
         </div>
     </div>
