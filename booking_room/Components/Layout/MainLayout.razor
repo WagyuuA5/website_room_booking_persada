@@ -201,6 +201,16 @@
         _isNavigating = false;
         LoadingState.SetLoading(false);
         await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            var isLoggedIn = await JS.InvokeAsync<string>("localStorage.getItem", "isLoggedIn");
+            if (isLoggedIn != "true")
+            {
+                Navigation.NavigateTo("/login", forceLoad: true);
+            }
+        }
+        catch { }
     }
 
     public void Dispose()
