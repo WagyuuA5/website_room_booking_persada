@@ -40,29 +40,33 @@
         <!-- Room Rows -->
         @foreach (var room in Rooms)
         {
-            var slots = GetSlotsForRoom(room.Id);
+            var bookings = GetBookingsForRoom(room.Id);
             <div class="cal-grid-row">
                 <div class="cal-grid-room-cell" @onclick="() => OnRoomClick.InvokeAsync(room)" style="cursor: pointer;">
                     <span class="cal-room-name">@room.Name</span>
                     <span class="cal-room-floor">@room.Floor · @room.Capacity orang</span>
                 </div>
-                @for (int h = 7; h <= 18; h++)
-                {
-                    var hour = h;
-                    var slot = slots.FirstOrDefault(s => s.Hour == hour);
-                    var slotClass = slot?.Status switch
+                <div class="cal-grid-time-area">
+                    @for (int h = 7; h <= 18; h++)
                     {
-                        "booked" => "slot-booked",
-                        "mine" => "slot-mine",
-                        _ => "slot-free"
-                    };
-                    <div class="cal-grid-slot @slotClass" title="@(slot?.Label ?? "Tersedia")">
-                        @if (slot?.Status == "booked" || slot?.Status == "mine")
+                        <div class="cal-grid-hour-bg"></div>
+                    }
+                    @foreach (var booking in bookings)
+                    {
+                        var leftPercent = ((booking.StartHour - 7) / 12.0) * 100;
+                        var widthPercent = ((booking.EndHour - booking.StartHour) / 12.0) * 100;
+                        var blockClass = booking.Status switch
                         {
-                            <span class="slot-label">@slot.Label</span>
-                        }
-                    </div>
-                }
+                            "booked" => "cal-booking-block booking-booked",
+                            "mine" => "cal-booking-block booking-mine",
+                            _ => "cal-booking-block booking-free"
+                        };
+                        <div class="@blockClass" style="left: @leftPercent.ToString("0.###", CultureInfo.InvariantCulture)%; width: @widthPercent.ToString("0.###", CultureInfo.InvariantCulture)%;">
+                            <span class="cal-booking-label">@booking.Label</span>
+                            <span class="cal-booking-time">@booking.TimeRange</span>
+                        </div>
+                    }
+                </div>
             </div>
         }
     </div>
@@ -184,6 +188,7 @@
         grid-template-columns: 200px repeat(12, 1fr);
         border-bottom: 1px solid #F1F5F9;
         transition: background 0.15s;
+        min-height: 56px;
     }
     .cal-grid-row:last-child {
         border-bottom: none;
@@ -197,6 +202,7 @@
         flex-direction: column;
         gap: 2px;
         border-right: 1px solid #E2E8F0;
+        justify-content: center;
     }
     .cal-room-name {
         font-size: 0.8rem;
@@ -207,39 +213,70 @@
         font-size: 0.7rem;
         color: #94A3B8;
     }
-    .cal-grid-slot {
-        padding: 8px 4px;
-        margin: 6px 2px;
-        border-radius: 6px;
+    .cal-grid-time-area {
+        grid-column: 2 / span 12;
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+    }
+    .cal-grid-hour-bg {
+        border-right: 1px solid #F1F5F9;
+        border-bottom: 1px solid #F1F5F9;
+        min-height: 56px;
+    }
+    .cal-grid-time-area:hover .cal-grid-hour-bg {
+        background: rgba(241, 245, 249, 0.3);
+    }
+    .cal-booking-block {
+        position: absolute;
+        top: 6px;
+        bottom: 6px;
+        border-radius: 8px;
+        padding: 6px 10px;
         display: flex;
-        align-items: center;
+        flex-direction: column;
         justify-content: center;
-        min-height: 28px;
-        transition: all 0.15s;
+        gap: 2px;
+        overflow: hidden;
+        z-index: 2;
+        transition: transform 0.15s, box-shadow 0.15s;
     }
-    .cal-grid-slot.slot-free {
-        background: #F0FDF4;
-        border: 1px solid #BBF7D0;
+    .cal-booking-block:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
-    .cal-grid-slot.slot-booked {
+    .booking-booked {
         background: #FEE2E2;
         border: 1px solid #FECACA;
     }
-    .cal-grid-slot.slot-mine {
+    .booking-mine {
         background: #DBEAFE;
         border: 1px solid #93C5FD;
     }
-    .slot-label {
-        font-size: 0.6rem;
-        font-weight: 600;
+    .booking-free {
+        background: #F0FDF4;
+        border: 1px solid #BBF7D0;
+    }
+    .cal-booking-label {
+        font-size: 0.7rem;
+        font-weight: 700;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: 100%;
-        color: inherit;
     }
-    .slot-booked .slot-label { color: #DC2626; }
-    .slot-mine .slot-label { color: #2563EB; }
+    .cal-booking-time {
+        font-size: 0.65rem;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .booking-booked .cal-booking-label { color: #991B1B; }
+    .booking-booked .cal-booking-time { color: #B91C1C; }
+    .booking-mine .cal-booking-label { color: #1E40AF; }
+    .booking-mine .cal-booking-time { color: #2563EB; }
+    .booking-free .cal-booking-label { color: #166534; }
+    .booking-free .cal-booking-time { color: #15803D; }
 
     .cal-legend {
         display: flex;
@@ -279,26 +316,52 @@
     private void PrevWeek() { _weekStart = _weekStart.AddDays(-7); if (_selectedDate < _weekStart) _selectedDate = _weekStart; }
     private void NextWeek() { _weekStart = _weekStart.AddDays(7); if (_selectedDate > _weekStart.AddDays(6)) _selectedDate = _weekStart; }
 
-    // Mock slot data
-    private record SlotInfo(int Hour, string Status, string Label);
+    private record BookingBlock(int StartHour, int EndHour, string Status, string Label, string TimeRange);
 
-    private List<SlotInfo> GetSlotsForRoom(string roomId)
+    private List<BookingBlock> GetBookingsForRoom(string roomId)
     {
-        // Generate deterministic mock bookings based on roomId + date
-        var slots = new List<SlotInfo>();
+        var bookings = new List<BookingBlock>();
         var seed = roomId.GetHashCode() ^ _selectedDate.DayOfYear;
         var rng = new Random(seed);
 
-        for (int h = 7; h <= 18; h++)
+        var usedSlots = new HashSet<int>();
+        var numBookings = rng.Next(1, 4);
+
+        for (int i = 0; i < numBookings; i++)
         {
-            var roll = rng.Next(100);
-            if (roll < 25)
-                slots.Add(new SlotInfo(h, "booked", "Rapat"));
-            else if (roll < 35)
-                slots.Add(new SlotInfo(h, "mine", "Saya"));
+            int duration;
+            if (rng.NextDouble() < 0.4)
+                duration = 1;
+            else if (rng.NextDouble() < 0.7)
+                duration = 2;
+            else if (rng.NextDouble() < 0.85)
+                duration = 3;
             else
-                slots.Add(new SlotInfo(h, "free", "Tersedia"));
+                duration = rng.Next(4, 6);
+
+            int startHour;
+            var attempts = 0;
+            do
+            {
+                startHour = rng.Next(7, 19 - duration);
+                attempts++;
+            }
+            while (usedSlots.Any(s => startHour >= s && startHour < s + 3) && attempts < 20);
+
+            if (attempts >= 20) continue;
+
+            foreach (var s in Enumerable.Range(startHour, duration))
+                usedSlots.Add(s);
+
+            var statusRoll = rng.Next(100);
+            var status = statusRoll < 30 ? "mine" : "booked";
+            var label = status == "mine" ? "Saya" : "Rapat";
+            var timeRange = $"{startHour:D2}:00 – {(startHour + duration):D2}:00";
+
+            bookings.Add(new BookingBlock(startHour, startHour + duration, status, label, timeRange));
         }
-        return slots;
+
+        return bookings.OrderBy(b => b.StartHour).ToList();
     }
 }
+
