@@ -3,10 +3,10 @@
 @inject NavigationManager Navigation
 @using System.ComponentModel.DataAnnotations
 
-<PageTitle>Daftar — Persada Room</PageTitle>
+<PageTitle>Daftar — Persada Ruangan</PageTitle>
 
 <div class="auth-container">
-    <!-- Panel Kiri: Form Register -->
+    <!-- Panel Kiri: Form Pendaftaran -->
     <div class="auth-form-panel register-panel">
         <div class="auth-form-content" style="max-width: 450px;">
             <div class="brand-header">
@@ -14,7 +14,7 @@
             </div>
             
             <h1 class="auth-title">Buat Akun</h1>
-            <p class="auth-subtitle">Silakan isi detail di bawah ini untuk bergabung dengan Sistem Manajemen Booking.</p>
+            <p class="auth-subtitle">Silakan isi detail di bawah ini untuk bergabung dengan Sistem Manajemen Pemesanan.</p>
 
             <EditForm Model="@registerModel" OnValidSubmit="HandleRegister">
                 <DataAnnotationsValidator />
@@ -140,7 +140,7 @@
         </div>
         
         <div class="auth-footer">
-            &copy; 2026 PT Personel Alih Daya Tbk. Sistem Manajemen Booking.
+             &copy; 2026 PT Personel Alih Daya Tbk. Sistem Manajemen Pemesanan.
         </div>
     </div>
     

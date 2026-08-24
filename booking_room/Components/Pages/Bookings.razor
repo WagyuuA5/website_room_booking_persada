@@ -4,7 +4,7 @@
 @inject booking_room.Services.LoadingStateService LoadingState
 @implements IDisposable
 
-<PageTitle>Pemesanan Ruangan — Persada Room</PageTitle>
+<PageTitle>Pemesanan Ruangan — Persada Ruangan</PageTitle>
 
 <div class="bookings-page-header">
     <h1>Cari Ruangan</h1>
@@ -250,11 +250,11 @@ else if (_activeTab == "Fasilitas")
     private List<RoomItem> _allRooms = new()
     {
         new("1", "Executive Boardroom A", 12, "Ruang rapat unggulan kami yang dirancang untuk pertemuan eksekutif tingkat tinggi. Dilengkapi konferensi video 4K, audio terintegrasi, dan kursi ergonomis untuk hingga 12 orang.", "available", new() { "AC", "Proyektor", "Konferensi Video", "Papan Tulis" }, "Lantai 3", "https://images.unsplash.com/photo-1517502884422-41eaead166d4?w=400&q=80"),
-        new("2", "Training Room B", 30, "Ruang pelatihan kapasitas besar dengan konfigurasi fleksibel dan layar ganda.", "booked", new() { "AC", "Proyektor", "Papan Tulis", "Sistem Audio" }, "Lantai 2", "https://images.unsplash.com/photo-1572025442646-866d16c84a54?w=400&q=80"),
+        new("2", "Training Ruangan B", 30, "Ruang pelatihan kapasitas besar dengan konfigurasi fleksibel dan layar ganda.", "booked", new() { "AC", "Proyektor", "Papan Tulis", "Sistem Audio" }, "Lantai 2", "https://images.unsplash.com/photo-1572025442646-866d16c84a54?w=400&q=80"),
         new("3", "Huddle Space C", 6, "Ruang kolaborasi kecil yang nyaman untuk diskusi tim cepat.", "available", new() { "AC", "Papan Tulis" }, "Lantai 1", "https://images.unsplash.com/photo-1556761175-5973dc0f32b7?w=400&q=80"),
         new("4", "Studio Webinar", 15, "Ruang siaran langsung dan rekaman dengan pencahayaan profesional.", "unavailable", new() { "AC", "Konferensi Video", "Proyektor" }, "Lantai 4", "https://images.unsplash.com/photo-1600508774634-4e11d34730e2?w=400&q=80"),
-        new("5", "Focus Room Alpha", 4, "Ruang sunyi untuk kerja konsentrasi tinggi atau sesi 1-on-1.", "available", new() { "AC" }, "Lantai 1", "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=80"),
-        new("6", "Meeting Room Prime", 8, "Ruang rapat standar dengan peralatan presentasi lengkap.", "booked", new() { "AC", "Proyektor", "Aksesibilitas" }, "Lantai 2", "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400&q=80"),
+        new("5", "Focus Ruangan Alpha", 4, "Ruang sunyi untuk kerja konsentrasi tinggi atau sesi 1-on-1.", "available", new() { "AC" }, "Lantai 1", "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=80"),
+        new("6", "Meeting Ruangan Prime", 8, "Ruang rapat standar dengan peralatan presentasi lengkap.", "booked", new() { "AC", "Proyektor", "Aksesibilitas" }, "Lantai 2", "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400&q=80"),
     };
 
     private List<RoomItem> _filteredRooms = new();

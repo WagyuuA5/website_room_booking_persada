@@ -3,7 +3,7 @@
 @using booking_room.Components.Models
 @using booking_room.Components.Shared
 
-<PageTitle>Status Pemesanan — Persada Room</PageTitle>
+<PageTitle>Status Pemesanan — Persada Ruangan</PageTitle>
 
 <div class="s-page-header">
     <h1 class="s-page-title">Status Pemesanan</h1>
@@ -20,7 +20,7 @@
     </div>
 
     <div class="s-status-layout">
-        <!-- Kolom Kiri: List Booking -->
+        <!-- Kolom Kiri: List Pemesanan -->
         <div class="s-list-col">
             <div class="s-toolbar">
                 <div class="s-search-bar">
@@ -29,7 +29,7 @@
                 </div>
                 <button class="s-btn-filter" @onclick="ToggleFilterPopup">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    Filter
+                    Saring
                 </button>
                 
                 @if (isFilterOpen)

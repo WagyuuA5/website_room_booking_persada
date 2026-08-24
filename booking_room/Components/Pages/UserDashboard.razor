@@ -5,7 +5,7 @@
 @inject booking_room.Services.NotificationState NotificationState
 @inject booking_room.Services.LoadingStateService LoadingState
 @implements IDisposable
-<PageTitle>Beranda — Persada Room</PageTitle>
+<PageTitle>Beranda — Persada Ruangan</PageTitle>
 
 @if (NotificationState.CurrentBannerType != booking_room.Services.NotificationState.BannerType.None)
 {
@@ -58,7 +58,7 @@ else
                     </div>
                 </div>
                 <button class="btn-action-primary">
-                    Booking Instan Sekarang
+                    Pemesanan Instan
                 </button>
             </div>
         </div>
@@ -108,10 +108,10 @@ else
 </div>
 
 <div class="dashboard-lower-layout">
-    <!-- Panel Booking Mendatang -->
+    <!-- Panel Pemesanan Mendatang -->
     <div class="upcoming-bookings-panel">
         <div class="upcoming-header">
-            <h2 class="upcoming-title">Booking Mendatang</h2>
+            <h2 class="upcoming-title">Pemesanan Mendatang</h2>
             <span class="upcoming-badge">@DashboardData.UpcomingBookings.Count Terjadwal</span>
         </div>
         <div class="upcoming-list">
@@ -179,11 +179,11 @@ else
         <div class="stats-mini-row">
             <div class="stat-mini-card">
                 <div class="stat-mini-val">4</div>
-                <div class="stat-mini-lbl">Booking Hari Ini</div>
+                <div class="stat-mini-lbl">Pemesanan Hari Ini</div>
             </div>
             <div class="stat-mini-card">
                 <div class="stat-mini-val">@DashboardData.UpcomingBookings.Count</div>
-                <div class="stat-mini-lbl">Total Booking</div>
+                <div class="stat-mini-lbl">Total Pemesanan</div>
             </div>
         </div>
     </div>
@@ -228,9 +228,6 @@ else
         <button class="btn btn-outline-primary" style="border-radius: 999px; font-weight: 600; padding: 0.5rem 1.25rem;" @onclick='() => ShowPopup("AnalyticsDetail")'>
             Lihat Detail
         </button>
-        <a href="/bookings" class="btn btn-outline-primary" style="border-radius: 999px; font-weight: 600; padding: 0.5rem 1.25rem; text-decoration: none; margin-left: 8px;">
-            Lihat Kalender Jadwal Lengkap →
-        </a>
     </div>
 </div>
 
@@ -297,11 +294,11 @@ else
     private List<RoomItem> _allRooms = new()
     {
         new("1", "Executive Boardroom A", 12, "Ruang rapat unggulan.", "available", new() { "AC" }, "Lantai 3", ""),
-        new("2", "Training Room B", 30, "Ruang pelatihan kapasitas besar.", "booked", new() { "AC" }, "Lantai 2", ""),
+        new("2", "Training Ruangan B", 30, "Ruang pelatihan kapasitas besar.", "booked", new() { "AC" }, "Lantai 2", ""),
         new("3", "Huddle Space C", 6, "Ruang kolaborasi kecil.", "available", new() { "AC" }, "Lantai 1", ""),
         new("4", "Studio Webinar", 15, "Ruang siaran.", "unavailable", new() { "AC" }, "Lantai 4", ""),
-        new("5", "Focus Room Alpha", 4, "Ruang sunyi.", "available", new() { "AC" }, "Lantai 1", ""),
-        new("6", "Meeting Room Prime", 8, "Ruang rapat standar.", "booked", new() { "AC" }, "Lantai 2", ""),
+        new("5", "Focus Ruangan Alpha", 4, "Ruang sunyi.", "available", new() { "AC" }, "Lantai 1", ""),
+        new("6", "Meeting Ruangan Prime", 8, "Ruang rapat standar.", "booked", new() { "AC" }, "Lantai 2", ""),
     };
 
     // ApexChart state

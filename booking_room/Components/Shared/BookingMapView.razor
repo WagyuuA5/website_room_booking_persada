@@ -1,7 +1,7 @@
 @using booking_room.Components.Models
 
 <div class="map-container">
-    <!-- Floor Selector -->
+    <!-- Pemilih Lantai -->
     <div class="map-floor-tabs">
         @foreach (var floor in _floors)
         {
@@ -12,7 +12,7 @@
         }
     </div>
 
-    <!-- SVG Floor Plan -->
+    <!-- SVG Denah Lantai -->
     <div class="map-canvas-wrapper" style="position: relative;">
         <div class="map-canvas">
             <svg viewBox="0 0 800 500" class="floor-plan-svg" xmlns="http://www.w3.org/2000/svg" style="background-color: #F8FAFC; background-image: radial-gradient(#CBD5E1 1px, transparent 1px); background-size: 20px 20px;">
@@ -30,7 +30,7 @@
                 <text x="400" y="254" text-anchor="middle" fill="#64748B" font-size="14" font-weight="700" letter-spacing="0.25em">KORIDOR UTAMA</text>
                 <path d="M 10 210 L 790 210 M 10 290 L 790 290" stroke="#94A3B8" stroke-width="2" />
 
-                <!-- Amenities markers (Integrated into plan) -->
+                <!-- Penanda fasilitas (Integrated into plan) -->
                 <g transform="translate(20, 20)">
                     <rect x="0" y="0" width="80" height="170" rx="4" fill="#F1F5F9" stroke="#94A3B8" stroke-width="1"/>
                     <svg x="28" y="60" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
@@ -47,7 +47,7 @@
                     <text x="40" y="100" text-anchor="middle" fill="#475569" font-size="10" font-weight="700">WC</text>
                 </g>
 
-                <!-- Room cells -->
+                <!-- Sel ruangan -->
                 @{ int idx = 0; }
                 @foreach (var room in _floorRooms)
                 {
@@ -84,7 +84,7 @@
                                 cy="@((y + 16).ToString(System.Globalization.CultureInfo.InvariantCulture))" 
                                 r="4" fill="@dotColor" />
                                 
-                        <!-- Room name -->
+                        <!-- Nama ruangan -->
                         <text x="@((x + w / 2).ToString(System.Globalization.CultureInfo.InvariantCulture))"
                               y="@((y + h / 2 - 8).ToString(System.Globalization.CultureInfo.InvariantCulture))"
                               text-anchor="middle" fill="#1E293B" font-size="13" font-weight="800">
@@ -134,7 +134,7 @@
                 <div class="popover-footer">
                     @if (isAvailable)
                     {
-                        <button class="btn-popover-book" @onclick="() => OnRoomClick.InvokeAsync(_activePopoverRoom)">Booking Sekarang</button>
+                        <button class="btn-popover-book" @onclick="() => OnRoomClick.InvokeAsync(_activePopoverRoom)">Pesan Sekarang</button>
                     }
                     <button class="btn-popover-close" @onclick="() => _activePopoverRoom = null">Tutup</button>
                 </div>
