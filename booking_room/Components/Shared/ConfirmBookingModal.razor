@@ -374,6 +374,60 @@
     .btn-confirm:hover {
         background: #D9A02A;
     }
+
+    .recurrence-pattern-btn {
+        background: #fff;
+        border: 1px solid #E5E7EB;
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #64748B;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .recurrence-pattern-btn.active {
+        background: #EAB63C;
+        border-color: #EAB63C;
+        color: #111827;
+    }
+    .recurrence-pattern-btn:hover:not(.active) {
+        background: #F9FAFB;
+    }
+
+    .recurrence-preview {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 12px;
+    }
+    .recurrence-preview-title {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #64748B;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .recurrence-preview-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .recurrence-preview-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.8rem;
+        color: #374151;
+    }
+    .recurrence-preview-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #EAB63C;
+        flex-shrink: 0;
+    }
 </style>
 
 <div class="confirm-booking-wrapper">
@@ -531,6 +585,60 @@
             </div>
         </div>
 
+        <!-- Recurring Booking -->
+        <div>
+            <div class="external-guest-row">
+                <label class="form-label" style="margin-bottom: 0;">Jadikan Berulang (Recurring Booking)</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" @bind="_isRecurring" />
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            @if (_isRecurring)
+            {
+                <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 12px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">Pola Pengulangan</label>
+                        <div style="display: flex; gap: 8px;">
+                            @foreach (var pattern in _recurrencePatterns)
+                            {
+                                <button class="recurrence-pattern-btn @(_recurrencePattern == pattern ? "active" : "")" @onclick="() => _recurrencePattern = pattern">
+                                    @pattern
+                                </button>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">Ulang Sampai</label>
+                        <input type="date" class="form-input" @bind="_recurrenceEndDate" />
+                    </div>
+
+                    <div class="recurrence-preview">
+                        <div class="recurrence-preview-title">Preview Jadwal Berulang</div>
+                        <div class="recurrence-preview-list">
+                            @foreach (var preview in _recurrencePreview)
+                            {
+                                <div class="recurrence-preview-item">
+                                    <span class="recurrence-preview-dot"></span>
+                                    <span>@preview</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    @if (_hasRecurrenceConflict)
+                    {
+                        <div class="conflict-badge">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            Terdeteksi bentrok jadwal pada tanggal berulang
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
         <!-- External Guests -->
         <div>
             <div class="external-guest-row">
@@ -583,6 +691,12 @@
     private bool _hasConflict = true; 
     private bool _allowExternalGuests = true; 
 
+    private bool _isRecurring = false;
+    private string _recurrencePattern = "Mingguan";
+    private readonly string[] _recurrencePatterns = { "Harian", "Mingguan", "Bulanan" };
+    private DateTime? _recurrenceEndDate = DateTime.Today.AddDays(14);
+    private bool _hasRecurrenceConflict = false;
+
     private List<RoomItem> _suggestedRooms = new();
 
     protected override void OnInitialized()
@@ -631,6 +745,36 @@
         if (_attendees.Count < 2)
         {
             _hasConflict = false; 
+        }
+    }
+
+    private List<string> _recurrencePreview
+    {
+        get
+        {
+            if (!_isRecurring || !_startTime.HasValue || !_endTime.HasValue)
+                return new List<string>();
+
+            var preview = new List<string>();
+            var current = _bookingDate ?? DateTime.Today;
+            var end = _recurrenceEndDate ?? DateTime.Today.AddDays(14);
+            var step = _recurrencePattern switch
+            {
+                "Harian" => TimeSpan.FromDays(1),
+                "Bulanan" => TimeSpan.FromDays(30),
+                _ => TimeSpan.FromDays(7)
+            };
+
+            _hasRecurrenceConflict = false;
+            var count = 0;
+            while (current <= end && count < 5)
+            {
+                preview.Add($"{current:dd MMM yyyy} — {_startTime.Value:HH:mm} s/d {_endTime.Value:HH:mm}");
+                current = current.Add(step);
+                count++;
+                if (count == 1) _hasRecurrenceConflict = _hasConflict;
+            }
+            return preview;
         }
     }
 
