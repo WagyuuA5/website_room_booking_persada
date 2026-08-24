@@ -1,0 +1,47 @@
+@inherits LayoutComponentBase
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+@implements IDisposable
+
+@if (_isNavigating)
+{
+    <div class="top-progress-bar">
+        <div class="top-progress-bar-inner"></div>
+    </div>
+}
+
+<div class="auth-layout-wrapper">
+    @Body
+</div>
+
+<style>
+    .auth-layout-wrapper {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background-color: var(--persada-bg-neutral);
+    }
+</style>
+
+@code {
+    private bool _isNavigating = false;
+
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        _isNavigating = true;
+        await InvokeAsync(StateHasChanged);
+        await Task.Delay(300);
+        _isNavigating = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+    }
+}

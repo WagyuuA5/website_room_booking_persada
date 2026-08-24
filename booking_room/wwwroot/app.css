@@ -3691,3 +3691,34 @@ input:checked + .slider:before { transform: translateX(20px); }
     justify-content: flex-end;
 }
 
+/* ============================================
+   Top Progress Bar — Loading Indicator
+   ============================================ */
+.top-progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    z-index: 9999;
+    background-color: rgba(245, 158, 11, 0.15);
+    overflow: hidden;
+}
+
+.top-progress-bar-inner {
+    height: 100%;
+    width: 40%;
+    background: linear-gradient(90deg, transparent, var(--persada-yellow-500), transparent);
+    border-radius: 0 2px 2px 0;
+    animation: progressSlide 0.8s ease-in-out infinite;
+}
+
+@keyframes progressSlide {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(350%);
+    }
+}
+
