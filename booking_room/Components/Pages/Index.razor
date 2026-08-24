@@ -1,0 +1,29 @@
+@page "/"
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<PageTitle>Loading...</PageTitle>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var hasSeenBoarding = await JS.InvokeAsync<string>("localStorage.getItem", "hasSeenBoarding");
+            var isLoggedIn = await JS.InvokeAsync<string>("localStorage.getItem", "isLoggedIn");
+
+            if (isLoggedIn == "true")
+            {
+                Navigation.NavigateTo("/dashboard");
+            }
+            else if (hasSeenBoarding == "true")
+            {
+                Navigation.NavigateTo("/login");
+            }
+            else
+            {
+                Navigation.NavigateTo("/boarding");
+            }
+        }
+    }
+}

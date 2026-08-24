@@ -4,9 +4,16 @@
 @inject NavigationManager Navigation
 @inject INotificationService NotificationService
 @inject booking_room.Services.LoadingStateService LoadingState
+@inject IJSRuntime JS
 @implements IDisposable
 
 <div class="page d-flex">
+    @if (_isNavigating)
+    {
+        <div class="top-progress-bar">
+            <div class="top-progress-bar-inner"></div>
+        </div>
+    }
     <aside class="sidebar @(_sidebarOpen ? "show" : "")">
         <NavMenu />
     </aside>
@@ -21,6 +28,16 @@
                 </button>
             </div>
             <div class="dashboard-header-right">
+                <button class="dark-mode-toggle" @onclick="ToggleDarkMode" aria-label="Toggle Dark Mode" style="background: none; border: none; color: var(--persada-text-primary); cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; margin-right: 8px;">
+                    @if (_isDarkMode)
+                    {
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    }
+                    else
+                    {
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    }
+                </button>
                 <div class="notification-bell" @onclick="ToggleNotificationPanel" style="cursor: pointer;">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
@@ -71,6 +88,8 @@
     private bool _showNotificationPanel = false;
     private bool _showProfilePanel = false;
     private bool _isInvitationModalVisible = false;
+    private bool _isDarkMode = false;
+    private bool _isNavigating = false;
 
     private void ToggleSidebar()
     {
@@ -127,12 +146,59 @@
         NotificationService.OnChange += StateHasChanged;
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Auth guard: redirect to login if not authenticated
+            try
+            {
+                var isLoggedIn = await JS.InvokeAsync<string>("localStorage.getItem", "isLoggedIn");
+                if (isLoggedIn != "true")
+                {
+                    Navigation.NavigateTo("/login", forceLoad: true);
+                    return;
+                }
+            }
+            catch { }
+
+            try
+            {
+                var theme = await JS.InvokeAsync<string>("localStorage.getItem", "theme");
+                if (theme == "dark")
+                {
+                    _isDarkMode = true;
+                    await JS.InvokeVoidAsync("document.body.classList.add", "dark-mode");
+                    StateHasChanged();
+                }
+            }
+            catch { }
+        }
+    }
+
+    private async Task ToggleDarkMode()
+    {
+        _isDarkMode = !_isDarkMode;
+        if (_isDarkMode)
+        {
+            await JS.InvokeVoidAsync("document.body.classList.add", "dark-mode");
+            await JS.InvokeVoidAsync("localStorage.setItem", "theme", "dark");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("document.body.classList.remove", "dark-mode");
+            await JS.InvokeVoidAsync("localStorage.setItem", "theme", "light");
+        }
+    }
+
     private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
     {
         CloseSidebar();
+        _isNavigating = true;
         LoadingState.SetLoading(true);
         await InvokeAsync(StateHasChanged);
-        await Task.Delay(250);
+        await Task.Delay(300);
+        _isNavigating = false;
         LoadingState.SetLoading(false);
         await InvokeAsync(StateHasChanged);
     }
