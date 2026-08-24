@@ -372,7 +372,7 @@
                     <select class="form-select" @bind="_newRoomName">
                         <option value="" disabled>Pilih ruangan</option>
                         <option value="Executive Boardroom A">Executive Boardroom A</option>
-                        <option value="Training Room B">Training Room B</option>
+                        <option value="Training Ruangan B">Training Ruangan B</option>
                         <option value="Huddle Space C">Huddle Space C</option>
                         <option value="Studio Webinar">Studio Webinar</option>
                     </select>
@@ -384,7 +384,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Tanggal Dibutuhkan</label>
+                    <label class="form-label">Tanggal</label>
                     <input type="date" class="form-input" @bind="_newDate" />
                 </div>
 
@@ -412,7 +412,7 @@
     private List<FacilityRequest> _requests = new()
     {
         new("FRQ-001", "Proyektor 4K Tambahan", "Executive Boardroom A", "Senin, 25 Ags 2026", "09:00 - 11:00", "Menunggu", "25 Ags 2026"),
-        new("FRQ-002", "Podium & Mikrofon Wireless", "Training Room B", "Selasa, 26 Ags 2026", "13:00 - 16:00", "Disetujui", "24 Ags 2026"),
+        new("FRQ-002", "Podium & Mikrofon Wireless", "Training Ruangan B", "Selasa, 26 Ags 2026", "13:00 - 16:00", "Disetujui", "24 Ags 2026"),
         new("FRQ-003", "Whiteboard Glass", "Huddle Space C", "Rabu, 27 Ags 2026", "10:00 - 12:00", "Diproses", "23 Ags 2026")
     };
 

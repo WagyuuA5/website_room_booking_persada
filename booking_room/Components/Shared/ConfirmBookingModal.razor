@@ -80,14 +80,17 @@
     }
     .form-input {
         width: 100%;
+        height: 42px;
         padding: 10px 12px 10px 36px;
         border: 1px solid #E5E7EB;
         border-radius: 8px;
         font-size: 0.875rem;
+        line-height: 1.5;
         color: #111827;
         background: #fff;
         outline: none;
         transition: border-color 0.2s;
+        box-sizing: border-box;
     }
     .form-input::placeholder {
         color: #9CA3AF;
@@ -98,14 +101,17 @@
     }
     .form-select {
         width: 100%;
+        height: 42px;
         padding: 10px 32px 10px 36px;
         border: 1px solid #E5E7EB;
         border-radius: 8px;
         font-size: 0.875rem;
+        line-height: 1.5;
         color: #111827;
         background: #fff;
         outline: none;
         appearance: none;
+        box-sizing: border-box;
     }
     .form-select:focus {
         border-color: #EAB63C;
@@ -129,7 +135,7 @@
         font-weight: 500;
     }
 
-    /* Room Cards */
+    /* Kartu Ruangan */
     .room-cards-scroll {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
@@ -412,7 +418,7 @@
     .recurrence-preview-list {
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 4px;
     }
     .recurrence-preview-item {
         display: flex;
@@ -420,6 +426,7 @@
         gap: 8px;
         font-size: 0.8rem;
         color: #374151;
+        padding: 4px 0;
     }
     .recurrence-preview-dot {
         width: 6px;
@@ -428,12 +435,25 @@
         background: #EAB63C;
         flex-shrink: 0;
     }
+    .conflict-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #FEF2F8;
+        color: #DB2777;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-top: 8px;
+        border: 1px solid #FBCFE8;
+    }
 </style>
 
 <div class="confirm-booking-wrapper">
     <div class="modal-header-section">
         <div>
-            <h2 class="modal-title">Konfirmasi Booking</h2>
+            <h2 class="modal-title">Konfirmasi Pemesanan</h2>
             <p class="modal-subtitle">Jadwalkan sumber daya atau ruangan baru</p>
         </div>
     </div>
@@ -470,7 +490,7 @@
             </div>
         </div>
 
-        <!-- Room Selection -->
+        <!-- Pilihan Ruangan -->
         <div>
             <label class="form-label">Pilih Ruangan</label>
             <div class="room-cards-scroll">
@@ -514,7 +534,7 @@
             </div>
         </div>
 
-        <!-- Date & Time -->
+        <!-- Tanggal & Waktu -->
         <div class="grid-2-col">
             <div>
                 <label class="form-label">Tanggal</label>
@@ -545,7 +565,7 @@
             </div>
         </div>
 
-        <!-- Invite Attendees -->
+        <!-- Undang Peserta -->
         <div>
             <label class="form-label">
                 Undang Peserta
@@ -585,10 +605,10 @@
             </div>
         </div>
 
-        <!-- Recurring Booking -->
+        <!-- Pemesanan Berulang -->
         <div>
             <div class="external-guest-row">
-                <label class="form-label" style="margin-bottom: 0;">Jadikan Berulang (Recurring Booking)</label>
+                <label class="form-label" style="margin-bottom: 0;">Pemesanan Berulang</label>
                 <label class="toggle-switch">
                     <input type="checkbox" @bind="_isRecurring" />
                     <span class="toggle-slider"></span>
@@ -639,7 +659,7 @@
             }
         </div>
 
-        <!-- External Guests -->
+        <!-- Tamu Eksternal -->
         <div>
             <div class="external-guest-row">
                 <label class="form-label" style="margin-bottom: 0;">Undang tamu eksternal</label>
@@ -671,7 +691,7 @@
         <button class="btn-modal-outline" @onclick="OnClose">Batal</button>
         <button class="btn-modal-primary" @onclick="SubmitBooking">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-            Konfirmasi Booking
+            Konfirmasi Pemesanan
         </button>
     </div>
 </div>
