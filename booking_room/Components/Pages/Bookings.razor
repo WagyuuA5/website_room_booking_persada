@@ -76,6 +76,9 @@
         <button class="segment-btn @(_activeTab == "Peta" ? "active" : "")" @onclick='() => _activeTab = "Peta"'>
             Peta Interaktif
         </button>
+        <button class="segment-btn @(_activeTab == "Fasilitas" ? "active" : "")" @onclick='() => _activeTab = "Fasilitas"'>
+            Permintaan Fasilitas
+        </button>
     </div>
 </div>
 
@@ -208,6 +211,10 @@ else if (_activeTab == "Kalender")
 else if (_activeTab == "Peta")
 {
     <booking_room.Components.Shared.BookingMapView Rooms="@_filteredRooms" OnRoomClick="ViewDetail" />
+}
+else if (_activeTab == "Fasilitas")
+{
+    <booking_room.Components.Shared.FacilityRequestView />
 }
 
 <booking_room.Components.Shared.ModalOverlayBlur Visible="@_isRoomDetailVisible" OnClose="CloseDetail" Size="lg" ShowCloseButton="false">
