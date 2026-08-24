@@ -46,7 +46,7 @@ else
             <div class="action-card-bg"></div>
             <div class="action-card-content">
                 <div class="action-header">
-                    <span class="action-badge">TERSEDIA DALAM @nextRoom.AvailableInMinutes MNT</span>
+                    <span class="action-badge">TERSEDIA DALAM @nextRoom.AvailableInMinutes MENIT</span>
                 </div>
                 <div class="action-main">
                     <div class="action-icon-wrapper">
@@ -54,7 +54,7 @@ else
                     </div>
                     <div>
                         <div class="action-room">@nextRoom.RoomName</div>
-                        <div class="action-meta">Kapasitas @nextRoom.Capacity Org</div>
+                        <div class="action-meta">Kapasitas: @nextRoom.Capacity Orang</div>
                     </div>
                 </div>
                 <button class="btn-action-primary">
@@ -212,13 +212,13 @@ else
                        Height="280">
                 @foreach (var series in _apexChartSeries)
                 {
-                    <ApexPointSeries TItem="RoomUsagePoint"
-                                     Items="series.Points"
-                                     Name="@series.Name"
-                                     SeriesType="SeriesType.Area"
-                                     XValue="@(p => p.Label)"
-                                     YValue="@(p => p.Value)"
-                                     Stroke="@(new SeriesStroke { Width = 2, Color = series.Color })" />
+                     <ApexPointSeries TItem="RoomUsagePoint"
+                                      Items="series.Points"
+                                      Name="@series.Name"
+                                      SeriesType="SeriesType.Area"
+                                      XValue="@(p => p.Label)"
+                                      YValue="@(p => p.Value)"
+                                      Stroke="@(new SeriesStroke { Width = 2, Color = series.Color })" />
                 }
             </ApexChart>
         }
@@ -228,12 +228,12 @@ else
         <button class="btn btn-outline-primary" style="border-radius: 999px; font-weight: 600; padding: 0.5rem 1.25rem;" @onclick='() => ShowPopup("AnalyticsDetail")'>
             Lihat Detail
         </button>
+        <a href="/bookings" class="btn btn-outline-primary" style="border-radius: 999px; font-weight: 600; padding: 0.5rem 1.25rem; text-decoration: none; margin-left: 8px;">
+            Lihat Kalender Jadwal Lengkap →
+        </a>
     </div>
 </div>
 
-<div class="dashboard-room-calendar" style="margin-top: 24px;">
-    <RoomCalendarView Rooms="_allRooms" />
-</div>
 
 </div>
 
@@ -338,6 +338,11 @@ else
     {
         _apexChartOptions = new ApexChartOptions<RoomUsagePoint>
         {
+            Markers = new Markers
+            {
+                Size = 4,
+                Colors = new List<string> { "#0f1f3d", "#1e40af", "#3b82f6", "#60a5fa", "#93c5fd" }
+            },
             Chart = new Chart
             {
                 Toolbar = new Toolbar { Show = false },
