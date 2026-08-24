@@ -4,6 +4,7 @@
 @inject NavigationManager Navigation
 @inject booking_room.Services.NotificationState NotificationState
 @inject booking_room.Services.LoadingStateService LoadingState
+@inject IJSRuntime JS
 @implements IDisposable
 <PageTitle>Beranda — Persada Ruangan</PageTitle>
 
@@ -263,6 +264,8 @@ else
     {
         if (firstRender)
         {
+            await JS.InvokeVoidAsync("document.body.classList.add", "page-slide-in-left");
+            
             clockTimer = new PeriodicTimer(TimeSpan.FromSeconds(1));
             while (await clockTimer.WaitForNextTickAsync())
             {

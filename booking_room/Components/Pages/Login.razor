@@ -487,17 +487,23 @@
         if (loginModel.Email.Contains("admin", StringComparison.OrdinalIgnoreCase))
         {
             await JS.InvokeVoidAsync("localStorage.setItem", "isLoggedIn", "true");
+            await JS.InvokeVoidAsync("document.body.classList.add", "page-slide-out-right");
+            await Task.Delay(350);
             Navigation.NavigateTo("/dashboard");
         }
         else if (loginModel.Email.Contains("user", StringComparison.OrdinalIgnoreCase))
         {
             await JS.InvokeVoidAsync("localStorage.setItem", "isLoggedIn", "true");
+            await JS.InvokeVoidAsync("document.body.classList.add", "page-slide-out-right");
+            await Task.Delay(350);
             Navigation.NavigateTo("/dashboard"); // Both go to dashboard for now
         }
         else if (loginModel.Password == "password123" || loginModel.Password.Length > 0)
         {
             // For now, accept any non-empty password as success for demo purposes
             await JS.InvokeVoidAsync("localStorage.setItem", "isLoggedIn", "true");
+            await JS.InvokeVoidAsync("document.body.classList.add", "page-slide-out-right");
+            await Task.Delay(350);
             Navigation.NavigateTo("/dashboard");
         }
         else

@@ -3722,3 +3722,37 @@ input:checked + .slider:before { transform: translateX(20px); }
     }
 }
 
+/* ============================================
+   Page Transition Animations
+   ============================================ */
+.page-slide-out-right {
+    animation: slideOutRight 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.page-slide-in-left {
+    animation: slideInLeft 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes slideOutRight {
+    0% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(30%);
+        opacity: 0;
+    }
+}
+
+@keyframes slideInLeft {
+    0% {
+        transform: translateX(-30%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+
