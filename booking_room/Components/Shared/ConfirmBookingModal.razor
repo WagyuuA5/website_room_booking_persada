@@ -54,6 +54,7 @@
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 16px;
+        align-items: end;
     }
 
     .form-label {
@@ -401,11 +402,22 @@
         background: #F9FAFB;
     }
 
-    .recurrence-preview {
+    .recurrence-container {
+        margin-top: 16px;
+        padding: 20px;
         background: #F8FAFC;
         border: 1px solid #E2E8F0;
         border-radius: 12px;
-        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    .recurrence-preview {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        padding: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
     .recurrence-preview-title {
         font-size: 0.75rem;
@@ -606,7 +618,7 @@
         </div>
 
         <!-- Pemesanan Berulang -->
-        <div>
+        <div style="margin-top: 12px; padding-top: 24px; border-top: 1px solid #E5E7EB;">
             <div class="external-guest-row">
                 <label class="form-label" style="margin-bottom: 0;">Pemesanan Berulang</label>
                 <label class="toggle-switch">
@@ -617,7 +629,7 @@
 
             @if (_isRecurring)
             {
-                <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 12px;">
+                <div class="recurrence-container">
                     <div class="form-group" style="margin-bottom: 0;">
                         <label class="form-label">Pola Pengulangan</label>
                         <div style="display: flex; gap: 8px;">
@@ -636,7 +648,7 @@
                     </div>
 
                     <div class="recurrence-preview">
-                        <div class="recurrence-preview-title">Preview Jadwal Berulang</div>
+                        <div class="recurrence-preview-title">Pratinjau Jadwal Berulang</div>
                         <div class="recurrence-preview-list">
                             @foreach (var preview in _recurrencePreview)
                             {
