@@ -1,6 +1,8 @@
 .page {
     display: flex;
     min-height: 100vh;
+    position: relative;
+    overflow: hidden;
 }
 
 .sidebar {
@@ -14,6 +16,20 @@
     flex-shrink: 0;
     z-index: 20;
     overflow-y: auto;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                min-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.page.sidebar-collapsed .sidebar {
+    width: 0;
+    min-width: 0;
+    transform: translateX(-100%);
+    overflow: hidden;
+}
+
+.page.sidebar-collapsed .main-content {
+    margin-left: 0;
 }
 
 .sidebar-toggle {
@@ -50,6 +66,8 @@
     display: flex;
     flex-direction: column;
     min-width: 0;
+    margin-left: 0;
+    transition: margin-left 0.3s ease;
 }
 
 .dashboard-header {
@@ -94,6 +112,42 @@
     .dashboard-body {
         padding: 0 1rem 1.5rem 1rem;
     }
+}
+
+/* ============================================ */
+/* SPLIT SCREEN TRANSITION OVERLAY               */
+/* ============================================ */
+.split-transition-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+}
+
+.split-panel {
+    flex: 1;
+    background-color: var(--persada-navy-900);
+    transition: transform 0.6s cubic-bezier(0.7, 0, 0.3, 1);
+}
+
+.split-panel.top {
+    transform-origin: top;
+    transform: translateY(0);
+}
+
+.split-panel.bottom {
+    transform-origin: bottom;
+    transform: translateY(0);
+}
+
+.split-transition-overlay.opening .split-panel.top {
+    transform: translateY(-100%);
+}
+
+.split-transition-overlay.opening .split-panel.bottom {
+    transform: translateY(100%);
 }
 
 #blazor-error-ui {

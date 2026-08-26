@@ -7,7 +7,15 @@
 @inject IJSRuntime JS
 @implements IDisposable
 
-<div class="page d-flex">
+<div class="page d-flex @(_isSidebarCollapsed ? "sidebar-collapsed" : "")">
+    @if (_showSplitAnimation)
+    {
+        <div class="split-transition-overlay @(_splitOpening ? "opening" : "")">
+            <div class="split-panel top"></div>
+            <div class="split-panel bottom"></div>
+        </div>
+    }
+
     @if (_isNavigating)
     {
         <div class="top-progress-bar">
@@ -21,7 +29,12 @@
     <main class="main-content flex-grow-1">
         <header class="dashboard-header">
             <div class="d-flex align-items-center gap-2">
-                <button class="sidebar-toggle d-md-none" @onclick="ToggleSidebar" aria-label="Toggle sidebar">
+                <button class="sidebar-toggle d-md-none" @onclick="ToggleSidebar" aria-label="Toggle sidebar (mobile)">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                    </svg>
+                </button>
+                <button class="sidebar-toggle desktop-toggle d-none d-md-flex" @onclick="ToggleSidebarDesktop" aria-label="Toggle sidebar (desktop)" style="background: none; border: none; padding: 4px; color: var(--persada-navy-900);">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                     </svg>
@@ -79,14 +92,24 @@
 
 @code {
     private bool _sidebarOpen = false;
+    private bool _isSidebarCollapsed = false;
     private bool _showNotificationPanel = false;
     private bool _showProfilePanel = false;
     private bool _isDarkMode = false;
     private bool _isNavigating = false;
+    
+    private bool _showSplitAnimation = false;
+    private bool _splitOpening = false;
 
     private void ToggleSidebar()
     {
         _sidebarOpen = !_sidebarOpen;
+    }
+
+    private async Task ToggleSidebarDesktop()
+    {
+        _isSidebarCollapsed = !_isSidebarCollapsed;
+        await JS.InvokeVoidAsync("localStorage.setItem", "sidebarCollapsed", _isSidebarCollapsed ? "true" : "false");
     }
 
     private void CloseSidebar()
@@ -145,8 +168,33 @@
                 {
                     _isDarkMode = true;
                     await JS.InvokeVoidAsync("document.body.classList.add", "dark-mode");
-                    StateHasChanged();
                 }
+                
+                var sidebarPref = await JS.InvokeAsync<string>("localStorage.getItem", "sidebarCollapsed");
+                if (sidebarPref == "true")
+                {
+                    _isSidebarCollapsed = true;
+                }
+
+                var playSplit = await JS.InvokeAsync<string>("localStorage.getItem", "playSplitAnimation");
+                if (playSplit == "true")
+                {
+                    _showSplitAnimation = true;
+                    await JS.InvokeVoidAsync("localStorage.removeItem", "playSplitAnimation");
+                    StateHasChanged();
+                    
+                    // Allow DOM to update with overlay, then trigger animation
+                    await Task.Delay(50);
+                    _splitOpening = true;
+                    StateHasChanged();
+                    
+                    // Wait for animation to finish
+                    await Task.Delay(700);
+                    _showSplitAnimation = false;
+                    _splitOpening = false;
+                    await InvokeAsync(StateHasChanged);
+                }
+                StateHasChanged();
             }
             catch { }
         }
