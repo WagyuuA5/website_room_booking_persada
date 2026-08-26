@@ -23,13 +23,9 @@
         <!-- Kolom Kiri: List Pemesanan -->
         <div class="s-list-col">
             <div class="s-toolbar">
-                <div class="s-search-bar">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="s-search-icon"><path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.134 17 3 13.866 3 10C3 6.134 6.134 3 10 3C13.866 3 17 6.134 17 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    <input type="text" placeholder="Cari pemesanan..." @bind="searchQuery" @bind:event="oninput" />
-                </div>
                 <button class="s-btn-filter" @onclick="ToggleFilterPopup">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    Saring
+                    Saring: @activeFilter
                 </button>
                 
                 @if (isFilterOpen)
@@ -40,63 +36,15 @@
                 }
             </div>
 
-            <div class="s-cards-list">
-                @if (_isLoading)
-                {
-                    @for (int i = 0; i < 4; i++)
-                    {
-                        <div class="s-card skeleton-card">
-                            <div class="skeleton-shimmer skeleton-image" style="width: 64px; height: 64px; border-radius: 12px; flex-shrink: 0;"></div>
-                            <div class="s-card-content" style="flex: 1;">
-                                <div class="skeleton-shimmer skeleton-title" style="width: 60%; margin-bottom: 8px;"></div>
-                                <div class="skeleton-shimmer skeleton-text short" style="width: 40%; margin-bottom: 12px;"></div>
-                                <div style="display: flex; gap: 16px;">
-                                    <div class="skeleton-shimmer" style="height: 12px; width: 80px;"></div>
-                                    <div class="skeleton-shimmer" style="height: 12px; width: 80px;"></div>
-                                    <div class="skeleton-shimmer" style="height: 12px; width: 60px;"></div>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                }
-                else if (!FilteredBookings.Any())
-                {
-                    <div class="s-empty-state">
-                        <p>Tidak ditemukan pemesanan.</p>
-                    </div>
-                }
-                else
-                {
-                    @foreach (var booking in FilteredBookings)
-                    {
-                        var isSelected = booking.Id == selectedBooking?.Id;
-                        <div class="s-card @(isSelected ? "selected" : "")" @onclick="() => SelectBooking(booking)">
-                            <div class="s-card-thumbnail" @onclick="() => OpenDetailsModal(booking)" @onclick:stopPropagation>
-                                <img src="@booking.PhotoUrl" alt="@booking.RoomName" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'" />
-                                <div class="s-card-thumbnail-placeholder" style="display:none; position:absolute; inset:0; align-items:center; justify-content:center; background:#f3f4f6;">
-                                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                                </div>
-                            </div>
-                            <div class="s-card-content">
-                                <div class="s-card-header-row">
-                                    <div class="s-card-title-group">
-                                        <h3 class="s-card-room">@booking.RoomName</h3>
-                                        <span class="s-card-reqid">@booking.RequestId</span>
-                                    </div>
-                                    <span class="s-pill-status @GetStatusBadgeClass(booking.Status)">
-                                        <span class="s-pill-dot"></span>
-                                        @GetStatusLabel(booking.Status)
-                                    </span>
-                                </div>
-                                <div class="s-card-meta">
-                                    <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2"/></svg> @booking.Date</span>
-                                    <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2"/></svg> @booking.TimeSlot</span>
-                                    <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 100-8 4 4 0 000 8z" stroke="currentColor" stroke-width="2"/></svg> @booking.Attendees Peserta</span>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                }
+            <div class="s-cards-list-wrapper" style="background: white; border-radius: 12px; border: 1px solid #E5E7EB;">
+                <DataGrid TItem="BookingItem" 
+                          Data="FilteredBookingsForGrid" 
+                          Columns="gridColumns" 
+                          IsLoading="_isLoading"
+                          SearchPlaceholder="Cari pemesanan..."
+                          FileNamePrefix="status-booking"
+                          OnRowClick="SelectBooking">
+                </DataGrid>
             </div>
         </div>
 
@@ -300,16 +248,68 @@
     private BookingItem? modalBooking;
 
     private bool _isLoading = true;
+    private List<GridColumn<BookingItem>> gridColumns = new();
 
     protected override async Task OnInitializedAsync()
     {
+        gridColumns = new List<GridColumn<BookingItem>>
+        {
+            new GridColumn<BookingItem>
+            {
+                Title = "RUANGAN",
+                PropertyName = "RoomName",
+                ValueFunc = b => b.RoomName,
+                CellTemplate = b => builder =>
+                {
+                    builder.OpenElement(0, "div");
+                    builder.AddAttribute(1, "style", "display: flex; flex-direction: column;");
+                    builder.OpenElement(2, "span");
+                    builder.AddAttribute(3, "style", "font-weight: 600; color: #16305C;");
+                    builder.AddContent(4, b.RoomName);
+                    builder.CloseElement();
+                    builder.OpenElement(5, "span");
+                    builder.AddAttribute(6, "style", "font-size: 12px; color: #6B7280;");
+                    builder.AddContent(7, b.RequestId);
+                    builder.CloseElement();
+                    builder.CloseElement();
+                }
+            },
+            new GridColumn<BookingItem>
+            {
+                Title = "TANGGAL",
+                PropertyName = "Date",
+                ValueFunc = b => b.Date
+            },
+            new GridColumn<BookingItem>
+            {
+                Title = "WAKTU",
+                PropertyName = "TimeSlot",
+                ValueFunc = b => b.TimeSlot
+            },
+            new GridColumn<BookingItem>
+            {
+                Title = "STATUS",
+                PropertyName = "Status",
+                ValueFunc = b => GetStatusLabel(b.Status),
+                CellTemplate = b => builder =>
+                {
+                    builder.OpenElement(0, "span");
+                    builder.AddAttribute(1, "class", $"s-pill-status {GetStatusBadgeClass(b.Status)}");
+                    builder.OpenElement(2, "span");
+                    builder.AddAttribute(3, "class", "s-pill-dot");
+                    builder.CloseElement();
+                    builder.AddContent(4, " " + GetStatusLabel(b.Status));
+                    builder.CloseElement();
+                }
+            }
+        };
         await Task.Delay(400);
         allBookings = BookingDataStore.AllBookings;
         selectedBooking = allBookings.FirstOrDefault();
         _isLoading = false;
     }
 
-    private IEnumerable<BookingItem> FilteredBookings
+    private IEnumerable<BookingItem> FilteredBookingsForGrid
     {
         get
         {
@@ -318,12 +318,6 @@
             if (activeFilter != "Semua Status")
             {
                 query = query.Where(b => b.Status.Equals(activeFilter, StringComparison.OrdinalIgnoreCase));
-            }
-            
-            if (!string.IsNullOrWhiteSpace(searchQuery))
-            {
-                var q = searchQuery.ToLower();
-                query = query.Where(b => b.RoomName.ToLower().Contains(q) || b.RequestId.ToLower().Contains(q));
             }
             
             return query;

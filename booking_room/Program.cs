@@ -12,6 +12,7 @@ builder.Services.AddSingleton<IFileProvider>(sp =>
 builder.Services.AddScoped<booking_room.Services.NotificationState>();
 builder.Services.AddScoped<booking_room.Services.INotificationService, booking_room.Services.NotificationService>();
 builder.Services.AddScoped<booking_room.Services.LoadingStateService>();
+builder.Services.AddScoped<booking_room.Services.DataExportService>();
 
 var app = builder.Build();
 

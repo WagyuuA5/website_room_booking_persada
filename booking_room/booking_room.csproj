@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Blazor-ApexCharts" Version="7.0.0" />
+    <PackageReference Include="ClosedXML" Version="0.105.1" />
   </ItemGroup>
 
 </Project>

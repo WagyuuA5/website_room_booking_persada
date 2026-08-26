@@ -11,130 +11,41 @@
         <p class="page-subtitle">Lihat reservasi Anda sebelumnya beserta hasilnya.</p>
     </div>
 
-    <div class="history-toolbar">
-        <div class="toolbar-left">
-            <div class="search-bar-history">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="search-icon"><path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.134 17 3 13.866 3 10C3 6.134 6.134 3 10 3C13.866 3 17 6.134 17 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <input type="text" placeholder="Cari berdasarkan nama ruangan..." @bind="searchQuery" @bind:event="oninput" />
-            </div>
-        </div>
-        <div class="toolbar-right">
-            <div class="toolbar-btn-group">
-                <button class="btn-toolbar" @onclick="ToggleDatePicker">
-                    Rentang Tanggal
-                </button>
-                
-                <button class="btn-toolbar" @onclick="ToggleFilter">
-                    Saring
-                </button>
-
-                <button class="btn-toolbar">
-                    Ekspor CSV
-                </button>
-            </div>
-
-            @if (isFilterOpen)
-            {
-                <div class="popup-anchor right">
-                    <FilterByStatusPopup CurrentStatus="@activeFilter" ShowHeader="true" OnApply="ApplyFilter" OnClose="CloseFilter" />
-                </div>
-            }
-
-            @if (isDatePickerOpen)
-            {
-                <div class="popup-anchor center">
-                    <DatePickerPopup OnApply="ApplyDateRange" OnClose="CloseDatePicker" />
-                </div>
-            }
-        </div>
-    </div>
-
-    <!-- Data Table -->
     <div class="history-table-container">
-        <table class="history-table">
-            <thead>
-                <tr>
-                    <th class="sortable-header" @onclick="ToggleSort">
-                        NAMA RUANGAN
-                        <svg class="sort-icon @(sortAscending ? "asc" : "desc")" width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M7 15l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </th>
-                    <th>TANGGAL</th>
-                    <th>DURASI</th>
-                    <th>STATUS</th>
-                    <th>AKSI</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (_isLoading)
-                {
-                    @for (int i = 0; i < 5; i++)
+        <DataGrid TItem="BookingItem" 
+                  Data="FilteredBookingsForGrid" 
+                  Columns="gridColumns" 
+                  IsLoading="_isLoading"
+                  SearchPlaceholder="Cari berdasarkan nama ruangan..."
+                  FileNamePrefix="riwayat-booking">
+            <ToolbarRightContent>
+                <div class="toolbar-btn-group" style="position: relative;">
+                    <button class="btn-toolbar" @onclick="ToggleDatePicker">
+                        Rentang Tanggal
+                    </button>
+                    <button class="btn-toolbar" @onclick="ToggleFilter">
+                        Saring
+                    </button>
+                    
+                    @if (isFilterOpen)
                     {
-                        <tr>
-                            <td data-label="NAMA RUANGAN" colspan="5">
-                                <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0;">
-                                    <div class="skeleton-shimmer" style="width: 40px; height: 40px; border-radius: 8px; flex-shrink: 0;"></div>
-                                    <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
-                                        <div class="skeleton-shimmer" style="height: 14px; width: 50%;"></div>
-                                        <div class="skeleton-shimmer" style="height: 12px; width: 30%;"></div>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
+                        <div class="popup-anchor right" style="top: 100%; margin-top: 8px; right: 0;">
+                            <FilterByStatusPopup CurrentStatus="@activeFilter" ShowHeader="true" OnApply="ApplyFilter" OnClose="CloseFilter" />
+                        </div>
                     }
-                }
-                else if (!PagedBookings.Any())
-                {
-                    <tr>
-                        <td colspan="5" class="empty-row">Tidak ada catatan riwayat ditemukan.</td>
-                    </tr>
-                }
-                else
-                {
-                    @foreach (var booking in PagedBookings)
+
+                    @if (isDatePickerOpen)
                     {
-                        <tr>
-                            <td data-label="NAMA RUANGAN">
-                                <div class="room-cell">
-                                    <img src="@booking.PhotoUrl" alt="@booking.RoomName" class="room-thumb" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'" />
-                                    <div class="room-thumb-placeholder" style="display:none; width:40px; height:40px; border-radius:8px; align-items:center; justify-content:center; background:#f3f4f6; flex-shrink:0;">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                                    </div>
-                                    <div>
-                                        <span class="room-name-text">@booking.RoomName</span>
-                                        <span class="room-floor-text">@booking.Floor</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td data-label="TANGGAL" class="date-text">@booking.Date</td>
-                            <td data-label="DURASI" class="duration-text">@booking.Duration</td>
-                            <td data-label="STATUS">
-                                <span class="status-pill @BookingDataStore.GetStatusBadgeClass(booking.Status)">
-                                    @BookingDataStore.GetStatusLabel(booking.Status)
-                                </span>
-                            </td>
-                            <td data-label="AKSI">
-                                <button class="btn-view-details" @onclick="() => OpenDetail(booking)">Lihat Detail</button>
-                            </td>
-                        </tr>
+                        <div class="popup-anchor center" style="top: 100%; margin-top: 8px; right: 100px;">
+                            <DatePickerPopup OnApply="ApplyDateRange" OnClose="CloseDatePicker" />
+                        </div>
                     }
-                }
-            </tbody>
-        </table>
+                </div>
+            </ToolbarRightContent>
+        </DataGrid>
     </div>
 
-    <!-- Pagination -->
-    <div class="pagination-bar">
-        <span class="page-info">Menampilkan @((currentPage - 1) * pageSize + 1)–@Math.Min(currentPage * pageSize, FilteredBookings.Count()) dari @FilteredBookings.Count()</span>
-        <div class="page-buttons">
-            <button class="page-btn" disabled="@(currentPage <= 1)" @onclick="PrevPage">← Seb</button>
-            @for (int i = 1; i <= TotalPages; i++)
-            {
-                var pg = i;
-                <button class="page-btn @(pg == currentPage ? "active" : "")" @onclick="() => GoToPage(pg)">@pg</button>
-            }
-            <button class="page-btn" disabled="@(currentPage >= TotalPages)" @onclick="NextPage">Lanjut →</button>
-        </div>
-    </div>
+
 </div>
 
 <ModalOverlayBlur Visible="isDetailOpen" OnClose="CloseDetail" Size="default">
@@ -488,24 +399,98 @@
 </style>
 
 @code {
-    private string searchQuery = "";
     private string activeFilter = "Semua Status";
     private bool isFilterOpen = false;
     private bool isDatePickerOpen = false;
     private bool isDetailOpen = false;
     private BookingItem? selectedBooking;
-    private int currentPage = 1;
-    private int pageSize = 10;
-    private bool sortAscending = true;
     private bool _isLoading = true;
+    private List<GridColumn<BookingItem>> gridColumns = new();
 
     protected override async Task OnInitializedAsync()
     {
+        gridColumns = new List<GridColumn<BookingItem>>
+        {
+            new GridColumn<BookingItem>
+            {
+                Title = "NAMA RUANGAN",
+                PropertyName = "RoomName",
+                ValueFunc = b => b.RoomName,
+                CellTemplate = b => builder =>
+                {
+                    builder.OpenElement(0, "div");
+                    builder.AddAttribute(1, "class", "room-cell");
+                    
+                    builder.OpenElement(2, "img");
+                    builder.AddAttribute(3, "src", b.PhotoUrl);
+                    builder.AddAttribute(4, "alt", b.RoomName);
+                    builder.AddAttribute(5, "class", "room-thumb");
+                    builder.AddAttribute(6, "onerror", "this.style.display='none'; this.nextElementSibling.style.display='flex'");
+                    builder.CloseElement();
+                    
+                    builder.AddMarkupContent(7, "<div class=\"room-thumb-placeholder\" style=\"display:none; width:40px; height:40px; border-radius:8px; align-items:center; justify-content:center; background:#f3f4f6; flex-shrink:0;\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#9ca3af\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect><circle cx=\"8.5\" cy=\"8.5\" r=\"1.5\"></circle><polyline points=\"21 15 16 10 5 21\"></polyline></svg></div>");
+                    
+                    builder.OpenElement(8, "div");
+                    builder.OpenElement(9, "span");
+                    builder.AddAttribute(10, "class", "room-name-text");
+                    builder.AddContent(11, b.RoomName);
+                    builder.CloseElement();
+                    builder.OpenElement(12, "span");
+                    builder.AddAttribute(13, "class", "room-floor-text");
+                    builder.AddContent(14, b.Floor);
+                    builder.CloseElement();
+                    builder.CloseElement();
+                    
+                    builder.CloseElement();
+                }
+            },
+            new GridColumn<BookingItem>
+            {
+                Title = "TANGGAL",
+                PropertyName = "Date",
+                ValueFunc = b => b.Date
+            },
+            new GridColumn<BookingItem>
+            {
+                Title = "DURASI",
+                PropertyName = "Duration",
+                ValueFunc = b => b.Duration,
+                Align = "right"
+            },
+            new GridColumn<BookingItem>
+            {
+                Title = "STATUS",
+                PropertyName = "Status",
+                ValueFunc = b => BookingDataStore.GetStatusLabel(b.Status),
+                CellTemplate = b => builder =>
+                {
+                    builder.OpenElement(0, "span");
+                    builder.AddAttribute(1, "class", $"status-pill {BookingDataStore.GetStatusBadgeClass(b.Status)}");
+                    builder.AddContent(2, BookingDataStore.GetStatusLabel(b.Status));
+                    builder.CloseElement();
+                }
+            },
+            new GridColumn<BookingItem>
+            {
+                Title = "AKSI",
+                PropertyName = "",
+                Sortable = false,
+                CellTemplate = b => builder =>
+                {
+                    builder.OpenElement(0, "button");
+                    builder.AddAttribute(1, "class", "btn-view-details");
+                    builder.AddAttribute(2, "onclick", EventCallback.Factory.Create(this, () => OpenDetail(b)));
+                    builder.AddContent(3, "Lihat Detail");
+                    builder.CloseElement();
+                }
+            }
+        };
+
         await Task.Delay(400);
         _isLoading = false;
     }
 
-    private IEnumerable<BookingItem> FilteredBookings
+    private IEnumerable<BookingItem> FilteredBookingsForGrid
     {
         get
         {
@@ -514,34 +499,13 @@
             if (activeFilter != "Semua Status")
                 query = query.Where(b => b.Status.Equals(activeFilter, StringComparison.OrdinalIgnoreCase));
             
-            if (!string.IsNullOrWhiteSpace(searchQuery))
-            {
-                var q = searchQuery.ToLower();
-                query = query.Where(b => b.RoomName.ToLower().Contains(q));
-            }
-            
-            if (sortAscending)
-                query = query.OrderBy(b => b.RoomName);
-            else
-                query = query.OrderByDescending(b => b.RoomName);
-                
             return query;
         }
     }
 
-    private IEnumerable<BookingItem> PagedBookings =>
-        FilteredBookings.Skip((currentPage - 1) * pageSize).Take(pageSize);
-
-    private int TotalPages => Math.Max(1, (int)Math.Ceiling((double)FilteredBookings.Count() / pageSize));
-
-    private void ToggleSort()
-    {
-        sortAscending = !sortAscending;
-    }
-
     private void ToggleFilter() { isFilterOpen = !isFilterOpen; isDatePickerOpen = false; }
     private void CloseFilter() { isFilterOpen = false; }
-    private void ApplyFilter(string status) { activeFilter = status; isFilterOpen = false; currentPage = 1; }
+    private void ApplyFilter(string status) { activeFilter = status; isFilterOpen = false; }
 
     private void ToggleDatePicker() { isDatePickerOpen = !isDatePickerOpen; isFilterOpen = false; }
     private void CloseDatePicker() { isDatePickerOpen = false; }
@@ -549,9 +513,5 @@
 
     private void OpenDetail(BookingItem booking) { selectedBooking = booking; isDetailOpen = true; }
     private void CloseDetail() { isDetailOpen = false; }
-
-    private void PrevPage() { if (currentPage > 1) currentPage--; }
-    private void NextPage() { if (currentPage < TotalPages) currentPage++; }
-    private void GoToPage(int page) { currentPage = page; }
 }
 
