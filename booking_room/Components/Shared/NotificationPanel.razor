@@ -1,4 +1,5 @@
 @using booking_room.Services
+@using booking_room.Components.Models
 @inject INotificationService NotificationService
 @inject NavigationManager Navigation
 @implements IDisposable
@@ -82,6 +83,13 @@
                             </div>
                             <div class="notif-item-title">@item.Title</div>
                             <div class="notif-item-desc">@item.Description</div>
+                            @if (item.Category == "Invitation" && !item.IsRead)
+                            {
+                                <div class="notif-item-actions">
+                                    <button class="btn-accept-inline" @onclick:stopPropagation="true" @onclick="() => AcceptInvitation(item)">Terima</button>
+                                    <button class="btn-decline-inline" @onclick:stopPropagation="true" @onclick="() => DeclineInvitation(item)">Tolak</button>
+                                </div>
+                            }
                         </div>
 
                         @if (!item.IsRead)
@@ -104,7 +112,6 @@
 @code {
     [Parameter] public bool Visible { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
-    [Parameter] public EventCallback<NotificationItem> OnInvitationClick { get; set; }
 
     private string activeTab = "All";
     private bool _isLoading = true;
@@ -153,6 +160,10 @@
 
     private async Task HandleItemClick(NotificationItem item)
     {
+        if (item.Category == "Invitation")
+        {
+            return;
+        }
         NotificationService.MarkAsRead(item.Id);
         
         if (item.Category == "Reminder")
@@ -160,10 +171,28 @@
             await ClosePanel();
             Navigation.NavigateTo("/");
         }
-        else if (item.Category == "Invitation")
-        {
-            await OnInvitationClick.InvokeAsync(item);
-        }
+    }
+
+    private async Task AcceptInvitation(NotificationItem item)
+    {
+        NotificationService.MarkAsRead(item.Id);
+        
+        DashboardData.AddTodayScheduleItem(new TodayScheduleItem(
+            item.Description,
+            "09:00 - 11:00",
+            item.Title,
+            "akan-datang",
+            "Akan Datang",
+            "#3B82F6"
+        ));
+        
+        await ClosePanel();
+    }
+
+    private async Task DeclineInvitation(NotificationItem item)
+    {
+        NotificationService.MarkAsRead(item.Id);
+        await ClosePanel();
     }
 
     private void MarkAllRead()

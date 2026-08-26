@@ -75,22 +75,6 @@ else
         </div>
     }
 
-    <!-- Card Ruangan Tersedia -->
-    <div class="summary-card" @onclick='() => ShowPopup("RoomAvailable")'>
-        <div class="summary-card-icon icon-green">
-            <InlineSvg Src="/icons/Icon_1.svg" Class="icon-main" />
-        </div>
-        <div class="summary-card-content">
-            <div class="summary-card-label">Ruangan Tersedia</div>
-            <div class="summary-card-value">@DashboardData.AvailableRooms.Available <span>/ @DashboardData.AvailableRooms.Total</span></div>
-        </div>
-        <div class="summary-card-arrow">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-        </div>
-    </div>
-
     <!-- Card Persetujuan Tertunda -->
     <div class="summary-card" style="border-left: 4px solid var(--accent-amber);" @onclick='() => ShowPopup("PendingApproval")'>
         <div class="summary-card-icon icon-amber">
@@ -108,27 +92,113 @@ else
     </div>
 </div>
 
-<div class="dashboard-lower-layout">
-    <!-- Panel Info Samping -->
-    <div class="side-info-panel">
-        <div class="clock-card">
-            <div class="clock-time">
-                @currentTime.ToString("HH")<span class="colon-blink">:</span>@currentTime.ToString("mm")<span style="font-size:0.5em; opacity:0.7; margin-left:4px;">@currentTime.ToString("ss")</span>
-            </div>
-            <div class="clock-date">@currentTime.ToString("dddd, dd MMMM yyyy", new System.Globalization.CultureInfo("id-ID"))</div>
-        </div>
-        
-        <div class="stats-mini-row">
-            <div class="stat-mini-card">
-                <div class="stat-mini-val">@DashboardData.AvailableRooms.Available</div>
-                <div class="stat-mini-lbl">Ruangan Tersedia</div>
-            </div>
-            <div class="stat-mini-card">
-                <div class="stat-mini-val">@DashboardData.PendingApprovals</div>
-                <div class="stat-mini-lbl">Menunggu Persetujuan</div>
-            </div>
-        </div>
+</div>
+
+<div class="clock-standalone">
+    <div class="clock-time">
+        @currentTime.ToString("HH")<span class="colon-blink">:</span>@currentTime.ToString("mm")<span style="font-size:0.5em; opacity:0.7; margin-left:4px;">@currentTime.ToString("ss")</span>
     </div>
+    <div class="clock-date">@currentTime.ToString("dddd, dd MMMM yyyy", new System.Globalization.CultureInfo("id-ID"))</div>
+</div>
+
+<div class="dashboard-lower-layout">
+    <!-- Jadwal Saya Hari Ini (moved above analytics) -->
+    @if (DashboardData.CurrentUserRole == "Admin")
+    {
+        @if (IsWidgetVisible("TodaySchedule"))
+        {
+            <div class="dashboard-widget upcoming-bookings-panel">
+                <div class="upcoming-header">
+                    <h2 class="upcoming-title">Jadwal Saya Hari Ini</h2>
+                    <span class="upcoming-badge">@DashboardData.TodaySchedule.Count Agenda</span>
+                </div>
+                <div class="upcoming-list">
+                    @foreach (var item in DashboardData.TodaySchedule)
+                    {
+                        <div class="upcoming-card" style="cursor: pointer;" @onclick="() => NavigateToBookingDetail(item)">
+                            <div class="upcoming-accent" style="background-color: @item.AccentColor;"></div>
+                            <div class="upcoming-content">
+                                <div class="upcoming-top">
+                                    <div>
+                                        <h3 class="upcoming-room-name">@item.RoomName</h3>
+                                        <p class="upcoming-location">@item.Title</p>
+                                    </div>
+                                    <span class="upcoming-status-badge" style="background: @(item.Status == "sedang-berlangsung" ? "#F0FDF4" : "#F8FAFC"); color: @(item.Status == "sedang-berlangsung" ? "#166534" : "#4B5563");">
+                                        @item.StatusLabel
+                                    </span>
+                                </div>
+                                <div class="upcoming-bottom">
+                                    <div class="upcoming-schedule">
+                                        <span>
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" fill="currentColor"/></svg>
+                                            @item.TimeSlot
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                @if (!DashboardData.TodaySchedule.Any())
+                {
+                    <div style="text-align: center; padding: 2rem; color: #94a3b8;">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style="margin-bottom: 1rem; opacity: 0.5;"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                        <p style="font-weight: 600; margin-bottom: 0.5rem;">Tidak ada jadwal hari ini</p>
+                        <p style="font-size: 0.85rem; margin-bottom: 1rem;">Ayo pesan ruangan!</p>
+                        <button class="btn btn-primary" style="border-radius: 999px; padding: 0.5rem 1.25rem; font-size: 0.85rem;" @onclick="ViewAllRooms">Cari Ruangan</button>
+                    </div>
+                }
+            </div>
+        }
+    }
+    else
+    {
+        @if (IsWidgetVisible("TodaySchedule"))
+        {
+            <div class="dashboard-widget upcoming-bookings-panel">
+                <div class="upcoming-header">
+                    <h2 class="upcoming-title">Jadwal Saya Hari Ini</h2>
+                    <span class="upcoming-badge">@DashboardData.TodaySchedule.Count Agenda</span>
+                </div>
+                <div class="upcoming-list">
+                    @foreach (var item in DashboardData.TodaySchedule)
+                    {
+                        <div class="upcoming-card" style="cursor: pointer;" @onclick="() => NavigateToBookingDetail(item)">
+                            <div class="upcoming-accent" style="background-color: @item.AccentColor;"></div>
+                            <div class="upcoming-content">
+                                <div class="upcoming-top">
+                                    <div>
+                                        <h3 class="upcoming-room-name">@item.RoomName</h3>
+                                        <p class="upcoming-location">@item.Title</p>
+                                    </div>
+                                    <span class="upcoming-status-badge" style="background: @(item.Status == "sedang-berlangsung" ? "#F0FDF4" : "#F8FAFC"); color: @(item.Status == "sedang-berlangsung" ? "#166534" : "#4B5563");">
+                                        @item.StatusLabel
+                                    </span>
+                                </div>
+                                <div class="upcoming-bottom">
+                                    <div class="upcoming-schedule">
+                                        <span>
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" fill="currentColor"/></svg>
+                                            @item.TimeSlot
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                @if (!DashboardData.TodaySchedule.Any())
+                {
+                    <div style="text-align: center; padding: 2rem; color: #94a3b8;">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style="margin-bottom: 1rem; opacity: 0.5;"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                        <p style="font-weight: 600; margin-bottom: 0.5rem;">Tidak ada jadwal hari ini</p>
+                        <p style="font-size: 0.85rem; margin-bottom: 1rem;">Ayo pesan ruangan!</p>
+                        <button class="btn btn-primary" style="border-radius: 999px; padding: 0.5rem 1.25rem; font-size: 0.85rem;" @onclick="ViewAllRooms">Cari Ruangan</button>
+                    </div>
+                }
+            </div>
+        }
+    }
 </div>
 
 <div class="analytics-inline-panel" style="margin-top: 24px;">
@@ -137,22 +207,45 @@ else
             <h2 class="analytics-inline-title">Analitik Utilisasi Ruangan</h2>
             <p class="analytics-inline-subtitle">5 Ruangan Paling Sering Dipesan</p>
         </div>
-        <div class="analytics-toggle">
-            @foreach (var period in periods)
-            {
-                <button class="@(selectedPeriod == period ? "active" : "")" @onclick="() => SelectPeriod(period)">@period</button>
-            }
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div class="analytics-toggle">
+                @foreach (var period in periods)
+                {
+                    <button class="@(selectedPeriod == period ? "active" : "")" @onclick="() => SelectPeriod(period)">@period</button>
+                }
+            </div>
+            <div class="analytics-export-btns">
+                <button class="btn-export" @onclick="ExportCSV" title="Download CSV">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    CSV
+                </button>
+                <button class="btn-export" @onclick="ExportJSON" title="Download JSON">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    JSON
+                </button>
+            </div>
         </div>
     </div>
 
-    <div style="width: 100%; min-height: 280px;">
+    <div style="width: 100%; min-height: 280px; position: relative;">
         @if (_apexChartSeries != null && _apexChartSeries.Count > 0)
         {
+            <div class="chart-legend-chips">
+                @foreach (var series in _apexChartSeries)
+                {
+                    <button class="legend-chip @(series.Show ? "active" : "")" 
+                            style="border-color: @series.Color; @(series.Show ? $"background: {series.Color}15; color: {series.Color};" : $"color: {series.Color};")"
+                            @onclick="() => ToggleSeries(series.Name)">
+                        <span class="legend-dot" style="background: @series.Color;"></span>
+                        @series.Name
+                    </button>
+                }
+            </div>
             <ApexChart TItem="RoomUsagePoint"
                        Options="_apexChartOptions"
                        @ref="_apexChartRef"
                        Height="280">
-                @foreach (var series in _apexChartSeries)
+                @foreach (var series in _apexChartSeries.Where(s => s.Show))
                 {
                      <ApexPointSeries TItem="RoomUsagePoint"
                                       Items="series.Points"
@@ -166,14 +259,19 @@ else
         }
     </div>
 
+    @if (_highlightedRoom != null)
+    {
+        <div class="drilldown-banner">
+            <span>Menampilkan: <strong>@_highlightedRoom</strong></span>
+            <button class="drilldown-clear" @onclick="ClearDrillDown">Tampilkan Semua</button>
+        </div>
+    }
+
     <div class="analytics-inline-footer">
         <button class="btn btn-outline-primary" style="border-radius: 999px; font-weight: 600; padding: 0.5rem 1.25rem;" @onclick='() => ShowPopup("AnalyticsDetail")'>
             Lihat Detail
         </button>
     </div>
-</div>
-
-
 </div>
 
 }
@@ -381,15 +479,38 @@ else
         showAllUpcoming = !showAllUpcoming;
     }
 
+    private void NavigateToBookingDetail(TodayScheduleItem item)
+    {
+        Navigation.NavigateTo("/bookings");
+    }
+
+    private RenderFragment GetActivityIcon(string iconType) => iconType switch
+    {
+        "approval" => @<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>,
+        "cancel" => @<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>,
+        "alert" => @<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>,
+        "booking" => @<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>,
+        "checkin" => @<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="10"></circle></svg>,
+        _ => @<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>,
+    };
+
+    private bool IsWidgetVisible(string widgetName)
+    {
+        var role = DashboardData.CurrentUserRole;
+        if (DashboardData.RoleWidgetPriority.TryGetValue(role, out var widgets))
+        {
+            return widgets.Contains(widgetName);
+        }
+        return true;
+    }
+
     private void OpenModifyModal(UpcomingBookingItem booking)
     {
-        // For demo, just redirect to bookings
         Navigation.NavigateTo("/bookings");
     }
 
     private void OpenCancelModal(UpcomingBookingItem booking)
     {
-        // For demo, just show some alert or redirect
         Navigation.NavigateTo("/status");
     }
 
@@ -460,14 +581,70 @@ else
     {
         public string Name { get; set; } = "";
         public string Color { get; set; } = "";
+        public bool Show { get; set; } = true;
         public List<RoomUsagePoint> Points { get; set; } = new();
+    }
+
+    private string? _highlightedRoom = null;
+
+    private void ToggleSeries(string seriesName)
+    {
+        if (_highlightedRoom == seriesName)
+        {
+            ClearDrillDown();
+        }
+        else
+        {
+            _highlightedRoom = seriesName;
+            foreach (var s in _apexChartSeries)
+            {
+                s.Show = s.Name == seriesName;
+            }
+        }
+        StateHasChanged();
+    }
+
+    private void ClearDrillDown()
+    {
+        _highlightedRoom = null;
+        foreach (var s in _apexChartSeries)
+        {
+            s.Show = true;
+        }
+        StateHasChanged();
+    }
+
+    private void ExportCSV()
+    {
+        var csv = new System.Text.StringBuilder();
+        csv.AppendLine("Ruangan," + string.Join(",", _apexChartSeries.FirstOrDefault()?.Points.Select(p => p.Label) ?? Enumerable.Empty<string>()));
+        foreach (var series in _apexChartSeries)
+        {
+            csv.AppendLine($"{series.Name}," + string.Join(",", series.Points.Select(p => p.Value)));
+        }
+        DownloadFile(csv.ToString(), $"analytics-{selectedPeriod}.csv", "text/csv");
+    }
+
+    private void ExportJSON()
+    {
+        var json = System.Text.Json.JsonSerializer.Serialize(new { Period = selectedPeriod, Series = _apexChartSeries.Select(s => new { s.Name, s.Points }) });
+        DownloadFile(json, $"analytics-{selectedPeriod}.json", "application/json");
+    }
+
+    private void DownloadFile(string content, string fileName, string contentType)
+    {
+        var bytes = System.Text.Encoding.UTF8.GetBytes(content);
+        var base64 = Convert.ToBase64String(bytes);
+        var dataUrl = $"data:{contentType};base64,{base64}";
+        var js = $"var a=document.createElement('a');a.href='{dataUrl}';a.download='{fileName}';document.body.appendChild(a);a.click();document.body.removeChild(a);";
+        JS.InvokeVoidAsync("eval", js);
     }
 }
 
 <style>
     .dashboard-lower-layout {
         display: grid;
-        grid-template-columns: 2fr 1fr;
+        grid-template-columns: 1fr;
         gap: 24px;
         margin-top: 24px;
     }
@@ -625,46 +802,6 @@ else
     
     .btn-show-more:hover {
         background: #F3F4F6;
-    }
-    
-    .side-info-panel {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-    }
-    
-    .clock-card {
-        background: linear-gradient(135deg, var(--persada-navy-900), #081629);
-        border-radius: var(--persada-border-radius-card);
-        padding: 24px;
-        color: white;
-        text-align: center;
-        box-shadow: var(--shadow-sm);
-    }
-    
-    .clock-time {
-        font-size: 3.5rem;
-        font-weight: 800;
-        line-height: 1;
-        letter-spacing: -1px;
-        margin-bottom: 8px;
-        display: flex;
-        align-items: baseline;
-        justify-content: center;
-    }
-    
-    .clock-date {
-        font-size: 0.9rem;
-        font-weight: 500;
-        color: var(--persada-yellow-500);
-    }
-
-    .colon-blink {
-        animation: blinker 1s linear infinite;
-    }
-
-    @@keyframes blinker {
-        50% { opacity: 0; }
     }
     
     .next-booking-widget {
@@ -851,5 +988,228 @@ else
         .dashboard-lower-layout {
             grid-template-columns: 1fr;
         }
+    }
+
+    .dashboard-widget {
+        background: var(--persada-white);
+        border-radius: var(--persada-border-radius-card);
+        padding: 24px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid #E5E7EB;
+    }
+
+    /* Current room widget */
+    .current-room-widget {
+        background: linear-gradient(135deg, #0f1f3d 0%, #1e40af 100%);
+        color: white;
+        border-radius: var(--persada-border-radius-card);
+        padding: 20px;
+        box-shadow: var(--shadow-md);
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .current-room-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .current-room-dot {
+        width: 10px;
+        height: 10px;
+        background: #10B981;
+        border-radius: 50%;
+        animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    .current-room-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: rgba(255,255,255,0.7);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .current-room-name {
+        font-size: 1.25rem;
+        font-weight: 800;
+        margin-bottom: 4px;
+    }
+
+    .current-room-meta {
+        font-size: 0.85rem;
+        color: rgba(255,255,255,0.7);
+        margin-bottom: 16px;
+    }
+
+    .current-room-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .current-room-btn {
+        flex: 1;
+        padding: 10px;
+        border-radius: 999px;
+        border: none;
+        font-weight: 700;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .current-room-btn.primary {
+        background: white;
+        color: #0f1f3d;
+    }
+
+    .current-room-btn.secondary {
+        background: rgba(255,255,255,0.15);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    .current-room-btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .analytics-export-btns {
+        display: flex;
+        gap: 6px;
+    }
+
+    .btn-export {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        border: 1px solid #E5E7EB;
+        background: white;
+        color: #64748b;
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-export:hover {
+        background: #F8FAFC;
+        border-color: #CBD5E1;
+        color: #1E293B;
+    }
+
+    .chart-legend-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .legend-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        border: 1.5px solid;
+        background: transparent;
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .legend-chip:hover {
+        filter: brightness(0.95);
+    }
+
+    .legend-chip.active {
+        font-weight: 700;
+    }
+
+    .legend-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .drilldown-banner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 16px;
+        background: #EFF6FF;
+        border: 1px solid #BFDBFE;
+        border-radius: 8px;
+        margin-top: 12px;
+        font-size: 0.85rem;
+        color: #1E40AF;
+    }
+
+    .drilldown-clear {
+        background: none;
+        border: none;
+        color: #2563EB;
+        font-weight: 600;
+        font-size: 0.8rem;
+        cursor: pointer;
+        text-decoration: underline;
+    }
+
+    /* Role-aware ordering */
+    [data-role="Admin"] .dashboard-widget:nth-child(1) { order: 1; }
+    [data-role="Admin"] .dashboard-widget:nth-child(2) { order: 2; }
+    [data-role="Admin"] .dashboard-widget:nth-child(3) { order: 3; }
+    [data-role="Admin"] .dashboard-widget:nth-child(4) { order: 4; }
+    [data-role="Admin"] .dashboard-widget:nth-child(5) { order: 5; }
+    [data-role="Admin"] .dashboard-widget:nth-child(6) { order: 6; }
+
+    [data-role="Employee"] .dashboard-widget:nth-child(1) { order: 1; }
+    [data-role="Employee"] .dashboard-widget:nth-child(2) { order: 2; }
+    [data-role="Employee"] .dashboard-widget:nth-child(3) { order: 3; }
+    [data-role="Employee"] .dashboard-widget:nth-child(4) { order: 4; }
+    [data-role="Employee"] .dashboard-widget:nth-child(5) { order: 5; }
+    [data-role="Employee"] .dashboard-widget:nth-child(6) { order: 6; }
+
+    .dashboard-widget.hidden-for-role {
+        display: none !important;
+    }
+
+    .clock-standalone {
+        background: linear-gradient(135deg, var(--persada-navy-900), #081629);
+        border-radius: var(--persada-border-radius-card);
+        padding: 24px;
+        color: white;
+        text-align: center;
+        box-shadow: var(--shadow-sm);
+        margin-top: 24px;
+    }
+
+    .clock-time {
+        font-size: 3.5rem;
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -1px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: baseline;
+        justify-content: center;
+    }
+
+    .clock-date {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--persada-yellow-500);
+    }
+
+    .colon-blink {
+        animation: blinker 1s linear infinite;
+    }
+
+    @@keyframes blinker {
+        50% { opacity: 0; }
     }
 </style>

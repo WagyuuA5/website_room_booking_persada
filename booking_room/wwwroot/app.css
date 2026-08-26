@@ -1879,6 +1879,46 @@ h1:focus {
     text-decoration: underline;
 }
 
+.notif-item-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.btn-accept-inline {
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, #10B981, #059669);
+    color: white;
+    font-weight: 700;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+}
+
+.btn-accept-inline:hover {
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-decline-inline {
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid #FECACA;
+    background: white;
+    color: #DC2626;
+    font-weight: 700;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-decline-inline:hover {
+    background: #FEF2F2;
+}
+
 /* ============================================ */
 /* PROFILE DROPDOWN PANEL                        */
 /* ============================================ */

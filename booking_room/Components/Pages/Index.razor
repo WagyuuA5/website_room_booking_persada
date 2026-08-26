@@ -14,15 +14,15 @@
 
             if (isLoggedIn == "true")
             {
-                Navigation.NavigateTo("/dashboard");
+                Navigation.NavigateTo("/dashboard", replace: true);
             }
             else if (hasSeenBoarding == "true")
             {
-                Navigation.NavigateTo("/login");
+                Navigation.NavigateTo("/login", replace: true);
             }
             else
             {
-                Navigation.NavigateTo("/boarding");
+                Navigation.NavigateTo("/boarding", replace: true);
             }
         }
     }

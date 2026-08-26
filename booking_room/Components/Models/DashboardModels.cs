@@ -12,10 +12,15 @@ public record PendingApprovalItem(string RoomName, string RequestedBy, string Da
 public record RoomItem(string Id, string Name, int Capacity, string Description, string Status, List<string> Amenities, string Floor, string PhotoUrl = "");
 public record UpcomingBookingItem(string Id, string Category, string IconType, string AccentColor, string RoomName, string Location, string Date, string TimeSlot);
 
+public record TodayScheduleItem(string RoomName, string TimeSlot, string Title, string Status, string StatusLabel, string AccentColor);
+public record ActivityFeedItem(string IconType, string Description, string Timestamp, string AccentColor);
+public record MetricTrend(string Label, string Value, string TrendPercent, bool IsUp, string Description);
+public record CurrentRoomInfo(string RoomName, string TimeSlot, int RemainingMinutes, string Location);
+
 public static class DashboardData
 {
     public static RoomSummary AvailableRooms => new("Total Ruangan", 8, 20);
-    public static int PendingApprovals => 3;
+    public static int PendingApprovals = 3;
 
     public static List<NextAvailableRoom> NextAvailableRooms =>
     [
@@ -24,6 +29,44 @@ public static class DashboardData
         new("Meeting Room 1", 120, 8, false),
         new("Training Center", 180, 30, false)
     ];
+
+    public static List<TodayScheduleItem> TodaySchedule { get; } = new()
+    {
+        new("Executive Boardroom A", "09:00 - 11:00", "Rapat Strategi Q3", "sedang-berlangsung", "Berlangsung", "#10B981"),
+        new("Huddle Space C", "13:30 - 15:00", "Sesi Brainstorming UI/UX", "akan-datang", "Akan Datang", "#3B82F6"),
+        new("Training Center", "15:00 - 17:00", "Workshop Tim", "akan-datang", "Akan Datang", "#F59E0B"),
+    };
+
+    public static void AddTodayScheduleItem(TodayScheduleItem item)
+    {
+        TodaySchedule.Add(item);
+    }
+
+    public static List<ActivityFeedItem> RecentActivities =>
+    [
+        new("approval", "Budi menyetujui booking Executive Suite A", "5 menit lalu", "#10B981"),
+        new("cancel", "Booking Training Ruangan B dibatalkan oleh sistem (no-show)", "12 menit lalu", "#EF4444"),
+        new("alert", "Ruangan Delta Boardroom akan dilepas otomatis dalam 5 menit", "18 menit lalu", "#F59E0B"),
+        new("booking", "Siti Rahayu membuat booking baru di Conference Hall", "32 menit lalu", "#3B82F6"),
+        new("checkin", "Ahmad Fauzi check-in ke Meeting Room 1", "1 jam lalu", "#10B981"),
+    ];
+
+    public static List<MetricTrend> MetricTrends =>
+    [
+        new("Utilisasi Ruangan", "62%", "↑8%", true, "dari minggu lalu"),
+        new("Rata-rata Durasi", "1.5 jam", "↑12%", true, "dari minggu lalu"),
+        new("Tingkat No-Show", "8%", "↓3%", false, "dari minggu lalu"),
+    ];
+
+    public static CurrentRoomInfo? ActiveCheckIn => null;
+
+    public static Dictionary<string, List<string>> RoleWidgetPriority => new()
+    {
+        ["Admin"] = new() { "PendingApproval", "Analytics", "TodaySchedule", "QuickBook", "ActivityFeed", "CurrentRoom", "Trends" },
+        ["Employee"] = new() { "TodaySchedule", "QuickBook", "ActivityFeed", "CurrentRoom", "Trends" },
+    };
+
+    public static string CurrentUserRole => "Admin";
 
     public static List<RoomDetail> AllRooms =>
     [
@@ -58,11 +101,11 @@ public static class DashboardData
 
     public static List<UpcomingBookingItem> UpcomingBookings =>
     [
-        new("B-101", "Ruang Rapat", "meeting", "#3b82f6", "Rapat Strategi Q3", "Executive Boardroom A (Lantai 3)", "Jumat, 27 Mar 2026", "09:00 - 11:00"),
-        new("B-102", "Area Kolaborasi", "huddle", "#10b981", "Sesi Brainstorming UI/UX", "Huddle Space C (Lantai 1)", "Jumat, 27 Mar 2026", "13:30 - 15:00"),
-        new("B-103", "Fasilitas Khusus", "training", "#f59e0b", "Orientasi Karyawan Baru", "Training Center (Lantai 4)", "Senin, 30 Mar 2026", "09:00 - 16:00"),
-        new("B-104", "Ruang Rapat", "meeting", "#3b82f6", "Sinkronisasi Tim Mingguan", "Meeting Room 1 (Lantai 2)", "Selasa, 31 Mar 2026", "10:00 - 11:00"),
-        new("B-105", "Fokus", "focus", "#8b5cf6", "Wawancara Kandidat 1-on-1", "Focus Room B (Lantai 2)", "Rabu, 1 Apr 2026", "14:00 - 15:00")
+        new("B-101", "Ruang Rapat", "meeting", "#3b82f6", "Rapat Strategi Q3", "Executive Boardroom A (Lantai 3)", "Kamis, 27 Agustus 2026", "09:00 - 11:00"),
+        new("B-102", "Area Kolaborasi", "huddle", "#10b981", "Sesi Brainstorming UI/UX", "Huddle Space C (Lantai 1)", "Kamis, 27 Agustus 2026", "13:30 - 15:00"),
+        new("B-103", "Fasilitas Khusus", "training", "#f59e0b", "Orientasi Karyawan Baru", "Training Center (Lantai 4)", "Senin, 31 Agustus 2026", "09:00 - 16:00"),
+        new("B-104", "Ruang Rapat", "meeting", "#3b82f6", "Sinkronisasi Tim Mingguan", "Meeting Room 1 (Lantai 2)", "Selasa, 1 September 2026", "10:00 - 11:00"),
+        new("B-105", "Fokus", "focus", "#8b5cf6", "Wawancara Kandidat 1-on-1", "Focus Room B (Lantai 2)", "Rabu, 2 September 2026", "14:00 - 15:00")
     ];
 
     public static AnalyticsData WeeklyData => new(
