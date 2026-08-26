@@ -1,0 +1,132 @@
+@inject IJSRuntime JS
+
+<div class="app-modal-backdrop" @onclick="CloseAsync">
+    <div class="app-modal-container" @onclick:stopPropagation="true">
+        @if (ShowHeader)
+        {
+            <div class="app-modal-header">
+                @HeaderContent
+                @if (ShowCloseButton)
+                {
+                    <button class="app-modal-close" @onclick="CloseAsync" type="button">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                }
+            </div>
+        }
+        <div class="app-modal-body">
+            @BodyContent
+        </div>
+        @if (ShowFooter)
+        {
+            <div class="app-modal-footer">
+                @FooterContent
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public RenderFragment? HeaderContent { get; set; }
+    [Parameter] public RenderFragment? BodyContent { get; set; }
+    [Parameter] public RenderFragment? FooterContent { get; set; }
+    [Parameter] public bool ShowCloseButton { get; set; } = true;
+    [Parameter] public bool ShowHeader { get; set; } = true;
+    [Parameter] public bool ShowFooter { get; set; } = true;
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Visible)
+        {
+            await JS.InvokeVoidAsync("modalHelper.lockBodyScroll");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("modalHelper.unlockBodyScroll");
+        }
+    }
+
+    private async Task CloseAsync()
+    {
+        Visible = false;
+        await VisibleChanged.InvokeAsync(false);
+        await JS.InvokeVoidAsync("modalHelper.unlockBodyScroll");
+        if (OnClose.HasDelegate)
+        {
+            await OnClose.InvokeAsync();
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await JS.InvokeVoidAsync("modalHelper.unlockBodyScroll");
+    }
+}
+
+<style>
+    .app-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 1rem;
+    }
+
+    .app-modal-container {
+        position: relative;
+        max-height: 90vh;
+        width: min(600px, 92vw);
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .app-modal-header {
+        flex-shrink: 0;
+        padding: 20px 24px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .app-modal-body {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 0 24px;
+    }
+
+    .app-modal-footer {
+        flex-shrink: 0;
+        padding: 16px 24px 20px;
+    }
+
+    .app-modal-close {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #6B7280;
+        padding: 4px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s;
+    }
+
+    .app-modal-close:hover {
+        background-color: #F3F4F6;
+    }
+</style>

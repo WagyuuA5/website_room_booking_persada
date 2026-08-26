@@ -75,30 +75,26 @@ else
         </div>
     }
 
-    <!-- Card Persetujuan Tertunda -->
-    <div class="summary-card" style="border-left: 4px solid var(--accent-amber);" @onclick='() => ShowPopup("PendingApproval")'>
-        <div class="summary-card-icon icon-amber">
-            <InlineSvg Src="/icons/Icon_clndr.svg" Class="icon-main" />
+    @if (DashboardData.CurrentUserRole == "Admin")
+    {
+        <!-- Card Persetujuan Tertunda -->
+        <div class="summary-card" style="border-left: 4px solid var(--accent-amber);" @onclick='() => ShowPopup("PendingApproval")'>
+            <div class="summary-card-icon icon-amber">
+                <InlineSvg Src="/icons/Icon_clndr.svg" Class="icon-main" />
+            </div>
+            <div class="summary-card-content">
+                <div class="summary-card-label">Persetujuan Tertunda</div>
+                <div class="summary-card-value">@DashboardData.PendingApprovals</div>
+            </div>
+            <div class="summary-card-arrow">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
         </div>
-        <div class="summary-card-content">
-            <div class="summary-card-label">Persetujuan Tertunda</div>
-            <div class="summary-card-value">@DashboardData.PendingApprovals</div>
-        </div>
-        <div class="summary-card-arrow">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-        </div>
-    </div>
+    }
 </div>
 
-</div>
-
-<div class="clock-standalone">
-    <div class="clock-time">
-        @currentTime.ToString("HH")<span class="colon-blink">:</span>@currentTime.ToString("mm")<span style="font-size:0.5em; opacity:0.7; margin-left:4px;">@currentTime.ToString("ss")</span>
-    </div>
-    <div class="clock-date">@currentTime.ToString("dddd, dd MMMM yyyy", new System.Globalization.CultureInfo("id-ID"))</div>
 </div>
 
 <div class="dashboard-lower-layout">
@@ -277,46 +273,236 @@ else
 }
 
 <!-- Pop-ups -->
-<ModalOverlayBlur Visible="@(activePopup == "RoomAvailable")" OnClose="ClosePopup" Size="default" ShowCloseButton="false">
-    <RoomAvailablePopup OnClose="ClosePopup" />
-</ModalOverlayBlur>
+<AppModal Visible="@(activePopup == "RoomAvailable")" VisibleChanged="VisibleChanged" OnClose="ClosePopup" ShowCloseButton="false">
+    <HeaderContent>
+        <div class="modal-header-custom" style="padding: 0;">
+            <div class="modal-header-left">
+                <div class="modal-header-icon icon-green">
+                    <svg width="20" height="20" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M0 18V16H2V0H12V1H16V16H18V18H14V3H12V18H0ZM4 2V16V2ZM8 10C8.28333 10 8.52083 9.90417 8.7125 9.7125C8.90417 9.52083 9 9.28333 9 9C9 8.71667 8.90417 8.47917 8.7125 8.2875C8.52083 8.09583 8.28333 8 8 8C7.71667 8 7.47917 8.09583 7.2875 8.2875C7.09583 8.47917 7 8.71667 7 9C7 9.28333 7.09583 9.52083 7.2875 9.7125C7.47917 9.90417 7.71667 10 8 10ZM4 16H10V2H4V16Z" fill="#059669"/>
+                    </svg>
+                </div>
+                <div class="modal-header-info">
+                    <h3>Ruangan Tersedia</h3>
+                    <p>Pilih ruangan untuk rapat Anda berikutnya.</p>
+                </div>
+            </div>
+        </div>
+    </HeaderContent>
+    <BodyContent>
+        <RoomAvailablePopup OnClose="ClosePopup" />
+    </BodyContent>
+    <FooterContent>
+        <div class="modal-footer-custom" style="justify-content: flex-end;">
+            <button class="popup-footer-btn btn-close-gray" @onclick="ClosePopup">Tutup</button>
+        </div>
+    </FooterContent>
+</AppModal>
 
-<ModalOverlayBlur Visible="@(activePopup == "PendingApproval")" OnClose="ClosePopup" Size="default" ShowCloseButton="false">
-    <PendingApprovalPopup OnClose="ClosePopup" />
-</ModalOverlayBlur>
+<AppModal Visible="@(activePopup == \"PendingApproval\" && DashboardData.CurrentUserRole == \"Admin\")" VisibleChanged="VisibleChanged" OnClose="ClosePopup" ShowCloseButton="false">
+    <HeaderContent>
+        <div class="modal-header-custom" style="padding: 0;">
+            <div class="modal-header-left">
+                <div class="modal-header-icon icon-amber">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" fill="#D97706"/>
+                    </svg>
+                </div>
+                <div class="modal-header-info">
+                    <h3>Menunggu Persetujuan</h3>
+                    <p>Tinjau permintaan pemesanan terbaru Anda.</p>
+                </div>
+            </div>
+        </div>
+    </HeaderContent>
+    <BodyContent>
+        <PendingApprovalPopup OnClose="ClosePopup" />
+    </BodyContent>
+    <FooterContent>
+        <div class="modal-footer-custom" style="justify-content: flex-start; display: flex; gap: 0.5rem; border-top: none;">
+            <button class="popup-footer-btn btn-close-gray" style="flex: 1;" @onclick="ClosePopup">Tutup</button>
+            <button class="popup-footer-btn btn-amber" style="flex: 1;" @onclick="GoToStatusPage">Lihat Semua Detail</button>
+        </div>
+    </FooterContent>
+</AppModal>
 
-<ModalOverlayBlur Visible="@(activePopup == "QuickBook")" OnClose="ClosePopup" Size="default" ShowCloseButton="false">
-    @if (nextRoom != null)
-    {
-        <QuickBookPopup OnClose="ClosePopup" RoomName="@nextRoom.RoomName" AvailableInMinutes="nextRoom.AvailableInMinutes" Capacity="nextRoom.Capacity" />
-    }
-</ModalOverlayBlur>
+<AppModal Visible="@(activePopup == "QuickBook")" VisibleChanged="VisibleChanged" OnClose="ClosePopup" ShowCloseButton="false">
+    <HeaderContent>
+        <div class="modal-header-custom" style="padding: 0;">
+            <div class="modal-header-left">
+                <div class="modal-header-icon icon-navy">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M11 21H5C3.9 21 3 20.1 3 19V5C3 3.9 3.9 3 5 3H19C20.1 3 21 3.9 21 5V11.5" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+                        <path d="M7 7H17M7 11H13M7 15H11" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+                        <circle cx="18" cy="18" r="4" fill="#f59e0b"/>
+                        <path d="M16.5 18L17.5 19L19.5 17" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="modal-header-info">
+                    <h3>Pesan Ruangan — @(nextRoom?.RoomName ?? "")</h3>
+                    <p>Tersedia dalam @(nextRoom?.AvailableInMinutes ?? 0) menit • Kapasitas @(nextRoom?.Capacity ?? 0) orang</p>
+                </div>
+            </div>
+        </div>
+    </HeaderContent>
+    <BodyContent>
+        <QuickBookPopup OnClose="ClosePopup" RoomName="@(nextRoom?.RoomName ?? "")" AvailableInMinutes="nextRoom?.AvailableInMinutes ?? 0" Capacity="nextRoom?.Capacity ?? 0" />
+    </BodyContent>
+</AppModal>
 
-<ModalOverlayBlur Visible="@(activePopup == "AnalyticsDetail")" OnClose="ClosePopup" Size="lg" ShowCloseButton="false">
-    <AnalyticsDetailPopup OnClose="ClosePopup" SelectedPeriod="@selectedPeriod" />
-</ModalOverlayBlur>
+<AppModal Visible="@(activePopup == "AnalyticsDetail")" VisibleChanged="VisibleChanged" OnClose="ClosePopup" ShowCloseButton="false">
+    <HeaderContent>
+        <div class="modal-header-custom" style="padding: 0;">
+            <div class="modal-header-left">
+                <div class="modal-header-icon icon-blue">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="3" y="14" width="4" height="7" rx="1" fill="#1e40af"/>
+                        <rect x="8.5" y="10" width="4" height="11" rx="1" fill="#3b82f6"/>
+                        <rect x="14" y="6" width="4" height="15" rx="1" fill="#60a5fa"/>
+                        <path d="M2 21H23" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="modal-header-info">
+                    <h3>Analitik Penggunaan Detail</h3>
+                    <p>Data periode: @selectedPeriod</p>
+                </div>
+            </div>
+        </div>
+    </HeaderContent>
+    <BodyContent>
+        <AnalyticsDetailPopup OnClose="ClosePopup" SelectedPeriod="@selectedPeriod" />
+    </BodyContent>
+    <FooterContent>
+        <div class="modal-footer-custom">
+            <button class="popup-btn popup-btn-secondary" @onclick="ClosePopup">Tutup</button>
+        </div>
+    </FooterContent>
+</AppModal>
 
-<ModalOverlayBlur Visible="@(activePopup == "CheckInConfirmation")" OnClose="ClosePopup" Size="sm">
-    <CheckInConfirmationModal 
-        RoomName="Alpha Boardroom"
-        TimeSlot="09:00 - 11:00"
-        Location="Lantai 2, Sayap A"
-        Capacity="12"
-        TargetTime="@(NotificationState.NextBookingTime ?? DateTime.Now)"
-        OnConfirm="HandleConfirmCheckIn"
-        OnCancel="ClosePopup"
-        OnAutoReleased="HandleBookingAutoReleased" />
-</ModalOverlayBlur>
+<AppModal Visible="@(activePopup == "CheckInConfirmation")" VisibleChanged="VisibleChanged" OnClose="ClosePopup" Size="sm">
+    <HeaderContent>
+        <div class="modal-header-custom" style="padding: 0;">
+            <div class="modal-header-left">
+                <div class="modal-header-icon icon-navy">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M11 21H5C3.9 21 3 20.1 3 19V5C3 3.9 3.9 3 5 3H19C20.1 3 21 3.9 21 5V11.5" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+                        <path d="M7 7H17M7 11H13M7 15H11" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+                        <circle cx="18" cy="18" r="4" fill="#f59e0b"/>
+                        <path d="M16.5 18L17.5 19L19.5 17" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="modal-header-info">
+                    <h3>Konfirmasi Kehadiran</h3>
+                    <p>Pastikan Anda berada di lokasi yang benar.</p>
+                </div>
+            </div>
+        </div>
+    </HeaderContent>
+    <BodyContent>
+        <CheckInConfirmationModal 
+            RoomName="Alpha Boardroom"
+            TimeSlot="09:00 - 11:00"
+            Location="Lantai 2, Sayap A"
+            Capacity="12"
+            TargetTime="@(NotificationState.NextBookingTime ?? DateTime.Now)"
+            OnConfirm="HandleConfirmCheckIn"
+            OnCancel="ClosePopup"
+            OnAutoReleased="HandleBookingAutoReleased" />
+    </BodyContent>
+</AppModal>
 
-<ModalOverlayBlur Visible="@(activePopup == "BookingAutoReleased")" OnClose="ClosePopup" Size="default" ShowCloseButton="false">
-    <BookingAutoReleasedModal RoomName="Alpha Boardroom" OnClose="ClosePopup" OnBookAnother="HandleBookAnother" />
-</ModalOverlayBlur>
+<AppModal Visible="@(activePopup == "BookingAutoReleased")" VisibleChanged="VisibleChanged" OnClose="ClosePopup" ShowCloseButton="false">
+    <HeaderContent>
+        <div class="modal-header-custom" style="padding: 0;">
+            <div class="modal-header-left">
+                <div class="modal-header-icon icon-red">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="10" stroke="#EF4444" stroke-width="2"/>
+                        <path d="M12 6v6l4 2" stroke="#EF4444" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="modal-header-info">
+                    <h3>Booking Otomatis Dibatalkan</h3>
+                    <p>Ruangan telah dilepas karena tidak ada check-in.</p>
+                </div>
+            </div>
+        </div>
+    </HeaderContent>
+    <BodyContent>
+        <BookingAutoReleasedModal RoomName="Alpha Boardroom" OnClose="ClosePopup" OnBookAnother="HandleBookAnother" />
+    </BodyContent>
+    <FooterContent>
+        <div class="modal-footer-custom">
+            <button class="popup-btn popup-btn-secondary" @onclick="GoToBookingsPage">Pilih Ruangan Lain</button>
+        </div>
+    </FooterContent>
+</AppModal>
 
-<ModalOverlayBlur Visible="@(activePopup == "CheckInSuccess")" OnClose="HandleSuccessClose" Size="sm" ShowCloseButton="false">
-    <CheckInSuccessModal 
-        Timestamp="@checkInTimestamp"
-        OnClose="HandleSuccessClose" />
-</ModalOverlayBlur>
+<AppModal Visible="@(activePopup == "CheckInSuccess")" VisibleChanged="VisibleChanged" OnClose="HandleSuccessClose" Size="sm" ShowCloseButton="false">
+    <HeaderContent>
+        <div class="modal-header-custom" style="padding: 0;">
+            <div class="modal-header-left">
+                <div class="modal-header-icon icon-green">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 12l2 2 4-4" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="12" cy="12" r="10" stroke="#10B981" stroke-width="2"/>
+                    </svg>
+                </div>
+                <div class="modal-header-info">
+                    <h3>Check-in Berhasil</h3>
+                    <p>Selamat menikmati ruangan.</p>
+                </div>
+            </div>
+        </div>
+    </HeaderContent>
+    <BodyContent>
+        <CheckInSuccessModal 
+            Timestamp="@checkInTimestamp"
+            OnClose="HandleSuccessClose" />
+    </BodyContent>
+</AppModal>
+
+<!-- Schedule Detail Popup -->
+@if (_scheduleDetailPopupVisible && _selectedScheduleItem != null)
+{
+    <AppModal Visible="true" VisibleChanged="ScheduleDetailVisibleChanged" OnClose="CloseScheduleDetail" ShowCloseButton="true">
+        <HeaderContent>
+            <div>
+                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-navy);">@_selectedScheduleItem.RoomName</h3>
+                <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #64748b;">@_selectedScheduleItem.TimeSlot · @_selectedScheduleItem.Title</p>
+            </div>
+        </HeaderContent>
+        <BodyContent>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #4B5563;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    Lantai 3, Sayap Utara, Persada HQ
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #4B5563;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    Host: Admin User
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #4B5563;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    3 peserta terkonfirmasi
+                </div>
+            </div>
+        </BodyContent>
+        <FooterContent>
+            <div style="display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap;">
+                <button class="btn btn-outline-primary" style="border-radius: 999px; font-weight: 600; padding: 0.5rem 1rem; font-size: 0.85rem;" @onclick="OpenMap">
+                    Lihat di Peta Interaktif
+                </button>
+                @if (_selectedScheduleItem.Status == "sedang-berlangsung" || _selectedScheduleItem.Status == "akan-datang")
+                {
+                    <button class="btn btn-primary" style="border-radius: 999px; font-weight: 600; padding: 0.5rem 1rem; font-size: 0.85rem;" @onclick="HandleConfirmCheckIn">
+                        Konfirmasi Kehadiran
+                    </button>
+                }
+            </div>
+        </FooterContent>
+    </AppModal>
+}
 
 
 @code {
@@ -326,10 +512,7 @@ else
     private readonly string[] periods = { "Minggu", "Bulan", "Tahun" };
     private DateTime checkInTimestamp;
     
-    // State for upcoming bookings & clock
     private bool showAllUpcoming = false;
-    private DateTime currentTime = DateTime.Now;
-    private PeriodicTimer? clockTimer;
 
     private List<RoomItem> _allRooms = new()
     {
@@ -347,6 +530,8 @@ else
     private List<ApexChartSeries> _apexChartSeries = new();
 
     private string activePopup = "";
+    private bool _scheduleDetailPopupVisible = false;
+    private TodayScheduleItem? _selectedScheduleItem = null;
 
     protected override void OnInitialized()
     {
@@ -363,13 +548,6 @@ else
         if (firstRender)
         {
             await JS.InvokeVoidAsync("document.body.classList.add", "page-slide-in-left");
-            
-            clockTimer = new PeriodicTimer(TimeSpan.FromSeconds(1));
-            while (await clockTimer.WaitForNextTickAsync())
-            {
-                currentTime = DateTime.Now;
-                await InvokeAsync(StateHasChanged);
-            }
         }
     }
 
@@ -471,17 +649,11 @@ else
     {
         NotificationState.OnChange -= StateHasChanged;
         LoadingState.OnChange -= StateHasChanged;
-        clockTimer?.Dispose();
     }
 
     private void ToggleShowAllUpcoming()
     {
         showAllUpcoming = !showAllUpcoming;
-    }
-
-    private void NavigateToBookingDetail(TodayScheduleItem item)
-    {
-        Navigation.NavigateTo("/bookings");
     }
 
     private RenderFragment GetActivityIcon(string iconType) => iconType switch
@@ -568,6 +740,53 @@ else
     private void ClosePopup()
     {
         activePopup = "";
+    }
+
+    private Task VisibleChanged(bool visible)
+    {
+        if (!visible)
+        {
+            activePopup = "";
+        }
+        return Task.CompletedTask;
+    }
+
+    private void GoToStatusPage()
+    {
+        ClosePopup();
+        Navigation.NavigateTo("/status");
+    }
+
+    private void GoToBookingsPage()
+    {
+        ClosePopup();
+        Navigation.NavigateTo("/bookings");
+    }
+
+    private void NavigateToBookingDetail(TodayScheduleItem item)
+    {
+        _selectedScheduleItem = item;
+        _scheduleDetailPopupVisible = true;
+    }
+
+    private void CloseScheduleDetail()
+    {
+        _scheduleDetailPopupVisible = false;
+        _selectedScheduleItem = null;
+    }
+
+    private Task ScheduleDetailVisibleChanged(bool visible)
+    {
+        if (!visible)
+        {
+            CloseScheduleDetail();
+        }
+        return Task.CompletedTask;
+    }
+
+    private void OpenMap()
+    {
+        Navigation.NavigateTo("/bookings?tab=Peta");
     }
 
     // Data model for ApexCharts
@@ -1176,40 +1395,5 @@ else
 
     .dashboard-widget.hidden-for-role {
         display: none !important;
-    }
-
-    .clock-standalone {
-        background: linear-gradient(135deg, var(--persada-navy-900), #081629);
-        border-radius: var(--persada-border-radius-card);
-        padding: 24px;
-        color: white;
-        text-align: center;
-        box-shadow: var(--shadow-sm);
-        margin-top: 24px;
-    }
-
-    .clock-time {
-        font-size: 3.5rem;
-        font-weight: 800;
-        line-height: 1;
-        letter-spacing: -1px;
-        margin-bottom: 8px;
-        display: flex;
-        align-items: baseline;
-        justify-content: center;
-    }
-
-    .clock-date {
-        font-size: 0.9rem;
-        font-weight: 500;
-        color: var(--persada-yellow-500);
-    }
-
-    .colon-blink {
-        animation: blinker 1s linear infinite;
-    }
-
-    @@keyframes blinker {
-        50% { opacity: 0; }
     }
 </style>

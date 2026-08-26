@@ -1,3 +1,22 @@
+@inject IJSRuntime JS
+
+<AppModal Visible="@Visible" VisibleChanged="@VisibleChanged" OnClose="OnClose" ShowCloseButton="@ShowCloseButton">
+    <HeaderContent>
+        @if (ShowCloseButton)
+        {
+            <button class="app-modal-close" @onclick="Close" type="button">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        }
+    </HeaderContent>
+    <BodyContent>
+        @ChildContent
+    </BodyContent>
+</AppModal>
+
 @code {
     [Parameter] public bool Visible { get; set; }
     [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
@@ -16,73 +35,3 @@
         }
     }
 }
-
-@if (Visible)
-{
-    <div class="modal-overlay" @onclick="Close">
-        <div class="modal-content @Size" @onclick:stopPropagation>
-            @if (ShowCloseButton)
-            {
-                <button class="close-btn" @onclick="Close">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
-            }
-            @ChildContent
-        </div>
-    </div>
-}
-
-<style>
-    .modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background-color: rgba(0, 0, 0, 0.45);
-        backdrop-filter: blur(7px);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-    }
-
-    .modal-content {
-        background-color: white;
-        border-radius: 20px;
-        padding: 32px;
-        position: relative;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.05);
-        max-height: 90vh;
-        overflow-y: auto;
-        overflow-x: hidden;
-    }
-    
-    .modal-content.sm { max-width: 400px; width: 90vw; }
-    .modal-content.default { max-width: 520px; width: 90vw; }
-    .modal-content.md { max-width: 560px; width: 90vw; }
-    .modal-content.lg { max-width: 600px; width: 90vw; }
-
-    .close-btn {
-        position: absolute;
-        top: 16px;
-        right: 16px;
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: #6B7280;
-        padding: 4px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background-color 0.2s;
-    }
-    
-    .close-btn:hover {
-        background-color: #F3F4F6;
-    }
-</style>

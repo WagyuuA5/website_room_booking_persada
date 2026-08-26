@@ -1919,6 +1919,16 @@ h1:focus {
     background: #FEF2F2;
 }
 
+.notif-email-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.7rem;
+    color: #94a3b8;
+    margin-top: 8px;
+    font-weight: 500;
+}
+
 /* ============================================ */
 /* PROFILE DROPDOWN PANEL                        */
 /* ============================================ */

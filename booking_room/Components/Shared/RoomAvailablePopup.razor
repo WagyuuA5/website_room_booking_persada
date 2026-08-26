@@ -1,7 +1,7 @@
 @using booking_room.Components.Models
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 
-<!-- Header -->
 <div class="modal-header-custom">
     <div class="modal-header-left">
         <div class="modal-header-icon icon-green">
@@ -16,7 +16,6 @@
     </div>
 </div>
 
-<!-- Body -->
 <div class="modal-body-custom">
     @if (_isLoading)
     {
@@ -75,7 +74,6 @@
     }
 </div>
 
-<!-- Footer -->
 <div class="modal-footer-custom" style="justify-content: flex-end;">
     <button class="popup-footer-btn btn-close-gray" @onclick="Close">Tutup</button>
 </div>
