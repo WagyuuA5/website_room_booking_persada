@@ -299,7 +299,7 @@ else
     </FooterContent>
 </AppModal>
 
-<AppModal Visible="@(activePopup == \"PendingApproval\" && DashboardData.CurrentUserRole == \"Admin\")" VisibleChanged="VisibleChanged" OnClose="ClosePopup" ShowCloseButton="false">
+<AppModal Visible="@(activePopup == "PendingApproval" && DashboardData.CurrentUserRole == "Admin")" VisibleChanged="VisibleChanged" OnClose="ClosePopup" ShowCloseButton="false">
     <HeaderContent>
         <div class="modal-header-custom" style="padding: 0;">
             <div class="modal-header-left">
@@ -379,7 +379,7 @@ else
     </FooterContent>
 </AppModal>
 
-<AppModal Visible="@(activePopup == "CheckInConfirmation")" VisibleChanged="VisibleChanged" OnClose="ClosePopup" Size="sm">
+<AppModal Visible="@(activePopup == "CheckInConfirmation")" VisibleChanged="VisibleChanged" OnClose="ClosePopup">
     <HeaderContent>
         <div class="modal-header-custom" style="padding: 0;">
             <div class="modal-header-left">
@@ -438,7 +438,7 @@ else
     </FooterContent>
 </AppModal>
 
-<AppModal Visible="@(activePopup == "CheckInSuccess")" VisibleChanged="VisibleChanged" OnClose="HandleSuccessClose" Size="sm" ShowCloseButton="false">
+<AppModal Visible="@(activePopup == "CheckInSuccess")" VisibleChanged="VisibleChanged" OnClose="HandleSuccessClose" ShowCloseButton="false">
     <HeaderContent>
         <div class="modal-header-custom" style="padding: 0;">
             <div class="modal-header-left">
