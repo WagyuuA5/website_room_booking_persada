@@ -66,7 +66,7 @@ public static class DashboardData
         ["Employee"] = new() { "TodaySchedule", "QuickBook", "ActivityFeed", "CurrentRoom", "Trends" },
     };
 
-    public static string CurrentUserRole => "Admin";
+    public static string CurrentUserRole { get; set; } = "Admin";
 
     public static List<RoomDetail> AllRooms =>
     [

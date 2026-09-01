@@ -547,6 +547,16 @@ else
     {
         if (firstRender)
         {
+            try
+            {
+                var role = await JS.InvokeAsync<string>("localStorage.getItem", "userRole");
+                if (role != "Admin")
+                {
+                    Navigation.NavigateTo("/beranda");
+                    return;
+                }
+            }
+            catch { }
             await JS.InvokeVoidAsync("document.body.classList.add", "page-slide-in-left");
         }
     }
