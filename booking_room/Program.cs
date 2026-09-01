@@ -13,6 +13,7 @@ builder.Services.AddScoped<booking_room.Services.NotificationState>();
 builder.Services.AddScoped<booking_room.Services.INotificationService, booking_room.Services.NotificationService>();
 builder.Services.AddScoped<booking_room.Services.LoadingStateService>();
 builder.Services.AddScoped<booking_room.Services.DataExportService>();
+builder.Services.AddScoped<booking_room.Services.ModalStateService>();
 
 var app = builder.Build();
 

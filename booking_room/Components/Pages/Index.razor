@@ -2,27 +2,33 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 
-<PageTitle>Loading...</PageTitle>
+<div style="padding: 2rem;">
+    <h1>Memeriksa status...</h1>
+</div>
 
 @code {
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            var hasSeenBoarding = await JS.InvokeAsync<string>("localStorage.getItem", "hasSeenBoarding");
-            var isLoggedIn = await JS.InvokeAsync<string>("localStorage.getItem", "isLoggedIn");
-
-            if (isLoggedIn == "true")
+            var seen = await JS.InvokeAsync<string>("localStorage.getItem", "persada-onboarding-seen");
+            if (seen == "true")
             {
-                Navigation.NavigateTo("/dashboard", replace: true);
-            }
-            else if (hasSeenBoarding == "true")
-            {
-                Navigation.NavigateTo("/login", replace: true);
+                var isLoggedIn = await JS.InvokeAsync<string>("localStorage.getItem", "isLoggedIn");
+                if (isLoggedIn == "true")
+                {
+                    var role = await JS.InvokeAsync<string>("localStorage.getItem", "userRole");
+                    if (role == "Admin") Navigation.NavigateTo("/dashboard");
+                    else Navigation.NavigateTo("/beranda");
+                }
+                else
+                {
+                    Navigation.NavigateTo("/login");
+                }
             }
             else
             {
-                Navigation.NavigateTo("/boarding", replace: true);
+                Navigation.NavigateTo("/boarding");
             }
         }
     }

@@ -1,4 +1,10 @@
 @inject IJSRuntime JS
+@inject booking_room.Services.ModalStateService ModalState
+
+@if (ModalState.ActiveModal?.Key != ModalKey)
+{
+    return;
+}
 
 <div class="app-modal-backdrop" @onclick="CloseAsync">
     <div class="app-modal-container" @onclick:stopPropagation="true">
@@ -30,6 +36,7 @@
 </div>
 
 @code {
+    [Parameter] public string ModalKey { get; set; } = "";
     [Parameter] public bool Visible { get; set; }
     [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
     [Parameter] public RenderFragment? HeaderContent { get; set; }
@@ -40,15 +47,57 @@
     [Parameter] public bool ShowFooter { get; set; } = true;
     [Parameter] public EventCallback OnClose { get; set; }
 
-    protected override async Task OnParametersSetAsync()
+    private bool _enqueued;
+    private bool? _pendingLock;
+
+    protected override void OnInitialized()
     {
-        if (Visible)
+        ModalState.OnChange += StateHasChanged;
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (Visible && !_enqueued)
         {
-            await JS.InvokeVoidAsync("modalHelper.lockBodyScroll");
+            _enqueued = true;
+            ModalState.Enqueue(new booking_room.Services.ModalRequest { Key = ModalKey });
         }
-        else
+
+        if (ModalState.ActiveModal?.Key == ModalKey && _enqueued)
         {
-            await JS.InvokeVoidAsync("modalHelper.unlockBodyScroll");
+            if (!_pendingLock.HasValue)
+            {
+                _pendingLock = true;
+            }
+        }
+        else if (ModalState.ActiveModal?.Key != ModalKey && _pendingLock == true)
+        {
+            _pendingLock = false;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_pendingLock.HasValue)
+        {
+            var shouldLock = _pendingLock.Value;
+            _pendingLock = null;
+
+            try
+            {
+                if (shouldLock)
+                {
+                    await JS.InvokeVoidAsync("modalHelper.lockBodyScroll");
+                }
+                else
+                {
+                    await JS.InvokeVoidAsync("modalHelper.unlockBodyScroll");
+                }
+            }
+            catch (JSDisconnectedException)
+            {
+                // circuit terputus, abaikan
+            }
         }
     }
 
@@ -56,7 +105,10 @@
     {
         Visible = false;
         await VisibleChanged.InvokeAsync(false);
-        await JS.InvokeVoidAsync("modalHelper.unlockBodyScroll");
+        _enqueued = false;
+        _pendingLock = false;
+        ModalState.CloseActive();
+
         if (OnClose.HasDelegate)
         {
             await OnClose.InvokeAsync();
@@ -65,7 +117,19 @@
 
     public async ValueTask DisposeAsync()
     {
-        await JS.InvokeVoidAsync("modalHelper.unlockBodyScroll");
+        ModalState.OnChange -= StateHasChanged;
+
+        if (Visible)
+        {
+            try
+            {
+                await JS.InvokeVoidAsync("modalHelper.unlockBodyScroll");
+            }
+            catch (JSDisconnectedException)
+            {
+                // circuit terputus, abaikan
+            }
+        }
     }
 }
 

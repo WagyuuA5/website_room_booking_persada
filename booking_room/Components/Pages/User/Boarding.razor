@@ -1,0 +1,54 @@
+@page "/boarding"
+@layout booking_room.Components.Layout.AuthLayout
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<PageTitle>Pesan Ruangan dengan Mudah — Persada</PageTitle>
+
+<div class="boarding-container">
+    <div class="boarding-slide">
+        <h1>Pesan Ruangan dengan Mudah</h1>
+        <p>Cari dan pesan ruang rapat yang tersedia hanya dalam beberapa klik.</p>
+        <button class="btn btn-primary" @onclick="GoToLogin">Mulai Sekarang</button>
+    </div>
+</div>
+
+@code {
+    private async Task GoToLogin()
+    {
+        await JS.InvokeVoidAsync("localStorage.setItem", "persada-onboarding-seen", "true");
+        Navigation.NavigateTo("/login");
+    }
+}
+
+<style>
+    .boarding-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: var(--persada-white);
+    }
+    .boarding-slide {
+        text-align: center;
+        max-width: 400px;
+        padding: 24px;
+    }
+    .boarding-slide h1 {
+        color: var(--persada-accent-blue);
+        margin-bottom: 16px;
+    }
+    .boarding-slide p {
+        color: var(--persada-text-secondary);
+        margin-bottom: 24px;
+    }
+    .boarding-slide button {
+        background-color: var(--persada-yellow-500);
+        color: var(--persada-navy-900);
+        border: none;
+        padding: 12px 24px;
+        border-radius: 999px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+</style>

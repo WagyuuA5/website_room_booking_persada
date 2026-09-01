@@ -75,7 +75,22 @@
         </header>
 
         <div class="dashboard-body">
-            @Body
+            <ErrorBoundary>
+                <ChildContent>
+                    @Body
+                </ChildContent>
+                <ErrorContent>
+                    <div class="app-error-fallback" style="padding: 24px; text-align: center; border-radius: var(--card-radius); background: var(--card-bg); box-shadow: var(--shadow-sm); margin: 24px auto; max-width: 400px;">
+                        <div style="color: var(--accent-red); margin-bottom: 16px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        </div>
+                        <p style="color: var(--text-navy); font-weight: 500; margin-bottom: 16px;">Terjadi kesalahan saat memuat halaman ini.</p>
+                        <button class="btn btn-primary" style="background: var(--accent-amber); border: none; padding: 10px 20px; border-radius: 999px; font-weight: 600; color: #fff;" @onclick="() => Navigation.NavigateTo(Navigation.Uri, forceLoad: true)">
+                            Muat Ulang Halaman
+                        </button>
+                    </div>
+                </ErrorContent>
+            </ErrorBoundary>
         </div>
     </main>
 </div>
