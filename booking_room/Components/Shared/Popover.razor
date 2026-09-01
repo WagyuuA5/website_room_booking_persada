@@ -1,0 +1,181 @@
+@namespace booking_room.Components.Shared
+@inject IJSRuntime JS
+
+@if (Visible)
+{
+    <!-- Backdrop transparan untuk menangkap klik di luar -->
+    <div class="popover-backdrop" @onclick="CloseAsync"></div>
+
+    <div class="popover-container @Class" style="@GetPositionStyle()">
+        <div class="popover-card" @onclick:stopPropagation="true">
+            @if (ShowHeader && (HeaderContent != null || !string.IsNullOrEmpty(Title)))
+            {
+                <div class="popover-header">
+                    @if (HeaderContent != null)
+                    {
+                        @HeaderContent
+                    }
+                    else
+                    {
+                        <h4 class="popover-title">@Title</h4>
+                    }
+
+                    @if (ShowCloseButton)
+                    {
+                        <button class="popover-close-btn" @onclick="CloseAsync" type="button" aria-label="Tutup">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    }
+                </div>
+            }
+
+            <div class="popover-body">
+                @if (BodyContent != null)
+                {
+                    @BodyContent
+                }
+                else if (ChildContent != null)
+                {
+                    @ChildContent
+                }
+            </div>
+
+            @if (ShowFooter && FooterContent != null)
+            {
+                <div class="popover-footer">
+                    @FooterContent
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<style>
+    .popover-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 1040;
+        background: transparent;
+    }
+
+    .popover-container {
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        z-index: 1050;
+        width: 380px;
+        max-width: calc(100vw - 32px);
+        animation: popoverSlideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .popover-card {
+        background: var(--persada-white, #FFFFFF);
+        border: 1px solid var(--color-brand-gray-border, #E5E7EB);
+        border-radius: var(--radius-card, 16px);
+        box-shadow: var(--shadow-popover);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        max-height: calc(85vh - 60px);
+    }
+
+    .popover-header {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        background: var(--persada-white, #FFFFFF);
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--color-brand-gray-border, #E5E7EB);
+        flex-shrink: 0;
+    }
+
+    .popover-title {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--color-brand-navy, #0F1F3D);
+    }
+
+    .popover-close-btn {
+        background: none;
+        border: none;
+        padding: 4px;
+        color: #9CA3AF;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+
+    .popover-close-btn:hover {
+        background-color: #F3F4F6;
+        color: #111827;
+    }
+
+    .popover-body {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        padding: 0;
+    }
+
+    .popover-footer {
+        position: sticky;
+        bottom: 0;
+        z-index: 5;
+        background: var(--persada-white, #FFFFFF);
+        padding: 12px 20px;
+        border-top: 1px solid var(--color-brand-gray-border, #E5E7EB);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    @@keyframes popoverSlideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-6px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Width { get; set; } = "380px";
+    [Parameter] public bool ShowHeader { get; set; } = true;
+    [Parameter] public bool ShowFooter { get; set; } = true;
+    [Parameter] public bool ShowCloseButton { get; set; } = true;
+    [Parameter] public string? Class { get; set; }
+
+    [Parameter] public RenderFragment? HeaderContent { get; set; }
+    [Parameter] public RenderFragment? BodyContent { get; set; }
+    [Parameter] public RenderFragment? FooterContent { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private string GetPositionStyle() => $"width: {Width};";
+
+    private async Task CloseAsync()
+    {
+        Visible = false;
+        await VisibleChanged.InvokeAsync(false);
+        if (OnClose.HasDelegate)
+        {
+            await OnClose.InvokeAsync();
+        }
+    }
+}

@@ -1,21 +1,23 @@
-@inject IJSRuntime JS
+@namespace booking_room.Components.Shared
 
-<AppModal ModalKey="@ModalKey" Visible="@Visible" VisibleChanged="@VisibleChanged" OnClose="OnClose" ShowCloseButton="@ShowCloseButton">
-    <HeaderContent>
-        @if (ShowCloseButton)
-        {
-            <button class="app-modal-close" @onclick="Close" type="button">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            </button>
-        }
-    </HeaderContent>
+<Modal Visible="@Visible" 
+       VisibleChanged="@VisibleChanged" 
+       Size="@GetModalSize()" 
+       ShowCloseButton="@ShowCloseButton" 
+       ShowHeader="false" 
+       ShowFooter="false" 
+       BodyClass="modal-blur-body-custom"
+       OnClose="OnClose">
     <BodyContent>
         @ChildContent
     </BodyContent>
-</AppModal>
+</Modal>
+
+<style>
+    .modal-blur-body-custom {
+        padding: 0 !important;
+    }
+</style>
 
 @code {
     [Parameter] public string ModalKey { get; set; } = "";
@@ -24,15 +26,13 @@
     [Parameter] public string Size { get; set; } = "md"; // sm, default, md, lg
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
-    [Parameter] public bool ShowCloseButton { get; set; } = true;
+    [Parameter] public bool ShowCloseButton { get; set; } = false;
 
-    private async Task Close()
+    private string GetModalSize() => Size switch
     {
-        Visible = false;
-        await VisibleChanged.InvokeAsync(false);
-        if (OnClose.HasDelegate)
-        {
-            await OnClose.InvokeAsync();
-        }
-    }
+        "sm" => "sm",
+        "lg" => "lg",
+        "xl" => "xl",
+        _ => "md"
+    };
 }

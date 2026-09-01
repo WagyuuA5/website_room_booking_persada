@@ -4,53 +4,51 @@
 @inject NavigationManager Navigation
 @implements IDisposable
 
-@if (Visible)
-{
-    <div class="notification-panel-overlay" @onclick="ClosePanel">
-        <div class="notification-panel" @onclick:stopPropagation="true">
-            <!-- Header -->
-            <div class="notif-header">
-                <div class="notif-header-left">
-                    <div class="notif-header-icon">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" stroke="currentColor" stroke-width="2"/>
-                        </svg>
-                    </div>
-                    <h3>Notifikasi</h3>
-                </div>
-                <button class="notif-close-btn" @onclick="ClosePanel">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
+<Popover Visible="@Visible" VisibleChanged="@HandleVisibleChanged" ShowHeader="true" ShowFooter="true" ShowCloseButton="true" Width="380px" OnClose="ClosePanel">
+    <HeaderContent>
+        <div class="notif-header-left">
+            <div class="notif-header-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" stroke="currentColor" stroke-width="2"/>
+                </svg>
             </div>
+            <h3 class="notif-title">Notifikasi</h3>
+        </div>
+    </HeaderContent>
 
-            <!-- Tabs -->
-            <div class="notif-tabs">
-                <button class="notif-tab @(activeTab == "All" ? "active" : "")" @onclick='() => activeTab = "All"'>Semua</button>
-                <button class="notif-tab @(activeTab == "Unread" ? "active" : "")" @onclick='() => activeTab = "Unread"'>Belum Dibaca</button>
-                <button class="notif-tab @(activeTab == "System" ? "active" : "")" @onclick='() => activeTab = "System"'>Sistem</button>
-            </div>
+    <BodyContent>
+        <!-- Tabs -->
+        <div class="notif-tabs">
+            <button class="notif-tab @(activeTab == "All" ? "active" : "")" @onclick='() => activeTab = "All"'>Semua</button>
+            <button class="notif-tab @(activeTab == "Unread" ? "active" : "")" @onclick='() => activeTab = "Unread"'>Belum Dibaca</button>
+            <button class="notif-tab @(activeTab == "System" ? "active" : "")" @onclick='() => activeTab = "System"'>Sistem</button>
+        </div>
 
-            <!-- List -->
-            <div class="notif-list">
-                @if (_isLoading)
-                {
-                    <div class="skeleton-popup-list" style="padding: 1rem;">
-                        @for (int i = 0; i < 3; i++)
-                        {
-                            <div class="skeleton-popup-item">
-                                <div class="skeleton-shimmer skeleton-icon"></div>
-                                <div class="skeleton-popup-content">
-                                    <div class="skeleton-shimmer skeleton-title"></div>
-                                    <div class="skeleton-shimmer skeleton-text short"></div>
-                                </div>
+        <!-- List -->
+        <div class="notif-list">
+            @if (_isLoading)
+            {
+                <div class="skeleton-popup-list" style="padding: 1rem;">
+                    @for (int i = 0; i < 3; i++)
+                    {
+                        <div class="skeleton-popup-item">
+                            <div class="skeleton-shimmer skeleton-icon"></div>
+                            <div class="skeleton-popup-content">
+                                <div class="skeleton-shimmer skeleton-title"></div>
+                                <div class="skeleton-shimmer skeleton-text short"></div>
                             </div>
-                        }
-                    </div>
-                }
-                else
-                {
+                        </div>
+                    }
+                </div>
+            }
+            else if (!FilteredNotifications.Any())
+            {
+                <div class="notif-empty-state">
+                    <p>Tidak ada notifikasi baru.</p>
+                </div>
+            }
+            else
+            {
                 @foreach (var item in FilteredNotifications)
                 {
                     <div class="notif-item @(item.IsRead ? "" : "unread")" @onclick="() => HandleItemClick(item)">
@@ -69,7 +67,7 @@
                                 {
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 22S12 22 12 22C12 22 4 18 4 12V5L12 2L20 5V12C20 18 12 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                 }
-                                else if (item.IconType == "warning")
+                                else
                                 {
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                 }
@@ -105,16 +103,227 @@
                         }
                     </div>
                 }
-                }
-            </div>
-
-            <!-- Footer -->
-            <div class="notif-footer">
-                <button class="notif-mark-all" @onclick="MarkAllRead">Tandai Semua Dibaca</button>
-            </div>
+            }
         </div>
-    </div>
-}
+    </BodyContent>
+
+    <FooterContent>
+        <button class="notif-mark-all" @onclick="MarkAllRead">Tandai Semua Dibaca</button>
+    </FooterContent>
+</Popover>
+
+<style>
+    .notif-header-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .notif-header-icon {
+        color: var(--persada-navy-900, #0F1F3D);
+        display: flex;
+        align-items: center;
+    }
+
+    .notif-title {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--persada-navy-900, #0F1F3D);
+    }
+
+    .notif-tabs {
+        display: flex;
+        gap: 6px;
+        padding: 12px 16px;
+        background: #F8FAFC;
+        border-bottom: 1px solid #E5E7EB;
+    }
+
+    .notif-tab {
+        flex: 1;
+        padding: 6px 10px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border: none;
+        border-radius: var(--radius-pill, 999px);
+        background: transparent;
+        color: #64748B;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .notif-tab.active {
+        background: #FFFFFF;
+        color: var(--persada-navy-900, #0F1F3D);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    .notif-list {
+        display: flex;
+        flex-direction: column;
+        max-height: 380px;
+        overflow-y: auto;
+    }
+
+    .notif-item {
+        display: flex;
+        gap: 12px;
+        padding: 14px 16px;
+        border-bottom: 1px solid #F1F5F9;
+        cursor: pointer;
+        position: relative;
+        transition: background-color 0.15s;
+    }
+
+    .notif-item:hover {
+        background-color: #F8FAFC;
+    }
+
+    .notif-item.unread {
+        background-color: #F0F7FF;
+    }
+
+    .notif-item-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .notif-item-icon.avatar {
+        object-fit: cover;
+    }
+
+    .notif-item-icon.bg-amber {
+        background-color: #FEF3C7;
+        color: #D97706;
+    }
+
+    .notif-item-icon.bg-purple {
+        background-color: #EDE9FE;
+        color: #7C3AED;
+    }
+
+    .notif-item-icon.bg-red {
+        background-color: #FEE2E2;
+        color: #DC2626;
+    }
+
+    .notif-item-icon.bg-navy {
+        background-color: #E2E8F0;
+        color: #0F1F3D;
+    }
+
+    .notif-item-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .notif-item-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2px;
+    }
+
+    .notif-item-source {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .notif-item-time {
+        font-size: 0.7rem;
+        color: #94A3B8;
+    }
+
+    .notif-item-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--persada-navy-900, #0F1F3D);
+        margin-bottom: 2px;
+    }
+
+    .notif-item-desc {
+        font-size: 0.78rem;
+        color: #4B5563;
+        line-height: 1.4;
+    }
+
+    .notif-item-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+    }
+
+    .btn-accept-inline {
+        padding: 5px 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border-radius: var(--radius-pill, 999px);
+        border: none;
+        background-color: var(--persada-yellow-500, #F59E0B);
+        color: var(--persada-navy-900, #0F1F3D);
+        cursor: pointer;
+    }
+
+    .btn-decline-inline {
+        padding: 5px 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border-radius: var(--radius-pill, 999px);
+        border: 1px solid #E2E8F0;
+        background-color: #FFFFFF;
+        color: #64748B;
+        cursor: pointer;
+    }
+
+    .notif-email-indicator {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.7rem;
+        color: #94A3B8;
+        margin-top: 6px;
+    }
+
+    .notif-item-dot {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #2563EB;
+    }
+
+    .notif-empty-state {
+        padding: 32px 16px;
+        text-align: center;
+        color: #94A3B8;
+        font-size: 0.85rem;
+    }
+
+    .notif-mark-all {
+        background: none;
+        border: none;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--persada-accent-blue, #1F5D9A);
+        cursor: pointer;
+        padding: 4px 8px;
+    }
+
+    .notif-mark-all:hover {
+        text-decoration: underline;
+    }
+</style>
 
 @code {
     [Parameter] public bool Visible { get; set; }
@@ -122,13 +331,12 @@
 
     private string activeTab = "All";
     private bool _isLoading = true;
+    private bool _wasVisible = false;
 
     protected override void OnInitialized()
     {
         NotificationService.OnChange += StateHasChanged;
     }
-
-    private bool _wasVisible = false;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -136,7 +344,7 @@
         {
             _isLoading = true;
             _wasVisible = true;
-            await Task.Delay(250);
+            await Task.Delay(150);
             _isLoading = false;
         }
         else if (!Visible)
@@ -165,6 +373,14 @@
         _ => "bg-navy"
     };
 
+    private async Task HandleVisibleChanged(bool visible)
+    {
+        if (!visible)
+        {
+            await ClosePanel();
+        }
+    }
+
     private async Task HandleItemClick(NotificationItem item)
     {
         if (item.Category == "Invitation")
@@ -176,7 +392,7 @@
         if (item.Category == "Reminder")
         {
             await ClosePanel();
-            Navigation.NavigateTo("/");
+            Navigation.NavigateTo("/beranda");
         }
     }
 
@@ -215,7 +431,7 @@
     private string GetRelativeTime(DateTime time)
     {
         var span = DateTime.Now - time;
-        if (span.TotalMinutes < 60) return $"{(int)span.TotalMinutes} menit lalu";
+        if (span.TotalMinutes < 60) return $"{(int)Math.Max(1, span.TotalMinutes)} menit lalu";
         if (span.TotalHours < 24) return $"{(int)span.TotalHours} jam lalu";
         return $"{(int)span.TotalDays} hari lalu";
     }

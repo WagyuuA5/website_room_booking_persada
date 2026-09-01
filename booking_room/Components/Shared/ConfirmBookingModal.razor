@@ -7,15 +7,15 @@
     .confirm-booking-wrapper {
         display: flex;
         flex-direction: column;
-        max-width: 520px; 
+        max-width: 540px; 
         width: 100%;
         margin: 0 auto;
         background: #fff;
-        border-radius: 24px;
+        border-radius: var(--radius-modal, 20px);
         overflow: hidden;
-        max-height: 88vh;
-        box-shadow: 0 4px 24px rgba(16,48,92,0.08);
-        font-family: 'Inter', sans-serif;
+        max-height: var(--modal-max-height, 90vh);
+        box-shadow: var(--shadow-modal);
+        font-family: var(--font-family-primary, 'Inter', sans-serif);
     }
 
     .modal-header-section {
@@ -468,6 +468,12 @@
             <h2 class="modal-title">Konfirmasi Pemesanan</h2>
             <p class="modal-subtitle">Jadwalkan sumber daya atau ruangan baru</p>
         </div>
+        <button class="app-modal-close" @onclick="OnClose" type="button" aria-label="Tutup modal">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
     </div>
 
     <div class="modal-body-section">

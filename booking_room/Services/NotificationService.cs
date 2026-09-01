@@ -12,7 +12,7 @@ public class NotificationService : INotificationService
     {
         _notifications.Add(new NotificationItem
         {
-            SourceName = "System",
+            SourceName = "Sistem",
             Title = "Pengingat: Rapat Tim Eksekutif",
             Description = "Rapat di Ruang Konferensi C dimulai dalam 15 menit.",
             Timestamp = DateTime.Now.AddMinutes(-2),
@@ -35,7 +35,7 @@ public class NotificationService : INotificationService
 
         _notifications.Add(new NotificationItem
         {
-            SourceName = "Security System",
+            SourceName = "Sistem Keamanan",
             Title = "Pembaruan Kata Sandi Berhasil",
             Description = "Keamanan akun Anda adalah prioritas kami. Kata sandi telah diperbarui melalui cloud.",
             Timestamp = DateTime.Now.AddMinutes(-15),

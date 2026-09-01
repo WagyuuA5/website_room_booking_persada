@@ -43,55 +43,43 @@ else
     <!-- Card Segera Tersedia (Now First) -->
     @if (nextRoom is not null)
     {
-        <div class="summary-card action-oriented-card" @onclick='() => ShowPopup("QuickBook")'>
-            <div class="action-card-bg"></div>
-            <div class="action-card-content">
-                <div class="action-header">
-                    <span class="action-badge">TERSEDIA DALAM @nextRoom.AvailableInMinutes MENIT</span>
-                </div>
-                <div class="action-main">
-                    <div class="action-icon-wrapper">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
-                    </div>
-                    <div>
-                        <div class="action-room">@nextRoom.RoomName</div>
-                        <div class="action-meta">Kapasitas: @nextRoom.Capacity Orang</div>
-                    </div>
-                </div>
-                <button class="btn-action-primary">
-                    Pemesanan Instan
-                </button>
-            </div>
-        </div>
+        <StatHighlightCard Title="Ruangan Segera Tersedia"
+                           Value="@nextRoom.RoomName"
+                           Subtitle="@($"Kapasitas: {nextRoom.Capacity} Orang")"
+                           BadgeText="@($"Tersedia Dalam {nextRoom.AvailableInMinutes} Menit")"
+                           ButtonText="Pemesanan Instan"
+                           Variant="success"
+                           OnClick='() => ShowPopup("QuickBook")'>
+            <Icon>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+                </svg>
+            </Icon>
+        </StatHighlightCard>
     }
     else
     {
-        <div class="summary-card next-available-card" style="align-items: center; text-align: center;">
-            <div class="next-available-room" style="font-size: 1.1rem;">Semua ruangan tersedia sekarang</div>
-            <div class="next-available-meta" style="margin-bottom: 1rem;">Tidak ada ruangan yang sedang terpakai saat ini</div>
-            <button class="next-available-btn" @onclick:stopPropagation="true" @onclick="ViewAllRooms">
-                Lihat Semua Ruangan
-            </button>
-        </div>
+        <StatHighlightCard Title="Status Ruangan"
+                           Value="Semua Tersedia"
+                           Subtitle="Tidak ada ruangan yang sedang terpakai saat ini"
+                           ButtonText="Lihat Semua Ruangan"
+                           Variant="info"
+                           OnClick="ViewAllRooms" />
     }
 
     @if (DashboardData.CurrentUserRole == "Admin")
     {
         <!-- Card Persetujuan Tertunda -->
-        <div class="summary-card" style="border-left: 4px solid var(--accent-amber);" @onclick='() => ShowPopup("PendingApproval")'>
-            <div class="summary-card-icon icon-amber">
+        <StatHighlightCard Title="Persetujuan Tertunda"
+                           Value="@DashboardData.PendingApprovals.ToString()"
+                           Subtitle="Permintaan pemesanan menunggu tindakan"
+                           Variant="warning"
+                           ShowArrow="true"
+                           OnClick='() => ShowPopup("PendingApproval")'>
+            <Icon>
                 <InlineSvg Src="/icons/Icon_clndr.svg" Class="icon-main" />
-            </div>
-            <div class="summary-card-content">
-                <div class="summary-card-label">Persetujuan Tertunda</div>
-                <div class="summary-card-value">@DashboardData.PendingApprovals</div>
-            </div>
-            <div class="summary-card-arrow">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </div>
-        </div>
+            </Icon>
+        </StatHighlightCard>
     }
 </div>
 
@@ -119,9 +107,7 @@ else
                                         <h3 class="upcoming-room-name">@item.RoomName</h3>
                                         <p class="upcoming-location">@item.Title</p>
                                     </div>
-                                    <span class="upcoming-status-badge" style="background: @(item.Status == "sedang-berlangsung" ? "#F0FDF4" : "#F8FAFC"); color: @(item.Status == "sedang-berlangsung" ? "#166534" : "#4B5563");">
-                                        @item.StatusLabel
-                                    </span>
+                                    <StatusBadge Status="@item.Status" CustomLabel="@item.StatusLabel" />
                                 </div>
                                 <div class="upcoming-bottom">
                                     <div class="upcoming-schedule">

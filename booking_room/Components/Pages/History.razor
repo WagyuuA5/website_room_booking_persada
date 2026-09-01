@@ -464,10 +464,9 @@
                 ValueFunc = b => BookingDataStore.GetStatusLabel(b.Status),
                 CellTemplate = b => builder =>
                 {
-                    builder.OpenElement(0, "span");
-                    builder.AddAttribute(1, "class", $"status-pill {BookingDataStore.GetStatusBadgeClass(b.Status)}");
-                    builder.AddContent(2, BookingDataStore.GetStatusLabel(b.Status));
-                    builder.CloseElement();
+                    builder.OpenComponent<StatusBadge>(0);
+                    builder.AddAttribute(1, "Status", b.Status);
+                    builder.CloseComponent();
                 }
             },
             new GridColumn<BookingItem>

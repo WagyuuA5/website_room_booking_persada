@@ -54,10 +54,9 @@
             {
                 <div class="s-detail-sticky">
                     <div class="s-detail-photo-wrap" @onclick="() => OpenDetailsModal(selectedBooking)" style="cursor: pointer;">
-                        <span class="s-detail-badge @GetStatusBadgeClass(selectedBooking.Status)">
-                            <span class="s-pill-dot"></span>
-                            @GetStatusLabel(selectedBooking.Status).ToUpper()
-                        </span>
+                        <div style="position: absolute; top: 16px; left: 16px; z-index: 2;">
+                            <StatusBadge Status="@selectedBooking.Status" UpperCase="true" />
+                        </div>
                          <img src="@selectedBooking.PhotoUrl" alt="@selectedBooking.RoomName" class="s-detail-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'" />
                          <div class="s-detail-img-placeholder" style="display:none; position:absolute; inset:0; align-items:center; justify-content:center; background:#f3f4f6;">
                              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
@@ -292,13 +291,9 @@
                 ValueFunc = b => GetStatusLabel(b.Status),
                 CellTemplate = b => builder =>
                 {
-                    builder.OpenElement(0, "span");
-                    builder.AddAttribute(1, "class", $"s-pill-status {GetStatusBadgeClass(b.Status)}");
-                    builder.OpenElement(2, "span");
-                    builder.AddAttribute(3, "class", "s-pill-dot");
-                    builder.CloseElement();
-                    builder.AddContent(4, " " + GetStatusLabel(b.Status));
-                    builder.CloseElement();
+                    builder.OpenComponent<StatusBadge>(0);
+                    builder.AddAttribute(1, "Status", b.Status);
+                    builder.CloseComponent();
                 }
             }
         };
