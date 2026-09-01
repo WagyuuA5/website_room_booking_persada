@@ -1,6 +1,8 @@
 @using booking_room.Components.Models
+@using booking_room.Services
 @using System.Globalization
 @inject booking_room.Services.LoadingStateService LoadingState
+@inject IToastService ToastService
 @inject NavigationManager Navigation
 
 <style>
@@ -819,6 +821,7 @@
     private async Task SubmitBooking()
     {
         await OnClose.InvokeAsync();
+        ToastService.Success("Pemesanan Berhasil Dibuat", "Permintaan pemesanan ruangan Anda telah dikirim dan menunggu persetujuan.");
         Navigation.NavigateTo("/status");
     }
 }

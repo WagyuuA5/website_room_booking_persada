@@ -14,6 +14,7 @@ builder.Services.AddScoped<booking_room.Services.INotificationService, booking_r
 builder.Services.AddScoped<booking_room.Services.LoadingStateService>();
 builder.Services.AddScoped<booking_room.Services.DataExportService>();
 builder.Services.AddScoped<booking_room.Services.ModalStateService>();
+builder.Services.AddScoped<booking_room.Services.IToastService, booking_room.Services.ToastService>();
 
 var app = builder.Build();
 

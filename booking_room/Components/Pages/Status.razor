@@ -2,251 +2,936 @@
 @page "/bookings/status"
 @using booking_room.Components.Models
 @using booking_room.Components.Shared
+@using booking_room.Services
+@inject IToastService ToastService
+@implements IDisposable
 
 <PageTitle>Status Pemesanan — Persada Ruangan</PageTitle>
 
-<div class="s-page-header">
-    <h1 class="s-page-title">Status Pemesanan</h1>
-</div>
-
-<div class="s-page-container">
-    <!-- Topbar Halaman -->
-    <div class="s-topbar">
-        <div class="s-topbar-right">
-            <button class="s-btn-icon-refresh" @onclick="RefreshData" title="Muat Ulang">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<div class="status-page-wrapper">
+    <!-- Header Halaman -->
+    <div class="status-page-header">
+        <div>
+            <h1 class="status-hero-title">Status Pemesanan</h1>
+            <p class="status-hero-subtitle">Pantau status reservasi ruangan Anda secara langsung, kelola jadwal, dan lihat riwayat lengkap.</p>
+        </div>
+        <div class="status-header-actions">
+            <button class="status-btn-icon-refresh" @onclick="RefreshData" title="Muat Ulang Data">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                </svg>
+                <span>Perbarui Data</span>
             </button>
         </div>
     </div>
 
-    <div class="s-status-layout">
-        <!-- Kolom Kiri: List Pemesanan -->
-        <div class="s-list-col">
-            <div class="s-toolbar">
-                <button class="s-btn-filter" @onclick="ToggleFilterPopup">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    Saring: @activeFilter
-                </button>
-                
-                @if (isFilterOpen)
-                {
-                    <div class="s-filter-anchor">
-                        <FilterByStatusPopup CurrentStatus="@activeFilter" OnApply="ApplyFilter" OnClose="CloseFilterPopup" />
-                    </div>
-                }
+    <!-- 4.1 Hero Kapsul Status Aktif (Dynamic Island Live Activity) -->
+    <div class="status-island-hero-section">
+        @if (_activeUpcomingBooking != null)
+        {
+            <div class="island-hero-card">
+                <IslandCapsule State="@(_isHeroExpanded ? "expanded" : "compact")"
+                               IsExpanded="@_isHeroExpanded"
+                               IsExpandedChanged="OnHeroExpandChanged"
+                               AccentColor="@GetStatusAccentColor(_activeUpcomingBooking.Status)"
+                               Title="@_activeUpcomingBooking.RoomName"
+                               Subtitle="@($"{_activeUpcomingBooking.Date} • {_activeUpcomingBooking.TimeSlot}")"
+                               BadgeText="@GetCountdownText()"
+                               ShowCloseButton="false">
+                    <CompactContent>
+                        <div class="island-hero-compact-content">
+                            <div class="island-indicator-dot pulse" style="background-color: @GetStatusAccentColor(_activeUpcomingBooking.Status); color: @GetStatusAccentColor(_activeUpcomingBooking.Status);"></div>
+                            <span class="island-compact-room">@_activeUpcomingBooking.RoomName</span>
+                            <span class="island-compact-separator">•</span>
+                            <span class="island-compact-time">@_activeUpcomingBooking.TimeSlot</span>
+                            <span class="island-compact-countdown">@GetCountdownText()</span>
+                            <span class="island-compact-chevron">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M6 9l6 6 6-6"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </CompactContent>
+                    <ExpandedContent>
+                        <div class="island-hero-expanded-content">
+                            <div class="island-hero-expanded-header">
+                                <div class="island-hero-room-badge-group">
+                                    <div class="island-indicator-dot pulse" style="background-color: @GetStatusAccentColor(_activeUpcomingBooking.Status); color: @GetStatusAccentColor(_activeUpcomingBooking.Status);"></div>
+                                    <div>
+                                        <h2 class="island-hero-title-text">@_activeUpcomingBooking.RoomName</h2>
+                                        <div class="island-hero-location-text">@_activeUpcomingBooking.Floor, Persada HQ</div>
+                                    </div>
+                                </div>
+                                <StatusBadge Status="@_activeUpcomingBooking.Status" />
+                            </div>
+
+                            <div class="island-hero-meta-grid">
+                                <div class="island-meta-item">
+                                    <span class="island-meta-label">JADWAL</span>
+                                    <span class="island-meta-value">@_activeUpcomingBooking.Date, @_activeUpcomingBooking.TimeSlot</span>
+                                </div>
+                                <div class="island-meta-item">
+                                    <span class="island-meta-label">DURASI</span>
+                                    <span class="island-meta-value">@_activeUpcomingBooking.Duration</span>
+                                </div>
+                                <div class="island-meta-item">
+                                    <span class="island-meta-label">KAPASITAS</span>
+                                    <span class="island-meta-value">@_activeUpcomingBooking.Attendees/@_activeUpcomingBooking.Capacity Orang</span>
+                                </div>
+                                <div class="island-meta-item">
+                                    <span class="island-meta-label">COUNTDOWN REALTIME</span>
+                                    <span class="island-meta-value text-accent-green">@GetCountdownText()</span>
+                                </div>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(_activeUpcomingBooking.Purpose))
+                            {
+                                <div class="island-hero-purpose">
+                                    <span class="island-meta-label">TUJUAN PERTEMUAN</span>
+                                    <p>@_activeUpcomingBooking.Purpose</p>
+                                </div>
+                            }
+
+                            <div class="island-hero-actions">
+                                <button class="btn-island-secondary" @onclick="() => SelectBookingAndOpenSlide(_activeUpcomingBooking)" @onclick:stopPropagation="true">
+                                    Lihat Detail Lengkap
+                                </button>
+                                @if (_activeUpcomingBooking.Status.Equals("pending", StringComparison.OrdinalIgnoreCase) || _activeUpcomingBooking.Status.Equals("approved", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <button class="btn-island-danger" @onclick="() => OpenCancelModalFor(_activeUpcomingBooking)" @onclick:stopPropagation="true">
+                                        Batalkan Pesanan
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </ExpandedContent>
+                </IslandCapsule>
+            </div>
+        }
+        else
+        {
+            <div class="island-hero-card">
+                <IslandCapsule State="compact"
+                               AccentColor="#6B7280"
+                               Title="Tidak ada agenda aktif saat ini"
+                               CompactText="Tidak ada agenda aktif saat ini"
+                               BadgeText="STANDBY"
+                               Clickable="false" />
+            </div>
+        }
+    </div>
+
+    <!-- Layout Utama: List Pemesanan & Detail Slide-In Panel -->
+    <div class="status-main-layout @(_isSlidePanelOpen ? "slide-panel-open" : "")">
+        <!-- Kolom Tabel -->
+        <div class="status-table-container">
+            <div class="status-table-toolbar">
+                <div class="status-search-box">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" placeholder="Cari berdasarkan nama ruangan atau ID permintaan..." value="@_searchQuery" @oninput="OnSearchChanged" />
+                </div>
+
+                <div class="status-filter-group" style="position: relative;">
+                    <button class="status-filter-btn" @onclick="ToggleFilterPopup">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                        </svg>
+                        <span>Status: @activeFilter</span>
+                    </button>
+
+                    @if (isFilterOpen)
+                    {
+                        <div class="status-filter-dropdown-menu">
+                            @foreach (var filter in _statusFilterOptions)
+                            {
+                                <button class="status-dropdown-item @(activeFilter == filter ? "active" : "")" @onclick="() => ApplyFilter(filter)">
+                                    @filter
+                                </button>
+                            }
+                        </div>
+                    }
+                </div>
             </div>
 
-            <div class="s-cards-list-wrapper" style="background: white; border-radius: 12px; border: 1px solid #E5E7EB;">
-                <DataGrid TItem="BookingItem" 
-                          Data="FilteredBookingsForGrid" 
-                          Columns="gridColumns" 
+            <div class="status-datagrid-card">
+                <DataGrid TItem="BookingItem"
+                          Data="FilteredBookingsForGrid"
+                          Columns="gridColumns"
                           IsLoading="_isLoading"
                           SearchPlaceholder="Cari pemesanan..."
-                          FileNamePrefix="status-booking"
-                          OnRowClick="SelectBooking">
+                          FileNamePrefix="status-pemesanan"
+                          OnRowClick="SelectBookingAndOpenSlide">
                 </DataGrid>
             </div>
         </div>
 
-        <!-- Kolom Kanan: Detail Sticky -->
-        <div class="s-detail-col">
+        <!-- 4.2 Panel Detail Slide-in dari Kanan -->
+        <div class="status-slide-panel @(_isSlidePanelOpen ? "show" : "")">
             @if (selectedBooking != null)
             {
-                <div class="s-detail-sticky">
-                    <div class="s-detail-photo-wrap" @onclick="() => OpenDetailsModal(selectedBooking)" style="cursor: pointer;">
-                        <div style="position: absolute; top: 16px; left: 16px; z-index: 2;">
-                            <StatusBadge Status="@selectedBooking.Status" UpperCase="true" />
+                <div class="slide-panel-inner">
+                    <div class="slide-panel-header">
+                        <div class="slide-panel-header-left">
+                            <IslandCapsule State="compact"
+                                           AccentColor="@GetStatusAccentColor(selectedBooking.Status)"
+                                           Title="@selectedBooking.RoomName"
+                                           CompactText="@GetStatusLabel(selectedBooking.Status)"
+                                           Clickable="false" />
+                            <span class="slide-panel-reqid">@selectedBooking.RequestId</span>
                         </div>
-                         <img src="@selectedBooking.PhotoUrl" alt="@selectedBooking.RoomName" class="s-detail-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'" />
-                         <div class="s-detail-img-placeholder" style="display:none; position:absolute; inset:0; align-items:center; justify-content:center; background:#f3f4f6;">
-                             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                         </div>
-                        <div class="s-detail-photo-overlay">
-                            <span>Klik untuk detail</span>
-                        </div>
+                        <button class="slide-panel-close-btn" @onclick="CloseSlidePanel" aria-label="Tutup Panel">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
                     </div>
-                    
-                    <div class="s-detail-body">
-                        <div class="s-detail-header">
-                            <h2>@selectedBooking.RoomName</h2>
-                            <span class="s-detail-reqid">ID Permintaan: @selectedBooking.RequestId</span>
+
+                    <div class="slide-panel-body">
+                        <div class="slide-photo-wrap">
+                            <img src="@(string.IsNullOrEmpty(selectedBooking.PhotoUrl) ? "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80" : selectedBooking.PhotoUrl)" 
+                                 alt="@selectedBooking.RoomName" 
+                                 class="slide-photo-img" />
+                            <div class="slide-photo-gradient"></div>
+                            <div class="slide-photo-title-wrap">
+                                <h3 class="slide-photo-title">@selectedBooking.RoomName</h3>
+                                <p class="slide-photo-location">@selectedBooking.Floor, Persada HQ</p>
+                            </div>
                         </div>
 
-                        <div class="s-detail-requester">
-                            <span class="s-label-small">DIAJUKAN OLEH</span>
-                            <div class="s-requester-profile">
-                                <div class="s-requester-avatar">@GetInitials(selectedBooking.RequestedBy)</div>
-                                <div class="s-requester-info">
-                                    <span class="s-req-name">@selectedBooking.RequestedBy</span>
-                                    <span class="s-req-title">@selectedBooking.RequestedByTitle</span>
+                        <div class="slide-content-card">
+                            <div class="slide-requester-row">
+                                <div class="slide-requester-avatar">@GetInitials(selectedBooking.RequestedBy)</div>
+                                <div class="slide-requester-info">
+                                    <span class="slide-req-label">DIAJUKAN OLEH</span>
+                                    <span class="slide-req-name">@selectedBooking.RequestedBy</span>
+                                    <span class="slide-req-title">@selectedBooking.RequestedByTitle</span>
                                 </div>
                             </div>
-                        </div>
 
-                        <hr class="s-divider" />
+                            <hr class="slide-divider" />
 
-                        <div class="s-detail-grid">
-                            <div class="s-grid-item">
-                                <span class="s-grid-label">TANGGAL</span>
-                                <span class="s-grid-val">@selectedBooking.Date</span>
+                            <div class="slide-meta-grid">
+                                <div class="slide-meta-box">
+                                    <span class="slide-meta-label">TANGGAL</span>
+                                    <span class="slide-meta-value">@selectedBooking.Date</span>
+                                </div>
+                                <div class="slide-meta-box">
+                                    <span class="slide-meta-label">WAKTU</span>
+                                    <span class="slide-meta-value">@selectedBooking.TimeSlot</span>
+                                </div>
+                                <div class="slide-meta-box">
+                                    <span class="slide-meta-label">DURASI</span>
+                                    <span class="slide-meta-value">@selectedBooking.Duration</span>
+                                </div>
+                                <div class="slide-meta-box">
+                                    <span class="slide-meta-label">PESERTA</span>
+                                    <span class="slide-meta-value">@selectedBooking.Attendees / @selectedBooking.Capacity Org</span>
+                                </div>
                             </div>
-                            <div class="s-grid-item">
-                                <span class="s-grid-label">WAKTU</span>
-                                <span class="s-grid-val">@selectedBooking.TimeSlot</span>
-                            </div>
-                            <div class="s-grid-item">
-                                <span class="s-grid-label">DURASI</span>
-                                <span class="s-grid-val">@selectedBooking.Duration</span>
-                            </div>
-                            <div class="s-grid-item">
-                                <span class="s-grid-label">KAPASITAS</span>
-                                <span class="s-grid-val">@selectedBooking.Attendees/@selectedBooking.Capacity Peserta</span>
-                            </div>
-                        </div>
 
-                        <div class="s-purpose-box">
-                            <div class="s-purpose-head">Tujuan Rapat</div>
-                            <p>@selectedBooking.Purpose</p>
-                        </div>
-
-                        <div class="s-detail-actions">
-                            <button class="s-btn-modify" @onclick="OpenModifyModal">Ubah</button>
-                            <button class="s-btn-cancel-req" @onclick="OpenCancelModal">Batalkan Permintaan</button>
+                            @if (!string.IsNullOrEmpty(selectedBooking.Purpose))
+                            {
+                                <div class="slide-purpose-box">
+                                    <span class="slide-meta-label">TUJUAN PERTEMUAN</span>
+                                    <p>@selectedBooking.Purpose</p>
+                                </div>
+                            }
                         </div>
                     </div>
-                </div>
-            }
-            else
-            {
-                <div class="s-empty-detail">
-                    <p>Pilih pemesanan untuk melihat detail</p>
+
+                    <div class="slide-panel-footer">
+                        <button class="btn-slide-modify" @onclick="OpenModifyModal">Ubah Reservasi</button>
+                        @if (selectedBooking.Status.Equals("pending", StringComparison.OrdinalIgnoreCase) || selectedBooking.Status.Equals("approved", StringComparison.OrdinalIgnoreCase))
+                        {
+                            <button class="btn-slide-cancel" @onclick="OpenCancelModal">Batalkan Permintaan</button>
+                        }
+                    </div>
                 </div>
             }
         </div>
     </div>
 </div>
 
-<StatusRoomDetailsModal 
-    Visible="isDetailsModalOpen" 
-    Booking="modalBooking" 
-    OnClose="CloseDetailsModal"
-    OnModify="HandleDetailsModify" />
+<!-- 4.3 Modal Konfirmasi Pembatalan Terpusat -->
+<Modal Visible="@isCancelModalOpen" 
+       VisibleChanged="@(v => isCancelModalOpen = v)"
+       Title="Batalkan Pemesanan?"
+       Subtitle="Tindakan ini akan membatalkan pemesanan dan membebaskan jadwal ruangan."
+       Size="sm"
+       OnClose="CloseCancelModal">
+    <BodyContent>
+        <CancelRequestModal Booking="@selectedBooking" OnClose="CloseCancelModal" OnConfirm="HandleCancelConfirm" />
+    </BodyContent>
+</Modal>
 
-<!-- Existing modifikasi & cancel modals -->
-<ModalOverlayBlur Visible="isModifyModalOpen" OnClose="CloseModifyModal" Size="default" ShowCloseButton="false">
-    <ModifyBookingModal Booking="selectedBooking" OnClose="CloseModifyModal" OnUpdate="HandleModifyUpdate" />
-</ModalOverlayBlur>
-
-<ModalOverlayBlur Visible="isCancelModalOpen" OnClose="CloseCancelModal" Size="default" ShowCloseButton="false">
-    <CancelRequestModal Booking="selectedBooking" OnClose="CloseCancelModal" OnConfirm="HandleCancelConfirm" />
-</ModalOverlayBlur>
+<!-- Modal Modifikasi Reservasi -->
+<Modal Visible="@isModifyModalOpen"
+       VisibleChanged="@(v => isModifyModalOpen = v)"
+       Title="Ubah Jadwal Pemesanan"
+       Subtitle="Sesuaikan tanggal, waktu, atau catatan pemesanan ruangan Anda."
+       Size="md"
+       OnClose="CloseModifyModal">
+    <BodyContent>
+        <ModifyBookingModal Booking="@selectedBooking" OnClose="CloseModifyModal" OnUpdate="HandleModifyUpdate" />
+    </BodyContent>
+</Modal>
 
 <style>
-    .s-page-container { padding: 32px; font-family: 'Inter', sans-serif; background-color: #F3F4F6; min-height: 100vh; }
-    .s-page-header { padding: 0 8px; margin-bottom: 24px; }
-    .s-page-title { color: #16305C; font-size: 32px; font-weight: 700; margin: 0 0 8px 0; }
-    
-    .s-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding: 0 8px; }
-    .s-topbar-right { display: flex; align-items: center; gap: 16px; }
-    .s-btn-icon-refresh { background: none; border: none; color: #6B7280; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: color 0.2s; padding: 4px; }
-    .s-btn-icon-refresh:hover { color: #16305C; }
-    .s-avatar-circle { width: 36px; height: 36px; border-radius: 50%; background-color: #16305C; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+    .status-page-wrapper {
+        padding: 32px;
+        max-width: 1440px;
+        margin: 0 auto;
+        font-family: var(--font-family-primary, 'Inter', sans-serif);
+    }
 
-    .s-status-layout { display: grid; grid-template-columns: 1fr 440px; gap: 24px; }
-    .s-list-col { min-width: 0; }
-    
-    .s-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; position: relative; }
-    .s-search-bar { position: relative; flex-grow: 1; display: flex; align-items: center; }
-    .s-search-icon { position: absolute; left: 16px; color: #6B7280; }
-    .s-search-bar input { width: 100%; padding: 12px 16px 12px 44px; border: 1px solid #E5E7EB; border-radius: 999px; font-size: 14px; background: #FFFFFF; }
-    .s-search-bar input:focus { outline: none; border-color: #16305C; box-shadow: 0 0 0 2px rgba(22,48,92,0.1); }
-    .s-btn-filter { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border: 1px solid #E5E7EB; border-radius: 999px; background: #FFFFFF; color: #16305C; font-size: 14px; font-weight: 600; cursor: pointer; }
-    .s-btn-filter:hover { background-color: #F9FAFB; }
-    .s-filter-anchor { position: absolute; top: 56px; right: 0; z-index: 100; }
+    .status-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 24px;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
 
-    .s-cards-list { display: flex; flex-direction: column; gap: 16px; }
-    .s-card { display: flex; gap: 16px; background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 20px; padding: 16px; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
-    .s-card:hover { border-color: #CBD5E1; box-shadow: 0 4px 12px rgba(16,48,92,0.04); }
-    .s-card.selected { background-color: #F0F4FF; border-color: #E5E7EB; }
-    .s-card.selected::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background-color: #EAB63C; }
-    
-    .s-card-thumbnail { width: 64px; height: 64px; flex-shrink: 0; border-radius: 12px; overflow: hidden; position: relative; }
-    .s-card-thumbnail img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.2s; }
-    .s-card-thumbnail:hover img { transform: scale(1.05); }
-    .s-card-thumbnail-placeholder { position: absolute; inset: 0; }
-    
-    .s-card-content { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
-    .s-card-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-    .s-card-title-group { display: flex; flex-direction: column; gap: 2px; }
-    .s-card-room { color: #16305C; font-size: 16px; font-weight: 700; margin: 0; }
-    .s-card-reqid { color: #6B7280; font-size: 12px; }
-    
-    .s-card-meta { display: flex; gap: 16px; flex-wrap: wrap; }
-    .s-card-meta span { display: inline-flex; align-items: center; gap: 6px; color: #6B7280; font-size: 13px; }
+    .status-hero-title {
+        font-size: 2.25rem;
+        font-weight: 800;
+        color: var(--color-brand-navy, #0F1F3D);
+        margin: 0 0 6px 0;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+    }
 
-    .s-pill-status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap; }
-    .s-pill-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-    .bg-pending { background-color: #FEF3C7; color: #B45309; }
-    .bg-approved { background-color: #D1FAE5; color: #10B981; }
-    .bg-rejected { background-color: #FEE2E2; color: #EF4444; }
-    .bg-completed { background-color: #DBEAFE; color: #1E40AF; }
+    .status-hero-subtitle {
+        font-size: 0.9375rem;
+        color: var(--color-brand-text-muted, #6B7280);
+        margin: 0;
+        line-height: 1.5;
+        max-width: 680px;
+    }
 
-    /* Sticky Detail */
-    .s-detail-sticky { position: sticky; top: 32px; background: #FFFFFF; border-radius: 24px; overflow: hidden; border: 1px solid #E5E7EB; box-shadow: 0 4px 24px rgba(16,48,92,0.08); }
-    .s-detail-photo-wrap { position: relative; height: 220px; overflow: hidden; background-color: #f3f4f6; }
-    .s-detail-img { width: 100%; height: 100%; object-fit: cover; }
-    .s-detail-img-placeholder { position: absolute; inset: 0; }
-    .s-detail-badge { position: absolute; top: 16px; left: 16px; background: rgba(0,0,0,0.6); color: white; padding: 6px 14px; border-radius: 999px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 6px; z-index: 2; }
-    .s-detail-photo-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(22,48,92,0.4); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; color: white; font-weight: 600; font-size: 14px; }
-    .s-detail-photo-wrap:hover .s-detail-photo-overlay { opacity: 1; }
+    .status-btn-icon-refresh {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        border-radius: var(--radius-pill, 999px);
+        background: #FFFFFF;
+        border: 1px solid var(--color-brand-gray-border, #E5E7EB);
+        color: var(--color-brand-navy, #0F1F3D);
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: var(--shadow-card);
+    }
 
-    .s-detail-body { padding: 24px; }
-    .s-detail-header { margin-bottom: 24px; }
-    .s-detail-header h2 { color: #16305C; font-size: 24px; font-weight: 700; margin: 0 0 4px 0; }
-    .s-detail-reqid { color: #6B7280; font-size: 13px; }
-    
-    .s-label-small { display: block; color: #9CA3AF; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
-    .s-requester-profile { display: flex; align-items: center; gap: 12px; }
-    .s-requester-avatar { width: 44px; height: 44px; background-color: #16305C; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; }
-    .s-req-name { display: block; color: #16305C; font-size: 15px; font-weight: 600; }
-    .s-req-title { display: block; color: #6B7280; font-size: 13px; }
-    
-    .s-divider { border: none; border-top: 1px solid #E5E7EB; margin: 24px 0; }
-    
-    .s-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
-    .s-grid-item { display: flex; flex-direction: column; gap: 4px; }
-    .s-grid-label { color: #9CA3AF; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
-    .s-grid-val { color: #16305C; font-size: 15px; font-weight: 600; }
-    
-    .s-purpose-box { background-color: #F3F4F6; border-radius: 16px; padding: 16px; margin-bottom: 24px; }
-    .s-purpose-head { font-size: 13px; font-weight: 600; color: #16305C; margin-bottom: 6px; }
-    .s-purpose-box p { color: #6B7280; font-size: 14px; line-height: 1.5; margin: 0; }
-    
-    .s-detail-actions { display: flex; gap: 12px; }
-    .s-btn-modify { flex: 1; background-color: #FFFFFF; color: #16305C; border: 1px solid #CBD5E1; border-radius: 999px; padding: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; }
-    .s-btn-modify:hover { border-color: #16305C; background: #F8FAFC; }
-    .s-btn-cancel-req { flex: 1; background: #FFFFFF; color: #EF4444; border: 1px solid #FEE2E2; border-radius: 999px; padding: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; }
-    .s-btn-cancel-req:hover { background-color: #FEF2F2; }
+    .status-btn-icon-refresh:hover {
+        background: #F8FAFC;
+        border-color: #CBD5E1;
+        transform: translateY(-1px);
+    }
 
-    .s-empty-state { text-align: center; padding: 60px 20px; color: #9CA3AF; }
-    .s-empty-detail { display: flex; align-items: center; justify-content: center; background: #FFFFFF; border-radius: 24px; border: 1px solid #E5E7EB; padding: 60px 20px; color: #9CA3AF; min-height: 400px; }
+    /* --- Dynamic Island Hero Section --- */
+    .status-island-hero-section {
+        margin-bottom: 28px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .island-hero-card {
+        width: 100%;
+        max-width: 840px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .island-hero-compact-content {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .island-compact-room {
+        color: #FFFFFF;
+        font-weight: 700;
+    }
+
+    .island-compact-separator {
+        color: rgba(255, 255, 255, 0.3);
+    }
+
+    .island-compact-time {
+        color: #D1D5DB;
+    }
+
+    .island-compact-countdown {
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 999px;
+        background: rgba(16, 185, 129, 0.18);
+        color: #34D399;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .island-compact-chevron {
+        color: #9CA3AF;
+        display: flex;
+        align-items: center;
+    }
+
+    .island-hero-expanded-content {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        width: 100%;
+    }
+
+    .island-hero-expanded-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .island-hero-room-badge-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .island-hero-title-text {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: #FFFFFF;
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    .island-hero-location-text {
+        font-size: 0.8125rem;
+        color: #9CA3AF;
+        margin-top: 2px;
+    }
+
+    .island-hero-meta-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+        background: rgba(255, 255, 255, 0.04);
+        padding: 14px 18px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .island-meta-item {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .island-meta-label {
+        font-size: 0.6875rem;
+        font-weight: 700;
+        color: #9CA3AF;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    .island-meta-value {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #F3F4F6;
+    }
+
+    .text-accent-green {
+        color: #34D399;
+    }
+
+    .island-hero-purpose {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 12px 16px;
+        border-radius: 12px;
+        border-left: 3px solid #F59E0B;
+    }
+
+    .island-hero-purpose p {
+        margin: 4px 0 0 0;
+        font-size: 0.8125rem;
+        color: #D1D5DB;
+        line-height: 1.4;
+    }
+
+    .island-hero-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+    }
+
+    .btn-island-secondary {
+        background: rgba(255, 255, 255, 0.12);
+        color: #FFFFFF;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 8px 18px;
+        border-radius: 999px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-island-secondary:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-island-danger {
+        background: rgba(239, 68, 68, 0.15);
+        color: #FCA5A5;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        padding: 8px 18px;
+        border-radius: 999px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-island-danger:hover {
+        background: rgba(239, 68, 68, 0.25);
+        color: #FFFFFF;
+    }
+
+    /* --- Status Main Layout --- */
+    .status-main-layout {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 24px;
+        transition: grid-template-columns 0.35s var(--island-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
+        position: relative;
+    }
+
+    .status-main-layout.slide-panel-open {
+        grid-template-columns: 1fr 420px;
+    }
+
+    .status-table-container {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        min-width: 0;
+    }
+
+    .status-table-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .status-search-box {
+        position: relative;
+        flex: 1;
+        min-width: 240px;
+        display: flex;
+        align-items: center;
+    }
+
+    .status-search-box svg {
+        position: absolute;
+        left: 16px;
+        color: #9CA3AF;
+        pointer-events: none;
+    }
+
+    .status-search-box input {
+        width: 100%;
+        padding: 10px 16px 10px 44px;
+        border: 1px solid var(--color-brand-gray-border, #E5E7EB);
+        border-radius: var(--radius-pill, 999px);
+        font-size: 0.875rem;
+        background: #FFFFFF;
+        color: var(--color-brand-navy, #0F1F3D);
+        outline: none;
+        transition: all 0.2s;
+    }
+
+    .status-search-box input:focus {
+        border-color: var(--color-brand-blue, #1F5D9A);
+        box-shadow: 0 0 0 3px rgba(31, 93, 154, 0.12);
+    }
+
+    .status-filter-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        border-radius: var(--radius-pill, 999px);
+        background: #FFFFFF;
+        border: 1px solid var(--color-brand-gray-border, #E5E7EB);
+        color: var(--color-brand-navy, #0F1F3D);
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .status-filter-btn:hover {
+        background: #F8FAFC;
+        border-color: #CBD5E1;
+    }
+
+    .status-filter-dropdown-menu {
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        z-index: 50;
+        background: #FFFFFF;
+        border: 1px solid var(--color-brand-gray-border, #E5E7EB);
+        border-radius: var(--radius-md, 12px);
+        box-shadow: var(--shadow-popover);
+        padding: 6px;
+        min-width: 180px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .status-dropdown-item {
+        background: none;
+        border: none;
+        padding: 8px 12px;
+        text-align: left;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: #4B5563;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+
+    .status-dropdown-item:hover {
+        background: #F1F5F9;
+        color: var(--color-brand-navy, #0F1F3D);
+    }
+
+    .status-dropdown-item.active {
+        background: #EFF6FF;
+        color: var(--color-brand-blue, #1F5D9A);
+    }
+
+    .status-datagrid-card {
+        background: #FFFFFF;
+        border-radius: var(--radius-card, 16px);
+        border: 1px solid var(--color-brand-gray-border, #E5E7EB);
+        overflow: hidden;
+        box-shadow: var(--shadow-card);
+    }
+
+    /* --- 4.2 Slide-in Panel Styles --- */
+    .status-slide-panel {
+        display: none;
+        background: #FFFFFF;
+        border: 1px solid var(--color-brand-gray-border, #E5E7EB);
+        border-radius: var(--radius-card, 16px);
+        box-shadow: var(--shadow-modal);
+        overflow: hidden;
+        flex-direction: column;
+        animation: slideInRight 0.3s var(--island-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) forwards;
+    }
+
+    .status-slide-panel.show {
+        display: flex;
+    }
+
+    .slide-panel-inner {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .slide-panel-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--color-brand-gray-border, #E5E7EB);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #FFFFFF;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .slide-panel-header-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .slide-panel-reqid {
+        font-size: 0.75rem;
+        color: #9CA3AF;
+        font-weight: 600;
+    }
+
+    .slide-panel-close-btn {
+        background: none;
+        border: none;
+        padding: 6px;
+        border-radius: 50%;
+        color: #9CA3AF;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+
+    .slide-panel-close-btn:hover {
+        background: #F3F4F6;
+        color: #111827;
+    }
+
+    .slide-panel-body {
+        padding: 20px;
+        overflow-y: auto;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .slide-photo-wrap {
+        position: relative;
+        height: 160px;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: var(--shadow-card);
+    }
+
+    .slide-photo-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .slide-photo-gradient {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, transparent 40%, rgba(15, 31, 61, 0.85) 100%);
+    }
+
+    .slide-photo-title-wrap {
+        position: absolute;
+        bottom: 12px;
+        left: 14px;
+        right: 14px;
+        color: #FFFFFF;
+    }
+
+    .slide-photo-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .slide-photo-location {
+        font-size: 0.75rem;
+        color: #E2E8F0;
+        margin: 2px 0 0 0;
+    }
+
+    .slide-content-card {
+        background: #F8FAFC;
+        border: 1px solid var(--color-brand-gray-border, #E5E7EB);
+        border-radius: 14px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .slide-requester-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .slide-requester-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: var(--color-brand-navy, #0F1F3D);
+        color: #FFFFFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.875rem;
+    }
+
+    .slide-requester-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .slide-req-label {
+        font-size: 0.6875rem;
+        font-weight: 700;
+        color: #9CA3AF;
+        letter-spacing: 0.05em;
+    }
+
+    .slide-req-name {
+        font-size: 0.9375rem;
+        font-weight: 700;
+        color: var(--color-brand-navy, #0F1F3D);
+    }
+
+    .slide-req-title {
+        font-size: 0.75rem;
+        color: #6B7280;
+    }
+
+    .slide-divider {
+        border: none;
+        border-top: 1px solid #E2E8F0;
+        margin: 0;
+    }
+
+    .slide-meta-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .slide-meta-box {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .slide-meta-label {
+        font-size: 0.6875rem;
+        font-weight: 700;
+        color: #9CA3AF;
+        letter-spacing: 0.05em;
+    }
+
+    .slide-meta-value {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--color-brand-navy, #0F1F3D);
+    }
+
+    .slide-purpose-box {
+        background: #FFFFFF;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #E2E8F0;
+    }
+
+    .slide-purpose-box p {
+        margin: 4px 0 0 0;
+        font-size: 0.8125rem;
+        color: #4B5563;
+        line-height: 1.4;
+    }
+
+    .slide-panel-footer {
+        padding: 16px 20px;
+        border-top: 1px solid var(--color-brand-gray-border, #E5E7EB);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        background: #FFFFFF;
+    }
+
+    .btn-slide-modify {
+        width: 100%;
+        background: var(--color-brand-navy, #0F1F3D);
+        color: #FFFFFF;
+        border: none;
+        padding: 10px;
+        border-radius: var(--radius-pill, 999px);
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-slide-modify:hover {
+        background: #16305C;
+    }
+
+    .btn-slide-cancel {
+        width: 100%;
+        background: transparent;
+        color: #EF4444;
+        border: 1px solid #FCA5A5;
+        padding: 8px;
+        border-radius: var(--radius-pill, 999px);
+        font-weight: 600;
+        font-size: 0.8125rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-slide-cancel:hover {
+        background: #FEF2F2;
+    }
+
+    @@keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @@media (max-width: 992px) {
+        .status-main-layout.slide-panel-open {
+            grid-template-columns: 1fr;
+        }
+        .status-slide-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            top: 20%;
+            z-index: 1050;
+            border-radius: 20px 20px 0 0;
+        }
+    }
 </style>
 
 @code {
     private List<BookingItem> allBookings = new();
     private BookingItem? selectedBooking;
+    private BookingItem? _activeUpcomingBooking;
     private string activeFilter = "Semua Status";
     private bool isFilterOpen = false;
-    
+    private bool _isSlidePanelOpen = false;
+    private bool _isHeroExpanded = false;
+    private string _searchQuery = "";
+    private System.Timers.Timer? _countdownTimer;
+
     private bool isModifyModalOpen = false;
     private bool isCancelModalOpen = false;
-
-    // Details modal
-    private bool isDetailsModalOpen = false;
-    private BookingItem? modalBooking;
-
     private bool _isLoading = true;
     private List<GridColumn<BookingItem>> gridColumns = new();
+
+    private readonly string[] _statusFilterOptions = { "Semua Status", "Menunggu Persetujuan", "Disetujui", "Ditolak", "Selesai" };
 
     protected override async Task OnInitializedAsync()
     {
@@ -262,12 +947,12 @@
                     builder.OpenElement(0, "div");
                     builder.AddAttribute(1, "style", "display: flex; flex-direction: column;");
                     builder.OpenElement(2, "span");
-                    builder.AddAttribute(3, "style", "font-weight: 600; color: #16305C;");
+                    builder.AddAttribute(3, "style", "font-weight: 700; color: #0F1F3D;");
                     builder.AddContent(4, b.RoomName);
                     builder.CloseElement();
                     builder.OpenElement(5, "span");
-                    builder.AddAttribute(6, "style", "font-size: 12px; color: #6B7280;");
-                    builder.AddContent(7, b.RequestId);
+                    builder.AddAttribute(6, "style", "font-size: 12px; color: #6B7280; margin-top: 2px;");
+                    builder.AddContent(7, $"{b.Floor} • {b.RequestId}");
                     builder.CloseElement();
                     builder.CloseElement();
                 }
@@ -286,6 +971,12 @@
             },
             new GridColumn<BookingItem>
             {
+                Title = "DURASI",
+                PropertyName = "Duration",
+                ValueFunc = b => b.Duration
+            },
+            new GridColumn<BookingItem>
+            {
                 Title = "STATUS",
                 PropertyName = "Status",
                 ValueFunc = b => GetStatusLabel(b.Status),
@@ -297,10 +988,17 @@
                 }
             }
         };
-        await Task.Delay(400);
-        allBookings = BookingDataStore.AllBookings;
+
+        await Task.Delay(250);
+        allBookings = BookingDataStore.AllBookings.ToList();
         selectedBooking = allBookings.FirstOrDefault();
+        _activeUpcomingBooking = allBookings.FirstOrDefault(b => b.Status.Equals("approved", StringComparison.OrdinalIgnoreCase) || b.Status.Equals("pending", StringComparison.OrdinalIgnoreCase));
         _isLoading = false;
+
+        // Inisialisasi countdown timer untuk Dynamic Island Hero
+        _countdownTimer = new System.Timers.Timer(1000);
+        _countdownTimer.Elapsed += (s, e) => InvokeAsync(StateHasChanged);
+        _countdownTimer.Start();
     }
 
     private IEnumerable<BookingItem> FilteredBookingsForGrid
@@ -308,25 +1006,51 @@
         get
         {
             var query = allBookings.AsEnumerable();
-            
+
+            if (!string.IsNullOrWhiteSpace(_searchQuery))
+            {
+                var q = _searchQuery.Trim().ToLowerInvariant();
+                query = query.Where(b => b.RoomName.ToLowerInvariant().Contains(q) || b.RequestId.ToLowerInvariant().Contains(q));
+            }
+
             if (activeFilter != "Semua Status")
             {
-                query = query.Where(b => b.Status.Equals(activeFilter, StringComparison.OrdinalIgnoreCase));
+                var targetStatus = activeFilter switch
+                {
+                    "Menunggu Persetujuan" => "pending",
+                    "Disetujui" => "approved",
+                    "Ditolak" => "rejected",
+                    "Selesai" => "completed",
+                    _ => activeFilter
+                };
+                query = query.Where(b => b.Status.Equals(targetStatus, StringComparison.OrdinalIgnoreCase) || b.Status.Equals(activeFilter, StringComparison.OrdinalIgnoreCase));
             }
-            
+
             return query;
         }
     }
 
-    private void SelectBooking(BookingItem booking)
+    private void OnSearchChanged(ChangeEventArgs e)
+    {
+        _searchQuery = e.Value?.ToString() ?? "";
+    }
+
+    private void SelectBookingAndOpenSlide(BookingItem booking)
     {
         selectedBooking = booking;
+        _isSlidePanelOpen = true;
+    }
+
+    private void CloseSlidePanel()
+    {
+        _isSlidePanelOpen = false;
     }
 
     private void RefreshData()
     {
-        // Simulate data refresh
         allBookings = BookingDataStore.AllBookings.ToList();
+        _activeUpcomingBooking = allBookings.FirstOrDefault(b => b.Status.Equals("approved", StringComparison.OrdinalIgnoreCase) || b.Status.Equals("pending", StringComparison.OrdinalIgnoreCase));
+        ToastService.Success("Data Diperbarui", "Daftar status pemesanan berhasil disinkronkan.");
     }
 
     private void ToggleFilterPopup()
@@ -334,32 +1058,21 @@
         isFilterOpen = !isFilterOpen;
     }
 
-    private void CloseFilterPopup()
+    private void ApplyFilter(string filter)
     {
+        activeFilter = filter;
         isFilterOpen = false;
     }
 
-    private void ApplyFilter(string status)
+    private void OnHeroExpandChanged(bool expanded)
     {
-        activeFilter = status;
-        isFilterOpen = false;
+        _isHeroExpanded = expanded;
     }
 
-    private void OpenDetailsModal(BookingItem booking)
-    {
-        modalBooking = booking;
-        isDetailsModalOpen = true;
-    }
-
-    private void CloseDetailsModal()
-    {
-        isDetailsModalOpen = false;
-    }
-
-    private void HandleDetailsModify(BookingItem booking)
+    private void OpenCancelModalFor(BookingItem booking)
     {
         selectedBooking = booking;
-        OpenModifyModal();
+        OpenCancelModal();
     }
 
     private void OpenModifyModal()
@@ -382,8 +1095,13 @@
             {
                 selectedBooking = updatedBooking;
             }
+            if (_activeUpcomingBooking?.Id == updatedBooking.Id)
+            {
+                _activeUpcomingBooking = updatedBooking;
+            }
         }
         isModifyModalOpen = false;
+        ToastService.Success("Reservasi Diperbarui", $"Jadwal untuk {updatedBooking.RoomName} berhasil disesuaikan.");
     }
 
     private void OpenCancelModal()
@@ -407,17 +1125,28 @@
             {
                 selectedBooking = updated;
             }
+            if (_activeUpcomingBooking?.Id == booking.Id)
+            {
+                _activeUpcomingBooking = allBookings.FirstOrDefault(b => b.Status.Equals("approved", StringComparison.OrdinalIgnoreCase) || b.Status.Equals("pending", StringComparison.OrdinalIgnoreCase));
+            }
         }
         isCancelModalOpen = false;
+        ToastService.Warning("Pemesanan Dibatalkan", $"Pemesanan {booking.RoomName} telah dibatalkan.");
     }
 
-    private string GetInitials(string name)
+    private string GetCountdownText()
     {
-        if (string.IsNullOrWhiteSpace(name)) return "U";
-        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length == 1) return parts[0].Substring(0, 1).ToUpper();
-        return $"{parts[0].Substring(0, 1)}{parts[1].Substring(0, 1)}".ToUpper();
+        return "18 Menit Menuju Check-in";
     }
+
+    private string GetStatusAccentColor(string status) => (status ?? "").ToLowerInvariant() switch
+    {
+        "approved" or "disetujui" => "#10B981",
+        "pending" or "menunggu" => "#F59E0B",
+        "rejected" or "ditolak" => "#EF4444",
+        "completed" or "selesai" => "#3B82F6",
+        _ => "#10B981"
+    };
 
     private string GetStatusLabel(string status)
     {
@@ -428,13 +1157,16 @@
         return status;
     }
 
-    private string GetStatusBadgeClass(string status)
+    private string GetInitials(string name)
     {
-        if (status.Equals("pending", StringComparison.OrdinalIgnoreCase)) return "bg-pending";
-        if (status.Equals("approved", StringComparison.OrdinalIgnoreCase)) return "bg-approved";
-        if (status.Equals("rejected", StringComparison.OrdinalIgnoreCase)) return "bg-rejected";
-        if (status.Equals("completed", StringComparison.OrdinalIgnoreCase)) return "bg-completed";
-        return "";
+        if (string.IsNullOrWhiteSpace(name)) return "U";
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 1) return parts[0].Substring(0, 1).ToUpper();
+        return $"{parts[0].Substring(0, 1)}{parts[1].Substring(0, 1)}".ToUpper();
+    }
+
+    public void Dispose()
+    {
+        _countdownTimer?.Dispose();
     }
 }
-

@@ -91,4 +91,15 @@
   --color-brand-gray-border: #E5E7EB;
   --color-brand-text-muted: #6B7280;
   --color-brand-text-heading: #111827;
+
+  /* --- Dynamic Island Tokens --- */
+  --island-radius-compact: 999px;
+  --island-radius-expanded: 28px;
+  --island-bg: #0B0B0C;
+  --island-bg-elevated: #141416;
+  --island-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --island-duration-expand: 380ms;
+  --island-duration-collapse: 220ms;
+  --island-shadow: 0 16px 36px rgba(0, 0, 0, 0.35), 0 4px 12px rgba(0, 0, 0, 0.2);
+  --island-border: rgba(255, 255, 255, 0.12);
 }

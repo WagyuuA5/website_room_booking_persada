@@ -1,6 +1,7 @@
 @using booking_room.Services
 @using booking_room.Components.Models
 @inject INotificationService NotificationService
+@inject IToastService ToastService
 @inject NavigationManager Navigation
 @implements IDisposable
 
@@ -410,12 +411,14 @@
         ));
         
         await ClosePanel();
+        ToastService.Success("Undangan Diterima", $"Anda telah bergabung dalam rapat: {item.Title}.");
     }
 
     private async Task DeclineInvitation(NotificationItem item)
     {
         NotificationService.MarkAsRead(item.Id);
         await ClosePanel();
+        ToastService.Info("Undangan Ditolak", $"Anda menolak undangan rapat: {item.Title}.");
     }
 
     private void MarkAllRead()
