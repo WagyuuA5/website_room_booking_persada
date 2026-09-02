@@ -4,15 +4,19 @@
 @inject NavigationManager Navigation
 @inject IModalService ModalService
 
-<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Title="Ruangan Tersedia" LayoutMode="list" Size="lg" ShowCloseButton="false" OnClose="OnClose">
-    <HeaderContent>
-        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-            <div>
-                <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--color-brand-navy, #0F1F3D);">Ruangan Tersedia</h3>
-                <p style="margin: 4px 0 0 0; font-size: 0.8125rem; color: var(--color-brand-text-muted, #6B7280);">Pilih ruangan untuk rapat Anda berikutnya.</p>
-            </div>
-        </div>
-    </HeaderContent>
+<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Title="Ruangan Tersedia" Subtitle="Pilih ruangan untuk rapat Anda berikutnya." LayoutMode="list" Size="lg" ShowCloseButton="false" OnClose="OnClose">
+    <IconContent>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 21h18"></path>
+            <path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"></path>
+            <path d="M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"></path>
+            <path d="M10 9h.01"></path>
+            <path d="M14 9h.01"></path>
+            <path d="M10 13h.01"></path>
+            <path d="M14 13h.01"></path>
+        </svg>
+    </IconContent>
+    
     <BodyContent>
         <div class="available-rooms-modal">
             <div class="filter-pills-row">
@@ -253,5 +257,6 @@
         }
     }
 }
+
 
 

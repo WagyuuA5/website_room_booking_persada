@@ -21,6 +21,24 @@
                     @HeaderContent
                 </div>
             }
+            else if (!string.IsNullOrEmpty(Title))
+            {
+                <div class="app-modal-header" style="display: flex; align-items: flex-start; gap: 16px;">
+                    @if (IconContent != null)
+                    {
+                        <div class="app-modal-header-icon" style="flex-shrink: 0; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: #E0F2FE; color: #0EA5E9; border-radius: 12px;">
+                            @IconContent
+                        </div>
+                    }
+                    <div style="flex: 1; padding-top: 2px;">
+                        <h2 class="app-modal-title" style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #0F1F3D;">@Title</h2>
+                        @if (!string.IsNullOrEmpty(Subtitle))
+                        {
+                            <p class="app-modal-subtitle" style="margin: 4px 0 0 0; font-size: 0.875rem; color: #6B7280; line-height: 1.4;">@Subtitle</p>
+                        }
+                    </div>
+                </div>
+            }
 
             <div class="app-modal-body">
                 @if (BodyContent != null)
@@ -61,7 +79,7 @@
         -webkit-backdrop-filter: blur(var(--overlay-blur));
         
         /* Animation fade */
-        animation: fadeInOverlay 0.2s ease-out forwards;
+        animation: fadeInOverlay 0.25s ease-out forwards;
     }
 
     .app-modal-container {
@@ -77,8 +95,8 @@
         overflow: hidden;
         
         /* Animation scale */
-        animation: scaleInModal 0.2s ease-out forwards;
-        transform: scale(0.96);
+        animation: scaleInModal 0.25s ease-out forwards;
+        transform: scale(0.95);
         opacity: 0;
     }
 
@@ -89,7 +107,7 @@
 
     @@keyframes scaleInModal {
         from {
-            transform: scale(0.96);
+            transform: scale(0.95);
             opacity: 0;
         }
         to {
@@ -149,6 +167,9 @@
     [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
     
     [Parameter] public RenderFragment? HeaderContent { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Subtitle { get; set; }
+    [Parameter] public RenderFragment? IconContent { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public RenderFragment? BodyContent { get; set; }
     [Parameter] public RenderFragment? FooterContent { get; set; }
@@ -217,3 +238,5 @@
         }
     }
 }
+
+

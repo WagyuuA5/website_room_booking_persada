@@ -4,19 +4,15 @@
 @inject NavigationManager Navigation
 @inject IModalService ModalService
 
-<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Title="Persetujuan Tertunda" LayoutMode="list" Size="md" ShowCloseButton="false" OnClose="OnClose">
-    <HeaderContent>
-        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-            <div>
-                <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--color-brand-navy, #0F1F3D);">Persetujuan Tertunda</h3>
-                <p style="margin: 4px 0 0 0; font-size: 0.8125rem; color: var(--color-brand-text-muted, #6B7280);">Tinjau permintaan pemesanan terbaru Anda.</p>
-            </div>
-            <span style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: #FEF3C7; color: #F2B705; font-size: 0.75rem; font-weight: 700;">
-                <span style="width: 6px; height: 6px; border-radius: 50%; background: #F2B705;"></span>
-                @PendingCount Menunggu
-            </span>
-        </div>
-    </HeaderContent>
+<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Title="Menunggu Persetujuan" Subtitle="Tinjau permintaan pemesanan terbaru Anda." LayoutMode="list" Size="md" ShowCloseButton="false" OnClose="OnClose">
+    <IconContent>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+            <path d="M9 14l2 2 4-4"></path>
+        </svg>
+    </IconContent>
+    
     <BodyContent>
         <div class="pending-approvals-list">
             @foreach (var item in PendingItems)
@@ -278,7 +274,7 @@
     {
         await OnClose.InvokeAsync();
         await ModalService.CloseTopAsync();
-        Navigation.NavigateTo("/status");
+        Navigation.NavigateTo("/status?filter=Menunggu%20Persetujuan");
     }
 
     private async Task HandleClose()
@@ -308,5 +304,7 @@
         CloseRejectModal();
     }
 }
+
+
 
 

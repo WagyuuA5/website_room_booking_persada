@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+
 namespace booking_room.Services;
 
 public enum ToastType
@@ -50,10 +52,10 @@ public interface IToastService
 
 public class ToastService : IToastService
 {
-    private readonly List<ToastMessage> _toasts = new();
+    private readonly ConcurrentDictionary<string, ToastMessage> _toasts = new();
     public event Action? OnChange;
 
-    public IReadOnlyList<ToastMessage> ActiveToasts => _toasts.AsReadOnly();
+    public IReadOnlyList<ToastMessage> ActiveToasts => _toasts.Values.OrderBy(t => t.CreatedAt).ToList().AsReadOnly();
 
     public void Show(string title, string message = "", ToastType type = ToastType.Info, int durationMs = 4000)
     {
@@ -65,7 +67,7 @@ public class ToastService : IToastService
             DurationMs = durationMs
         };
 
-        _toasts.Add(toast);
+        _toasts.TryAdd(toast.Id, toast);
         NotifyStateChanged();
 
         var timer = new System.Threading.Timer(_ =>
@@ -88,10 +90,8 @@ public class ToastService : IToastService
 
     public void Remove(string id)
     {
-        var item = _toasts.FirstOrDefault(t => t.Id == id);
-        if (item != null)
+        if (_toasts.TryRemove(id, out _))
         {
-            _toasts.Remove(item);
             NotifyStateChanged();
         }
     }

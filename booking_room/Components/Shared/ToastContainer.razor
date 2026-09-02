@@ -10,13 +10,22 @@
 </div>
 
 @code {
+    private bool _disposed;
+
     protected override void OnInitialized()
     {
-        ToastService.OnChange += StateHasChanged;
+        ToastService.OnChange += HandleToastChanged;
+    }
+
+    private void HandleToastChanged()
+    {
+        if (_disposed) return;
+        InvokeAsync(StateHasChanged);
     }
 
     public void Dispose()
     {
-        ToastService.OnChange -= StateHasChanged;
+        _disposed = true;
+        ToastService.OnChange -= HandleToastChanged;
     }
 }

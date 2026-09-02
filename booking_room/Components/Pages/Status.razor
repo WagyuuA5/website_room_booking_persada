@@ -6,14 +6,14 @@
 @inject IToastService ToastService
 @implements IDisposable
 
-<PageTitle>Status Pemesanan — Persada Ruangan</PageTitle>
+<PageTitle>Status Pemesanan � Persada Ruangan</PageTitle>
 
 <div class="status-page-wrapper">
     <!-- Header Halaman -->
     <div class="status-page-header">
         <div>
             <h1 class="status-hero-title">Status Pemesanan</h1>
-            <p class="status-hero-subtitle">Pantau status reservasi ruangan Anda secara langsung, kelola jadwal, dan lihat riwayat lengkap.</p>
+            <p class="status-hero-subtitle">Tinjau status permintaan reservasi Anda saat ini.</p>
         </div>
         <div class="status-header-actions">
             <button class="status-btn-icon-refresh" @onclick="RefreshData" title="Muat Ulang Data">
@@ -25,229 +25,92 @@
         </div>
     </div>
 
-    <!-- 4.1 Hero Kapsul Status Aktif (Dynamic Island Live Activity) -->
-    <div class="status-island-hero-section">
-        @if (_activeUpcomingBooking != null)
-        {
-            <div class="island-hero-card">
-                <IslandCapsule State="@(_isHeroExpanded ? "expanded" : "compact")"
-                               IsExpanded="@_isHeroExpanded"
-                               IsExpandedChanged="OnHeroExpandChanged"
-                               AccentColor="@GetStatusAccentColor(_activeUpcomingBooking.Status)"
-                               Title="@_activeUpcomingBooking.RoomName"
-                               Subtitle="@($"{_activeUpcomingBooking.Date} • {_activeUpcomingBooking.TimeSlot}")"
-                               BadgeText="@GetCountdownText()"
-                               ShowCloseButton="false">
-                    <CompactContent>
-                        <div class="island-hero-compact-content">
-                            <div class="island-indicator-dot pulse" style="background-color: @GetStatusAccentColor(_activeUpcomingBooking.Status); color: @GetStatusAccentColor(_activeUpcomingBooking.Status);"></div>
-                            <span class="island-compact-room">@_activeUpcomingBooking.RoomName</span>
-                            <span class="island-compact-separator">•</span>
-                            <span class="island-compact-time">@_activeUpcomingBooking.TimeSlot</span>
-                            <span class="island-compact-countdown">@GetCountdownText()</span>
-                            <span class="island-compact-chevron">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M6 9l6 6 6-6"/>
-                                </svg>
-                            </span>
-                        </div>
-                    </CompactContent>
-                    <ExpandedContent>
-                        <div class="island-hero-expanded-content">
-                            <div class="island-hero-expanded-header">
-                                <div class="island-hero-room-badge-group">
-                                    <div class="island-indicator-dot pulse" style="background-color: @GetStatusAccentColor(_activeUpcomingBooking.Status); color: @GetStatusAccentColor(_activeUpcomingBooking.Status);"></div>
-                                    <div>
-                                        <h2 class="island-hero-title-text">@_activeUpcomingBooking.RoomName</h2>
-                                        <div class="island-hero-location-text">@_activeUpcomingBooking.Floor, Persada HQ</div>
-                                    </div>
-                                </div>
-                                <StatusBadge Status="@_activeUpcomingBooking.Status" />
-                            </div>
-
-                            <div class="island-hero-meta-grid">
-                                <div class="island-meta-item">
-                                    <span class="island-meta-label">JADWAL</span>
-                                    <span class="island-meta-value">@_activeUpcomingBooking.Date, @_activeUpcomingBooking.TimeSlot</span>
-                                </div>
-                                <div class="island-meta-item">
-                                    <span class="island-meta-label">DURASI</span>
-                                    <span class="island-meta-value">@_activeUpcomingBooking.Duration</span>
-                                </div>
-                                <div class="island-meta-item">
-                                    <span class="island-meta-label">KAPASITAS</span>
-                                    <span class="island-meta-value">@_activeUpcomingBooking.Attendees/@_activeUpcomingBooking.Capacity Orang</span>
-                                </div>
-                                <div class="island-meta-item">
-                                    <span class="island-meta-label">COUNTDOWN REALTIME</span>
-                                    <span class="island-meta-value text-accent-green">@GetCountdownText()</span>
-                                </div>
-                            </div>
-
-                            @if (!string.IsNullOrEmpty(_activeUpcomingBooking.Purpose))
-                            {
-                                <div class="island-hero-purpose">
-                                    <span class="island-meta-label">TUJUAN PERTEMUAN</span>
-                                    <p>@_activeUpcomingBooking.Purpose</p>
-                                </div>
-                            }
-
-                            <div class="island-hero-actions">
-                                <button class="btn-island-secondary" @onclick="() => SelectBookingAndOpenSlide(_activeUpcomingBooking)" @onclick:stopPropagation="true">
-                                    Lihat Detail Lengkap
-                                </button>
-                                @if (_activeUpcomingBooking.Status.Equals("pending", StringComparison.OrdinalIgnoreCase) || _activeUpcomingBooking.Status.Equals("approved", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    <button class="btn-island-danger" @onclick="() => OpenCancelModalFor(_activeUpcomingBooking)" @onclick:stopPropagation="true">
-                                        Batalkan Pesanan
-                                    </button>
-                                }
-                            </div>
-                        </div>
-                    </ExpandedContent>
-                </IslandCapsule>
-            </div>
-        }
-        else
-        {
-            <div class="island-hero-card">
-                <IslandCapsule State="compact"
-                               AccentColor="#6B7280"
-                               Title="Tidak ada agenda aktif saat ini"
-                               CompactText="Tidak ada agenda aktif saat ini"
-                               BadgeText="STANDBY"
-                               Clickable="false" />
-            </div>
-        }
+    <!-- Search & Filter -->
+    <div class="status-filters">
+        <div class="search-bar-wrapper">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" class="search-bar-input" placeholder="Cari pemesanan..." @bind="_searchQuery" @bind:event="oninput" />
+        </div>
+        <div class="filter-dropdown">
+            <select class="filter-select" @bind="activeFilter" @bind:after="OnFilterChanged">
+                @foreach (var opt in _statusFilterOptions)
+                {
+                    <option value="@opt">@opt</option>
+                }
+            </select>
+        </div>
     </div>
 
-    <!-- Layout Utama: List Pemesanan & Detail Slide-In Panel -->
-    <div class="status-main-layout @(_isSlidePanelOpen ? "slide-panel-open" : "")">
-        <!-- Kolom Tabel -->
-        <div class="status-table-container">
-            <div class="status-table-toolbar">
-                <div class="status-search-box">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                    </svg>
-                    <input type="text" placeholder="Cari berdasarkan nama ruangan atau ID permintaan..." value="@_searchQuery" @oninput="OnSearchChanged" />
-                </div>
-
-                <div class="status-filter-group" style="position: relative;">
-                    <button class="status-filter-btn" @onclick="ToggleFilterPopup">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                        </svg>
-                        <span>Status: @activeFilter</span>
-                    </button>
-
-                    @if (isFilterOpen)
-                    {
-                        <div class="status-filter-dropdown-menu">
-                            @foreach (var filter in _statusFilterOptions)
-                            {
-                                <button class="status-dropdown-item @(activeFilter == filter ? "active" : "")" @onclick="() => ApplyFilter(filter)">
-                                    @filter
-                                </button>
-                            }
+    <div class="status-main-layout">
+        <!-- List di Kiri -->
+        <div class="status-list-container">
+            @foreach (var booking in FilteredBookings)
+            {
+                <div class="booking-list-card @(selectedBooking?.Id == booking.Id ? "active" : "")" @onclick="() => SelectBooking(booking)">
+                    <div class="booking-card-thumb" style="background-image: url('@booking.PhotoUrl');">
+                    </div>
+                    <div class="booking-card-content">
+                        <div class="booking-card-header">
+                            <h3 class="booking-card-title">@booking.RoomName</h3>
+                            <span class="booking-card-id">#@booking.RequestId</span>
                         </div>
-                    }
+                        <div class="booking-card-time">@booking.Date � @booking.TimeSlot</div>
+                        <div class="booking-card-attendees">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                            @booking.Attendees Peserta
+                        </div>
+                        <div class="booking-card-status">
+                            <StatusBadge Status="@booking.Status" />
+                        </div>
+                    </div>
                 </div>
-            </div>
-
-            <div class="status-datagrid-card">
-                <DataGrid TItem="BookingItem"
-                          Data="FilteredBookingsForGrid"
-                          Columns="gridColumns"
-                          IsLoading="_isLoading"
-                          SearchPlaceholder="Cari pemesanan..."
-                          FileNamePrefix="status-pemesanan"
-                          OnRowClick="SelectBookingAndOpenSlide">
-                </DataGrid>
-            </div>
+            }
         </div>
 
-        <!-- 4.2 Panel Detail Slide-in dari Kanan -->
-        <div class="status-slide-panel @(_isSlidePanelOpen ? "show" : "")">
+        <!-- Detail Panel Kanan -->
+        <div class="status-detail-panel @(selectedBooking != null ? "visible" : "")">
             @if (selectedBooking != null)
             {
-                <div class="slide-panel-inner">
-                    <div class="slide-panel-header">
-                        <div class="slide-panel-header-left">
-                            <IslandCapsule State="compact"
-                                           AccentColor="@GetStatusAccentColor(selectedBooking.Status)"
-                                           Title="@selectedBooking.RoomName"
-                                           CompactText="@GetStatusLabel(selectedBooking.Status)"
-                                           Clickable="false" />
-                            <span class="slide-panel-reqid">@selectedBooking.RequestId</span>
-                        </div>
-                        <button class="slide-panel-close-btn" @onclick="CloseSlidePanel" aria-label="Tutup Panel">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="18" y1="6" x2="6" y2="18"></line>
-                                <line x1="6" y1="6" x2="18" y2="18"></line>
-                            </svg>
-                        </button>
+                <div class="detail-panel-hero">
+                    <img src="@selectedBooking.PhotoUrl" class="detail-hero-img" alt="Room" onerror="this.style.display='none'" />
+                    <div class="detail-hero-status-badge">
+                        <StatusBadge Status="@selectedBooking.Status" />
                     </div>
-
-                    <div class="slide-panel-body">
-                        <div class="slide-photo-wrap">
-                            <img src="@(string.IsNullOrEmpty(selectedBooking.PhotoUrl) ? "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80" : selectedBooking.PhotoUrl)" 
-                                 alt="@selectedBooking.RoomName" 
-                                 class="slide-photo-img" />
-                            <div class="slide-photo-gradient"></div>
-                            <div class="slide-photo-title-wrap">
-                                <h3 class="slide-photo-title">@selectedBooking.RoomName</h3>
-                                <p class="slide-photo-location">@selectedBooking.Floor, Persada HQ</p>
-                            </div>
+                </div>
+                <div class="detail-panel-content">
+                    <h2 class="detail-panel-title">@selectedBooking.RoomName</h2>
+                    <p class="detail-panel-id">ID Permintaan: @selectedBooking.RequestId</p>
+                    
+                    <div class="detail-panel-grid">
+                        <div class="detail-info-block">
+                            <label>PEMOHON</label>
+                            <div class="info-val-strong">Budi Santoso</div>
+                            <div class="info-val-sub">VP of Engineering</div>
                         </div>
-
-                        <div class="slide-content-card">
-                            <div class="slide-requester-row">
-                                <div class="slide-requester-avatar">@GetInitials(selectedBooking.RequestedBy)</div>
-                                <div class="slide-requester-info">
-                                    <span class="slide-req-label">DIAJUKAN OLEH</span>
-                                    <span class="slide-req-name">@selectedBooking.RequestedBy</span>
-                                    <span class="slide-req-title">@selectedBooking.RequestedByTitle</span>
-                                </div>
-                            </div>
-
-                            <hr class="slide-divider" />
-
-                            <div class="slide-meta-grid">
-                                <div class="slide-meta-box">
-                                    <span class="slide-meta-label">TANGGAL</span>
-                                    <span class="slide-meta-value">@selectedBooking.Date</span>
-                                </div>
-                                <div class="slide-meta-box">
-                                    <span class="slide-meta-label">WAKTU</span>
-                                    <span class="slide-meta-value">@selectedBooking.TimeSlot</span>
-                                </div>
-                                <div class="slide-meta-box">
-                                    <span class="slide-meta-label">DURASI</span>
-                                    <span class="slide-meta-value">@selectedBooking.Duration</span>
-                                </div>
-                                <div class="slide-meta-box">
-                                    <span class="slide-meta-label">PESERTA</span>
-                                    <span class="slide-meta-value">@selectedBooking.Attendees / @selectedBooking.Capacity Org</span>
-                                </div>
-                            </div>
-
-                            @if (!string.IsNullOrEmpty(selectedBooking.Purpose))
-                            {
-                                <div class="slide-purpose-box">
-                                    <span class="slide-meta-label">TUJUAN PERTEMUAN</span>
-                                    <p>@selectedBooking.Purpose</p>
-                                </div>
-                            }
+                        <div class="detail-info-block">
+                            <label>WAKTU</label>
+                            <div class="info-val-strong">@selectedBooking.Date</div>
+                            <div class="info-val-sub">@selectedBooking.TimeSlot (@selectedBooking.Duration)</div>
+                        </div>
+                        <div class="detail-info-block">
+                            <label>KAPASITAS</label>
+                            <div class="info-val-strong">@selectedBooking.Attendees / @selectedBooking.Capacity</div>
+                            <div class="info-val-sub">Peserta Hadir</div>
                         </div>
                     </div>
 
-                    <div class="slide-panel-footer">
-                        <button class="btn-slide-modify" @onclick="OpenModifyModal">Ubah Reservasi</button>
-                        @if (selectedBooking.Status.Equals("pending", StringComparison.OrdinalIgnoreCase) || selectedBooking.Status.Equals("approved", StringComparison.OrdinalIgnoreCase))
+                    <div class="detail-info-block" style="margin-top: 16px;">
+                        <label>TUJUAN RAPAT</label>
+                        <div class="info-val-purpose">
+                            @(string.IsNullOrEmpty(selectedBooking.Purpose) ? "Pembaruan proyek dan evaluasi kuartal berjalan bersama tim manajemen." : selectedBooking.Purpose)
+                        </div>
+                    </div>
+
+                    <div class="detail-panel-actions">
+                        @if (selectedBooking.Status != "completed" && selectedBooking.Status != "rejected")
                         {
-                            <button class="btn-slide-cancel" @onclick="OpenCancelModal">Batalkan Permintaan</button>
+                            <button class="btn btn-primary btn-full" @onclick="OpenModifyModal">Modifikasi</button>
+                            <button class="btn btn-danger-outline btn-full" @onclick="OpenCancelModal">Batalkan Permintaan</button>
                         }
                     </div>
                 </div>
@@ -256,661 +119,399 @@
     </div>
 </div>
 
-<!-- 4.3 Modal Konfirmasi Pembatalan Terpusat -->
-<AppModal Visible="@isCancelModalOpen" ShowCloseButton="false" 
-       VisibleChanged="@(v => isCancelModalOpen = v)"
-       Title="Batalkan Pemesanan?"
-       Subtitle="Tindakan ini akan membatalkan pemesanan dan membebaskan jadwal ruangan."
-       Size="sm"
-       OnClose="CloseCancelModal">
+<AppModal Visible="@isCancelModalOpen" ShowCloseButton="false" OnClose="CloseCancelModal" Size="sm">
     <BodyContent>
-        <CancelRequestModal Booking="@selectedBooking" OnClose="CloseCancelModal" OnConfirm="HandleCancelConfirm" />
+        <div style="text-align: center;">
+            <div style="width: 48px; height: 48px; border-radius: 50%; background: #FEE2E2; color: #DC2626; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            </div>
+            <h3 style="margin: 0 0 8px 0; font-size: 1.125rem; color: #111827;">Batalkan Permintaan?</h3>
+            <p style="margin: 0 0 16px 0; font-size: 0.875rem; color: #6B7280;">Tindakan ini tidak dapat dibatalkan. Berikan alasan pembatalan di bawah ini.</p>
+            <textarea style="width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-family: inherit; font-size: 0.875rem; min-height: 80px;" placeholder="Tulis alasan pembatalan (wajib)..."></textarea>
+        </div>
     </BodyContent>
+    <FooterContent>
+        <div style="display: flex; gap: 12px; width: 100%;">
+            <button class="btn btn-secondary" style="flex: 1;" @onclick="CloseCancelModal">Batal</button>
+            <button class="btn" style="flex: 1; background: #DC2626; color: white;" @onclick="ConfirmCancel">Konfirmasi Pembatalan</button>
+        </div>
+    </FooterContent>
 </AppModal>
 
-<!-- Modal Modifikasi Reservasi -->
-<AppModal Visible="@isModifyModalOpen" ShowCloseButton="false"
-       VisibleChanged="@(v => isModifyModalOpen = v)"
-       Title="Ubah Jadwal Pemesanan"
-       Subtitle="Sesuaikan tanggal, waktu, atau catatan pemesanan ruangan Anda."
-       Size="md"
-       OnClose="CloseModifyModal">
+<AppModal Visible="@isModifyModalOpen" ShowCloseButton="false" OnClose="CloseModifyModal" Size="md" Title="Modifikasi Booking">
     <BodyContent>
-        <ModifyBookingModal Booking="@selectedBooking" OnClose="CloseModifyModal" OnUpdate="HandleModifyUpdate" />
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            <div>
+                <h4 style="margin: 0 0 12px 0; font-size: 0.875rem; color: #111827;">Detail Personil</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div>
+                        <label style="display: block; font-size: 0.75rem; color: #6B7280; margin-bottom: 4px;">Nama Peminjam</label>
+                        <input type="text" style="width: 100%; box-sizing: border-box; padding: 8px 12px; border: 1px solid #D1D5DB; border-radius: 6px; font-family: inherit; font-size: 0.875rem;" value="Budi Santoso" disabled />
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.75rem; color: #6B7280; margin-bottom: 4px;">Divisi / Departemen</label>
+                        <input type="text" style="width: 100%; box-sizing: border-box; padding: 8px 12px; border: 1px solid #D1D5DB; border-radius: 6px; font-family: inherit; font-size: 0.875rem;" value="IT / Engineering" disabled />
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h4 style="margin: 0 0 12px 0; font-size: 0.875rem; color: #111827;">Logistik</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div>
+                        <label style="display: block; font-size: 0.75rem; color: #6B7280; margin-bottom: 4px;">Rentang Tanggal</label>
+                        <input type="date" style="width: 100%; box-sizing: border-box; padding: 8px 12px; border: 1px solid #D1D5DB; border-radius: 6px; font-family: inherit; font-size: 0.875rem;" value="2024-11-20" />
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.75rem; color: #6B7280; margin-bottom: 4px;">Durasi</label>
+                        <select style="width: 100%; box-sizing: border-box; padding: 8px 12px; border: 1px solid #D1D5DB; border-radius: 6px; font-family: inherit; font-size: 0.875rem;">
+                            <option>1 Jam</option>
+                            <option selected>2 Jam</option>
+                            <option>3 Jam</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h4 style="margin: 0 0 12px 0; font-size: 0.875rem; color: #111827;">Informasi Tambahan</h4>
+                <label style="display: block; font-size: 0.75rem; color: #6B7280; margin-bottom: 4px;">Catatan Admin</label>
+                <textarea style="width: 100%; box-sizing: border-box; padding: 8px 12px; border: 1px solid #D1D5DB; border-radius: 6px; font-family: inherit; font-size: 0.875rem; min-height: 80px;" placeholder="Tulis catatan jika ada perubahan fasilitas..."></textarea>
+            </div>
+        </div>
     </BodyContent>
+    <FooterContent>
+        <div style="display: flex; gap: 12px; width: 100%; justify-content: flex-end;">
+            <button class="btn btn-secondary" @onclick="CloseModifyModal">Batal</button>
+            <button class="btn" style="background: #F5B301; color: #0F1F3D; font-weight: 700;" @onclick="ConfirmModify">Perbarui Pemesanan</button>
+        </div>
+    </FooterContent>
 </AppModal>
 
 <style>
     .status-page-wrapper {
         padding: 32px;
-        max-width: 1440px;
+        max-width: 1400px;
         margin: 0 auto;
-        font-family: var(--font-family-primary, 'Inter', sans-serif);
+        font-family: 'Inter', sans-serif;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        min-height: calc(100vh - 80px);
     }
-
+    
     .status-page-header {
         display: flex;
         justify-content: space-between;
-        align-items: flex-end;
-        margin-bottom: 24px;
-        gap: 16px;
-        flex-wrap: wrap;
+        align-items: center;
     }
-
     .status-hero-title {
-        font-size: 2.25rem;
-        font-weight: 800;
-        color: var(--color-brand-navy, #0F1F3D);
-        margin: 0 0 6px 0;
-        letter-spacing: -0.02em;
-        line-height: 1.2;
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #0F1F3D;
+        margin: 0 0 4px 0;
     }
-
     .status-hero-subtitle {
-        font-size: 0.9375rem;
-        color: var(--color-brand-text-muted, #6B7280);
+        font-size: 1rem;
+        color: #6B7280;
         margin: 0;
-        line-height: 1.5;
-        max-width: 680px;
     }
-
+    
     .status-btn-icon-refresh {
-        display: inline-flex;
+        display: flex;
         align-items: center;
         gap: 8px;
-        padding: 10px 18px;
-        border-radius: var(--radius-pill, 999px);
-        background: #FFFFFF;
-        border: 1px solid var(--color-brand-gray-border, #E5E7EB);
-        color: var(--color-brand-navy, #0F1F3D);
-        font-size: 0.875rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-        box-shadow: var(--shadow-card);
-    }
-
-    .status-btn-icon-refresh:hover {
-        background: #F8FAFC;
-        border-color: #CBD5E1;
-        transform: translateY(-1px);
-    }
-
-    /* --- Dynamic Island Hero Section --- */
-    .status-island-hero-section {
-        margin-bottom: 28px;
-        display: flex;
-        justify-content: center;
-    }
-
-    .island-hero-card {
-        width: 100%;
-        max-width: 840px;
-        display: flex;
-        justify-content: center;
-    }
-
-    .island-hero-compact-content {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 0.875rem;
-        font-weight: 600;
-    }
-
-    .island-compact-room {
-        color: #FFFFFF;
-        font-weight: 700;
-    }
-
-    .island-compact-separator {
-        color: rgba(255, 255, 255, 0.3);
-    }
-
-    .island-compact-time {
-        color: #D1D5DB;
-    }
-
-    .island-compact-countdown {
-        font-size: 0.75rem;
-        font-weight: 700;
-        padding: 3px 10px;
-        border-radius: 999px;
-        background: rgba(16, 185, 129, 0.18);
-        color: #34D399;
-        border: 1px solid rgba(16, 185, 129, 0.3);
-    }
-
-    .island-compact-chevron {
-        color: #9CA3AF;
-        display: flex;
-        align-items: center;
-    }
-
-    .island-hero-expanded-content {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        width: 100%;
-    }
-
-    .island-hero-expanded-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 16px;
-    }
-
-    .island-hero-room-badge-group {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .island-hero-title-text {
-        font-size: 1.25rem;
-        font-weight: 800;
-        color: #FFFFFF;
-        margin: 0;
-        line-height: 1.2;
-    }
-
-    .island-hero-location-text {
-        font-size: 0.8125rem;
-        color: #9CA3AF;
-        margin-top: 2px;
-    }
-
-    .island-hero-meta-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 12px;
-        background: rgba(255, 255, 255, 0.04);
-        padding: 14px 18px;
-        border-radius: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .island-meta-item {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-
-    .island-meta-label {
-        font-size: 0.6875rem;
-        font-weight: 700;
-        color: #9CA3AF;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-    }
-
-    .island-meta-value {
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: #F3F4F6;
-    }
-
-    .text-accent-green {
-        color: #34D399;
-    }
-
-    .island-hero-purpose {
-        background: rgba(255, 255, 255, 0.03);
-        padding: 12px 16px;
-        border-radius: 12px;
-        border-left: 3px solid #F59E0B;
-    }
-
-    .island-hero-purpose p {
-        margin: 4px 0 0 0;
-        font-size: 0.8125rem;
-        color: #D1D5DB;
-        line-height: 1.4;
-    }
-
-    .island-hero-actions {
-        display: flex;
-        gap: 12px;
-        justify-content: flex-end;
-    }
-
-    .btn-island-secondary {
-        background: rgba(255, 255, 255, 0.12);
-        color: #FFFFFF;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        padding: 8px 18px;
-        border-radius: 999px;
-        font-size: 0.8125rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .btn-island-secondary:hover {
-        background: rgba(255, 255, 255, 0.2);
-    }
-
-    .btn-island-danger {
-        background: rgba(239, 68, 68, 0.15);
-        color: #FCA5A5;
-        border: 1px solid rgba(239, 68, 68, 0.3);
-        padding: 8px 18px;
-        border-radius: 999px;
-        font-size: 0.8125rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .btn-island-danger:hover {
-        background: rgba(239, 68, 68, 0.25);
-        color: #FFFFFF;
-    }
-
-    /* --- Status Main Layout --- */
-    .status-main-layout {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 24px;
-        transition: grid-template-columns 0.35s var(--island-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
-        position: relative;
-    }
-
-    .status-main-layout.slide-panel-open {
-        grid-template-columns: 1fr 420px;
-    }
-
-    .status-table-container {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        min-width: 0;
-    }
-
-    .status-table-toolbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 16px;
-        flex-wrap: wrap;
-    }
-
-    .status-search-box {
-        position: relative;
-        flex: 1;
-        min-width: 240px;
-        display: flex;
-        align-items: center;
-    }
-
-    .status-search-box svg {
-        position: absolute;
-        left: 16px;
-        color: #9CA3AF;
-        pointer-events: none;
-    }
-
-    .status-search-box input {
-        width: 100%;
-        padding: 10px 16px 10px 44px;
-        border: 1px solid var(--color-brand-gray-border, #E5E7EB);
-        border-radius: var(--radius-pill, 999px);
-        font-size: 0.875rem;
-        background: #FFFFFF;
-        color: var(--color-brand-navy, #0F1F3D);
-        outline: none;
-        transition: all 0.2s;
-    }
-
-    .status-search-box input:focus {
-        border-color: var(--color-brand-blue, #1F5D9A);
-        box-shadow: 0 0 0 3px rgba(31, 93, 154, 0.12);
-    }
-
-    .status-filter-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 18px;
-        border-radius: var(--radius-pill, 999px);
-        background: #FFFFFF;
-        border: 1px solid var(--color-brand-gray-border, #E5E7EB);
-        color: var(--color-brand-navy, #0F1F3D);
-        font-size: 0.875rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .status-filter-btn:hover {
-        background: #F8FAFC;
-        border-color: #CBD5E1;
-    }
-
-    .status-filter-dropdown-menu {
-        position: absolute;
-        top: calc(100% + 8px);
-        right: 0;
-        z-index: 50;
-        background: #FFFFFF;
-        border: 1px solid var(--color-brand-gray-border, #E5E7EB);
-        border-radius: var(--radius-md, 12px);
-        box-shadow: var(--shadow-popover);
-        padding: 6px;
-        min-width: 180px;
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-
-    .status-dropdown-item {
-        background: none;
-        border: none;
-        padding: 8px 12px;
-        text-align: left;
-        font-size: 0.8125rem;
-        font-weight: 600;
-        color: #4B5563;
+        padding: 10px 16px;
+        background: white;
+        border: 1px solid #E5E7EB;
         border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.15s;
-    }
-
-    .status-dropdown-item:hover {
-        background: #F1F5F9;
-        color: var(--color-brand-navy, #0F1F3D);
-    }
-
-    .status-dropdown-item.active {
-        background: #EFF6FF;
-        color: var(--color-brand-blue, #1F5D9A);
-    }
-
-    .status-datagrid-card {
-        background: #FFFFFF;
-        border-radius: var(--radius-card, 16px);
-        border: 1px solid var(--color-brand-gray-border, #E5E7EB);
-        overflow: hidden;
-        box-shadow: var(--shadow-card);
-    }
-
-    /* --- 4.2 Slide-in Panel Styles --- */
-    .status-slide-panel {
-        display: none;
-        background: #FFFFFF;
-        border: 1px solid var(--color-brand-gray-border, #E5E7EB);
-        border-radius: var(--radius-card, 16px);
-        box-shadow: var(--shadow-modal);
-        overflow: hidden;
-        flex-direction: column;
-        animation: slideInRight 0.3s var(--island-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) forwards;
-    }
-
-    .status-slide-panel.show {
-        display: flex;
-    }
-
-    .slide-panel-inner {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-    }
-
-    .slide-panel-header {
-        padding: 16px 20px;
-        border-bottom: 1px solid var(--color-brand-gray-border, #E5E7EB);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: #FFFFFF;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-    }
-
-    .slide-panel-header-left {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .slide-panel-reqid {
-        font-size: 0.75rem;
-        color: #9CA3AF;
+        color: #4B5563;
         font-weight: 600;
-    }
-
-    .slide-panel-close-btn {
-        background: none;
-        border: none;
-        padding: 6px;
-        border-radius: 50%;
-        color: #9CA3AF;
+        font-size: 0.875rem;
         cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
         transition: all 0.2s;
     }
-
-    .slide-panel-close-btn:hover {
+    .status-btn-icon-refresh:hover {
         background: #F3F4F6;
         color: #111827;
     }
-
-    .slide-panel-body {
-        padding: 20px;
+    
+    .status-filters {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+    }
+    .search-bar-wrapper {
+        position: relative;
+        flex: 1;
+        max-width: 400px;
+    }
+    .search-bar-wrapper svg {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9CA3AF;
+    }
+    .search-bar-input {
+        width: 100%;
+        padding: 10px 12px 10px 40px;
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        font-size: 0.9375rem;
+        outline: none;
+        box-sizing: border-box;
+    }
+    .search-bar-input:focus {
+        border-color: #3B82F6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    .filter-select {
+        padding: 10px 32px 10px 12px;
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        font-size: 0.9375rem;
+        color: #111827;
+        background-color: white;
+        outline: none;
+        cursor: pointer;
+    }
+    
+    .status-main-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 400px;
+        gap: 24px;
+        align-items: start;
+    }
+    
+    .status-list-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-height: calc(100vh - 220px);
         overflow-y: auto;
+        padding-right: 8px;
+    }
+    
+    .booking-list-card {
+        display: flex;
+        gap: 16px;
+        padding: 16px;
+        background: white;
+        border: 1px solid #E5E7EB;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .booking-list-card:hover {
+        border-color: #CBD5E1;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .booking-list-card.active {
+        border-color: #3B82F6;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+        background: #F8FAFC;
+    }
+    
+    .booking-card-thumb {
+        width: 80px;
+        height: 80px;
+        border-radius: 8px;
+        background-size: cover;
+        background-position: center;
+        background-color: #F3F4F6;
+        flex-shrink: 0;
+    }
+    
+    .booking-card-content {
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        justify-content: space-between;
     }
-
-    .slide-photo-wrap {
-        position: relative;
-        height: 160px;
-        border-radius: 12px;
+    
+    .booking-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 4px;
+    }
+    
+    .booking-card-title {
+        margin: 0;
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #0F1F3D;
+    }
+    
+    .booking-card-id {
+        font-size: 0.75rem;
+        color: #9CA3AF;
+        font-weight: 600;
+    }
+    
+    .booking-card-time {
+        font-size: 0.875rem;
+        color: #4B5563;
+        margin-bottom: 4px;
+    }
+    
+    .booking-card-attendees {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.75rem;
+        color: #6B7280;
+    }
+    
+    .booking-card-status {
+        margin-top: 8px;
+    }
+    
+    .status-detail-panel {
+        background: white;
+        border: 1px solid #E5E7EB;
+        border-radius: 16px;
         overflow: hidden;
-        box-shadow: var(--shadow-card);
+        display: flex;
+        flex-direction: column;
+        display: none;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
     }
-
-    .slide-photo-img {
+    .status-detail-panel.visible {
+        display: flex;
+        position: sticky;
+        top: 24px;
+    }
+    
+    .detail-panel-hero {
+        position: relative;
+        height: 220px;
+        background: #F3F4F6;
+    }
+    
+    .detail-hero-img {
         width: 100%;
         height: 100%;
         object-fit: cover;
     }
-
-    .slide-photo-gradient {
+    
+    .detail-hero-status-badge {
         position: absolute;
-        inset: 0;
-        background: linear-gradient(180deg, transparent 40%, rgba(15, 31, 61, 0.85) 100%);
+        top: 16px;
+        left: 16px;
     }
-
-    .slide-photo-title-wrap {
-        position: absolute;
-        bottom: 12px;
-        left: 14px;
-        right: 14px;
-        color: #FFFFFF;
+    
+    .detail-panel-content {
+        padding: 24px;
     }
-
-    .slide-photo-title {
-        font-size: 1.125rem;
+    
+    .detail-panel-title {
+        margin: 0 0 4px 0;
+        font-size: 1.5rem;
         font-weight: 700;
-        margin: 0;
+        color: #0F1F3D;
     }
-
-    .slide-photo-location {
-        font-size: 0.75rem;
-        color: #E2E8F0;
-        margin: 2px 0 0 0;
-    }
-
-    .slide-content-card {
-        background: #F8FAFC;
-        border: 1px solid var(--color-brand-gray-border, #E5E7EB);
-        border-radius: 14px;
-        padding: 16px;
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-    }
-
-    .slide-requester-row {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .slide-requester-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background-color: var(--color-brand-navy, #0F1F3D);
-        color: #FFFFFF;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
+    
+    .detail-panel-id {
+        margin: 0 0 20px 0;
         font-size: 0.875rem;
-    }
-
-    .slide-requester-info {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .slide-req-label {
-        font-size: 0.6875rem;
-        font-weight: 700;
-        color: #9CA3AF;
-        letter-spacing: 0.05em;
-    }
-
-    .slide-req-name {
-        font-size: 0.9375rem;
-        font-weight: 700;
-        color: var(--color-brand-navy, #0F1F3D);
-    }
-
-    .slide-req-title {
-        font-size: 0.75rem;
         color: #6B7280;
     }
-
-    .slide-divider {
-        border: none;
-        border-top: 1px solid #E2E8F0;
-        margin: 0;
-    }
-
-    .slide-meta-grid {
+    
+    .detail-panel-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 10px;
+        gap: 16px;
     }
-
-    .slide-meta-box {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-
-    .slide-meta-label {
-        font-size: 0.6875rem;
+    
+    .detail-info-block label {
+        display: block;
+        font-size: 0.75rem;
         font-weight: 700;
         color: #9CA3AF;
-        letter-spacing: 0.05em;
+        margin-bottom: 4px;
     }
-
-    .slide-meta-value {
+    
+    .info-val-strong {
         font-size: 0.875rem;
         font-weight: 600;
-        color: var(--color-brand-navy, #0F1F3D);
+        color: #111827;
     }
-
-    .slide-purpose-box {
-        background: #FFFFFF;
-        padding: 10px 12px;
-        border-radius: 10px;
+    
+    .info-val-sub {
+        font-size: 0.8125rem;
+        color: #6B7280;
+    }
+    
+    .info-val-purpose {
+        font-size: 0.875rem;
+        color: #374151;
+        line-height: 1.5;
+        background: #F8FAFC;
+        padding: 12px;
+        border-radius: 8px;
         border: 1px solid #E2E8F0;
     }
-
-    .slide-purpose-box p {
-        margin: 4px 0 0 0;
-        font-size: 0.8125rem;
-        color: #4B5563;
-        line-height: 1.4;
-    }
-
-    .slide-panel-footer {
-        padding: 16px 20px;
-        border-top: 1px solid var(--color-brand-gray-border, #E5E7EB);
+    
+    .detail-panel-actions {
+        margin-top: 24px;
         display: flex;
         flex-direction: column;
-        gap: 8px;
-        background: #FFFFFF;
+        gap: 12px;
     }
-
-    .btn-slide-modify {
-        width: 100%;
-        background: var(--color-brand-navy, #0F1F3D);
-        color: #FFFFFF;
-        border: none;
-        padding: 10px;
-        border-radius: var(--radius-pill, 999px);
-        font-weight: 600;
+    
+    .btn {
+        padding: 10px 16px;
+        border-radius: 8px;
         font-size: 0.875rem;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .btn-slide-modify:hover {
-        background: #16305C;
-    }
-
-    .btn-slide-cancel {
-        width: 100%;
-        background: transparent;
-        color: #EF4444;
-        border: 1px solid #FCA5A5;
-        padding: 8px;
-        border-radius: var(--radius-pill, 999px);
         font-weight: 600;
-        font-size: 0.8125rem;
         cursor: pointer;
+        border: none;
         transition: all 0.2s;
     }
-
-    .btn-slide-cancel:hover {
+    
+    .btn-full {
+        width: 100%;
+    }
+    
+    .btn-primary {
+        background: #F5B301;
+        color: #0F1F3D;
+    }
+    .btn-primary:hover {
+        background: #D99E00;
+    }
+    
+    .btn-danger-outline {
+        background: white;
+        border: 1px solid #DC2626;
+        color: #DC2626;
+    }
+    .btn-danger-outline:hover {
         background: #FEF2F2;
     }
-
-    @@keyframes slideInRight {
-        from {
-            opacity: 0;
-            transform: translateX(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
+    
+    .btn-secondary {
+        background: white;
+        border: 1px solid #D1D5DB;
+        color: #374151;
     }
-
-    @@media (max-width: 992px) {
-        .status-main-layout.slide-panel-open {
+    .btn-secondary:hover {
+        background: #F3F4F6;
+    }
+    
+    @@media (max-width: 900px) {
+        .status-main-layout {
             grid-template-columns: 1fr;
         }
-        .status-slide-panel {
+        .status-detail-panel {
             position: fixed;
-            bottom: 0;
+            top: 0;
             left: 0;
-            right: 0;
-            top: 20%;
-            z-index: 1050;
-            border-radius: 20px 20px 0 0;
+            width: 100%;
+            height: 100vh;
+            border-radius: 0;
+            z-index: 1000;
+            overflow-y: auto;
         }
     }
 </style>
@@ -918,284 +519,131 @@
 @code {
     private List<BookingItem> allBookings = new();
     private BookingItem? selectedBooking;
-    private BookingItem? _activeUpcomingBooking;
     private string activeFilter = "Semua Status";
-    private bool isFilterOpen = false;
-    private bool _isSlidePanelOpen = false;
-    private bool _isHeroExpanded = false;
+    [SupplyParameterFromQuery(Name = "filter")] public string? QueryFilter { get; set; }
     private string _searchQuery = "";
-    private System.Timers.Timer? _countdownTimer;
+    
+    private readonly object _disposeLock = new();
     private bool _disposed = false;
+    private System.Timers.Timer? _countdownTimer;
     private CancellationTokenSource _cts = new();
 
     private bool isModifyModalOpen = false;
     private bool isCancelModalOpen = false;
-    private bool _isLoading = true;
-    private List<GridColumn<BookingItem>> gridColumns = new();
+    
 
     private readonly string[] _statusFilterOptions = { "Semua Status", "Menunggu Persetujuan", "Disetujui", "Ditolak", "Selesai" };
 
     protected override async Task OnInitializedAsync()
     {
-        gridColumns = new List<GridColumn<BookingItem>>
+        if (!string.IsNullOrEmpty(QueryFilter) && _statusFilterOptions.Contains(QueryFilter))
         {
-            new GridColumn<BookingItem>
-            {
-                Title = "RUANGAN",
-                PropertyName = "RoomName",
-                ValueFunc = b => b.RoomName,
-                CellTemplate = b => builder =>
-                {
-                    builder.OpenElement(0, "div");
-                    builder.AddAttribute(1, "style", "display: flex; flex-direction: column;");
-                    builder.OpenElement(2, "span");
-                    builder.AddAttribute(3, "style", "font-weight: 700; color: #0F1F3D;");
-                    builder.AddContent(4, b.RoomName);
-                    builder.CloseElement();
-                    builder.OpenElement(5, "span");
-                    builder.AddAttribute(6, "style", "font-size: 12px; color: #6B7280; margin-top: 2px;");
-                    builder.AddContent(7, $"{b.Floor} • {b.RequestId}");
-                    builder.CloseElement();
-                    builder.CloseElement();
-                }
-            },
-            new GridColumn<BookingItem>
-            {
-                Title = "TANGGAL",
-                PropertyName = "Date",
-                ValueFunc = b => b.Date
-            },
-            new GridColumn<BookingItem>
-            {
-                Title = "WAKTU",
-                PropertyName = "TimeSlot",
-                ValueFunc = b => b.TimeSlot
-            },
-            new GridColumn<BookingItem>
-            {
-                Title = "DURASI",
-                PropertyName = "Duration",
-                ValueFunc = b => b.Duration
-            },
-            new GridColumn<BookingItem>
-            {
-                Title = "STATUS",
-                PropertyName = "Status",
-                ValueFunc = b => GetStatusLabel(b.Status),
-                CellTemplate = b => builder =>
-                {
-                    builder.OpenComponent<StatusBadge>(0);
-                    builder.AddAttribute(1, "Status", b.Status);
-                    builder.CloseComponent();
-                }
-            }
-        };
-
+            activeFilter = QueryFilter;
+        }
         try 
         {
-            // Simulate async fetch
             await Task.Delay(100, _cts.Token);
-            
             allBookings = BookingDataStore.AllBookings.ToList();
-            selectedBooking = allBookings.FirstOrDefault();
-            _activeUpcomingBooking = allBookings.FirstOrDefault(b => b.Status.Equals("approved", StringComparison.OrdinalIgnoreCase) || b.Status.Equals("pending", StringComparison.OrdinalIgnoreCase));
-            _isLoading = false;
+            selectedBooking = FilteredBookings.FirstOrDefault();
+            
 
-            // Inisialisasi countdown timer untuk Dynamic Island Hero
             _countdownTimer = new System.Timers.Timer(1000);
             _countdownTimer.Elapsed += OnTimerElapsed;
             _countdownTimer.Start();
         }
-        catch (OperationCanceledException)
+        catch (Exception ex) when (ex is ObjectDisposedException || ex is TaskCanceledException || ex is OperationCanceledException)
         {
-            // Normal when navigating away
+            // Ignore
         }
     }
 
-    private void OnTimerElapsed(object? sender, System.Timers.ElapsedEventArgs e)
-    {
-        if (_disposed) return;
-        
-        try 
-        {
-            InvokeAsync(StateHasChanged);
-        }
-        catch (ObjectDisposedException)
-        {
-            // Ignore if already disposed
-        }
-    }
-
-    private IEnumerable<BookingItem> FilteredBookingsForGrid
+    private IEnumerable<BookingItem> FilteredBookings
     {
         get
         {
-            var query = allBookings.AsEnumerable();
-
-            if (!string.IsNullOrWhiteSpace(_searchQuery))
-            {
-                var q = _searchQuery.Trim().ToLowerInvariant();
-                query = query.Where(b => b.RoomName.ToLowerInvariant().Contains(q) || b.RequestId.ToLowerInvariant().Contains(q));
-            }
-
+            var result = allBookings.AsEnumerable();
             if (activeFilter != "Semua Status")
             {
-                var targetStatus = activeFilter switch
+                var filterKey = activeFilter switch
                 {
                     "Menunggu Persetujuan" => "pending",
                     "Disetujui" => "approved",
                     "Ditolak" => "rejected",
                     "Selesai" => "completed",
-                    _ => activeFilter
+                    _ => ""
                 };
-                query = query.Where(b => b.Status.Equals(targetStatus, StringComparison.OrdinalIgnoreCase) || b.Status.Equals(activeFilter, StringComparison.OrdinalIgnoreCase));
+                if (!string.IsNullOrEmpty(filterKey))
+                    result = result.Where(b => b.Status.Equals(filterKey, StringComparison.OrdinalIgnoreCase));
             }
-
-            return query;
+            if (!string.IsNullOrWhiteSpace(_searchQuery))
+            {
+                var q = _searchQuery.ToLower();
+                result = result.Where(b => b.RoomName.ToLower().Contains(q) || b.RequestId.ToLower().Contains(q));
+            }
+            return result;
         }
     }
 
-    private void OnSearchChanged(ChangeEventArgs e)
+    private void OnFilterChanged()
     {
-        _searchQuery = e.Value?.ToString() ?? "";
+        selectedBooking = FilteredBookings.FirstOrDefault();
     }
 
-    private void SelectBookingAndOpenSlide(BookingItem booking)
+    private void SelectBooking(BookingItem booking)
     {
         selectedBooking = booking;
-        _isSlidePanelOpen = true;
     }
 
-    private void CloseSlidePanel()
+    private void OpenCancelModal() => isCancelModalOpen = true;
+    private void CloseCancelModal() => isCancelModalOpen = false;
+    private void ConfirmCancel()
     {
-        _isSlidePanelOpen = false;
+        if (selectedBooking != null)
+        {
+            var index = allBookings.FindIndex(b => b.Id == selectedBooking.Id);
+            if (index >= 0)
+            {
+                var updated = selectedBooking with { Status = "cancelled" };
+                allBookings[index] = updated;
+                selectedBooking = updated;
+            }
+        }
+        isCancelModalOpen = false;
+        ToastService.Show("Permintaan berhasil dibatalkan", "success");
+    }
+
+    private void OpenModifyModal() => isModifyModalOpen = true;
+    private void CloseModifyModal() => isModifyModalOpen = false;
+    private void ConfirmModify()
+    {
+        isModifyModalOpen = false;
+        ToastService.Show("Pemesanan berhasil diperbarui", "success");
     }
 
     private void RefreshData()
     {
         allBookings = BookingDataStore.AllBookings.ToList();
-        _activeUpcomingBooking = allBookings.FirstOrDefault(b => b.Status.Equals("approved", StringComparison.OrdinalIgnoreCase) || b.Status.Equals("pending", StringComparison.OrdinalIgnoreCase));
-        ToastService.Success("Data Diperbarui", "Daftar status pemesanan berhasil disinkronkan.");
+        ToastService.Show("Data berhasil diperbarui", "success");
     }
 
-    private void ToggleFilterPopup()
+    private void OnTimerElapsed(object? sender, System.Timers.ElapsedEventArgs e)
     {
-        isFilterOpen = !isFilterOpen;
-    }
-
-    private void ApplyFilter(string filter)
-    {
-        activeFilter = filter;
-        isFilterOpen = false;
-    }
-
-    private void OnHeroExpandChanged(bool expanded)
-    {
-        _isHeroExpanded = expanded;
-    }
-
-    private void OpenCancelModalFor(BookingItem booking)
-    {
-        selectedBooking = booking;
-        OpenCancelModal();
-    }
-
-    private void OpenModifyModal()
-    {
-        isModifyModalOpen = true;
-    }
-
-    private void CloseModifyModal()
-    {
-        isModifyModalOpen = false;
-    }
-
-    private void HandleModifyUpdate(BookingItem updatedBooking)
-    {
-        var index = allBookings.FindIndex(b => b.Id == updatedBooking.Id);
-        if (index != -1)
+        lock (_disposeLock)
         {
-            allBookings[index] = updatedBooking;
-            if (selectedBooking?.Id == updatedBooking.Id)
-            {
-                selectedBooking = updatedBooking;
-            }
-            if (_activeUpcomingBooking?.Id == updatedBooking.Id)
-            {
-                _activeUpcomingBooking = updatedBooking;
-            }
+            if (_disposed) return;
         }
-        isModifyModalOpen = false;
-        ToastService.Success("Reservasi Diperbarui", $"Jadwal untuk {updatedBooking.RoomName} berhasil disesuaikan.");
-    }
-
-    private void OpenCancelModal()
-    {
-        isCancelModalOpen = true;
-    }
-
-    private void CloseCancelModal()
-    {
-        isCancelModalOpen = false;
-    }
-
-    private void HandleCancelConfirm(BookingItem booking)
-    {
-        var index = allBookings.FindIndex(b => b.Id == booking.Id);
-        if (index != -1)
+        try 
         {
-            var updated = booking with { Status = "rejected" };
-            allBookings[index] = updated;
-            if (selectedBooking?.Id == booking.Id)
-            {
-                selectedBooking = updated;
-            }
-            if (_activeUpcomingBooking?.Id == booking.Id)
-            {
-                _activeUpcomingBooking = allBookings.FirstOrDefault(b => b.Status.Equals("approved", StringComparison.OrdinalIgnoreCase) || b.Status.Equals("pending", StringComparison.OrdinalIgnoreCase));
-            }
+            InvokeAsync(StateHasChanged);
         }
-        isCancelModalOpen = false;
-        ToastService.Warning("Pemesanan Dibatalkan", $"Pemesanan {booking.RoomName} telah dibatalkan.");
-    }
-
-    private string GetCountdownText()
-    {
-        return "18 Menit Menuju Check-in";
-    }
-
-    private string GetStatusAccentColor(string status) => (status ?? "").ToLowerInvariant() switch
-    {
-        "approved" or "disetujui" => "#10B981",
-        "pending" or "menunggu" => "#F59E0B",
-        "rejected" or "ditolak" => "#EF4444",
-        "completed" or "selesai" => "#3B82F6",
-        _ => "#10B981"
-    };
-
-    private string GetStatusLabel(string status)
-    {
-        if (status.Equals("pending", StringComparison.OrdinalIgnoreCase)) return "Menunggu Persetujuan";
-        if (status.Equals("approved", StringComparison.OrdinalIgnoreCase)) return "Disetujui";
-        if (status.Equals("rejected", StringComparison.OrdinalIgnoreCase)) return "Ditolak";
-        if (status.Equals("completed", StringComparison.OrdinalIgnoreCase)) return "Selesai";
-        return status;
-    }
-
-    private string GetInitials(string name)
-    {
-        if (string.IsNullOrWhiteSpace(name)) return "U";
-        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length == 1) return parts[0].Substring(0, 1).ToUpper();
-        return $"{parts[0].Substring(0, 1)}{parts[1].Substring(0, 1)}".ToUpper();
+        catch (Exception ex) when (ex is ObjectDisposedException || ex is TaskCanceledException || ex is OperationCanceledException)
+        {
+            // Ignore if already disposed
+        }
     }
 
     public void Dispose()
     {
-        _disposed = true;
-        _cts.Cancel();
-        _cts.Dispose();
-
         if (_countdownTimer != null)
         {
             _countdownTimer.Elapsed -= OnTimerElapsed;
@@ -1203,7 +651,17 @@
             _countdownTimer.Dispose();
             _countdownTimer = null;
         }
+        lock (_disposeLock)
+        {
+            _disposed = true;
+        }
+        _cts.Cancel();
+        _cts.Dispose();
     }
 }
+
+
+
+
 
 
