@@ -196,6 +196,7 @@
 
 @code {
     [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
 
     private UserProfileData UserProfile = BookingDataStore.CurrentUser;
@@ -206,6 +207,10 @@
 
     private async Task CloseModal()
     {
+        if (VisibleChanged.HasDelegate)
+        {
+            await VisibleChanged.InvokeAsync(false);
+        }
         if (OnClose.HasDelegate)
         {
             await OnClose.InvokeAsync();
