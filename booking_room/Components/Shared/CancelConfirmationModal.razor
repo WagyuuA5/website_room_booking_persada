@@ -1,26 +1,56 @@
-<div class="cancel-confirmation-modal">
-    <div class="cancel-header">
-        <div class="header-icon bg-red-light">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="header-text">
-            <h2>Batalkan Pemesanan</h2>
-            <p>@RoomName</p>
-        </div>
-    </div>
+@namespace booking_room.Components.Shared
+@using booking_room.Services
+@inject IModalService ModalService
 
-    <div class="cancel-body">
-        <p>Apakah Anda yakin ingin membatalkan pemesanan ini?</p>
-    </div>
-
-    <div class="cancel-footer" style="display: flex; gap: 16px; margin-top: 24px;">
-        <button class="btn-modal-outline" @onclick="OnKeep">Pertahankan Pemesanan</button>
-        <button class="btn-modal-primary" @onclick="OnConfirmCancel" style="background-color: var(--modal-red); color: white;">Ya, Batalkan</button>
-    </div>
-</div>
+<ModalBase Visible="true" Size="sm" ShowCloseButton="true" OnClose="HandleKeep">
+    <HeaderContent>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 40px; height: 40px; border-radius: 12px; background: #FEE2E2; display: flex; align-items: center; justify-content: center; color: #DC2626; flex-shrink: 0;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+            </div>
+            <div>
+                <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #991B1B;">Batalkan Pemesanan</h3>
+                <p style="margin: 2px 0 0 0; font-size: 0.85rem; color: #64748B;">@RoomName</p>
+            </div>
+        </div>
+    </HeaderContent>
+    <ChildContent>
+        <div style="padding: 8px 0; color: #4B5563; font-size: 0.95rem; line-height: 1.5;">
+            Apakah Anda yakin ingin membatalkan pemesanan ini? Ruangan akan segera dilepas dan tersedia untuk orang lain.
+        </div>
+    </ChildContent>
+    <FooterContent>
+        <button class="btn btn-outline-secondary" style="border-radius: 999px; padding: 10px 20px; font-weight: 600; border: 1px solid #CBD5E1; background: #FFFFFF; color: #475569;" @onclick="HandleKeep">
+            Pertahankan Pemesanan
+        </button>
+        <button class="btn btn-danger" style="border-radius: 999px; padding: 10px 20px; font-weight: 700; background: #DC2626; border: none; color: #FFFFFF;" @onclick="HandleConfirm">
+            Ya, Batalkan
+        </button>
+    </FooterContent>
+</ModalBase>
 
 @code {
     [Parameter] public string RoomName { get; set; } = "";
     [Parameter] public EventCallback OnKeep { get; set; }
     [Parameter] public EventCallback OnConfirmCancel { get; set; }
+
+    private async Task HandleKeep()
+    {
+        if (OnKeep.HasDelegate)
+        {
+            await OnKeep.InvokeAsync();
+        }
+        await ModalService.CloseTopAsync(ModalResult.Cancel());
+    }
+
+    private async Task HandleConfirm()
+    {
+        if (OnConfirmCancel.HasDelegate)
+        {
+            await OnConfirmCancel.InvokeAsync();
+        }
+        await ModalService.CloseTopAsync(ModalResult.Ok());
+    }
 }

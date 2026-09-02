@@ -37,6 +37,16 @@
     --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-base: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-smooth: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+
+    /* Glassmorphism Tokens (V9) */
+    --glass-bg-light: rgba(255, 255, 255, 0.75);
+    --glass-border-light: rgba(255, 255, 255, 0.5);
+    --glass-bg-dark: rgba(11, 26, 61, 0.85);
+    --glass-border-dark: rgba(255, 255, 255, 0.14);
+    --glass-blur: 20px;
+    --glass-saturate: 160%;
+    --glass-shadow: 0 8px 32px rgba(15, 23, 42, 0.18);
+    --glass-shadow-dark: 0 8px 32px rgba(0, 0, 0, 0.35);
 }
 
 html, body {

@@ -1,12 +1,18 @@
-﻿@namespace booking_room.Components.Shared
+@namespace booking_room.Components.Shared
 @using booking_room.Services
 @inject IModalService ModalService
 @implements IDisposable
 
-@if (ModalService.ActiveModal != null)
+@if (ModalService.Stack.Count > 0)
 {
-    <DynamicComponent Type=@ModalService.ActiveModal.ComponentType
-                      Parameters=@ModalService.ActiveModal.Parameters />
+    @for (int i = 0; i < ModalService.Stack.Count; i++)
+    {
+        var modal = ModalService.Stack[i];
+        var zIndex = 1050 + (i * 10);
+        <div class="modal-stack-layer" style="position: relative; z-index: @zIndex;" @key="modal.Id">
+            <DynamicComponent Type="@modal.ComponentType" Parameters="@modal.Parameters" />
+        </div>
+    }
 }
 
 @code {

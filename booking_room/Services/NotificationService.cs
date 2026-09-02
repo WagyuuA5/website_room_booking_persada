@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
 namespace booking_room.Services;
 
 public class NotificationService : INotificationService
@@ -18,7 +22,16 @@ public class NotificationService : INotificationService
             Timestamp = DateTime.Now.AddMinutes(-2),
             IsRead = false,
             Category = "Reminder",
-            IconType = "clock"
+            IconType = "clock",
+            ActionType = NotificationActionType.OpenModal,
+            ModalComponentKey = "CheckInCountdownCard",
+            ActionParameters = new Dictionary<string, object>
+            {
+                { "RoomName", "Ruang Konferensi C" },
+                { "TimeSlot", "10:00 - 11:30" },
+                { "Location", "Lantai 3, Sayap Barat" },
+                { "Capacity", 12 }
+            }
         });
 
         _notifications.Add(new NotificationItem
@@ -30,7 +43,14 @@ public class NotificationService : INotificationService
             IsRead = false,
             Category = "Invitation",
             IconType = "avatar",
-            AvatarUrl = "https://ui-avatars.com/api/?name=Budi+Santoso&background=f59e0b&color=fff"
+            AvatarUrl = "https://ui-avatars.com/api/?name=Budi+Santoso&background=f59e0b&color=fff",
+            ActionType = NotificationActionType.OpenModal,
+            ModalComponentKey = "RoomDetailsModal",
+            ActionParameters = new Dictionary<string, object>
+            {
+                { "RoomName", "Ruang Kolaborasi 2" },
+                { "Location", "Lantai 2, Sayap Timur" }
+            }
         });
 
         _notifications.Add(new NotificationItem
@@ -41,7 +61,9 @@ public class NotificationService : INotificationService
             Timestamp = DateTime.Now.AddMinutes(-15),
             IsRead = true,
             Category = "Security",
-            IconType = "shield"
+            IconType = "shield",
+            ActionType = NotificationActionType.NavigateToRoute,
+            RoutePath = "/profile"
         });
 
         _notifications.Add(new NotificationItem
@@ -53,7 +75,14 @@ public class NotificationService : INotificationService
             IsRead = true,
             Category = "Report",
             IconType = "avatar",
-            AvatarUrl = "/images/avatar1.png" // Fallback if no image
+            AvatarUrl = "/images/avatar1.png",
+            ActionType = NotificationActionType.OpenModal,
+            ModalComponentKey = "ChartDetailModal",
+            ActionParameters = new Dictionary<string, object>
+            {
+                { "SelectedPeriod", "Minggu" },
+                { "HighlightRoom", "Alpha Boardroom" }
+            }
         });
 
         _notifications.Add(new NotificationItem
@@ -64,7 +93,15 @@ public class NotificationService : INotificationService
             Timestamp = DateTime.Now.AddHours(-2),
             IsRead = true,
             Category = "System",
-            IconType = "warning"
+            IconType = "warning",
+            ActionType = NotificationActionType.OpenModal,
+            ModalComponentKey = "IncidentDetailModal",
+            ActionParameters = new Dictionary<string, object>
+            {
+                { "Title", "Beban Lalu Lintas Tinggi" },
+                { "Description", "Lonjakan penggunaan terdeteksi di klaster Asia Tenggara. Tim TI sedang memantau situasi." },
+                { "Category", "Peringatan Server" }
+            }
         });
     }
 

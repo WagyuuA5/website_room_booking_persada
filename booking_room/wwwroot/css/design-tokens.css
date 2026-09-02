@@ -111,4 +111,33 @@
   --modal-backdrop-blur: blur(18px);
   --modal-backdrop-scrim: rgba(10, 19, 48, 0.35);
   --modal-radius-outer: 28px;
+
+  /* --- Glassmorphism Tokens (V9) --- */
+  --glass-bg-light: rgba(255, 255, 255, 0.75);
+  --glass-border-light: rgba(255, 255, 255, 0.5);
+
+  --glass-bg-dark: rgba(11, 26, 61, 0.85);
+  --glass-border-dark: rgba(255, 255, 255, 0.14);
+
+  --glass-blur: 20px;
+  --glass-saturate: 160%;
+  --glass-shadow: 0 8px 32px rgba(15, 23, 42, 0.18);
+  --glass-shadow-dark: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+/* Glass Surface Utility Classes */
+.glass-surface {
+  background: var(--glass-bg-light) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border: 1px solid var(--glass-border-light) !important;
+  box-shadow: var(--glass-shadow) !important;
+  border-radius: var(--persada-border-radius-card, 20px);
+}
+
+.glass-surface.tone-dark {
+  background: var(--glass-bg-dark) !important;
+  border-color: var(--glass-border-dark) !important;
+  box-shadow: var(--glass-shadow-dark) !important;
+  color: #FFFFFF !important;
 }

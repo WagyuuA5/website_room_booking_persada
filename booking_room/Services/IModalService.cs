@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -18,16 +18,22 @@ namespace booking_room.Services
     {
         public Guid Id { get; } = Guid.NewGuid();
         public Type ComponentType { get; set; } = default!;
-        public Dictionary<string, object>? Parameters { get; set; }
+        public IDictionary<string, object>? Parameters { get; set; }
         public TaskCompletionSource<ModalResult> TaskSource { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
     }
 
     public interface IModalService
     {
         event Action? OnChange;
-        ModalInstance? ActiveModal { get; }
-        Task<ModalResult> ShowAsync<TModal>(Dictionary<string, object>? parameters = null) where TModal : IComponent;
-        Task<ModalResult> ShowAsync(Type componentType, Dictionary<string, object>? parameters = null);
+        IReadOnlyList<ModalInstance> Stack { get; }
+        ModalInstance? TopModal => Stack.Count > 0 ? Stack[^1] : null;
+        ModalInstance? ActiveModal => TopModal;
+
+        Task<ModalResult> ShowAsync<TComponent>(IDictionary<string, object>? parameters = null) where TComponent : IComponent;
+        Task<ModalResult> ShowAsync(string componentKey, IDictionary<string, object>? parameters = null);
+        Task<ModalResult> ShowAsync(Type componentType, IDictionary<string, object>? parameters = null);
+        Task CloseTopAsync(ModalResult? result = null);
+        Task CloseAllAsync();
         void Close(ModalResult? result = null);
     }
 }

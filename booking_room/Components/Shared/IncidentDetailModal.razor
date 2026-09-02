@@ -1,0 +1,60 @@
+@namespace booking_room.Components.Shared
+@using booking_room.Services
+@inject IModalService ModalService
+
+<ModalBase Visible="true" Size="md" ShowCloseButton="true" OnClose="Close">
+    <HeaderContent>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 40px; height: 40px; border-radius: 12px; background: #FEE2E2; display: flex; align-items: center; justify-content: center; color: #DC2626; flex-shrink: 0;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+            </div>
+            <div>
+                <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #991B1B;">@Title</h3>
+                <p style="margin: 2px 0 0 0; font-size: 0.85rem; color: #64748B;">@Category • Status: Dalam Pemantauan</p>
+            </div>
+        </div>
+    </HeaderContent>
+    <ChildContent>
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="padding: 16px; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 14px;">
+                <div style="font-weight: 700; font-size: 0.95rem; color: #991B1B; margin-bottom: 6px;">Pemberitahuan Insiden Sistem</div>
+                <p style="margin: 0; color: #4B5563; font-size: 0.875rem; line-height: 1.5;">@Description</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div style="padding: 12px 14px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px;">
+                    <div style="font-size: 0.75rem; font-weight: 600; color: #64748B; text-transform: uppercase;">Klaster Terkena Dampak</div>
+                    <div style="font-size: 0.9rem; font-weight: 700; color: #0F1F3D; margin-top: 4px;">Asia Tenggara (ID-JKT)</div>
+                </div>
+                <div style="padding: 12px 14px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px;">
+                    <div style="font-size: 0.75rem; font-weight: 600; color: #64748B; text-transform: uppercase;">Tingkat Keparahan</div>
+                    <div style="font-size: 0.9rem; font-weight: 700; color: #DC2626; margin-top: 4px;">Tinggi (Level 2)</div>
+                </div>
+            </div>
+
+            <div style="font-size: 0.825rem; color: #64748B; line-height: 1.4;">
+                Tim Engineering sedang melakukan mitigasi dan load-balancing. Layanan pemesanan ruangan tetap beroperasi normal dengan redundansi server cadangan.
+            </div>
+        </div>
+    </ChildContent>
+    <FooterContent>
+        <button class="btn btn-secondary" style="border-radius: 999px; padding: 8px 24px; font-weight: 600; border: 1px solid #CBD5E1; background: #FFFFFF; color: #475569;" @onclick="Close">
+            Tutup
+        </button>
+    </FooterContent>
+</ModalBase>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Beban Lalu Lintas Tinggi";
+    [Parameter] public string Description { get; set; } = "Lonjakan penggunaan terdeteksi di klaster Asia Tenggara. Tim TI sedang memantau situasi.";
+    [Parameter] public string Category { get; set; } = "Peringatan Server";
+
+    private void Close()
+    {
+        ModalService.CloseTopAsync(ModalResult.Ok());
+    }
+}

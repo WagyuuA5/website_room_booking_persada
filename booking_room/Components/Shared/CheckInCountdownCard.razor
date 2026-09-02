@@ -1,114 +1,112 @@
 @implements IDisposable
-@using booking_room.Components.Shared
+@namespace booking_room.Components.Shared
 @using System.Globalization
 @using booking_room.Components.Models
-@inject booking_room.Services.IToastService ToastService
+@using booking_room.Services
+@inject IToastService ToastService
+@inject IModalService ModalService
 
-<div class="modal-body-custom checkin-confirmation-modal" style="display: flex; flex-direction: column; align-items: center; padding-top: 2rem;">
-    <!-- Avatar -->
-    <div class="room-avatar" style="width: 64px; height: 64px; border-radius: 50%; background: #e2e8f0; overflow: hidden; margin-bottom: 1rem; border: 2px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); position: relative;">
-        <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=128&h=128&fit=crop" alt="Avatar Ruangan" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'" />
-        <div style="display:none; position:absolute; inset:0; align-items:center; justify-content:center; background:#f1f5f9;">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-        </div>
-    </div>
+<ModalBase Visible="true" Size="md" ShowCloseButton="true" OnClose="HandleCancelClose">
+    <ChildContent>
+        <div class="checkin-confirmation-modal" style="display: flex; flex-direction: column; align-items: center; padding: 1.5rem 1rem;">
+            <!-- Avatar -->
+            <div class="room-avatar" style="width: 64px; height: 64px; border-radius: 50%; background: #e2e8f0; overflow: hidden; margin-bottom: 1rem; border: 2px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); position: relative;">
+                <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=128&h=128&fit=crop" alt="Avatar Ruangan" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'" />
+                <div style="display:none; position:absolute; inset:0; align-items:center; justify-content:center; background:#f1f5f9;">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                </div>
+            </div>
 
-    <!-- Title -->
-    <h2 style="color: var(--text-navy); font-weight: 800; font-size: 1.5rem; margin: 0 0 0.5rem 0;">@RoomName</h2>
-    
-    <!-- Badge -->
-    <div style="background: #f1f5f9; padding: 0.35rem 0.75rem; border-radius: 9999px; display: inline-flex; align-items: center; gap: 0.4rem; margin-bottom: 2rem;">
-        <span style="width: 8px; height: 8px; background: var(--accent-amber); border-radius: 50%; display: inline-block;"></span>
-        <span style="font-size: 0.75rem; font-weight: 700; color: #64748b; letter-spacing: 0.05em;">CHECK-IN DIBUKA</span>
-    </div>
+            <!-- Title -->
+            <h2 style="color: var(--persada-navy-900, #0F1F3D); font-weight: 800; font-size: 1.5rem; margin: 0 0 0.5rem 0;">@RoomName</h2>
+            
+            <!-- Badge -->
+            <div style="background: rgba(245, 158, 11, 0.12); padding: 0.35rem 0.85rem; border-radius: 9999px; display: inline-flex; align-items: center; gap: 0.4rem; margin-bottom: 2rem;">
+                <span style="width: 8px; height: 8px; background: var(--persada-yellow-500, #F59E0B); border-radius: 50%; display: inline-block;"></span>
+                <span style="font-size: 0.75rem; font-weight: 700; color: #B45309; letter-spacing: 0.05em;">CHECK-IN DIBUKA</span>
+            </div>
 
-    <!-- Countdown Ring -->
-    <div style="position: relative; width: 140px; height: 140px; margin-bottom: 2.5rem; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-        <svg viewBox="0 0 120 120" width="140" height="140" style="position: absolute; top: 0; left: 0;">
-            <circle cx="60" cy="60" r="52" fill="none" stroke="#f1f5f9" stroke-width="8" />
-            <circle cx="60" cy="60" r="52" fill="none" stroke="@RingColorClass" stroke-width="8"
-                    stroke-linecap="round"
-                    stroke-dasharray="326.7"
-                    stroke-dashoffset="@RemainingOffset.ToString(CultureInfo.InvariantCulture)"
-                    transform="rotate(-90 60 60)" 
-                     class="countdown-ring @(_remainingPercentage < 20 ? "pulse-ring" : "")"
-                    style="transition: stroke-dashoffset 1s linear, stroke 0.5s ease;" />
-        </svg>
-        <div style="z-index: 1; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
-            <span style="font-size: 1.75rem; font-weight: 800; color: var(--text-navy); line-height: 1;">@RemainingTimeFormatted</span>
-            <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-top: 0.25rem;">Waktu Tersisa</span>
-        </div>
-    </div>
-
-    <!-- Info Grid -->
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; width: 100%; margin-bottom: 2.5rem;">
-        <div style="display: flex; gap: 0.75rem; align-items: flex-start;">
-            <div style="color: #64748b; margin-top: 0.1rem;">
-                <InlineSvg Src="/icons/Icon_clndr.svg" Style="width: 20px; height: 20px; color: currentColor;" />
-            </div>
-            <div>
-                <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.1rem;">WAKTU</div>
-                <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-navy);">@TimeSlot</div>
-            </div>
-        </div>
-        <div style="display: flex; gap: 0.75rem; align-items: flex-start;">
-            <div style="color: #64748b; margin-top: 0.1rem;">
-                <InlineSvg Src="/icons/icon_location.svg" Style="width: 20px; height: 20px; color: currentColor;" />
-            </div>
-            <div>
-                <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.1rem;">LOKASI</div>
-                <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-navy);">@Location</div>
-            </div>
-        </div>
-        <div style="display: flex; gap: 0.75rem; align-items: flex-start; grid-column: 1 / -1;">
-            <div style="color: #64748b; margin-top: 0.1rem;">
-                <InlineSvg Src="/icons/icon_group.svg" Style="width: 20px; height: 20px; color: currentColor;" />
-            </div>
-            <div>
-                <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.1rem;">KAPASITAS</div>
-                <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-navy);">@Capacity peserta diperkirakan hadir</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Confirm Button -->
-    <button @onclick="ConfirmCheckIn" style="width: 100%; padding: 0.875rem; border-radius: 9999px; border: none; background: var(--accent-amber); color: var(--text-navy); font-weight: 700; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 1.5rem; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25); transition: transform 0.2s, box-shadow 0.2s;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="12" cy="12" r="10" fill="currentColor" fill-opacity="0.2"/>
-            <path d="M8 12L11 15L16 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        Konfirmasi Check-in
-    </button>
-
-    <!-- Footer Actions -->
-    <div style="display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
-        @if (!_hasExtended)
-        {
-            <button @onclick="OpenExtendModal" style="display: flex; align-items: center; justify-content: center; gap: 8px; background: transparent; border: 1px solid #CBD5E1; color: #475569; font-weight: 600; font-size: 14px; padding: 0 20px; border-radius: 9999px; height: 44px; cursor: pointer; transition: all 0.2s;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <polyline points="12 6 12 12 16 14"></polyline>
+            <!-- Countdown Ring -->
+            <div style="position: relative; width: 140px; height: 140px; margin-bottom: 2.5rem; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                <svg viewBox="0 0 120 120" width="140" height="140" style="position: absolute; top: 0; left: 0;">
+                    <circle cx="60" cy="60" r="52" fill="none" stroke="#f1f5f9" stroke-width="8" />
+                    <circle cx="60" cy="60" r="52" fill="none" stroke="@RingColorClass" stroke-width="8"
+                            stroke-linecap="round"
+                            stroke-dasharray="326.7"
+                            stroke-dashoffset="@RemainingOffset.ToString(CultureInfo.InvariantCulture)"
+                            transform="rotate(-90 60 60)" 
+                            class="countdown-ring @(_remainingPercentage < 20 ? "pulse-ring" : "")"
+                            style="transition: stroke-dashoffset 1s linear, stroke 0.5s ease;" />
                 </svg>
-                Saya butuh waktu tambahan
+                <div style="z-index: 1; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+                    <span style="font-size: 1.75rem; font-weight: 800; color: var(--persada-navy-900, #0F1F3D); line-height: 1;">@RemainingTimeFormatted</span>
+                    <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-top: 0.25rem;">Waktu Tersisa</span>
+                </div>
+            </div>
+
+            <!-- Info Grid -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; width: 100%; margin-bottom: 2.5rem;">
+                <div style="display: flex; gap: 0.75rem; align-items: flex-start;">
+                    <div style="color: #64748b; margin-top: 0.1rem;">
+                        <InlineSvg Src="/icons/Icon_clndr.svg" Style="width: 20px; height: 20px; color: currentColor;" />
+                    </div>
+                    <div>
+                        <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.1rem;">WAKTU</div>
+                        <div style="font-size: 0.85rem; font-weight: 700; color: var(--persada-navy-900, #0F1F3D);">@TimeSlot</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 0.75rem; align-items: flex-start;">
+                    <div style="color: #64748b; margin-top: 0.1rem;">
+                        <InlineSvg Src="/icons/icon_location.svg" Style="width: 20px; height: 20px; color: currentColor;" />
+                    </div>
+                    <div>
+                        <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.1rem;">LOKASI</div>
+                        <div style="font-size: 0.85rem; font-weight: 700; color: var(--persada-navy-900, #0F1F3D);">@Location</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 0.75rem; align-items: flex-start; grid-column: 1 / -1;">
+                    <div style="color: #64748b; margin-top: 0.1rem;">
+                        <InlineSvg Src="/icons/icon_group.svg" Style="width: 20px; height: 20px; color: currentColor;" />
+                    </div>
+                    <div>
+                        <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.1rem;">KAPASITAS</div>
+                        <div style="font-size: 0.85rem; font-weight: 700; color: var(--persada-navy-900, #0F1F3D);">@Capacity peserta diperkirakan hadir</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Confirm Button -->
+            <button @onclick="ConfirmCheckIn" style="width: 100%; padding: 0.875rem; border-radius: 9999px; border: none; background: var(--persada-yellow-500, #F59E0B); color: var(--persada-navy-900, #0F1F3D); font-weight: 700; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 1.5rem; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25); transition: transform 0.2s, box-shadow 0.2s;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="10" fill="currentColor" fill-opacity="0.2"/>
+                    <path d="M8 12L11 15L16 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Konfirmasi Check-in
             </button>
-        }
-        <button @onclick="CancelBooking" style="display: flex; align-items: center; justify-content: center; gap: 8px; background: transparent; border: 1px solid #FECACA; color: #DC2626; font-weight: 600; font-size: 14px; padding: 0 20px; border-radius: 9999px; height: 44px; cursor: pointer; transition: all 0.2s;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-            Batalkan pemesanan ini
-        </button>
-    </div>
-</div>
 
-<ModalOverlayBlur Visible="@_isRequestingMoreTime" OnClose="CloseExtendModal" Size="default">
-    <RequestMoreTimeModal RoomName="@RoomName" OnCancel="CloseExtendModal" OnRequestExtension="HandleRequestExtension" />
-</ModalOverlayBlur>
-
-<ModalOverlayBlur Visible="@_isCanceling" OnClose="CloseCancelModal" Size="default" ShowCloseButton="false">
-    <CancelConfirmationModal RoomName="@RoomName" OnKeep="CloseCancelModal" OnConfirmCancel="HandleConfirmCancel" />
-</ModalOverlayBlur>
+            <!-- Footer Actions -->
+            <div style="display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; padding-top: 1rem; border-top: 1px solid rgba(226, 232, 240, 0.6); flex-wrap: wrap;">
+                @if (!_hasExtended)
+                {
+                    <button @onclick="OpenExtendModal" style="display: flex; align-items: center; justify-content: center; gap: 8px; background: transparent; border: 1px solid #CBD5E1; color: #475569; font-weight: 600; font-size: 14px; padding: 0 20px; border-radius: 9999px; height: 44px; cursor: pointer; transition: all 0.2s;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        Saya butuh waktu tambahan
+                    </button>
+                }
+                <button @onclick="CancelBooking" style="display: flex; align-items: center; justify-content: center; gap: 8px; background: transparent; border: 1px solid #FECACA; color: #DC2626; font-weight: 600; font-size: 14px; padding: 0 20px; border-radius: 9999px; height: 44px; cursor: pointer; transition: all 0.2s;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                    Batalkan pemesanan ini
+                </button>
+            </div>
+        </div>
+    </ChildContent>
+</ModalBase>
 
 <style>
     .pulse-ring {
@@ -126,17 +124,17 @@
     [Parameter] public string TimeSlot { get; set; } = "09:00 - 11:00";
     [Parameter] public string Location { get; set; } = "Lantai 2, Sayap A";
     [Parameter] public int Capacity { get; set; } = 12;
-    [Parameter] public DateTime TargetTime { get; set; }
+    [Parameter] public DateTime TargetTime { get; set; } = DateTime.Now.AddMinutes(15);
 
     [Parameter] public EventCallback OnConfirm { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
     [Parameter] public EventCallback OnAutoReleased { get; set; }
 
     private PeriodicTimer? _timer;
-    private string RemainingTimeFormatted = "00:00";
+    private string RemainingTimeFormatted = "15:00";
     private double RemainingOffset = 0;
     private double _totalSeconds;
-    private double _remainingPercentage;
+    private double _remainingPercentage = 100;
 
     private double RemainingPercentage => _remainingPercentage;
 
@@ -149,7 +147,7 @@
 
     protected override void OnInitialized()
     {
-        _totalSeconds = 15 * 60; // Assume 15 minutes total checkin window
+        _totalSeconds = 15 * 60;
         UpdateCountdown();
     }
     
@@ -178,7 +176,6 @@
 
         RemainingTimeFormatted = remaining.ToString(@"mm\:ss");
         
-        // Circumference of circle with r=52 is approx 326.7
         double progress = remaining.TotalSeconds / _totalSeconds;
         progress = Math.Max(0, Math.Min(1, progress));
         RemainingOffset = 326.7 * (1 - progress);
@@ -188,25 +185,34 @@
     private async Task ConfirmCheckIn()
     {
         _timer?.Dispose();
-        await OnConfirm.InvokeAsync();
+        if (OnConfirm.HasDelegate)
+        {
+            await OnConfirm.InvokeAsync();
+        }
+        else
+        {
+            await ModalService.CloseTopAsync(ModalResult.Ok());
+            await ModalService.ShowAsync<CheckInSuccessModal>(new Dictionary<string, object>
+            {
+                { "Timestamp", DateTime.Now }
+            });
+        }
     }
 
     private bool _hasExtended = false;
-    private bool _isRequestingMoreTime = false;
 
-    private void OpenExtendModal()
+    private async Task OpenExtendModal()
     {
-        _isRequestingMoreTime = true;
-    }
-
-    private void CloseExtendModal()
-    {
-        _isRequestingMoreTime = false;
+        var parameters = new Dictionary<string, object>
+        {
+            { "RoomName", RoomName },
+            { "OnRequestExtension", EventCallback.Factory.Create<string>(this, HandleRequestExtension) }
+        };
+        await ModalService.ShowAsync<RequestMoreTimeModal>(parameters);
     }
 
     private void HandleRequestExtension(string reason)
     {
-        CloseExtendModal();
         ExtendWindow();
         ToastService.Info("Waktu ditambah 10 menit");
     }
@@ -222,23 +228,33 @@
         }
     }
 
-    private bool _isCanceling = false;
-
-    private void CancelBooking()
+    private async Task CancelBooking()
     {
-        _isCanceling = true;
-    }
-
-    private void CloseCancelModal()
-    {
-        _isCanceling = false;
+        var parameters = new Dictionary<string, object>
+        {
+            { "RoomName", RoomName },
+            { "OnConfirmCancel", EventCallback.Factory.Create(this, HandleConfirmCancel) }
+        };
+        await ModalService.ShowAsync<CancelConfirmationModal>(parameters);
     }
 
     private async Task HandleConfirmCancel()
     {
-        _isCanceling = false;
         _timer?.Dispose();
-        await OnCancel.InvokeAsync();
+        if (OnCancel.HasDelegate)
+        {
+            await OnCancel.InvokeAsync();
+        }
+        await ModalService.CloseTopAsync(ModalResult.Cancel());
+    }
+
+    private async Task HandleCancelClose()
+    {
+        _timer?.Dispose();
+        if (OnCancel.HasDelegate)
+        {
+            await OnCancel.InvokeAsync();
+        }
     }
 
     public void Dispose()
