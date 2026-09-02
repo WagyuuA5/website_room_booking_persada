@@ -1,13 +1,21 @@
 @inherits LayoutComponentBase
-@inject IJSRuntime JS
+@using booking_room.Services
+@using booking_room.Components.Models
 @inject NavigationManager Navigation
-@inject booking_room.Services.INotificationService NotificationService
-@inject booking_room.Services.IToastService ToastService
+@inject INotificationService NotificationService
 @inject booking_room.Services.LoadingStateService LoadingState
-@inject booking_room.Services.IModalService ModalService
+@inject IJSRuntime JS
 @implements IDisposable
 
-<div class="app-layout">
+<div class="app-shell">
+    @if (_showSplitAnimation)
+    {
+        <div class="split-transition-overlay @(_splitOpening ? "opening" : "")">
+            <div class="split-panel top"></div>
+            <div class="split-panel bottom"></div>
+        </div>
+    }
+
     @if (_isNavigating)
     {
         <div class="top-progress-bar">
@@ -15,144 +23,121 @@
         </div>
     }
 
-    <div class="sidebar-wrapper @(_isSidebarOpen ? "show" : "") @(_isSidebarCollapsed ? "sidebar-collapsed" : "")">
-        <NavMenu OnToggleSidebar="ToggleSidebar" OnSidebarClose="CloseSidebar" IsCollapsed="_isSidebarCollapsed" OnToggleCollapse="ToggleSidebarCollapse" />
-    </div>
+    <aside class="sidebar">
+        <SidebarDragHandle />
+        <NavMenu />
+    </aside>
 
-    @if (_isSidebarOpen)
-    {
-        <div class="sidebar-backdrop" @onclick="CloseSidebar"></div>
-    }
-
-    <div class="main-content-wrapper">
-        <header class="top-navbar">
-            <div class="navbar-left">
-                <button class="menu-toggle-btn" @onclick="ToggleSidebar" aria-label="Toggle Menu">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="3" y1="12" x2="21" y2="12"></line>
-                        <line x1="3" y1="6" x2="21" y2="6"></line>
-                        <line x1="3" y1="18" x2="21" y2="18"></line>
-                    </svg>
-                </button>
+    <div class="main-area">
+        <header class="navbar">
+            <div class="d-flex align-items-center gap-2">
             </div>
-
-            <div class="navbar-right">
-                <button class="icon-btn dark-mode-toggle" @onclick="ToggleDarkMode" title="@(_isDarkMode ? "Mode Terang" : "Mode Gelap")" aria-label="Toggle Theme">
+            <div class="dashboard-header-right">
+                <button class="dark-mode-toggle" @onclick="ToggleDarkMode" aria-label="Ganti Mode Gelap" title="Ganti Mode Gelap">
                     @if (_isDarkMode)
                     {
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="5"></circle>
-                            <line x1="12" y1="1" x2="12" y2="3"></line>
-                            <line x1="12" y1="21" x2="12" y2="23"></line>
-                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                            <line x1="1" y1="12" x2="3" y2="12"></line>
-                            <line x1="21" y1="12" x2="23" y2="12"></line>
-                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
                     }
                     else
                     {
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
                     }
                 </button>
-
-                <div class="notif-wrapper">
-                    <button class="icon-btn notif-bell-btn @(_showNotifications ? "active" : "")" @onclick="ToggleNotifications" aria-label="Notifikasi">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <div class="notification-wrapper">
+                    <button class="notification-btn" @onclick="ToggleNotificationPanel" aria-label="Notifikasi">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                             <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                         </svg>
                         @if (NotificationService.UnreadCount > 0)
                         {
-                            <span class="notif-badge-pill">@NotificationService.UnreadCount</span>
+                            <span class="notification-dot"></span>
                         }
                     </button>
-                    <NotificationPanel Visible="_showNotifications" OnClose="CloseNotifications" />
+                    <booking_room.Components.Shared.NotificationPanel Visible="@_showNotificationPanel" OnClose="CloseNotificationPanel" />
                 </div>
-
-                <div class="user-profile-wrapper">
-                    <button class="user-profile-btn" @onclick="ToggleProfilePanel" aria-label="User Profile">
-                        <div class="user-avatar-initials">WR</div>
-                        <div class="user-meta">
-                            <span class="user-name">Wahyu Ravi</span>
-                            <span class="user-role">System Admin</span>
-                        </div>
-                    </button>
-
-                    <Popover Visible="_showProfilePanel" VisibleChanged="@((bool v) => _showProfilePanel = v)" Title="" Width="260px" ShowHeader="false" ShowFooter="false" Class="profile-popover">
-                        <BodyContent>
-                            <div class="profile-menu-panel">
-                                <div class="profile-menu-header">
-                                    <div class="p-avatar-circle">WR</div>
-                                    <div class="p-info">
-                                        <div class="p-name">Wahyu Ravi</div>
-                                        <div class="p-email">whyuravi.2008@gmail.com</div>
-                                        <span class="p-badge-role">Admin</span>
-                                    </div>
-                                </div>
-                                <div class="profile-menu-items">
-                                    <button class="p-item-btn" @onclick="ShowUserProfileModal">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                                        <span>Profil Akun</span>
-                                    </button>
-                                    <button class="p-item-btn" @onclick='() => { _showProfilePanel = false; Navigation.NavigateTo("/settings"); }'>
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                                        <span>Pengaturan</span>
-                                    </button>
-                                    <div class="p-divider"></div>
-                                    <button class="p-item-btn logout" @onclick="HandleLogout">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                                        <span>Keluar</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </BodyContent>
-                    </Popover>
+                <div class="profile-avatar-wrapper" @onclick="ToggleProfilePanel" style="cursor: pointer; position: relative;" title="Profil Pengguna" aria-label="Profil Pengguna">
+                    @if (!string.IsNullOrEmpty(BookingDataStore.CurrentUser.PhotoUrl))
+                    {
+                        <img src="@BookingDataStore.CurrentUser.PhotoUrl" alt="Profil Pengguna" class="profile-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'" />
+                        <img src="https://ui-avatars.com/api/?name=Admin+User&background=0f1f3d&color=fff" alt="Profil Pengguna" class="profile-avatar" style="display:none; position:absolute; inset:0;" />
+                    }
+                    else
+                    {
+                        <img src="https://ui-avatars.com/api/?name=Admin+User&background=0f1f3d&color=fff" alt="Profil Pengguna" class="profile-avatar" />
+                    }
+                    <booking_room.Components.Shared.ProfilePanel Visible="@_showProfilePanel" OnClose="CloseProfilePanel" OnShowProfile="ShowUserProfileModal" />
                 </div>
             </div>
         </header>
 
-        <main class="content-body">
-            @Body
+        <booking_room.Components.Shared.UserProfilePopup @bind-Visible="_showUserProfileModal" OnClose="() => _showUserProfileModal = false" />
+
+        <main class="page-content">
+            <ErrorBoundary>
+                <ChildContent>
+                    @Body
+                </ChildContent>
+                <ErrorContent>
+                    <div class="app-error-fallback" style="padding: 24px; text-align: center; border-radius: var(--persada-border-radius-card, 20px); background: #FFFFFF; box-shadow: var(--shadow-sm); margin: 24px auto; max-width: 400px;">
+                        <div style="color: #EF4444; margin-bottom: 16px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        </div>
+                        <p style="color: var(--persada-navy-900, #0F1F3D); font-weight: 600; margin-bottom: 16px;">Terjadi kesalahan saat memuat halaman ini.</p>
+                        <button class="btn btn-primary" style="background: var(--persada-yellow-500, #F59E0B); border: none; padding: 10px 20px; border-radius: 999px; font-weight: 700; color: #0F1F3D;" @onclick="() => Navigation.NavigateTo(Navigation.Uri, forceLoad: true)">
+                            Muat Ulang Halaman
+                        </button>
+                    </div>
+                </ErrorContent>
+            </ErrorBoundary>
         </main>
     </div>
 </div>
 
-<Toast />
-<ModalHost />
+<div id="blazor-error-ui" data-nosnippet>
+    Terjadi kesalahan yang tidak terduga.
+    <a href="." class="reload">Muat Ulang</a>
+    <span class="dismiss">??</span>
+</div>
 
-@if (_showUserProfileModal)
-{
-    <UserProfilePopup Visible="_showUserProfileModal" OnClose="() => _showUserProfileModal = false" />
-}
+<booking_room.Components.Shared.ToastContainer />
+<booking_room.Components.Shared.ModalHost />
 
 @code {
-    private bool _isSidebarOpen = false;
-    private bool _isSidebarCollapsed = false;
-    private bool _isDarkMode = false;
-    private bool _showNotifications = false;
+    private bool _showNotificationPanel = false;
     private bool _showProfilePanel = false;
-    private bool _showUserProfileModal = false;
+    private bool _isDarkMode = false;
     private bool _isNavigating = false;
+    
+    private bool _showSplitAnimation = false;
+    private bool _splitOpening = false;
+    private bool _isSidebarCollapsed = false;
+
+    private bool _showUserProfileModal = false;
+    
     private bool _disposed;
     private CancellationTokenSource? _cts;
 
-    private void ToggleSidebar() => _isSidebarOpen = !_isSidebarOpen;
-    private void CloseSidebar() => _isSidebarOpen = false;
-    private void ToggleSidebarCollapse() => _isSidebarCollapsed = !_isSidebarCollapsed;
-    private void ToggleNotifications() => _showNotifications = !_showNotifications;
-    private void CloseNotifications() => _showNotifications = false;
-    private void ToggleProfilePanel() => _showProfilePanel = !_showProfilePanel;
+    private void ToggleNotificationPanel()
+    {
+        _showNotificationPanel = !_showNotificationPanel;
+        if (_showNotificationPanel) _showProfilePanel = false;
+    }
 
-    private async Task HandleLogout()
+    private void CloseNotificationPanel()
+    {
+        _showNotificationPanel = false;
+    }
+
+    private void ToggleProfilePanel()
+    {
+        _showProfilePanel = !_showProfilePanel;
+        if (_showProfilePanel) _showNotificationPanel = false;
+    }
+
+    private void CloseProfilePanel()
     {
         _showProfilePanel = false;
-        await JS.InvokeVoidAsync("localStorage.removeItem", "isLoggedIn");
-        Navigation.NavigateTo("/login", forceLoad: true);
     }
     
     private void ShowUserProfileModal()
@@ -206,6 +191,22 @@
                 var sidebarPref = await JS.InvokeAsync<string>("localStorage.getItem", "sidebarWidthState");
                 _isSidebarCollapsed = sidebarPref == "collapsed";
 
+                var playSplit = await JS.InvokeAsync<string>("localStorage.getItem", "playSplitAnimation");
+                if (playSplit == "true")
+                {
+                    _showSplitAnimation = true;
+                    await JS.InvokeVoidAsync("localStorage.removeItem", "playSplitAnimation");
+                    SafeStateHasChanged();
+                    
+                    await Task.Delay(50);
+                    _splitOpening = true;
+                    SafeStateHasChanged();
+                    
+                    await Task.Delay(700);
+                    _showSplitAnimation = false;
+                    _splitOpening = false;
+                    SafeStateHasChanged();
+                }
                 SafeStateHasChanged();
             }
             catch { }
@@ -232,7 +233,7 @@
     private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
     {
         if (_disposed) return;
-        CloseSidebar();
+        
         _cts?.Cancel();
         _cts?.Dispose();
         _cts = new CancellationTokenSource();
@@ -241,7 +242,7 @@
         _isNavigating = true;
         LoadingState.SetLoading(true);
         SafeStateHasChanged();
-
+        
         try
         {
             await Task.Delay(300, token);
