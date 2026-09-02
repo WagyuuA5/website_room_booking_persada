@@ -82,7 +82,7 @@
         animation: fadeInOverlay 0.25s ease-out forwards;
     }
 
-    .app-modal-container {
+    .app-modal-container { outline: none;
         background-color: var(--color-surface-alt);
         border-radius: var(--radius-modal);
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
@@ -197,6 +197,8 @@
         }
     }
 
+    
+
     private async Task HandleOverlayClick()
     {
         if (!LockBackdrop)
@@ -238,5 +240,10 @@
         }
     }
 }
+
+
+
+
+
 
 

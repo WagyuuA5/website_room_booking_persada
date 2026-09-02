@@ -431,7 +431,10 @@
     }
 </style>
 
+@implements IDisposable
 @code {
+    private CancellationTokenSource? _cts;
+    private bool _disposed;
     [Parameter] public RoomItem? Room { get; set; }
     [Parameter] public EventCallback OnBack { get; set; }
     [Parameter] public EventCallback OnConfirm { get; set; }
@@ -544,18 +547,34 @@
             }
         }
 
+        if (_disposed) return;
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _cts = new CancellationTokenSource();
+        
         _isSubmitting = true;
         StateHasChanged();
 
-        // Simulasi proses API
-        await Task.Delay(1500);
-
+        try {
+            await Task.Delay(1500, _cts.Token);
+        } catch (TaskCanceledException) { return; }
+        
+        if (_disposed) return;
+        
         _isSubmitting = false;
         
         ToastService.Success("Pemesanan Berhasil", "Ruangan berhasil dipesan.");
         
         await OnConfirm.InvokeAsync();
     }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        _cts?.Cancel();
+        _cts?.Dispose();
+    }
 }
+
 
 

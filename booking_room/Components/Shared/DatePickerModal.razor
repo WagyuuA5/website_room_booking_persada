@@ -1,0 +1,251 @@
+@namespace booking_room.Components.Shared
+@using System.Globalization
+
+<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" LayoutMode="list" Size="sm" ShowCloseButton="false" OnClose="OnCancel">
+    <BodyContent>
+        <div class="date-picker-container">
+            <div class="date-picker-header">
+                <button class="nav-btn" @onclick="PrevMonth">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                </button>
+                <div class="current-month">@_currentMonth.ToString("MMMM yyyy", _culture)</div>
+                <button class="nav-btn" @onclick="NextMonth">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
+            </div>
+
+            <div class="calendar-grid">
+                <div class="weekday">M</div>
+                <div class="weekday">S</div>
+                <div class="weekday">S</div>
+                <div class="weekday">R</div>
+                <div class="weekday">K</div>
+                <div class="weekday">J</div>
+                <div class="weekday">S</div>
+
+                @foreach (var day in GetDaysInMonth())
+                {
+                    <button class="day-btn @(day.IsOtherMonth ? "other-month" : "") @(day.Date == DateTime.Today ? "today" : "") @(day.Date == _tempSelectedDate ? "selected" : "")" 
+                            @onclick="() => SelectDate(day.Date)">
+                        @day.Date.Day
+                    </button>
+                }
+            </div>
+        </div>
+    </BodyContent>
+    <FooterContent>
+        <div style="display: flex; gap: 8px; justify-content: flex-end; width: 100%;">
+            <button class="btn-text-danger" @onclick="HandleCancel">Batal</button>
+            <button class="btn-primary-app" @onclick="ConfirmSelection">Pilih Tanggal</button>
+        </div>
+    </FooterContent>
+</AppModal>
+
+<style>
+    .date-picker-container {
+        padding: 8px;
+    }
+    .date-picker-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .current-month {
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--color-brand-navy, #0F1F3D);
+        text-transform: capitalize;
+    }
+    .nav-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: none;
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #6B7280;
+        transition: all 0.2s;
+    }
+    .nav-btn:hover {
+        background: #F3F4F6;
+        color: #111827;
+    }
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 8px;
+        text-align: center;
+    }
+    .weekday {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #9CA3AF;
+        margin-bottom: 8px;
+    }
+    .day-btn {
+        width: 36px;
+        height: 36px;
+        margin: 0 auto;
+        border-radius: 50%;
+        border: none;
+        background: transparent;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+    .day-btn:hover:not(.selected) {
+        background: #F3F4F6;
+    }
+    .day-btn.other-month {
+        color: #D1D5DB;
+        font-weight: 400;
+    }
+    .day-btn.today {
+        border: 1px solid var(--color-brand-navy, #0F1F3D);
+    }
+    .day-btn.selected {
+        background: var(--color-brand-navy, #0F1F3D);
+        color: #FFFFFF;
+        border-color: var(--color-brand-navy, #0F1F3D);
+    }
+    .btn-text-danger {
+        background: transparent;
+        border: none;
+        color: var(--color-danger-text, #DC2626);
+        font-weight: 600;
+        font-size: 0.875rem;
+        padding: 8px 16px;
+        cursor: pointer;
+    }
+    .btn-text-danger:hover {
+        text-decoration: underline;
+    }
+</style>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public DateTime? SelectedDate { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public EventCallback<DateTime?> OnDateSelected { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private DateTime _currentMonth = DateTime.Today;
+    private DateTime? _tempSelectedDate;
+    private CultureInfo _culture = new CultureInfo("id-ID");
+
+    protected override void OnInitialized()
+    {
+        _tempSelectedDate = SelectedDate;
+        if (SelectedDate.HasValue)
+        {
+            _currentMonth = new DateTime(SelectedDate.Value.Year, SelectedDate.Value.Month, 1);
+        }
+        else
+        {
+            _currentMonth = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+        }
+    }
+
+    private async Task HandleVisibleChanged(bool val)
+    {
+        Visible = val;
+        await VisibleChanged.InvokeAsync(val);
+        if (!val)
+        {
+            await OnCancel.InvokeAsync();
+        }
+    }
+
+    private async Task HandleCancel()
+    {
+        Visible = false;
+        await VisibleChanged.InvokeAsync(false);
+        await OnCancel.InvokeAsync();
+    }
+
+    private async Task ConfirmSelection()
+    {
+        Visible = false;
+        await VisibleChanged.InvokeAsync(false);
+        await OnDateSelected.InvokeAsync(_tempSelectedDate);
+    }
+
+    private void PrevMonth()
+    {
+        _currentMonth = _currentMonth.AddMonths(-1);
+    }
+
+    private void NextMonth()
+    {
+        _currentMonth = _currentMonth.AddMonths(1);
+    }
+
+    private void SelectDate(DateTime date)
+    {
+        _tempSelectedDate = date;
+    }
+
+    private class CalendarDay
+    {
+        public DateTime Date { get; set; }
+        public bool IsOtherMonth { get; set; }
+    }
+
+    private List<CalendarDay> GetDaysInMonth()
+    {
+        var days = new List<CalendarDay>();
+        var firstDayOfMonth = new DateTime(_currentMonth.Year, _currentMonth.Month, 1);
+        var daysInMonth = DateTime.DaysInMonth(_currentMonth.Year, _currentMonth.Month);
+        
+        // Find the day of week (Sunday = 0, Monday = 1, etc.)
+        int startDayOfWeek = (int)firstDayOfMonth.DayOfWeek;
+        
+        // Add previous month's trailing days
+        var prevMonth = firstDayOfMonth.AddMonths(-1);
+        var daysInPrevMonth = DateTime.DaysInMonth(prevMonth.Year, prevMonth.Month);
+        for (int i = startDayOfWeek - 1; i >= 0; i--)
+        {
+            days.Add(new CalendarDay 
+            { 
+                Date = new DateTime(prevMonth.Year, prevMonth.Month, daysInPrevMonth - i),
+                IsOtherMonth = true 
+            });
+        }
+        
+        // Add current month's days
+        for (int i = 1; i <= daysInMonth; i++)
+        {
+            days.Add(new CalendarDay 
+            { 
+                Date = new DateTime(_currentMonth.Year, _currentMonth.Month, i),
+                IsOtherMonth = false 
+            });
+        }
+        
+        // Add next month's leading days to complete the grid (usually 42 cells total)
+        int remainingCells = 42 - days.Count;
+        if (remainingCells >= 7 && days.Count == 35) remainingCells = 0; // if it fits perfectly in 5 rows
+        if (remainingCells >= 7) remainingCells -= 7; // trim an empty bottom row if possible
+
+        var nextMonth = firstDayOfMonth.AddMonths(1);
+        for (int i = 1; i <= remainingCells; i++)
+        {
+            days.Add(new CalendarDay 
+            { 
+                Date = new DateTime(nextMonth.Year, nextMonth.Month, i),
+                IsOtherMonth = true 
+            });
+        }
+        
+        return days;
+    }
+}

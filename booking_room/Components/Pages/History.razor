@@ -1,518 +1,345 @@
 @page "/history"
-@page "/bookings/history"
 @using booking_room.Components.Models
 @using booking_room.Components.Shared
 
-<PageTitle>Riwayat Pemesanan — Persada Ruangan</PageTitle>
+<PageTitle>Riwayat Pemesanan - PT PERSADA</PageTitle>
 
-<div class="history-page">
-    <div class="page-header">
-        <h1 class="page-title">Riwayat Pemesanan</h1>
-        <p class="page-subtitle">Lihat reservasi Anda sebelumnya beserta hasilnya.</p>
+<div class="content-fade-in">
+    <div class="history-page-header">
+        <div>
+            <h1 class="history-title">Riwayat Pemesanan</h1>
+            <p class="history-subtitle">Tinjau reservasi yang telah lewat maupun yang akan datang.</p>
+        </div>
+        
+        <div class="history-filters">
+            <!-- Filter Tanggal -->
+            <button class="filter-btn @(_isDatePickerOpen ? "active" : "")" @onclick="ToggleDatePicker">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span>@(_selectedDate?.ToString("dd/MM/yyyy") ?? "Semua Tanggal")</span>
+            </button>
+
+            <!-- Filter Status -->
+            <div class="dropdown-wrapper">
+                <button class="filter-btn @(_isStatusOpen ? "active" : "")" @onclick="ToggleStatusDropdown">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                    </svg>
+                    <span>@_selectedStatus</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 4px;">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+                @if (_isStatusOpen)
+                {
+                    <div class="dropdown-menu">
+                        @foreach (var status in _statusOptions)
+                        {
+                            <button class="dropdown-item @(_selectedStatus == status ? "selected" : "")" @onclick="() => SelectStatus(status)">@status</button>
+                        }
+                    </div>
+                    <div class="dropdown-backdrop" @onclick="() => _isStatusOpen = false"></div>
+                }
+            </div>
+        </div>
     </div>
 
-    <div class="history-table-container">
-        <DataGrid TItem="BookingItem" 
-                  Data="FilteredBookingsForGrid" 
-                  Columns="gridColumns" 
-                  IsLoading="_isLoading"
-                  SearchPlaceholder="Cari berdasarkan nama ruangan..."
-                  FileNamePrefix="riwayat-booking">
-            <ToolbarRightContent>
-                <div class="toolbar-btn-group" style="position: relative;">
-                    <button class="btn-toolbar" @onclick="ToggleDatePicker">
-                        Rentang Tanggal
-                    </button>
-                    <button class="btn-toolbar" @onclick="ToggleFilter">
-                        Saring
-                    </button>
-                    
-                    @if (isFilterOpen)
-                    {
-                        <div class="popup-anchor right" style="top: 100%; margin-top: 8px; right: 0;">
-                            <FilterByStatusPopup CurrentStatus="@activeFilter" ShowHeader="true" OnApply="ApplyFilter" OnClose="CloseFilter" />
+    @if (FilteredBookings.Any())
+    {
+        <div class="history-list">
+            @foreach (var item in FilteredBookings)
+            {
+                <div class="history-card" @onclick="() => OpenDetail(item)">
+                    <img src="@item.PhotoUrl" alt="@item.RoomName" class="history-thumb" onerror="this.src='/images/placeholder.jpg'" />
+                    <div class="history-info">
+                        <div class="history-room-name">@item.RoomName</div>
+                        <div class="history-meta">
+                            <span class="meta-item">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                @item.Date
+                            </span>
+                            <span class="meta-item">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                @item.TimeSlot
+                            </span>
+                            <span class="meta-item">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                                @item.Attendees Peserta
+                            </span>
                         </div>
-                    }
-
-                    @if (isDatePickerOpen)
-                    {
-                        <div class="popup-anchor center" style="top: 100%; margin-top: 8px; right: 100px;">
-                            <DatePickerPopup OnApply="ApplyDateRange" OnClose="CloseDatePicker" />
-                        </div>
-                    }
+                    </div>
+                    <div class="history-status-wrap">
+                        <StatusBadge Status="@item.Status" />
+                        <svg class="chevron-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </div>
                 </div>
-            </ToolbarRightContent>
-        </DataGrid>
-    </div>
-
-
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: #9CA3AF; margin-bottom: 16px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <h3 style="color: #374151; margin: 0 0 8px 0;">Belum Ada Riwayat</h3>
+            <p style="color: #6B7280; margin: 0; font-size: 0.875rem;">Riwayat pemesanan ruangan Anda akan muncul di sini.</p>
+        </div>
+    }
 </div>
 
-<AppModal Visible="isDetailOpen" OnClose="CloseDetail" Size="md" ShowCloseButton="false"><BodyContent>
-    <HistoryDetailModal Booking="selectedBooking" OnClose="CloseDetail" />
-</BodyContent></AppModal>
+@if (_isDatePickerOpen)
+{
+    <DatePickerModal 
+        Visible="true"
+        SelectedDate="_selectedDate"
+        OnDateSelected="HandleDateSelected"
+        OnCancel="() => _isDatePickerOpen = false" />
+}
+
+@if (_selectedBooking != null)
+{
+    <HistoryBookingDetailModal 
+        Visible="true"
+        Booking="_selectedBooking"
+        OnClose="() => _selectedBooking = null" />
+}
 
 <style>
-    .history-page {
-        padding: 32px;
-        font-family: 'Inter', sans-serif;
-        max-width: 1200px;
-        margin: 0 auto;
+    .history-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 32px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+    .history-title {
+        font-size: 1.875rem;
+        font-weight: 800;
+        color: var(--color-brand-navy, #0F1F3D);
+        margin: 0 0 8px 0;
+        letter-spacing: -0.02em;
+    }
+    .history-subtitle {
+        color: var(--color-brand-text-muted, #6B7280);
+        margin: 0;
+        font-size: 1rem;
+    }
+    .history-filters {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+    .filter-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #FFFFFF;
+        border: 1px solid #E5E7EB;
+        border-radius: 999px;
+        padding: 10px 16px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+    .filter-btn:hover, .filter-btn.active {
+        background: #F9FAFB;
+        border-color: #D1D5DB;
+        color: var(--color-brand-navy, #0F1F3D);
+    }
+    .dropdown-wrapper {
+        position: relative;
+    }
+    .dropdown-menu {
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        background: #FFFFFF;
+        border: 1px solid #E5E7EB;
+        border-radius: 12px;
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+        padding: 8px;
+        min-width: 200px;
+        z-index: 50;
         display: flex;
         flex-direction: column;
+        gap: 4px;
     }
-    .topbar {
-        display: flex;
-        justify-content: flex-end;
-        margin-bottom: 24px;
-    }
-    .topbar-actions {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-    }
-    .notification-btn {
-        background: none;
+    .dropdown-item {
+        padding: 8px 12px;
         border: none;
-        position: relative;
-        color: #6B7280;
-        cursor: pointer;
-        padding: 4px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .notification-badge {
-        position: absolute;
-        top: 0;
-        right: 0;
-        background-color: #EF4444;
-        color: white;
-        font-size: 10px;
-        font-weight: bold;
-        width: 16px;
-        height: 16px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 2px solid white;
-    }
-    .avatar-circle {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background-color: #16305C;
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        font-size: 14px;
-    }
-    .page-header {
-        margin-bottom: 32px;
-    }
-    .page-title {
-        color: #16305C;
-        font-size: 32px;
-        font-weight: 700;
-        margin: 0 0 8px 0;
-    }
-    .page-subtitle {
-        color: #6B7280;
-        font-size: 15px;
-        margin: 0;
-    }
-    .history-toolbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 24px;
-        gap: 16px;
-        flex-wrap: wrap;
-    }
-    .search-bar-history {
-        position: relative;
-        display: flex;
-        align-items: center;
-    }
-    .search-bar-history .search-icon {
-        position: absolute;
-        left: 14px;
-        color: #9CA3AF;
-    }
-    .search-bar-history input {
-        padding: 10px 16px 10px 42px;
-        border: 1px solid #E5E7EB;
-        border-radius: 999px;
-        font-size: 14px;
-        width: 320px;
-        background: #FFFFFF;
-        transition: border-color 0.2s;
-    }
-    .search-bar-history input:focus {
-        outline: none;
-        border-color: #16305C;
-    }
-    .toolbar-right {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        position: relative;
-    }
-    .toolbar-btn-group {
-        display: flex;
-        gap: 12px;
-    }
-    .btn-toolbar {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 20px;
-        border: 1px solid #E5E7EB;
-        border-radius: 999px;
-        background: transparent;
-        color: #16305C;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background-color 0.2s, border-color 0.2s;
-    }
-    .btn-toolbar:hover {
-        background-color: #F9FAFB;
-        border-color: #D1D5DB;
-    }
-    .popup-anchor {
-        position: absolute;
-        top: 50px;
-        z-index: 100;
-    }
-    .popup-anchor.right { right: 0; }
-    .popup-anchor.center { right: 80px; }
-
-    /* Table Styles */
-    .history-table-container {
-        background: #FFFFFF;
-        border-radius: 16px;
-        overflow: hidden;
-        border: 1px solid #E5E7EB;
-        box-shadow: 0 4px 24px rgba(16,48,92,0.04);
-        width: 100%;
-    }
-    .history-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    .history-table thead tr {
-        background-color: #F9FAFB;
-        border-bottom: 1px solid #E5E7EB;
-    }
-    .history-table th {
-        padding: 16px 20px;
+        background: none;
         text-align: left;
-        color: #6B7280;
-        font-size: 12px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-    .sortable-header {
+        width: 100%;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        color: #374151;
         cursor: pointer;
-        user-select: none;
-        display: flex;
-        align-items: center;
-        gap: 6px;
+        transition: background 0.2s;
     }
-    .sort-icon {
-        transition: transform 0.2s;
+    .dropdown-item:hover {
+        background: #F3F4F6;
     }
-    .sort-icon.desc {
-        transform: rotate(180deg);
-    }
-    .history-table td {
-        padding: 16px 20px;
-        border-bottom: 1px solid #E5E7EB;
-        vertical-align: middle;
-    }
-    .history-table tbody tr:nth-child(even) {
-        background-color: #FFFFFF;
-    }
-    .history-table tbody tr:hover {
-        background-color: #F0F4FF;
-    }
-    .room-cell {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-    .room-thumb {
-        width: 40px;
-        height: 40px;
-        border-radius: 40px;
-        object-fit: cover;
-    }
-    .room-name-text {
-        display: block;
-        font-weight: 700;
-        color: #16305C;
-        font-size: 14px;
-    }
-    .room-floor-text {
-        display: block;
-        color: #6B7280;
-        font-size: 12px;
-        margin-top: 2px;
-    }
-    .date-text, .duration-text {
-        color: #16305C;
-        font-size: 14px;
-    }
-    .status-pill {
-        display: inline-flex;
-        align-items: center;
-        padding: 6px 16px;
-        border-radius: 999px;
-        font-size: 12px;
+    .dropdown-item.selected {
+        background: #EEF2FF;
+        color: #1F5D9A;
         font-weight: 600;
     }
-    .badge-pending {
-        background-color: #FEF3C7;
-        color: #92400E;
-    }
-    .badge-approved {
-        background-color: #D1FAE5;
-        color: #065F46;
-    }
-    .badge-rejected {
-        background-color: #FEE2E2;
-        color: #991B1B;
-    }
-    .badge-completed {
-        background-color: #DBEAFE;
-        color: #1E40AF;
-    }
-    .btn-view-details {
-        background: none;
-        border: none;
-        color: #EAB63C;
-        font-weight: 600;
-        font-size: 14px;
-        cursor: pointer;
-        padding: 0;
-        text-decoration: none;
-        transition: color 0.2s;
-    }
-    .btn-view-details:hover {
-        color: #16305C;
-        text-decoration: underline;
-    }
-    .empty-row {
-        text-align: center;
-        color: #9CA3AF;
-        padding: 40px 20px !important;
+    .dropdown-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 40;
+        background: transparent;
     }
 
-    /* Pagination */
-    .pagination-bar {
+    .history-list {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 24px;
+        flex-direction: column;
+        gap: 16px;
     }
-    .page-info {
-        color: #6B7280;
-        font-size: 14px;
-    }
-    .page-buttons {
-        display: flex;
-        gap: 8px;
-    }
-    .page-btn {
-        padding: 8px 16px;
-        border: 1px solid #E5E7EB;
-        border-radius: 999px;
+    .history-card {
         background: #FFFFFF;
-        color: #16305C;
-        font-size: 14px;
-        font-weight: 600;
+        border: 1px solid #E5E7EB;
+        border-radius: 16px;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
         cursor: pointer;
         transition: all 0.2s;
     }
-    .page-btn:hover:not(:disabled):not(.active) {
-        background-color: #F9FAFB;
+    .history-card:hover {
+        border-color: #CBD5E1;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        transform: translateY(-2px);
     }
-    .page-btn.active {
-        background-color: #16305C;
-        color: white;
-        border-color: #16305C;
+    .history-thumb {
+        width: 80px;
+        height: 80px;
+        border-radius: 12px;
+        object-fit: cover;
+        flex-shrink: 0;
     }
-    .page-btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
+    .history-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .history-room-name {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #111827;
+    }
+    .history-meta {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+    .meta-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.8125rem;
+        color: #6B7280;
+    }
+    .history-status-wrap {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    .chevron-icon {
+        color: #9CA3AF;
+        transition: color 0.2s;
+    }
+    .history-card:hover .chevron-icon {
+        color: var(--color-brand-navy, #0F1F3D);
+    }
+    .empty-state {
+        padding: 64px 20px;
+        text-align: center;
+        background: #F9FAFB;
+        border: 2px dashed #E5E7EB;
+        border-radius: 16px;
     }
 
-    /* Responsive */
-    @@media (max-width: 768px) {
-        .history-table thead {
-            display: none;
-        }
-        .history-table, .history-table tbody, .history-table tr, .history-table td {
-            display: block;
-            width: 100%;
-        }
-        .history-table tr {
-            margin-bottom: 16px;
-            border: 1px solid #E5E7EB;
-            border-radius: 12px;
-            padding: 16px;
-        }
-        .history-table td {
-            text-align: right;
-            padding: 8px 0;
-            border-bottom: none;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .history-table td::before {
-            content: attr(data-label);
-            font-size: 12px;
-            color: #6B7280;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        .room-cell {
-            text-align: left;
-        }
-        .history-toolbar {
+    @@media (max-width: 640px) {
+        .history-card {
             flex-direction: column;
             align-items: stretch;
+            position: relative;
         }
-        .search-bar-history input {
+        .history-thumb {
             width: 100%;
+            height: 160px;
         }
-        .toolbar-btn-group {
-            flex-wrap: wrap;
+        .history-status-wrap {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+        }
+        .chevron-icon {
+            display: none;
         }
     }
 </style>
 
 @code {
-    private string activeFilter = "Semua Status";
-    private bool isFilterOpen = false;
-    private bool isDatePickerOpen = false;
-    private bool isDetailOpen = false;
-    private BookingItem? selectedBooking;
-    private bool _isLoading = true;
-    private List<GridColumn<BookingItem>> gridColumns = new();
+    private DateTime? _selectedDate;
+    private string _selectedStatus = "Semua Status";
+    private readonly string[] _statusOptions = { "Semua Status", "Disetujui", "Menunggu Persetujuan", "Ditolak", "Selesai" };
+    private bool _isStatusOpen = false;
+    private bool _isDatePickerOpen = false;
+    private BookingItem? _selectedBooking;
 
-    protected override async Task OnInitializedAsync()
-    {
-        gridColumns = new List<GridColumn<BookingItem>>
-        {
-            new GridColumn<BookingItem>
-            {
-                Title = "NAMA RUANGAN",
-                PropertyName = "RoomName",
-                ValueFunc = b => b.RoomName,
-                CellTemplate = b => builder =>
-                {
-                    builder.OpenElement(0, "div");
-                    builder.AddAttribute(1, "class", "room-cell");
-                    
-                    builder.OpenElement(2, "img");
-                    builder.AddAttribute(3, "src", b.PhotoUrl);
-                    builder.AddAttribute(4, "alt", b.RoomName);
-                    builder.AddAttribute(5, "class", "room-thumb");
-                    builder.AddAttribute(6, "onerror", "this.style.display='none'; this.nextElementSibling.style.display='flex'");
-                    builder.CloseElement();
-                    
-                    builder.AddMarkupContent(7, "<div class=\"room-thumb-placeholder\" style=\"display:none; width:40px; height:40px; border-radius:8px; align-items:center; justify-content:center; background:#f3f4f6; flex-shrink:0;\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#9ca3af\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect><circle cx=\"8.5\" cy=\"8.5\" r=\"1.5\"></circle><polyline points=\"21 15 16 10 5 21\"></polyline></svg></div>");
-                    
-                    builder.OpenElement(8, "div");
-                    builder.OpenElement(9, "span");
-                    builder.AddAttribute(10, "class", "room-name-text");
-                    builder.AddContent(11, b.RoomName);
-                    builder.CloseElement();
-                    builder.OpenElement(12, "span");
-                    builder.AddAttribute(13, "class", "room-floor-text");
-                    builder.AddContent(14, b.Floor);
-                    builder.CloseElement();
-                    builder.CloseElement();
-                    
-                    builder.CloseElement();
-                }
-            },
-            new GridColumn<BookingItem>
-            {
-                Title = "TANGGAL",
-                PropertyName = "Date",
-                ValueFunc = b => b.Date
-            },
-            new GridColumn<BookingItem>
-            {
-                Title = "DURASI",
-                PropertyName = "Duration",
-                ValueFunc = b => b.Duration,
-                Align = "right"
-            },
-            new GridColumn<BookingItem>
-            {
-                Title = "STATUS",
-                PropertyName = "Status",
-                ValueFunc = b => BookingDataStore.GetStatusLabel(b.Status),
-                CellTemplate = b => builder =>
-                {
-                    builder.OpenComponent<StatusBadge>(0);
-                    builder.AddAttribute(1, "Status", b.Status);
-                    builder.CloseComponent();
-                }
-            },
-            new GridColumn<BookingItem>
-            {
-                Title = "AKSI",
-                PropertyName = "",
-                Sortable = false,
-                CellTemplate = b => builder =>
-                {
-                    builder.OpenElement(0, "button");
-                    builder.AddAttribute(1, "class", "btn-view-details");
-                    builder.AddAttribute(2, "onclick", EventCallback.Factory.Create(this, () => OpenDetail(b)));
-                    builder.AddContent(3, "Lihat Detail");
-                    builder.CloseElement();
-                }
-            }
-        };
-
-        await Task.Delay(400);
-        _isLoading = false;
-    }
-
-    private IEnumerable<BookingItem> FilteredBookingsForGrid
+    private IEnumerable<BookingItem> FilteredBookings
     {
         get
         {
             var query = BookingDataStore.AllBookings.AsEnumerable();
             
-            if (activeFilter != "Semua Status")
-                query = query.Where(b => b.Status.Equals(activeFilter, StringComparison.OrdinalIgnoreCase));
-            
+            if (_selectedStatus != "Semua Status")
+            {
+                var mappedStatus = _selectedStatus switch {
+                    "Disetujui" => "approved",
+                    "Menunggu Persetujuan" => "pending",
+                    "Ditolak" => "rejected",
+                    "Selesai" => "completed",
+                    _ => ""
+                };
+                query = query.Where(b => b.Status == mappedStatus);
+            }
+
+            if (_selectedDate.HasValue)
+            {
+                var dateStr = _selectedDate.Value.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("id-ID"));
+                query = query.Where(b => b.Date == dateStr);
+            }
+
             return query;
         }
     }
 
-    private void ToggleFilter() { isFilterOpen = !isFilterOpen; isDatePickerOpen = false; }
-    private void CloseFilter() { isFilterOpen = false; }
-    private void ApplyFilter(string status) { activeFilter = status; isFilterOpen = false; }
+    private void ToggleStatusDropdown() => _isStatusOpen = !_isStatusOpen;
+    private void SelectStatus(string status)
+    {
+        _selectedStatus = status;
+        _isStatusOpen = false;
+    }
 
-    private void ToggleDatePicker() { isDatePickerOpen = !isDatePickerOpen; isFilterOpen = false; }
-    private void CloseDatePicker() { isDatePickerOpen = false; }
-    private void ApplyDateRange(string range) { isDatePickerOpen = false; /* Placeholder */ }
+    private void ToggleDatePicker() => _isDatePickerOpen = !_isDatePickerOpen;
+    private void HandleDateSelected(DateTime? date)
+    {
+        _selectedDate = date;
+        _isDatePickerOpen = false;
+    }
 
-    private void OpenDetail(BookingItem booking) { selectedBooking = booking; isDetailOpen = true; }
-    private void CloseDetail() { isDetailOpen = false; }
+    private void OpenDetail(BookingItem item) => _selectedBooking = item;
 }
-
-
-
