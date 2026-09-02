@@ -257,7 +257,7 @@
 </div>
 
 <!-- 4.3 Modal Konfirmasi Pembatalan Terpusat -->
-<AppModal Visible="@isCancelModalOpen" 
+<AppModal Visible="@isCancelModalOpen" ShowCloseButton="false" 
        VisibleChanged="@(v => isCancelModalOpen = v)"
        Title="Batalkan Pemesanan?"
        Subtitle="Tindakan ini akan membatalkan pemesanan dan membebaskan jadwal ruangan."
@@ -269,7 +269,7 @@
 </AppModal>
 
 <!-- Modal Modifikasi Reservasi -->
-<AppModal Visible="@isModifyModalOpen"
+<AppModal Visible="@isModifyModalOpen" ShowCloseButton="false"
        VisibleChanged="@(v => isModifyModalOpen = v)"
        Title="Ubah Jadwal Pemesanan"
        Subtitle="Sesuaikan tanggal, waktu, atau catatan pemesanan ruangan Anda."
@@ -925,6 +925,8 @@
     private bool _isHeroExpanded = false;
     private string _searchQuery = "";
     private System.Timers.Timer? _countdownTimer;
+    private bool _disposed = false;
+    private CancellationTokenSource _cts = new();
 
     private bool isModifyModalOpen = false;
     private bool isCancelModalOpen = false;
@@ -989,15 +991,39 @@
             }
         };
 
-        allBookings = BookingDataStore.AllBookings.ToList();
-        selectedBooking = allBookings.FirstOrDefault();
-        _activeUpcomingBooking = allBookings.FirstOrDefault(b => b.Status.Equals("approved", StringComparison.OrdinalIgnoreCase) || b.Status.Equals("pending", StringComparison.OrdinalIgnoreCase));
-        _isLoading = false;
+        try 
+        {
+            // Simulate async fetch
+            await Task.Delay(100, _cts.Token);
+            
+            allBookings = BookingDataStore.AllBookings.ToList();
+            selectedBooking = allBookings.FirstOrDefault();
+            _activeUpcomingBooking = allBookings.FirstOrDefault(b => b.Status.Equals("approved", StringComparison.OrdinalIgnoreCase) || b.Status.Equals("pending", StringComparison.OrdinalIgnoreCase));
+            _isLoading = false;
 
-        // Inisialisasi countdown timer untuk Dynamic Island Hero
-        _countdownTimer = new System.Timers.Timer(1000);
-        _countdownTimer.Elapsed += (s, e) => InvokeAsync(StateHasChanged);
-        _countdownTimer.Start();
+            // Inisialisasi countdown timer untuk Dynamic Island Hero
+            _countdownTimer = new System.Timers.Timer(1000);
+            _countdownTimer.Elapsed += OnTimerElapsed;
+            _countdownTimer.Start();
+        }
+        catch (OperationCanceledException)
+        {
+            // Normal when navigating away
+        }
+    }
+
+    private void OnTimerElapsed(object? sender, System.Timers.ElapsedEventArgs e)
+    {
+        if (_disposed) return;
+        
+        try 
+        {
+            InvokeAsync(StateHasChanged);
+        }
+        catch (ObjectDisposedException)
+        {
+            // Ignore if already disposed
+        }
     }
 
     private IEnumerable<BookingItem> FilteredBookingsForGrid
@@ -1166,7 +1192,18 @@
 
     public void Dispose()
     {
-        _countdownTimer?.Dispose();
+        _disposed = true;
+        _cts.Cancel();
+        _cts.Dispose();
+
+        if (_countdownTimer != null)
+        {
+            _countdownTimer.Elapsed -= OnTimerElapsed;
+            _countdownTimer.Stop();
+            _countdownTimer.Dispose();
+            _countdownTimer = null;
+        }
     }
 }
+
 

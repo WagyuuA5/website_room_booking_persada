@@ -128,7 +128,7 @@
     </div>
 </div>
 
-<AppModal @bind-Visible="isModalVisible" Size="md" ShowCloseButton="true" OnClose="CloseModal"><BodyContent>
+<AppModal @bind-Visible="isModalVisible" Size="md" ShowCloseButton="false" OnClose="CloseModal"><BodyContent>
     @if (activeModal == nameof(ChangePasswordModal))
     {
         <ChangePasswordModal OnClose="CloseModal" />
@@ -202,4 +202,5 @@
     .text-danger { color: #DC2626 !important; }
     .text-warning { color: #D97706 !important; }
 </style>
+
 

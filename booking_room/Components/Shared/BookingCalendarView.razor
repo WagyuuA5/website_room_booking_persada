@@ -61,7 +61,7 @@
                             "mine" => "cal-booking-block booking-mine",
                             _ => "cal-booking-block booking-free"
                         };
-                        <div class="@blockClass" style="left: @leftPercent.ToString("0.###", CultureInfo.InvariantCulture)%; width: @widthPercent.ToString("0.###", CultureInfo.InvariantCulture)%;">
+                        <div class="@blockClass" style="left: @leftPercent.ToString("0.###", CultureInfo.InvariantCulture)%; width: @widthPercent.ToString("0.###", CultureInfo.InvariantCulture)%; cursor: pointer;" @onclick="() => HandleBookingClick(booking, room)">
                             <span class="cal-booking-label">@booking.Label</span>
                             <span class="cal-booking-time">@booking.TimeRange</span>
                         </div>
@@ -303,11 +303,77 @@
     .cal-legend-dot.slot-mine { background: #DBEAFE; border: 1px solid #93C5FD; }
 </style>
 
+
+@if (_showBookingDetail && _selectedBooking != null && _selectedRoom != null)
+{
+    <AppModal Visible="true" Size="md" ShowCloseButton="false" OnClose="CloseBookingDetail">
+        <BodyContent>
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                <div style="position: relative; height: 180px; border-radius: 12px; overflow: hidden;">
+                    <img src="@_selectedRoom.PhotoUrl" alt="@_selectedRoom.Name" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'" />
+                    <div style="display:none; position:absolute; inset:0; align-items:center; justify-content:center; background:#f1f5f9;">
+                        <svg width="40" height="40" viewBox="0 0 18 18" fill="none"><path d="M0 18V16H2V0H12V1H16V16H18V18H14V3H12V18H0ZM4 2V16V2ZM8 10C8.28 10 8.52 9.9 8.71 9.71C8.9 9.52 9 9.28 9 9C9 8.72 8.9 8.48 8.71 8.29C8.52 8.1 8.28 8 8 8C7.72 8 7.48 8.1 7.29 8.29C7.1 8.48 7 8.72 7 9C7 9.28 7.1 9.52 7.29 9.71C7.48 9.9 7.72 10 8 10ZM4 16H10V2H4V16Z" fill="#93c5fd"/></svg>
+                    </div>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #0F1F3D;">@_selectedRoom.Name</h3>
+                    <p style="margin: 4px 0 0 0; color: #6B7280; font-size: 0.875rem;">@_selectedDate.ToString("dd MMMM yyyy") • @_selectedBooking.TimeRange</p>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div>
+                        <span style="display: block; font-size: 0.75rem; font-weight: 700; color: #9CA3AF; margin-bottom: 4px;">PEMESAN</span>
+                        <span style="font-size: 0.875rem; font-weight: 600; color: #1F2937;">@(_selectedBooking.Label == "Saya" ? "Anda (Budi Santoso)" : "Rekan Kerja")</span>
+                    </div>
+                    <div>
+                        <span style="display: block; font-size: 0.75rem; font-weight: 700; color: #9CA3AF; margin-bottom: 4px;">STATUS</span>
+                        <StatusBadge Status="@(_selectedBooking.Label == "Saya" ? "approved" : "pending")" />
+                    </div>
+                </div>
+                <div>
+                    <span style="display: block; font-size: 0.75rem; font-weight: 700; color: #9CA3AF; margin-bottom: 4px;">FASILITAS RUANGAN</span>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        @foreach(var am in _selectedRoom.Amenities)
+                        {
+                            <span style="padding: 4px 8px; background: #F3F4F6; border-radius: 6px; font-size: 0.75rem; font-weight: 600; color: #4B5563;">@am</span>
+                        }
+                    </div>
+                </div>
+                <div>
+                    <span style="display: block; font-size: 0.75rem; font-weight: 700; color: #9CA3AF; margin-bottom: 4px;">KEPERLUAN</span>
+                    <p style="margin: 0; font-size: 0.875rem; color: #374151; line-height: 1.5; background: #F8FAFC; padding: 12px; border-radius: 8px; border: 1px solid #E2E8F0;">
+                        Diskusi project planning dan sinkronisasi kuartal berikutnya.
+                    </p>
+                </div>
+            </div>
+        </BodyContent>
+        <FooterContent>
+            <button class="btn-secondary-app" style="width: 100%;" @onclick="CloseBookingDetail">Tutup</button>
+        </FooterContent>
+    </AppModal>
+}
+
 @code {
     [Parameter] public List<RoomItem> Rooms { get; set; } = new();
     [Parameter] public EventCallback<RoomItem> OnRoomClick { get; set; }
 
     private DateTime _selectedDate = DateTime.Today;
+    private BookingBlock? _selectedBooking;
+    private RoomItem? _selectedRoom;
+    private bool _showBookingDetail = false;
+
+    private void HandleBookingClick(BookingBlock booking, RoomItem room)
+    {
+        _selectedBooking = booking;
+        _selectedRoom = room;
+        _showBookingDetail = true;
+    }
+
+    private void CloseBookingDetail()
+    {
+        _showBookingDetail = false;
+        _selectedBooking = null;
+        _selectedRoom = null;
+    }
     private DateTime _weekStart = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek + (int)DayOfWeek.Monday);
 
     private List<DateTime> _visibleDates => Enumerable.Range(0, 7).Select(i => _weekStart.AddDays(i)).ToList();
@@ -364,4 +430,6 @@
         return bookings.OrderBy(b => b.StartHour).ToList();
     }
 }
+
+
 

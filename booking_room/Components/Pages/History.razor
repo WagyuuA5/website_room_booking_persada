@@ -48,7 +48,7 @@
 
 </div>
 
-<AppModal Visible="isDetailOpen" OnClose="CloseDetail" Size="md" ShowCloseButton="true"><BodyContent>
+<AppModal Visible="isDetailOpen" OnClose="CloseDetail" Size="md" ShowCloseButton="false"><BodyContent>
     <HistoryDetailModal Booking="selectedBooking" OnClose="CloseDetail" />
 </BodyContent></AppModal>
 
@@ -513,5 +513,6 @@
     private void OpenDetail(BookingItem booking) { selectedBooking = booking; isDetailOpen = true; }
     private void CloseDetail() { isDetailOpen = false; }
 }
+
 
 

@@ -7,14 +7,9 @@
 
 <PageTitle>Pemesanan Ruangan — Persada Ruangan</PageTitle>
 
-<div class="bookings-page-header">
-    <h1>Cari Ruangan</h1>
-    <p>Pilih ketersediaan, kapasitas, dan fasilitas untuk menyaring ruangan yang tepat sesuai kebutuhan perusahaan Anda.</p>
-</div>
-
 <!-- Panel Pencarian -->
 <div class="search-panel">
-    <p class="search-panel-label">CARI RUANGAN</p>
+    
     <div class="search-bar-wrapper">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.134 17 3 13.866 3 10C3 6.134 6.134 3 10 3C13.866 3 17 6.134 17 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -52,16 +47,6 @@
             <input type="number" class="filter-input" placeholder="Min. peserta" min="1" @bind="_filterCapacity" @bind:after="ApplyFilter" />
         </div>
 
-    </div>
-    <div class="amenities-row">
-        @foreach (var amenity in _allAmenities)
-        {
-            <label class="amenity-checkbox">
-                <input type="checkbox" checked="@_selectedAmenities.Contains(amenity)"
-                       @onchange="e => ToggleAmenity(amenity, (bool)(e.Value ?? false))" />
-                @amenity
-            </label>
-        }
     </div>
 </div>
 
@@ -196,9 +181,8 @@
                             </div>
                         </div>
                         <div class="room-card-footer">
-                            <button class="room-detail-btn" style="flex:1; text-transform: uppercase; font-weight: 600; @(!isClickable ? "opacity:0.5; cursor:not-allowed;" : "")" @onclick="() => { if (isClickable) ViewDetail(room); }" disabled="@(!isClickable)">LIHAT DETAIL</button>
-                            <button class="btn-book-now" style="flex:1; padding: 10px 16px; border-radius: 8px; background: #F5B301; color: #0F1B3D; font-weight: 700; border: none; cursor: pointer; @(!isClickable ? "opacity:0.5; cursor:not-allowed;" : "")" @onclick="() => { if (isClickable) BookRoom(room); }" disabled="@(!isClickable)">PESAN SEKARANG</button>
-                        </div>
+    <button class="room-detail-btn" style="width: 100%; text-transform: uppercase; font-weight: 600; @(!isClickable ? "opacity:0.5; cursor:not-allowed;" : "")" @onclick="() => { if (isClickable) ViewDetail(room); }" disabled="@(!isClickable)">LIHAT DETAIL</button>
+</div>
                     </div>
                 }
             }
@@ -241,7 +225,7 @@ else if (_activeTab == "Fasilitas")
     private TimeOnly? _filterTime;
     private string _filterDuration = "";
     private int? _filterCapacity;
-    private HashSet<string> _selectedAmenities = new();
+    
     
     private bool _isRoomDetailVisible = false;
     private RoomItem? _selectedRoomForDetail;
@@ -249,7 +233,7 @@ else if (_activeTab == "Fasilitas")
     private bool _isConfirmBookingVisible = false;
     private RoomItem? _selectedRoomForBooking;
 
-    private readonly string[] _allAmenities = { "AC", "Proyektor", "Papan Tulis", "Konferensi Video", "Aksesibilitas", "Sistem Audio" };
+    
 
     private List<RoomItem> _allRooms = new()
     {
@@ -311,23 +295,11 @@ else if (_activeTab == "Fasilitas")
             if (_filterCapacity.HasValue && _filterCapacity > 0 && room.Capacity < _filterCapacity.Value)
                 return false;
 
-            // Filter fasilitas (semua fasilitas yang dipilih harus ada)
-            if (_selectedAmenities.Any())
-            {
-                if (!_selectedAmenities.All(a => room.Amenities.Contains(a)))
-                    return false;
-            }
-
             return true;
         }).ToList();
     }
 
-    private void ToggleAmenity(string amenity, bool isChecked)
-    {
-        if (isChecked) _selectedAmenities.Add(amenity);
-        else _selectedAmenities.Remove(amenity);
-        ApplyFilter();
-    }
+    
 
     private void ViewDetail(RoomItem room)
     {
@@ -355,13 +327,8 @@ else if (_activeTab == "Fasilitas")
         _selectedRoomForBooking = null;
     }
 
-    private void BookRoom(RoomItem room)
-    {
-        if (room.Status == "available")
-        {
-            _selectedRoomForBooking = room;
-            _isConfirmBookingVisible = true;
-        }
-    }
+    
 }
+
+
 
