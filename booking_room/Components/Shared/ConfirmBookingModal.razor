@@ -2,83 +2,97 @@
 @using booking_room.Services
 @inject IToastService ToastService
 @inject IModalService ModalService
+@implements IDisposable
 
 <AppModal Visible="true" Size="md" ShowCloseButton="false" OnClose="HandleBack">
     <HeaderContent>
         <div class="cbm-header-content">
-            <h2 class="modal-title">Konfirmasi Pemesanan</h2>
-            <p class="modal-subtitle">Jadwalkan ruangan atau sumber daya baru</p>
+            <h2 class="modal-title">Konfirmasi Pemesanan Ruangan</h2>
+            <p class="modal-subtitle">Lengkapi formulir reservasi untuk menjadwalkan ruangan rapat.</p>
         </div>
     </HeaderContent>
 
     <ChildContent>
         <div class="cbm-form">
-            <div class="cbm-form-group">
-                <label>Nama Pemesan</label>
-                <input type="text" class="cbm-input" @bind="_requesterName" placeholder="Masukkan nama pemesan" />
-            </div>
-
-            <div class="cbm-form-group">
-                <label>Divisi</label>
-                <input type="text" class="cbm-input" @bind="_department" placeholder="Masukkan divisi Anda" />
-            </div>
-
+            <!-- Form Nama Pemesan & Divisi dengan Icon Field CASE 3 -->
             <div class="cbm-form-row">
                 <div class="cbm-form-group">
-                    <label>Pilih Ruangan</label>
-                    <div class="cbm-room-selector">
-                        <span>@(Room?.Name ?? "Pilih Ruangan")</span>
-                        <div class="rd-status-badge @(Room?.Status == "available" ? "rd-badge-available" : "rd-badge-booked")">
-                            @(Room?.Status == "available" ? "TERSEDIA" : "SUDAH DIPESAN")
+                    <label class="cbm-label">Nama Pemesan</label>
+                    <div class="input-icon-wrap">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <input type="text" class="cbm-input has-icon" @bind="_requesterName" placeholder="Nama Lengkap Pemesan" />
+                    </div>
+                </div>
+
+                <div class="cbm-form-group">
+                    <label class="cbm-label">Divisi / Departemen</label>
+                    <div class="input-icon-wrap">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                        </svg>
+                        <input type="text" class="cbm-input has-icon" @bind="_department" placeholder="cth. IT / Marketing / HR" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pilih Ruangan (Kartu Detail CASE 3) -->
+            <div class="cbm-form-group">
+                <label class="cbm-label">Ruangan Terpilih</label>
+                <div class="cbm-room-card-preview">
+                    <div class="room-preview-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
+                    </div>
+                    <div class="room-preview-info">
+                        <div class="room-preview-top">
+                            <h4 class="room-preview-name">@(SelectedRoom?.Name ?? Room?.Name ?? "Executive Boardroom A")</h4>
+                            <span class="room-status-pill @(CurrentRoomStatus == "available" ? "available" : "booked")">
+                                @(CurrentRoomStatus == "available" ? "Tersedia" : "Dipesan")
+                            </span>
+                        </div>
+                        <div class="room-preview-meta">
+                            <span>Kapasitas: @(SelectedRoom?.Capacity ?? Room?.Capacity ?? 12) Orang</span>
+                            <span>•</span>
+                            <span>Lantai 3, Sayap Barat</span>
+                        </div>
+                        <div class="room-preview-facilities">
+                            <span class="facility-chip">TV LED</span>
+                            <span class="facility-chip">WiFi Cepat</span>
+                            <span class="facility-chip">Proyektor</span>
+                            <span class="facility-chip">AC</span>
                         </div>
                     </div>
                 </div>
-                
-                <div class="cbm-form-group">
-                    <label>Kapasitas</label>
-                    <div class="cbm-readonly-val">Kapasitas: @(Room?.Capacity ?? 0) Orang</div>
-                </div>
             </div>
 
+            <!-- Tanggal & Waktu -->
             <div class="cbm-form-row">
                 <div class="cbm-form-group">
-                    <label>Tanggal</label>
+                    <label class="cbm-label">Tanggal Pelaksanaan</label>
                     <input type="date" class="cbm-input" @bind="_bookingDate" />
                 </div>
                 <div class="cbm-form-group">
-                    <label>Waktu</label>
+                    <label class="cbm-label">Waktu Rapat</label>
                     <div class="cbm-time-row">
                         <input type="time" class="cbm-input" @bind="_startTime" />
-                        <span>-</span>
+                        <span class="time-sep">-</span>
                         <input type="time" class="cbm-input" @bind="_endTime" />
                     </div>
                 </div>
             </div>
 
-            <div class="cbm-form-group">
-                <label>Undang Peserta</label>
-                <input type="text" class="cbm-input" placeholder="Undang rekan kerja..." />
-            </div>
-
-            <div class="cbm-toggle-row">
-                <div class="cbm-toggle-label">Undang tamu eksternal</div>
-                <label class="cbm-switch">
-                    <input type="checkbox" @bind="_inviteExternal" />
-                    <span class="cbm-slider"></span>
-                </label>
-            </div>
-            
-            @if (_inviteExternal)
-            {
-                <div class="cbm-sub-panel">
-                    <div class="cbm-form-group" style="margin:0;">
-                        <input type="email" class="cbm-input" placeholder="Email Tamu (cth: tamu@perusahaan.com)" />
-                    </div>
+            <!-- Toggle Jadikan Berulang (Recurring Booking) CASE 3 -->
+            <div class="recurring-toggle-card">
+                <div class="recurring-toggle-info">
+                    <div class="toggle-title">Jadikan Berulang (Recurring Booking)</div>
+                    <div class="toggle-desc">Jadwalkan pemesanan ini secara berulang otomatis pada hari tertentu</div>
                 </div>
-            }
-
-            <div class="cbm-toggle-row">
-                <div class="cbm-toggle-label">Booking Berulang</div>
                 <label class="cbm-switch">
                     <input type="checkbox" @bind="IsRecurring" />
                     <span class="cbm-slider"></span>
@@ -87,53 +101,86 @@
 
             @if (IsRecurring)
             {
-                <div class="cbm-sub-panel recurring-panel">
-                    <div class="cbm-form-row">
-                        <div class="cbm-form-group">
-                            <label>Ulangi setiap</label>
-                            <select class="cbm-input" @bind="RecurringType">
-                                <option value="">Pilih...</option>
-                                <option value="Harian">Harian</option>
-                                <option value="Mingguan">Mingguan</option>
-                                <option value="Bulanan">Bulanan</option>
-                            </select>
-                        </div>
-                        <div class="cbm-form-group">
-                            <label>Berakhir pada</label>
-                            <input type="date" class="cbm-input" @bind="RecurringEndDate" />
+                <div class="cbm-sub-panel recurring-panel content-fade-in">
+                    <!-- Segmented Control Pola Perulangan -->
+                    <div class="cbm-form-group">
+                        <label class="cbm-label">Pola Perulangan</label>
+                        <div class="cbm-segmented-tabs">
+                            <button type="button" class="segmented-tab @(RecurringType == "Harian" ? "active" : "")" @onclick='() => SetRecurringType("Harian")'>Harian</button>
+                            <button type="button" class="segmented-tab @(RecurringType == "Mingguan" ? "active" : "")" @onclick='() => SetRecurringType("Mingguan")'>Mingguan</button>
+                            <button type="button" class="segmented-tab @(RecurringType == "Bulanan" ? "active" : "")" @onclick='() => SetRecurringType("Bulanan")'>Bulanan</button>
                         </div>
                     </div>
-                    
+
+                    <!-- Pemilih Hari (Inisial Hari Indonesia CASE 3) -->
                     @if (RecurringType == "Mingguan")
                     {
-                        <div class="cbm-form-group" style="margin-top: 12px;">
-                            <label>Pilih Hari</label>
-                            <div class="cbm-days-row">
-                                @foreach (var day in new[] { "Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min" })
+                        <div class="cbm-form-group">
+                            <label class="cbm-label">Pilih Hari (S, S, R, K, J, S, M)</label>
+                            <div class="cbm-days-grid">
+                                @foreach (var day in _indonesianDays)
                                 {
-                                    <div class="cbm-day-pill @(SelectedDays.Contains(day) ? "active" : "")" 
-                                         @onclick="() => ToggleDay(day)">
-                                        @day
-                                    </div>
+                                    <button type="button" class="cbm-day-bubble @(SelectedDays.Contains(day.Initial) ? "active" : "")" 
+                                            @onclick="() => ToggleDay(day.Initial)" title="@day.FullName">
+                                        <span class="bubble-initial">@day.Initial</span>
+                                        <span class="bubble-sub">@day.ShortName</span>
+                                    </button>
                                 }
                             </div>
                         </div>
                     }
 
-                    <div class="cbm-recurring-summary">
-                        @GetRecurringSummary()
+                    <!-- Opsi Batas Berakhir -->
+                    <div class="cbm-form-row">
+                        <div class="cbm-form-group">
+                            <label class="cbm-label">Berakhir Setelah</label>
+                            <div class="input-suffix-wrap">
+                                <input type="number" min="1" max="52" class="cbm-input" @bind="_recurrenceCount" @bind:after="UpdateSchedulePreview" />
+                                <span class="input-suffix">Kali</span>
+                            </div>
+                        </div>
+                        <div class="cbm-form-group">
+                            <label class="cbm-label">Atau Tanggal Akhir</label>
+                            <input type="date" class="cbm-input" @bind="RecurringEndDate" @bind:after="UpdateSchedulePreview" />
+                        </div>
                     </div>
-                    
-                    @if (_showRecurringValidation)
-                    {
-                        <div class="cbm-validation-msg">Mohon lengkapi jenis pengulangan dan tanggal berakhir.</div>
-                    }
+
+                    <!-- Preview Jadwal Hasil Perulangan CASE 3 -->
+                    <div class="schedule-preview-box">
+                        <div class="schedule-preview-header">
+                            <span class="preview-title">Preview Jadwal (@_previewDates.Count Tanggal)</span>
+                            <span class="preview-note">Otomatis dicek ketersediaannya</span>
+                        </div>
+
+                        <div class="preview-dates-list">
+                            @foreach (var item in _previewDates)
+                            {
+                                <div class="preview-date-item @(item.IsConflict ? "conflict" : "available")">
+                                    <div class="date-item-info">
+                                        <div class="date-item-title">@item.DateFormatted</div>
+                                        <div class="date-item-time">@_startTime.ToString("HH:mm") - @_endTime.ToString("HH:mm") WIB</div>
+                                    </div>
+                                    <div class="date-item-status">
+                                        @if (item.IsConflict)
+                                        {
+                                            <span class="badge-conflict">Konflik Jadwal</span>
+                                            <button type="button" class="btn-skip-slot" @onclick="() => SkipDate(item)">Lewati</button>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge-slot-ok">Tersedia</span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
                 </div>
             }
 
-            <div class="cbm-form-group" style="margin-top: 8px;">
-                <label>Catatan / Permintaan Khusus</label>
-                <textarea class="cbm-input" rows="2" placeholder="Kebutuhan peralatan, katering, dll."></textarea>
+            <div class="cbm-form-group">
+                <label class="cbm-label">Tujuan Rapat / Catatan Khusus</label>
+                <textarea class="cbm-input" rows="2" placeholder="cth. Rapat koordinasi proyek kuartal berjalan..." @bind="_notes"></textarea>
             </div>
         </div>
     </ChildContent>
@@ -155,7 +202,7 @@
                     <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
                     <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
                 </svg>
-                <span>Memproses...</span>
+                <span>Memproses Reservasi...</span>
             }
             else
             {
@@ -174,17 +221,17 @@
     .modal-title {
         font-size: 1.25rem;
         font-weight: 700;
-        color: var(--color-card-dark, #0B1A3D);
+        color: var(--persada-navy-900, #0F1F3D);
         margin: 0;
     }
     .modal-subtitle {
         font-size: 0.875rem;
-        color: var(--color-text-muted, #64748B);
+        color: var(--persada-text-secondary, #6B7280);
         margin: 0;
     }
     
     .cbm-form {
-        padding: 24px;
+        padding: 20px 24px;
         display: flex;
         flex-direction: column;
         gap: 16px;
@@ -193,7 +240,7 @@
     .cbm-form-row {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 16px;
+        gap: 14px;
     }
 
     .cbm-form-group {
@@ -202,62 +249,62 @@
         gap: 6px;
     }
 
-    .cbm-form-group label {
-        font-size: 0.75rem;
+    .cbm-label {
+        font-size: 0.8125rem;
         font-weight: 600;
-        color: var(--color-card-dark, #0B1A3D);
+        color: var(--persada-text-primary, #374151);
+    }
+
+    .input-icon-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    .input-icon-wrap svg {
+        position: absolute;
+        left: 12px;
+        color: #9CA3AF;
+        pointer-events: none;
     }
 
     .cbm-input {
-        padding: 10px 12px;
-        border: 1px solid var(--divider-subtle, #E2E8F0);
-        border-radius: 8px;
+        width: 100%;
+        height: 40px;
+        padding: 0 12px;
+        border: 1.5px solid var(--color-brand-gray-border, #E5E7EB);
+        border-radius: 10px;
         font-size: 0.875rem;
-        color: var(--color-card-dark, #0B1A3D);
+        box-sizing: border-box;
         background: #FFFFFF;
-        font-family: inherit;
-    }
-    
-    .cbm-input:focus {
+        color: var(--persada-text-primary, #111827);
         outline: none;
-        border-color: var(--color-brand-blue, #1F5D9A);
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .cbm-input.has-icon {
+        padding-left: 38px;
+    }
+    .cbm-input:focus {
+        border-color: #1F5D9A;
+        box-shadow: 0 0 0 3px rgba(31, 93, 154, 0.12);
+    }
+    textarea.cbm-input {
+        height: auto;
+        padding: 10px 12px;
+        resize: vertical;
     }
 
-    .cbm-room-selector {
+    .input-suffix-wrap {
+        position: relative;
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        padding: 10px 12px;
-        background: #F8FAFC;
-        border: 1px solid var(--divider-subtle, #E2E8F0);
-        border-radius: 8px;
-        font-size: 0.875rem;
+    }
+    .input-suffix {
+        position: absolute;
+        right: 14px;
+        font-size: 0.8125rem;
         font-weight: 600;
-        color: var(--color-card-dark, #0B1A3D);
-    }
-
-    .rd-status-badge {
-        font-size: 0.625rem;
-        padding: 4px 8px;
-        border-radius: 999px;
-        font-weight: 700;
-    }
-    .rd-badge-available {
-        background: rgba(16, 185, 129, 0.1);
-        color: #1AA262;
-    }
-    .rd-badge-booked {
-        background: rgba(229, 72, 77, 0.1);
-        color: #E5484D;
-    }
-
-    .cbm-readonly-val {
-        padding: 10px 12px;
-        background: #F8FAFC;
-        border: 1px solid var(--divider-subtle, #E2E8F0);
-        border-radius: 8px;
-        font-size: 0.875rem;
-        color: var(--color-text-muted, #64748B);
+        color: #6B7280;
+        pointer-events: none;
     }
 
     .cbm-time-row {
@@ -265,28 +312,137 @@
         align-items: center;
         gap: 8px;
     }
+    .time-sep {
+        font-weight: 700;
+        color: #9CA3AF;
+    }
 
-    .cbm-toggle-row {
+    /* Room Preview Card CASE 3 */
+    .cbm-room-card-preview {
+        display: flex;
+        gap: 14px;
+        padding: 14px;
+        background: #F8FAFC;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 14px;
+    }
+    body.dark-mode .cbm-room-card-preview {
+        background: rgba(15, 23, 42, 0.5);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .room-preview-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: #EEF2FF;
+        color: #1F5D9A;
         display: flex;
         align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    body.dark-mode .room-preview-icon {
+        background: rgba(31, 93, 154, 0.3);
+        color: #93C5FD;
+    }
+
+    .room-preview-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .room-preview-top {
+        display: flex;
         justify-content: space-between;
-        padding-top: 8px;
+        align-items: center;
     }
 
-    .cbm-toggle-label {
+    .room-preview-name {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--persada-text-primary, #0F1F3D);
+    }
+
+    .room-status-pill {
+        font-size: 0.6875rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 999px;
+    }
+    .room-status-pill.available {
+        background: #E7F8EF;
+        color: #16A34A;
+    }
+    .room-status-pill.booked {
+        background: #FFF4E5;
+        color: #D97706;
+    }
+
+    .room-preview-meta {
+        font-size: 0.75rem;
+        color: var(--persada-text-secondary, #6B7280);
+        display: flex;
+        gap: 6px;
+    }
+
+    .room-preview-facilities {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-top: 2px;
+    }
+
+    .facility-chip {
+        font-size: 0.6875rem;
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        color: #475569;
+        padding: 2px 6px;
+        border-radius: 6px;
+        font-weight: 500;
+    }
+    body.dark-mode .facility-chip {
+        background: rgba(30, 41, 59, 0.8);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #CBD5E1;
+    }
+
+    /* Recurring Toggle Card */
+    .recurring-toggle-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 16px;
+        background: rgba(248, 250, 252, 0.75);
+        border: 1.5px solid var(--color-brand-gray-border, #E5E7EB);
+        border-radius: 12px;
+    }
+    body.dark-mode .recurring-toggle-card {
+        background: rgba(15, 23, 42, 0.4);
+    }
+
+    .toggle-title {
         font-size: 0.875rem;
-        font-weight: 600;
-        color: var(--color-card-dark, #0B1A3D);
+        font-weight: 700;
+        color: var(--persada-text-primary, #0F1F3D);
+    }
+    .toggle-desc {
+        font-size: 0.75rem;
+        color: var(--persada-text-secondary, #6B7280);
     }
 
-    /* Switch toggle css */
     .cbm-switch {
         position: relative;
         display: inline-block;
         width: 44px;
         height: 24px;
+        flex-shrink: 0;
     }
-    .cbm-switch input { 
+    .cbm-switch input {
         opacity: 0;
         width: 0;
         height: 0;
@@ -294,10 +450,10 @@
     .cbm-slider {
         position: absolute;
         cursor: pointer;
-        top: 0; left: 0; right: 0; bottom: 0;
+        inset: 0;
         background-color: #CBD5E1;
-        transition: .3s;
-        border-radius: 24px;
+        border-radius: 999px;
+        transition: background-color 200ms ease;
     }
     .cbm-slider:before {
         position: absolute;
@@ -307,131 +463,212 @@
         left: 3px;
         bottom: 3px;
         background-color: white;
-        transition: .3s;
         border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        transition: transform 200ms ease;
     }
-    input:checked + .cbm-slider {
-        background-color: var(--color-brand-gold-500, #F5B301);
+    .cbm-switch input:checked + .cbm-slider {
+        background-color: #1F5D9A;
     }
-    input:checked + .cbm-slider:before {
+    .cbm-switch input:checked + .cbm-slider:before {
         transform: translateX(20px);
     }
 
+    /* Sub-panel */
     .cbm-sub-panel {
-        background: #F8FAFC;
-        border-radius: 8px;
         padding: 16px;
-        margin-top: -4px;
+        background: #F8FAFC;
         border: 1px solid #E2E8F0;
-        animation: slideDown 0.3s ease;
-    }
-
-    @@keyframes slideDown {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .cbm-days-row {
+        border-radius: 14px;
         display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+    body.dark-mode .cbm-sub-panel {
+        background: rgba(15, 23, 42, 0.5);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Segmented Control */
+    .cbm-segmented-tabs {
+        display: flex;
+        background: #E2E8F0;
+        padding: 3px;
+        border-radius: 10px;
+        gap: 2px;
+    }
+    body.dark-mode .cbm-segmented-tabs {
+        background: #1E293B;
+    }
+    .segmented-tab {
+        flex: 1;
+        height: 34px;
+        border: none;
+        background: transparent;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: #64748B;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .segmented-tab.active {
+        background: #FFFFFF;
+        color: #0F1F3D;
+        font-weight: 700;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    body.dark-mode .segmented-tab.active {
+        background: #334155;
+        color: #FFFFFF;
+    }
+
+    /* Day selector */
+    .cbm-days-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
         gap: 6px;
     }
-    
-    .cbm-day-pill {
-        flex: 1;
-        text-align: center;
-        padding: 6px 0;
-        font-size: 0.75rem;
-        font-weight: 600;
+    .cbm-day-bubble {
+        height: 46px;
+        border: 1.5px solid #CBD5E1;
+        border-radius: 10px;
         background: #FFFFFF;
-        border: 1px solid #CBD5E1;
-        border-radius: 999px;
-        cursor: pointer;
-        color: var(--color-text-muted, #64748B);
-        transition: all 0.2s ease;
-    }
-    
-    .cbm-day-pill.active {
-        background: var(--color-brand-blue, #1F5D9A);
-        color: #FFFFFF;
-        border-color: var(--color-brand-blue, #1F5D9A);
-    }
-
-    .cbm-recurring-summary {
-        margin-top: 12px;
-        font-size: 0.75rem;
-        color: var(--color-text-muted, #64748B);
-        font-style: italic;
-    }
-
-    .cbm-validation-msg {
-        margin-top: 8px;
-        font-size: 0.75rem;
-        color: var(--color-danger, #EF4444);
-        font-weight: 500;
-    }
-
-    .modal-footer {
         display: flex;
-        justify-content: flex-end;
-        gap: 12px;
-        padding: 16px 24px;
-        border-top: 1px solid var(--divider-subtle, rgba(15, 23, 42, 0.08));
-        background: var(--surface-card, #FFFFFF);
-    }
-
-    .btn-cancel, .btn-confirm {
-        padding: 10px 20px;
-        border-radius: var(--radius-pill, 999px);
-        font-size: 0.875rem;
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 8px;
-        transition: all 0.2s ease;
-        border: none;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    body.dark-mode .cbm-day-bubble {
+        background: #1E293B;
+        border-color: #334155;
+    }
+    .bubble-initial {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: #0F1F3D;
+    }
+    body.dark-mode .bubble-initial {
+        color: #F8FAFC;
+    }
+    .bubble-sub {
+        font-size: 0.625rem;
+        color: #64748B;
+    }
+    .cbm-day-bubble.active {
+        background: #1F5D9A;
+        border-color: #1F5D9A;
+    }
+    .cbm-day-bubble.active .bubble-initial,
+    .cbm-day-bubble.active .bubble-sub {
+        color: #FFFFFF;
     }
 
-    .btn-cancel {
-        background: transparent;
-        color: var(--color-text-muted, #64748B);
+    /* Schedule Preview */
+    .schedule-preview-box {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 12px;
+    }
+    body.dark-mode .schedule-preview-box {
+        background: #0F172A;
+        border-color: rgba(255,255,255,0.08);
+    }
+    .schedule-preview-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+    .preview-title {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--persada-text-primary, #0F1F3D);
+    }
+    .preview-note {
+        font-size: 0.6875rem;
+        color: #16A34A;
+        font-weight: 600;
+    }
+    .preview-dates-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        max-height: 140px;
+        overflow-y: auto;
+    }
+    .preview-date-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 10px;
+        border-radius: 8px;
+        background: #F8FAFC;
+        border: 1px solid #F1F5F9;
+        font-size: 0.75rem;
+    }
+    body.dark-mode .preview-date-item {
+        background: rgba(30,41,59,0.5);
+        border-color: rgba(255,255,255,0.05);
+    }
+    .preview-date-item.conflict {
+        background: #FEF2F2;
+        border-color: #FECACA;
+    }
+    .date-item-title {
+        font-weight: 600;
+        color: var(--persada-text-primary, #0F1F3D);
+    }
+    .date-item-time {
+        font-size: 0.6875rem;
+        color: #64748B;
+    }
+    .date-item-status {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .badge-slot-ok {
+        background: #E7F8EF;
+        color: #16A34A;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+    .badge-conflict {
+        background: #FEE2E2;
+        color: #DC2626;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+    .btn-skip-slot {
+        background: #FFFFFF;
         border: 1px solid #CBD5E1;
+        color: #475569;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        padding: 2px 6px;
+        border-radius: 4px;
+        cursor: pointer;
     }
-
-    .btn-cancel:hover:not(:disabled) {
+    .btn-skip-slot:hover {
         background: #F1F5F9;
-        color: var(--color-card-dark, #0B1A3D);
-    }
-
-    .btn-confirm {
-        background: var(--color-brand-gold-500, #FBBF24);
-        color: var(--color-card-dark, #0B1A3D);
-    }
-
-    .btn-confirm:hover:not(:disabled) {
-        background: var(--color-brand-gold-600, #F59E0B);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(245, 179, 1, 0.2);
-    }
-
-    .btn-cancel:disabled, .btn-confirm:disabled {
-        opacity: 0.65;
-        cursor: not-allowed;
     }
 
     .spinner {
         animation: spin 1s linear infinite;
     }
-
     @@keyframes spin {
-        100% {
-            transform: rotate(360deg);
-        }
+        100% { transform: rotate(360deg); }
     }
 </style>
 
-@implements IDisposable
 @code {
     private CancellationTokenSource? _cts;
     private bool _disposed;
@@ -439,16 +676,18 @@
     [Parameter] public EventCallback OnBack { get; set; }
     [Parameter] public EventCallback OnConfirm { get; set; }
 
-    private bool _isSubmitting = false;
-    private string _requesterName = "";
-    private string _department = "";
-    private DateTime _bookingDate = DateTime.Now;
-    private TimeOnly _startTime = new TimeOnly(10, 0);
-    private TimeOnly _endTime = new TimeOnly(11, 0);
-    
-    private bool _inviteExternal = false;
+    private RoomItem? SelectedRoom;
+    private string CurrentRoomStatus => SelectedRoom?.Status ?? Room?.Status ?? "available";
 
-    // Recurring Booking Fields
+    private bool _isSubmitting = false;
+    private string _requesterName = "Budi Santoso";
+    private string _department = "IT / Engineering";
+    private DateTime _bookingDate = DateTime.Now.AddDays(1);
+    private TimeOnly _startTime = new TimeOnly(9, 0);
+    private TimeOnly _endTime = new TimeOnly(11, 0);
+    private string _notes = "";
+
+    // Recurring Booking CASE 3
     private bool _isRecurring = false;
     private bool IsRecurring
     {
@@ -456,74 +695,96 @@
         set
         {
             _isRecurring = value;
-            if (!value)
+            if (value)
             {
-                RecurringType = "";
-                SelectedDays.Clear();
-                RecurringEndDate = null;
-                _showRecurringValidation = false;
+                if (string.IsNullOrEmpty(RecurringType)) RecurringType = "Mingguan";
+                if (SelectedDays.Count == 0) SelectedDays.Add("S");
+                UpdateSchedulePreview();
             }
         }
     }
 
-    private string _recurringType = "";
-    private string RecurringType
+    private string RecurringType = "Mingguan";
+    private int _recurrenceCount = 4;
+    private DateTime? RecurringEndDate;
+    private HashSet<string> SelectedDays = new HashSet<string> { "S" };
+
+    private record DayInfo(string Initial, string ShortName, string FullName);
+    private readonly DayInfo[] _indonesianDays = new[]
     {
-        get => _recurringType;
-        set
-        {
-            _recurringType = value;
-            _showRecurringValidation = false;
-        }
+        new DayInfo("S", "Sen", "Senin"),
+        new DayInfo("S", "Sel", "Selasa"),
+        new DayInfo("R", "Rab", "Rabu"),
+        new DayInfo("K", "Kam", "Kamis"),
+        new DayInfo("J", "Jum", "Jumat"),
+        new DayInfo("S", "Sab", "Sabtu"),
+        new DayInfo("M", "Min", "Minggu")
+    };
+
+    private record SchedulePreviewItem(DateTime Date, string DateFormatted, bool IsConflict);
+    private List<SchedulePreviewItem> _previewDates = new();
+
+    protected override void OnInitialized()
+    {
+        SelectedRoom = Room;
+        UpdateSchedulePreview();
     }
 
-    private DateTime? _recurringEndDate;
-    private DateTime? RecurringEndDate
+    private void SetRecurringType(string type)
     {
-        get => _recurringEndDate;
-        set
-        {
-            _recurringEndDate = value;
-            _showRecurringValidation = false;
-        }
+        RecurringType = type;
+        UpdateSchedulePreview();
     }
-
-    private HashSet<string> SelectedDays = new HashSet<string>();
-    private bool _showRecurringValidation = false;
 
     private void ToggleDay(string day)
     {
         if (SelectedDays.Contains(day))
         {
-            SelectedDays.Remove(day);
+            if (SelectedDays.Count > 1) SelectedDays.Remove(day);
         }
         else
         {
             SelectedDays.Add(day);
         }
+        UpdateSchedulePreview();
     }
 
-    private string GetRecurringSummary()
+    private void UpdateSchedulePreview()
     {
-        if (string.IsNullOrEmpty(RecurringType))
-            return "Pilih jenis pengulangan.";
-            
-        string untilStr = RecurringEndDate.HasValue ? $"sampai dengan {RecurringEndDate.Value.ToString("dd MMM yyyy")}" : "tanpa batas waktu akhir";
+        _previewDates.Clear();
+        var baseDate = _bookingDate;
+        int count = Math.Max(1, Math.Min(_recurrenceCount, 12));
 
-        if (RecurringType == "Harian")
-            return $"Akan berulang setiap hari, {untilStr}.";
-            
-        if (RecurringType == "Mingguan")
+        for (int i = 0; i < count; i++)
         {
-            if (SelectedDays.Count == 0) return $"Akan berulang setiap minggu (pilih hari), {untilStr}.";
-            var daysStr = string.Join(" & ", SelectedDays);
-            return $"Akan berulang setiap {daysStr}, {untilStr}.";
-        }
-        
-        if (RecurringType == "Bulanan")
-            return $"Akan berulang setiap bulan pada tanggal yang sama, {untilStr}.";
+            DateTime nextDate;
+            if (RecurringType == "Harian")
+            {
+                nextDate = baseDate.AddDays(i);
+            }
+            else if (RecurringType == "Mingguan")
+            {
+                nextDate = baseDate.AddDays(i * 7);
+            }
+            else // Bulanan
+            {
+                nextDate = baseDate.AddMonths(i);
+            }
 
-        return "";
+            // Simulate conflict on index 2 for realistic feedback if >= 3
+            bool isConflict = (i == 2 && count > 2);
+            _previewDates.Add(new SchedulePreviewItem(
+                nextDate,
+                nextDate.ToString("dddd, dd MMM yyyy", new System.Globalization.CultureInfo("id-ID")),
+                isConflict
+            ));
+        }
+    }
+
+    private void SkipDate(SchedulePreviewItem item)
+    {
+        _previewDates.Remove(item);
+        ToastService.Info("Jadwal Dilewati", $"Tanggal {item.DateFormatted} dikeluarkan dari daftar pengulangan.");
     }
 
     private async Task HandleBack()
@@ -538,13 +799,10 @@
     {
         if (_isSubmitting) return;
 
-        if (IsRecurring)
+        if (string.IsNullOrWhiteSpace(_requesterName))
         {
-            if (string.IsNullOrEmpty(RecurringType) || !RecurringEndDate.HasValue)
-            {
-                _showRecurringValidation = true;
-                return;
-            }
+            ToastService.Warning("Validasi Gagal", "Nama pemesan wajib diisi.");
+            return;
         }
 
         if (_disposed) return;
@@ -555,17 +813,15 @@
         _isSubmitting = true;
         StateHasChanged();
 
-        try {
-            await Task.Delay(1500, _cts.Token);
-        } catch (TaskCanceledException) { return; }
-        
-        if (_disposed) return;
-        
-        _isSubmitting = false;
-        
-        ToastService.Success("Pemesanan Berhasil", "Ruangan berhasil dipesan.");
-        
-        await OnConfirm.InvokeAsync();
+        try 
+        {
+            await Task.Delay(1000, _cts.Token);
+            if (_disposed) return;
+            _isSubmitting = false;
+            ToastService.Success("Pemesanan Berhasil", "Permintaan reservasi ruangan Anda berhasil diajukan.");
+            await OnConfirm.InvokeAsync();
+        }
+        catch (TaskCanceledException) { }
     }
 
     public void Dispose()
@@ -575,6 +831,3 @@
         _cts?.Dispose();
     }
 }
-
-
-

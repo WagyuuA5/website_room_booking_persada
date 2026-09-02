@@ -53,27 +53,50 @@ public interface IToastService
 public class ToastService : IToastService
 {
     private readonly ConcurrentDictionary<string, ToastMessage> _toasts = new();
+    private readonly ConcurrentDictionary<string, System.Threading.Timer> _timers = new();
+    private const int MaxActiveToasts = 3;
     public event Action? OnChange;
 
     public IReadOnlyList<ToastMessage> ActiveToasts => _toasts.Values.OrderBy(t => t.CreatedAt).ToList().AsReadOnly();
 
     public void Show(string title, string message = "", ToastType type = ToastType.Info, int durationMs = 4000)
     {
+        // Enforce maximum active toasts limit (remove oldest if limit exceeded)
+        while (_toasts.Count >= MaxActiveToasts)
+        {
+            var oldest = _toasts.Values.OrderBy(t => t.CreatedAt).FirstOrDefault();
+            if (oldest != null)
+            {
+                Remove(oldest.Id);
+            }
+            else
+            {
+                break;
+            }
+        }
+
         var toast = new ToastMessage
         {
             Title = title,
             Message = message,
             Type = type,
-            DurationMs = durationMs
+            DurationMs = durationMs,
+            CreatedAt = DateTime.Now
         };
 
-        _toasts.TryAdd(toast.Id, toast);
-        NotifyStateChanged();
-
-        var timer = new System.Threading.Timer(_ =>
+        if (_toasts.TryAdd(toast.Id, toast))
         {
-            Remove(toast.Id);
-        }, null, durationMs, System.Threading.Timeout.Infinite);
+            var timer = new System.Threading.Timer(state =>
+            {
+                if (state is string toastId)
+                {
+                    Remove(toastId);
+                }
+            }, toast.Id, durationMs, System.Threading.Timeout.Infinite);
+
+            _timers.TryAdd(toast.Id, timer);
+            NotifyStateChanged();
+        }
     }
 
     public void Success(string title, string message = "", int durationMs = 4000)
@@ -90,11 +113,23 @@ public class ToastService : IToastService
 
     public void Remove(string id)
     {
+        if (_timers.TryRemove(id, out var timer))
+        {
+            try { timer.Dispose(); } catch { }
+        }
+
         if (_toasts.TryRemove(id, out _))
         {
             NotifyStateChanged();
         }
     }
 
-    private void NotifyStateChanged() => OnChange?.Invoke();
+    private void NotifyStateChanged()
+    {
+        try
+        {
+            OnChange?.Invoke();
+        }
+        catch { }
+    }
 }

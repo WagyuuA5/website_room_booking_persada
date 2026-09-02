@@ -48,7 +48,7 @@ public static class DashboardData
         new("cancel", "Booking Training Ruangan B dibatalkan oleh sistem (no-show)", "12 menit lalu", "#EF4444"),
         new("alert", "Ruangan Delta Boardroom akan dilepas otomatis dalam 5 menit", "18 menit lalu", "#F59E0B"),
         new("booking", "Siti Rahayu membuat booking baru di Conference Hall", "32 menit lalu", "#3B82F6"),
-        new("checkin", "Ahmad Fauzi check-in ke Meeting Room 1", "1 jam lalu", "#10B981"),
+        new("checkin", "Ahmad Fauzi konfirmasi kehadiran di Ruang Rapat 1", "1 jam lalu", "#10B981"),
     ];
 
     public static List<MetricTrend> MetricTrends =>

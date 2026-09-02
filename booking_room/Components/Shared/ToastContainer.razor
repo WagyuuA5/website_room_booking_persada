@@ -20,7 +20,12 @@
     private void HandleToastChanged()
     {
         if (_disposed) return;
-        InvokeAsync(StateHasChanged);
+        try
+        {
+            InvokeAsync(StateHasChanged);
+        }
+        catch (ObjectDisposedException) { }
+        catch { }
     }
 
     public void Dispose()
