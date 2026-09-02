@@ -244,7 +244,7 @@
         animation: spin 1s linear infinite;
     }
 
-    @keyframes spin {
+    @@keyframes spin {
         100% {
             transform: rotate(360deg);
         }
@@ -280,7 +280,7 @@
 
         _isSubmitting = false;
         
-        ToastService.Show(ToastType.Success, "Pemesanan Berhasil", "Ruangan berhasil dipesan.");
+        ToastService.Success("Pemesanan Berhasil", "Ruangan berhasil dipesan.");
         
         await OnConfirm.InvokeAsync();
     }

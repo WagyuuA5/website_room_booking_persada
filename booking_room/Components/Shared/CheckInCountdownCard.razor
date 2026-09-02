@@ -115,7 +115,7 @@
         animation: pulseRing 1s infinite;
     }
 
-    @keyframes pulseRing {
+    @@keyframes pulseRing {
         0%, 100% { opacity: 1; }
         50% { opacity: 0.5; }
     }
@@ -208,7 +208,7 @@
     {
         CloseExtendModal();
         ExtendWindow();
-        ToastService.Show(ToastType.Info, "Waktu ditambah 10 menit");
+        ToastService.Info("Waktu ditambah 10 menit");
     }
 
     private void ExtendWindow()
