@@ -1,0 +1,74 @@
+@namespace booking_room.Components.Shared
+
+<div class="skeleton-block @GetShapeClass() @Class" style="@GetStyle()"></div>
+
+<style>
+    .skeleton-block {
+        display: inline-block;
+        background: linear-gradient(90deg, #E5E7EB 0%, #F3F4F6 50%, #E5E7EB 100%);
+        background-size: 200% 100%;
+        animation: skeletonShimmer 1.4s ease-in-out infinite;
+        border-radius: var(--skeleton-radius, 8px);
+        box-sizing: border-box;
+    }
+
+    .skeleton-block.shape-circle {
+        border-radius: 50% !important;
+    }
+
+    .skeleton-block.shape-text {
+        border-radius: 4px;
+        margin-bottom: 6px;
+    }
+
+    .skeleton-block.shape-card {
+        border-radius: var(--persada-border-radius-card, 16px);
+    }
+
+    body.dark-mode .skeleton-block {
+        background: linear-gradient(90deg, #1E293B 0%, #334155 50%, #1E293B 100%);
+        background-size: 200% 100%;
+    }
+
+    @@keyframes skeletonShimmer {
+        0% {
+            background-position: 200% 0;
+        }
+        100% {
+            background-position: -200% 0;
+        }
+    }
+</style>
+
+@code {
+    [Parameter] public string Width { get; set; } = "100%";
+    [Parameter] public string Height { get; set; } = "16px";
+    [Parameter] public string Shape { get; set; } = "rect"; // rect, circle, text, card
+    [Parameter] public string? Radius { get; set; }
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string? Style { get; set; }
+
+    private string GetShapeClass() => Shape.ToLowerInvariant() switch
+    {
+        "circle" => "shape-circle",
+        "text" => "shape-text",
+        "card" => "shape-card",
+        _ => ""
+    };
+
+    private string GetStyle()
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.Append($"width: {Width}; height: {Height};");
+        if (!string.IsNullOrEmpty(Radius))
+        {
+            sb.Append($" --skeleton-radius: {Radius}; border-radius: {Radius};");
+        }
+        if (!string.IsNullOrEmpty(Style))
+        {
+            sb.Append($" {Style}");
+        }
+        return sb.ToString();
+    }
+}
+

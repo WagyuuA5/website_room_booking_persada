@@ -2,9 +2,36 @@
    Design Tokens - Revisi V18 (Master Reference)
    ========================================================================== */
 :root {
-  /* 2.1 Glass Blur / Backdrop Overlay */
-  --overlay-blur: 8px;
+  /* DS-04 Glass Blur / Backdrop Overlay Standard */
+  --overlay-blur: 5px;
   --overlay-color: rgba(15, 23, 42, 0.45);
+  --modal-backdrop-blur: blur(5px);
+  --modal-backdrop-scrim: rgba(15, 23, 42, 0.45);
+
+  /* DS-01 Typography & Bold System Tokens */
+  --fs-h1: 30px;
+  --fw-h1: 700;
+  --lh-h1: 1.25;
+
+  --fs-h2: 22px;
+  --fw-h2: 700;
+  --lh-h2: 1.35;
+
+  --fs-card-label: 11.5px;
+  --fw-card-label: 600;
+  --ls-card-label: 0.06em;
+  --color-card-label: #6B7280;
+
+  --fs-stat-number: 32px;
+  --fw-stat-number: 800;
+  --lh-stat-number: 1.15;
+
+  --fs-body: 14px;
+  --fw-body: 400;
+  --lh-body: 1.5;
+
+  --fs-btn: 14px;
+  --fw-btn: 600;
 
   /* 2.2 Warna (Color Tokens) */
   --color-navy-primary: #0F1F3D;
@@ -22,16 +49,16 @@
   --color-surface: #F3F4F6;
   --color-surface-alt: #FFFFFF;
 
-  /* 2.3 Tipografi */
-  --font-title-lg: 28px;
-  --font-title-md: 18px;
-  --font-body: 14px;
-  --font-label: 12px;
-  --font-button: 14px;
+  /* 2.3 Tipografi Legacy Fallbacks */
+  --font-title-lg: var(--fs-h1);
+  --font-title-md: var(--fs-h2);
+  --font-body: var(--fs-body);
+  --font-label: var(--fs-card-label);
+  --font-button: var(--fs-btn);
 
   /* 2.4 Spacing & Radius */
   --radius-modal: 20px;
-  --radius-card: 12px;
+  --radius-card: 16px;
   --radius-button: 10px;
   --radius-badge: 999px;
   --space-modal-padding: 32px;

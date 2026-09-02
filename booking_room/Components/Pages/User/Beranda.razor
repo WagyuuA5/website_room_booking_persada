@@ -87,8 +87,6 @@ else
     </StatHighlightCard>
 </div>
 
-</div>
-
 <div class="dashboard-lower-layout">
     <!-- Jadwal Saya Hari Ini -->
     @if (IsWidgetVisible("TodaySchedule"))
@@ -136,53 +134,17 @@ else
     }
 </div>
 
-<div class="analytics-inline-panel" style="margin-top: 24px;">
-    <div class="analytics-inline-header">
-        <div>
-            <h2 class="analytics-inline-title">Analitik Penggunaan Ruangan</h2>
-            <p class="analytics-inline-subtitle">5 Ruangan Paling Sering Dipesan</p>
-        </div>
-        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-            <div class="analytics-toggle">
-                @foreach (var period in periods)
-                {
-                    <button class="@(selectedPeriod == period ? "active" : "")" @onclick="() => SelectPeriod(period)">@period</button>
-                }
-            </div>
-            <div class="analytics-export-btns">
-                <button class="btn-export" @onclick="ExportCSV" title="Unduh CSV">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                    CSV
-                </button>
-                <button class="btn-export" @onclick="ExportJSON" title="Unduh JSON">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                    JSON
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Chart Tren Penggunaan sesuai Gambar Referensi -->
-    <UtilizationChart SelectedPeriod="@selectedPeriod" />
-
-    <div class="analytics-inline-footer" style="margin-top: 16px;">
-        <button class="btn btn-outline-primary" style="border-radius: 999px; font-weight: 600; padding: 0.5rem 1.25rem;" @onclick='() => OpenChartDetailModal()'>
-            Lihat Detail
-        </button>
-    </div>
+<!-- DS-02 Grafik Tren Pemesanan Saya -->
+<div style="margin-top: 24px;">
+    <UserTrendChart />
 </div>
 
+</div>
 }
-
-<!-- Pop-ups are now handled by ModalService via ModalHost -->
 
 @code {
     private NextAvailableRoom? nextRoom;
-    private AnalyticsData analyticsData = DashboardData.WeeklyData;
-    private string selectedPeriod = "Minggu";
-    private readonly string[] periods = { "Minggu", "Bulan", "Tahun" };
     private DateTime checkInTimestamp;
-    
     private bool showAllUpcoming = false;
 
     private List<RoomItem> _allRooms = new()
@@ -194,7 +156,6 @@ else
         new("5", "Focus Ruangan Alpha", 4, "Ruang sunyi.", "available", new() { "AC" }, "Lantai 1", ""),
         new("6", "Meeting Ruangan Prime", 8, "Ruang rapat standar.", "booked", new() { "AC" }, "Lantai 2", ""),
     };
-
 
     protected override void OnInitialized()
     {
@@ -220,16 +181,6 @@ else
         showAllUpcoming = !showAllUpcoming;
     }
 
-    private RenderFragment GetActivityIcon(string iconType) => iconType switch
-    {
-        "approval" => @<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>,
-        "cancel" => @<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>,
-        "alert" => @<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>,
-        "booking" => @<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>,
-        "checkin" => @<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="10"></circle></svg>,
-        _ => @<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>,
-    };
-
     private bool IsWidgetVisible(string widgetName)
     {
         var role = DashboardData.CurrentUserRole;
@@ -238,23 +189,6 @@ else
             return widgets.Contains(widgetName);
         }
         return true;
-    }
-
-    private void OpenModifyModal(UpcomingBookingItem booking)
-    {
-        Navigation.NavigateTo("/bookings");
-    }
-
-    private void OpenCancelModal(UpcomingBookingItem booking)
-    {
-        Navigation.NavigateTo("/status");
-    }
-
-    private void SelectPeriod(string period)
-    {
-        selectedPeriod = period;
-        analyticsData = DashboardData.GetAnalytics(period);
-        StateHasChanged();
     }
 
     private void ViewAllRooms()
@@ -311,55 +245,16 @@ else
         ModalService.CloseAllAsync();
     }
 
-    private async Task OpenChartDetailModal(string? roomName = null)
-    {
-        var parameters = new Dictionary<string, object>
-        {
-            { "SelectedPeriod", selectedPeriod }
-        };
-        if (!string.IsNullOrEmpty(roomName))
-        {
-            parameters["HighlightRoom"] = roomName;
-        }
-        await ModalService.ShowAsync<ChartDetailModal>(parameters);
-    }
-
     private async Task ShowPopup(string popupName)
     {
         if (popupName == "RoomAvailable" || popupName == "QuickBook")
         {
             await ModalService.ShowAsync<AvailableRoomsModal>();
         }
-        else if (popupName == "AnalyticsDetail")
-        {
-            await OpenChartDetailModal();
-        }
         else if (popupName == "PendingApprovals" || popupName == "PendingApproval")
         {
             await ModalService.ShowAsync<PendingApprovalsModal>();
         }
-    }
-
-    private void ClosePopup()
-    {
-        ModalService.Close();
-    }
-
-    private Task VisibleChanged(bool visible)
-    {
-        return Task.CompletedTask;
-    }
-
-    private void GoToStatusPage()
-    {
-        ClosePopup();
-        Navigation.NavigateTo("/status");
-    }
-
-    private void GoToBookingsPage()
-    {
-        ClosePopup();
-        Navigation.NavigateTo("/bookings");
     }
 
     private async Task NavigateToBookingDetail(TodayScheduleItem item)
@@ -370,132 +265,9 @@ else
             { "OnCheckIn", EventCallback.Factory.Create(this, HandleCheckInClick) }
         });
     }
-
-    private void OpenMap()
-    {
-        Navigation.NavigateTo("/bookings?tab=Peta");
-    }
-
-    // Data model for ApexCharts
-    public class RoomUsagePoint
-    {
-        public string Label { get; set; } = "";
-        public decimal Value { get; set; }
-    }
-
-    private void ExportCSV()
-    {
-        var csv = new System.Text.StringBuilder();
-        csv.AppendLine("Ruangan,Jam Penggunaan");
-        foreach (var room in analyticsData.Rooms)
-        {
-            csv.AppendLine($"{room.RoomName},{room.HoursUsed}");
-        }
-        DownloadFile(csv.ToString(), $"analytics-{selectedPeriod}.csv", "text/csv");
-    }
-
-    private void ExportJSON()
-    {
-        var json = System.Text.Json.JsonSerializer.Serialize(new { Period = selectedPeriod, Rooms = analyticsData.Rooms });
-        DownloadFile(json, $"analytics-{selectedPeriod}.json", "application/json");
-    } 
-
-    private void DownloadFile(string content, string fileName, string contentType)
-    {
-        var bytes = System.Text.Encoding.UTF8.GetBytes(content);
-        var base64 = Convert.ToBase64String(bytes);
-        var dataUrl = $"data:{contentType};base64,{base64}";
-        var js = $"var a=document.createElement('a');a.href='{dataUrl}';a.download='{fileName}';document.body.appendChild(a);a.click();document.body.removeChild(a);";
-        JS.InvokeVoidAsync("eval", js);
-    }
 }
 
 <style>
-    .analytics-horizontal-bars {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        padding: 12px 0 16px;
-    }
-
-    .hbar-item {
-        cursor: pointer;
-        padding: 12px 16px;
-        border-radius: 14px;
-        transition: all 0.2s ease;
-        background: #F8FAFC;
-        border: 1px solid #E2E8F0;
-    }
-
-    .hbar-item:hover {
-        background: #F1F5F9;
-        border-color: #CBD5E1;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(15, 31, 61, 0.06);
-    }
-
-    .hbar-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 8px;
-    }
-
-    .hbar-room-info {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .hbar-rank {
-        width: 24px;
-        height: 24px;
-        border-radius: 6px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.75rem;
-        font-weight: 700;
-        flex-shrink: 0;
-    }
-
-    .hbar-name {
-        font-weight: 700;
-        font-size: 0.95rem;
-        color: var(--persada-navy-900, #0F1F3D);
-    }
-
-    .hbar-value-wrap {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 0.85rem;
-    }
-
-    .hbar-hours {
-        font-weight: 700;
-        color: var(--persada-navy-900, #0F1F3D);
-    }
-
-    .hbar-percent {
-        color: #64748B;
-        font-size: 0.8rem;
-    }
-
-    .hbar-track {
-        width: 100%;
-        height: 8px;
-        background: #E2E8F0;
-        border-radius: 999px;
-        overflow: hidden;
-    }
-
-    .hbar-fill {
-        height: 100%;
-        border-radius: 999px;
-        transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
     .dashboard-lower-layout {
         display: grid;
         grid-template-columns: 1fr;
@@ -586,15 +358,6 @@ else
         margin: 0;
     }
     
-    .upcoming-status-badge {
-        font-size: 0.7rem;
-        font-weight: 700;
-        background: #F0FDF4;
-        color: #166534;
-        padding: 4px 8px;
-        border-radius: 6px;
-    }
-    
     .upcoming-bottom {
         display: flex;
         justify-content: space-between;
@@ -620,416 +383,4 @@ else
     .upcoming-schedule svg {
         color: #9CA3AF;
     }
-    
-    .upcoming-actions {
-        display: flex;
-        gap: 12px;
-    }
-    
-    .btn-action-text {
-        background: none;
-        border: none;
-        font-size: 0.8rem;
-        font-weight: 600;
-        cursor: pointer;
-        padding: 0;
-        transition: opacity 0.2s;
-    }
-    
-    .btn-action-text:hover { opacity: 0.7; }
-    .btn-action-text.delete { color: #EF4444; }
-    .btn-action-text.modify { color: var(--persada-accent-blue); }
-    
-    .btn-show-more {
-        width: 100%;
-        background: #F9FAFB;
-        border: 1px solid #E5E7EB;
-        color: #4B5563;
-        font-weight: 600;
-        font-size: 0.85rem;
-        padding: 10px;
-        border-radius: 8px;
-        margin-top: 16px;
-        cursor: pointer;
-        transition: background 0.2s;
-    }
-    
-    .btn-show-more:hover {
-        background: #F3F4F6;
-    }
-    
-    .next-booking-widget {
-        background: var(--persada-white);
-        border-radius: var(--persada-border-radius-card);
-        padding: 20px;
-        box-shadow: var(--shadow-sm);
-        border: 1px solid #E5E7EB;
-    }
-    
-    .widget-label {
-        font-size: 0.7rem;
-        font-weight: 800;
-        color: #9CA3AF;
-        letter-spacing: 1px;
-        margin-bottom: 12px;
-    }
-    
-    .widget-room {
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: var(--persada-navy-900);
-        margin-bottom: 4px;
-    }
-    
-    .widget-time {
-        font-size: 0.85rem;
-        color: var(--persada-yellow-500);
-        font-weight: 600;
-    }
-
-    .next-booking-widget.compact-notification {
-        display: flex;
-        align-items: flex-start;
-        gap: 12px;
-        padding: 16px;
-        background: #F8FAFC;
-        border: 1px solid #E2E8F0;
-        border-radius: 12px;
-        box-shadow: none;
-    }
-    .compact-notification .notification-icon {
-        width: 36px;
-        height: 36px;
-        background: #EFF6FF;
-        color: #3B82F6;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-    .compact-notification .widget-label {
-        font-size: 0.7rem;
-        margin-bottom: 4px;
-        color: #64748B;
-        letter-spacing: 0.5px;
-    }
-    .compact-notification .widget-room {
-        font-size: 0.95rem;
-        margin-bottom: 2px;
-        color: #1E293B;
-    }
-    .compact-notification .widget-time {
-        font-size: 0.75rem;
-        color: #475569;
-        font-weight: 500;
-    }
-
-    .action-oriented-card {
-        position: relative;
-        overflow: hidden;
-        background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-        color: white;
-        border: none;
-        padding: 0;
-        cursor: pointer;
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .action-oriented-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
-    }
-    .action-card-bg {
-        position: absolute;
-        top: -20px;
-        right: -20px;
-        width: 100px;
-        height: 100px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 50%;
-    }
-    .action-card-content {
-        position: relative;
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        justify-content: space-between;
-    }
-    .action-header {
-        margin-bottom: 12px;
-    }
-    .action-badge {
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(4px);
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 0.7rem;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-    }
-    .action-main {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 16px;
-    }
-    .action-icon-wrapper {
-        width: 40px;
-        height: 40px;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .action-room {
-        font-size: 1.1rem;
-        font-weight: 700;
-        margin-bottom: 2px;
-    }
-    .action-meta {
-        font-size: 0.8rem;
-        opacity: 0.9;
-    }
-    .btn-action-primary {
-        background: white;
-        color: #059669;
-        border: none;
-        padding: 10px;
-        border-radius: 8px;
-        font-weight: 700;
-        font-size: 0.85rem;
-        cursor: pointer;
-        transition: background 0.2s;
-        text-align: center;
-        width: 100%;
-    }
-    .btn-action-primary:hover {
-        background: #F0FDF4;
-    }
-    
-    .stats-mini-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-    }
-    
-    .stat-mini-card {
-        background: var(--persada-white);
-        border-radius: 16px;
-        padding: 16px;
-        box-shadow: var(--shadow-sm);
-        border: 1px solid #E5E7EB;
-        text-align: center;
-    }
-    
-    .stat-mini-val {
-        font-size: 2rem;
-        font-weight: 800;
-        color: var(--persada-navy-900);
-        line-height: 1;
-        margin-bottom: 8px;
-    }
-    
-    .stat-mini-lbl {
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: #6B7280;
-    }
-    
-    @@media (max-width: 992px) {
-        .dashboard-lower-layout {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    .dashboard-widget {
-        background: var(--persada-white);
-        border-radius: var(--persada-border-radius-card);
-        padding: 24px;
-        box-shadow: var(--shadow-sm);
-        border: 1px solid #E5E7EB;
-    }
-
-    /* Current room widget */
-    .current-room-widget {
-        background: linear-gradient(135deg, #0f1f3d 0%, #1e40af 100%);
-        color: white;
-        border-radius: var(--persada-border-radius-card);
-        padding: 20px;
-        box-shadow: var(--shadow-md);
-        border: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .current-room-header {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 12px;
-    }
-
-    .current-room-dot {
-        width: 10px;
-        height: 10px;
-        background: #10B981;
-        border-radius: 50%;
-        animation: pulse-dot 2s ease-in-out infinite;
-    }
-
-    .current-room-label {
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: rgba(255,255,255,0.7);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-
-    .current-room-name {
-        font-size: 1.25rem;
-        font-weight: 800;
-        margin-bottom: 4px;
-    }
-
-    .current-room-meta {
-        font-size: 0.85rem;
-        color: rgba(255,255,255,0.7);
-        margin-bottom: 16px;
-    }
-
-    .current-room-actions {
-        display: flex;
-        gap: 8px;
-    }
-
-    .current-room-btn {
-        flex: 1;
-        padding: 10px;
-        border-radius: 999px;
-        border: none;
-        font-weight: 700;
-        font-size: 0.8rem;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .current-room-btn.primary {
-        background: white;
-        color: #0f1f3d;
-    }
-
-    .current-room-btn.secondary {
-        background: rgba(255,255,255,0.15);
-        color: white;
-        border: 1px solid rgba(255,255,255,0.3);
-    }
-
-    .current-room-btn:hover {
-        transform: translateY(-1px);
-    }
-
-    .analytics-export-btns {
-        display: flex;
-        gap: 6px;
-    }
-
-    .btn-export {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 6px 12px;
-        border-radius: 999px;
-        border: 1px solid #E5E7EB;
-        background: white;
-        color: #64748b;
-        font-size: 0.75rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .btn-export:hover {
-        background: #F8FAFC;
-        border-color: #CBD5E1;
-        color: #1E293B;
-    }
-
-    .chart-legend-chips {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-bottom: 12px;
-    }
-
-    .legend-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 12px;
-        border-radius: 999px;
-        border: 1.5px solid;
-        background: transparent;
-        font-size: 0.75rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .legend-chip:hover {
-        filter: brightness(0.95);
-    }
-
-    .legend-chip.active {
-        font-weight: 700;
-    }
-
-    .legend-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        flex-shrink: 0;
-    }
-
-    .drilldown-banner {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 8px 16px;
-        background: #EFF6FF;
-        border: 1px solid #BFDBFE;
-        border-radius: 8px;
-        margin-top: 12px;
-        font-size: 0.85rem;
-        color: #1E40AF;
-    }
-
-    .drilldown-clear {
-        background: none;
-        border: none;
-        color: #2563EB;
-        font-weight: 600;
-        font-size: 0.8rem;
-        cursor: pointer;
-        text-decoration: underline;
-    }
-
-    /* Role-aware ordering */
-    [data-role="Admin"] .dashboard-widget:nth-child(1) { order: 1; }
-    [data-role="Admin"] .dashboard-widget:nth-child(2) { order: 2; }
-    [data-role="Admin"] .dashboard-widget:nth-child(3) { order: 3; }
-    [data-role="Admin"] .dashboard-widget:nth-child(4) { order: 4; }
-    [data-role="Admin"] .dashboard-widget:nth-child(5) { order: 5; }
-    [data-role="Admin"] .dashboard-widget:nth-child(6) { order: 6; }
-
-    [data-role="Employee"] .dashboard-widget:nth-child(1) { order: 1; }
-    [data-role="Employee"] .dashboard-widget:nth-child(2) { order: 2; }
-    [data-role="Employee"] .dashboard-widget:nth-child(3) { order: 3; }
-    [data-role="Employee"] .dashboard-widget:nth-child(4) { order: 4; }
-    [data-role="Employee"] .dashboard-widget:nth-child(5) { order: 5; }
-    [data-role="Employee"] .dashboard-widget:nth-child(6) { order: 6; }
-
-    .dashboard-widget.hidden-for-role {
-        display: none !important;
-    }
 </style>
-

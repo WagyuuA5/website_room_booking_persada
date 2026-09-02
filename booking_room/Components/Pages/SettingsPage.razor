@@ -1,206 +1,1046 @@
 @page "/pengaturan"
 @page "/settings"
+@using booking_room.Components.Shared
+@using booking_room.Services
+@inject IJSRuntime JS
+@inject IToastService ToastService
+@implements IDisposable
 
-<PageTitle>Pengaturan</PageTitle>
+<PageTitle>Pengaturan Akun - PT PERSADA</PageTitle>
 
-<div class="settings-container">
-    <h1 class="page-title">Pengaturan Akun</h1>
-    
-    <div class="settings-grid">
-        <!-- Profil dan Keamanan -->
-        <div class="settings-section">
-            <h2 class="section-title">Keamanan & Login</h2>
-            
-            <div class="settings-card" @onclick="() => ShowModal(nameof(ChangePasswordModal))">
-                <div class="card-icon">🔒</div>
-                <div class="card-content">
-                    <h3>Ubah Kata Sandi</h3>
-                    <p>Perbarui kata sandi Anda secara berkala untuk keamanan</p>
-                </div>
-                <div class="card-arrow">›</div>
+<div class="content-fade-in settings-page-wrapper">
+    <div class="settings-page-header">
+        <h1 class="page-title">Pengaturan Akun</h1>
+        <p class="settings-subtitle">Kelola keamanan, preferensi, dan integrasi akun Anda.</p>
+    </div>
+
+    <div class="settings-2col-layout">
+        <!-- Kolom Kiri: Sidebar Kategori -->
+        <aside class="settings-nav-sidebar">
+            <!-- Group 1: KEAMANAN -->
+            <div class="settings-nav-group">
+                <div class="settings-nav-group-title">KEAMANAN</div>
+                <button class="settings-nav-item @(_activeTab == "password" ? "active" : "")" @onclick='() => SetTab("password")'>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    <span>Ubah Kata Sandi</span>
+                </button>
+                <button class="settings-nav-item @(_activeTab == "twofactor" ? "active" : "")" @onclick='() => SetTab("twofactor")'>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                    <span>Verifikasi 2 Langkah</span>
+                </button>
+                <button class="settings-nav-item @(_activeTab == "sessions" ? "active" : "")" @onclick='() => SetTab("sessions")'>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                        <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                    </svg>
+                    <span>Sesi & Perangkat</span>
+                </button>
             </div>
 
-            <div class="settings-card" @onclick="() => ShowModal(nameof(TwoFactorAuthModal))">
-                <div class="card-icon">🛡️</div>
-                <div class="card-content">
-                    <h3>Autentikasi Dua Faktor</h3>
-                    <p>Tambahkan lapisan keamanan ekstra</p>
-                </div>
-                <div class="card-arrow">›</div>
+            <!-- Group 2: PREFERENSI -->
+            <div class="settings-nav-group">
+                <div class="settings-nav-group-title">PREFERENSI</div>
+                <button class="settings-nav-item @(_activeTab == "notifications" ? "active" : "")" @onclick='() => SetTab("notifications")'>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    <span>Notifikasi</span>
+                </button>
+                <button class="settings-nav-item @(_activeTab == "appearance" ? "active" : "")" @onclick='() => SetTab("appearance")'>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                    <span>Mode Tampilan</span>
+                </button>
+                <button class="settings-nav-item @(_activeTab == "language" ? "active" : "")" @onclick='() => SetTab("language")'>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                    </svg>
+                    <span>Bahasa & Waktu</span>
+                </button>
             </div>
 
-            <div class="settings-card" @onclick="() => ShowModal(nameof(ActiveSessionsModal))">
-                <div class="card-icon">📱</div>
-                <div class="card-content">
-                    <h3>Sesi Aktif</h3>
-                    <p>Kelola perangkat yang sedang masuk</p>
-                </div>
-                <div class="card-arrow">›</div>
-            </div>
-        </div>
-
-        <!-- Preferensi -->
-        <div class="settings-section">
-            <h2 class="section-title">Preferensi Sistem</h2>
-            
-            <a href="/pengaturan/bahasa-zona-waktu" class="settings-card">
-                <div class="card-icon">🌐</div>
-                <div class="card-content">
-                    <h3>Bahasa & Zona Waktu</h3>
-                    <p>Sesuaikan tampilan bahasa dan waktu</p>
-                </div>
-                <div class="card-arrow">›</div>
-            </a>
-
-            <div class="settings-card" @onclick="() => ShowModal(nameof(NotificationsSettingsModal))">
-                <div class="card-icon">🔔</div>
-                <div class="card-content">
-                    <h3>Notifikasi</h3>
-                    <p>Atur peringatan dan email yang Anda terima</p>
-                </div>
-                <div class="card-arrow">›</div>
+            <!-- Group 3: INTEGRASI PRIBADI -->
+            <div class="settings-nav-group">
+                <div class="settings-nav-group-title">INTEGRASI PRIBADI</div>
+                <button class="settings-nav-item @(_activeTab == "integrations" ? "active" : "")" @onclick='() => SetTab("integrations")'>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <span>Kalender & Email</span>
+                </button>
             </div>
 
-            <a href="/pengaturan/jam-operasional" class="settings-card">
-                <div class="card-icon">⏱️</div>
-                <div class="card-content">
-                    <h3>Jam Operasional</h3>
-                    <p>Atur waktu ketersediaan pemesanan</p>
-                </div>
-                <div class="card-arrow">›</div>
-            </a>
-        </div>
+            <!-- Group 4: DATA & AKUN -->
+            <div class="settings-nav-group">
+                <div class="settings-nav-group-title">DATA & AKUN</div>
+                <button class="settings-nav-item @(_activeTab == "data" ? "active" : "")" @onclick='() => SetTab("data")'>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <span>Unduh Data</span>
+                </button>
+                <button class="settings-nav-item danger @(_activeTab == "deactivate" ? "active" : "")" @onclick='() => SetTab("deactivate")'>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                    </svg>
+                    <span>Nonaktifkan Akun</span>
+                </button>
+            </div>
+        </aside>
 
-        <!-- Data dan Dukungan -->
-        <div class="settings-section">
-            <h2 class="section-title">Data & Dukungan</h2>
-            
-            <div class="settings-card" @onclick="() => ShowModal(nameof(DownloadDataModal))">
-                <div class="card-icon">📥</div>
-                <div class="card-content">
-                    <h3>Unduh Data</h3>
-                    <p>Minta salinan informasi akun Anda</p>
-                </div>
-                <div class="card-arrow">›</div>
-            </div>
-            
-            <a href="/pengaturan/bantuan" class="settings-card">
-                <div class="card-icon">❓</div>
-                <div class="card-content">
-                    <h3>Pusat Bantuan</h3>
-                    <p>Temukan jawaban untuk pertanyaan umum</p>
-                </div>
-                <div class="card-arrow">›</div>
-            </a>
+        <!-- Kolom Kanan: Panel Konten Kategori -->
+        <main class="settings-content-panel">
+            @if (_activeTab == "password")
+            {
+                <div class="panel-section">
+                    <h2 class="panel-title">Ubah Kata Sandi</h2>
+                    <p class="panel-desc">Perbarui kata sandi secara berkala untuk menjaga keamanan akun pemesanan ruangan Anda.</p>
 
-            <div class="settings-card" @onclick="() => ShowModal(nameof(ReportBugModal))">
-                <div class="card-icon">🐞</div>
-                <div class="card-content">
-                    <h3>Laporkan Bug</h3>
-                    <p>Beritahu kami jika ada yang tidak beres</p>
+                    <div class="settings-form">
+                        <div class="form-group">
+                            <label class="form-label">Kata Sandi Saat Ini</label>
+                            <input type="password" class="form-control" @bind="_currentPassword" placeholder="Masukkan kata sandi saat ini" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Kata Sandi Baru</label>
+                            <input type="password" class="form-control" @bind="_newPassword" placeholder="Minimal 8 karakter kombinasi huruf & angka" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Konfirmasi Kata Sandi Baru</label>
+                            <input type="password" class="form-control" @bind="_confirmPassword" placeholder="Ulangi kata sandi baru" />
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn-primary-app" @onclick="SavePassword" disabled="@_isSaving">
+                                @(_isSaving ? "Menyimpan..." : "Simpan Perubahan")
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-arrow">›</div>
-            </div>
-        </div>
-        
-        <!-- Zona Bahaya -->
-        <div class="settings-section danger-zone">
-            <h2 class="section-title text-danger">Zona Bahaya</h2>
-            
-            <div class="settings-card" @onclick="() => ShowModal(nameof(DeactivateAccountModal))">
-                <div class="card-icon text-warning">⏸️</div>
-                <div class="card-content">
-                    <h3>Nonaktifkan Akun</h3>
-                    <p>Jeda akun Anda sementara</p>
-                </div>
-                <div class="card-arrow">›</div>
-            </div>
+            }
+            else if (_activeTab == "twofactor")
+            {
+                <div class="panel-section">
+                    <h2 class="panel-title">Verifikasi 2 Langkah (2FA)</h2>
+                    <p class="panel-desc">Tambahkan lapisan keamanan ekstra pada akun Anda dengan kode verifikasi saat masuk.</p>
 
-            <div class="settings-card" @onclick="() => ShowModal(nameof(DeleteAccountModal))">
-                <div class="card-icon text-danger">⚠️</div>
-                <div class="card-content">
-                    <h3 class="text-danger">Hapus Akun</h3>
-                    <p>Hapus akun Anda secara permanen beserta datanya</p>
+                    <div class="toggle-card">
+                        <div class="toggle-card-info">
+                            <div class="toggle-card-title">Status Autentikasi 2 Langkah</div>
+                            <div class="toggle-card-desc">@(_is2FaEnabled ? "Aktif — Kode OTP diperlukan saat login baru" : "Tidak Aktif — Akun hanya dilindungi kata sandi")</div>
+                        </div>
+                        <label class="switch-toggle">
+                            <input type="checkbox" checked="@_is2FaEnabled" @onchange="Toggle2FA" />
+                            <span class="slider-pill"></span>
+                        </label>
+                    </div>
                 </div>
-                <div class="card-arrow">›</div>
-            </div>
-        </div>
+            }
+            else if (_activeTab == "sessions")
+            {
+                <div class="panel-section">
+                    <h2 class="panel-title">Sesi & Perangkat Aktif</h2>
+                    <p class="panel-desc">Kelola seluruh perangkat yang saat ini sedang masuk ke akun Anda.</p>
+
+                    <div class="session-list">
+                        <div class="session-item current">
+                            <div class="session-icon">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                    <line x1="8" y1="21" x2="16" y2="21"></line>
+                                    <line x1="12" y1="17" x2="12" y2="21"></line>
+                                </svg>
+                            </div>
+                            <div class="session-details">
+                                <div class="session-name">Windows PC — Chrome (Sesi Ini)</div>
+                                <div class="session-meta">Jakarta, Indonesia • Aktif Sekarang</div>
+                            </div>
+                            <span class="badge-current-session">Aktif</span>
+                        </div>
+
+                        <div class="session-item">
+                            <div class="session-icon">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                                    <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                                </svg>
+                            </div>
+                            <div class="session-details">
+                                <div class="session-name">iPhone 15 Pro — Mobile Safari</div>
+                                <div class="session-meta">Jakarta, Indonesia • Kemarin, 16:40 WIB</div>
+                            </div>
+                            <button class="btn-logout-session" @onclick='() => ToastService.Info("Sesi Dikeluarkan", "Perangkat mobile berhasil di-logout.")'>Keluarkan</button>
+                        </div>
+                    </div>
+                </div>
+            }
+            else if (_activeTab == "notifications")
+            {
+                <div class="panel-section">
+                    <h2 class="panel-title">Pengaturan Notifikasi</h2>
+                    <p class="panel-desc">Atur pemberitahuan yang ingin Anda terima untuk setiap aktivitas reservasi ruangan.</p>
+
+                    <div class="notification-group">
+                        <div class="group-subtitle">NOTIFIKASI EMAIL</div>
+                        
+                        <div class="toggle-card">
+                            <div class="toggle-card-info">
+                                <div class="toggle-card-title">Konfirmasi Reservasi</div>
+                                <div class="toggle-card-desc">Kirim email bukti booking saat ruangan berhasil disetujui</div>
+                            </div>
+                            <label class="switch-toggle">
+                                <input type="checkbox" @bind="_notifEmailBooking" />
+                                <span class="slider-pill"></span>
+                            </label>
+                        </div>
+
+                        <div class="toggle-card">
+                            <div class="toggle-card-info">
+                                <div class="toggle-card-title">Pengingat Jadwal Rapat</div>
+                                <div class="toggle-card-desc">Kirim email pengingat 15 menit sebelum rapat dimulai</div>
+                            </div>
+                            <label class="switch-toggle">
+                                <input type="checkbox" @bind="_notifEmailReminder" />
+                                <span class="slider-pill"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="notification-group" style="margin-top: 24px;">
+                        <div class="group-subtitle">NOTIFIKASI DALAM APLIKASI</div>
+                        
+                        <div class="toggle-card">
+                            <div class="toggle-card-info">
+                                <div class="toggle-card-title">Status Permintaan Fasilitas</div>
+                                <div class="toggle-card-desc">Tampilkan notifikasi popover saat permintaan perlengkapan diproses</div>
+                            </div>
+                            <label class="switch-toggle">
+                                <input type="checkbox" @bind="_notifAppFacility" />
+                                <span class="slider-pill"></span>
+                            </label>
+                        </div>
+
+                        <div class="toggle-card">
+                            <div class="toggle-card-info">
+                                <div class="toggle-card-title">Pembaruan Jadwal Mendadak</div>
+                                <div class="toggle-card-desc">Peringatan langsung jika ada perubahan ruangan atau pembatalan</div>
+                            </div>
+                            <label class="switch-toggle">
+                                <input type="checkbox" @bind="_notifAppUrgent" />
+                                <span class="slider-pill"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            }
+            else if (_activeTab == "appearance")
+            {
+                <div class="panel-section">
+                    <h2 class="panel-title">Mode Tampilan (Dark Mode)</h2>
+                    <p class="panel-desc">Sesuaikan tampilan antarmuka aplikasi sesuai kenyamanan visual Anda.</p>
+
+                    <div class="theme-options-grid">
+                        <div class="theme-card @(_currentTheme == "light" ? "selected" : "")" @onclick='() => ChangeTheme("light")'>
+                            <div class="theme-preview-box light-box">
+                                <div class="preview-header"></div>
+                                <div class="preview-body"></div>
+                            </div>
+                            <div class="theme-label-wrap">
+                                <input type="radio" name="themeRadio" checked="@(_currentTheme == "light")" />
+                                <span class="theme-label-text">Mode Terang</span>
+                            </div>
+                        </div>
+
+                        <div class="theme-card @(_currentTheme == "dark" ? "selected" : "")" @onclick='() => ChangeTheme("dark")'>
+                            <div class="theme-preview-box dark-box">
+                                <div class="preview-header"></div>
+                                <div class="preview-body"></div>
+                            </div>
+                            <div class="theme-label-wrap">
+                                <input type="radio" name="themeRadio" checked="@(_currentTheme == "dark")" />
+                                <span class="theme-label-text">Mode Gelap</span>
+                            </div>
+                        </div>
+
+                        <div class="theme-card @(_currentTheme == "system" ? "selected" : "")" @onclick='() => ChangeTheme("system")'>
+                            <div class="theme-preview-box system-box">
+                                <div class="preview-header"></div>
+                                <div class="preview-body"></div>
+                            </div>
+                            <div class="theme-label-wrap">
+                                <input type="radio" name="themeRadio" checked="@(_currentTheme == "system")" />
+                                <span class="theme-label-text">Ikuti Sistem</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else if (_activeTab == "language")
+            {
+                <div class="panel-section">
+                    <h2 class="panel-title">Bahasa & Zona Waktu</h2>
+                    <p class="panel-desc">Tentukan bahasa standar sistem dan format zona waktu operasional Anda.</p>
+
+                    <div class="settings-form">
+                        <div class="form-group">
+                            <label class="form-label">Bahasa Aplikasi</label>
+                            <select class="form-control" @bind="_selectedLanguage">
+                                <option value="id">Bahasa Indonesia (Baku)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Zona Waktu</label>
+                            <select class="form-control" @bind="_selectedTimezone">
+                                <option value="WIB">WIB (Waktu Indonesia Barat) — UTC+07:00</option>
+                                <option value="WITA">WITA (Waktu Indonesia Tengah) — UTC+08:00</option>
+                                <option value="WIT">WIT (Waktu Indonesia Timur) — UTC+09:00</option>
+                            </select>
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn-primary-app" @onclick='() => ToastService.Success("Pengaturan Tersimpan", "Preferensi bahasa dan zona waktu berhasil diperbarui.")'>
+                                Simpan Preferensi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+            else if (_activeTab == "integrations")
+            {
+                <div class="panel-section">
+                    <h2 class="panel-title">Integrasi Kalender & Email Pribadi</h2>
+                    <p class="panel-desc">Sinkronkan jadwal pemesanan ruangan secara otomatis ke kalender pribadi Anda.</p>
+
+                    <div class="integration-cards-list">
+                        <div class="integration-card">
+                            <div class="integration-icon-wrap" style="background:#EA4335; color:#fff;">
+                                G
+                            </div>
+                            <div class="integration-info">
+                                <div class="integration-title">Google Calendar</div>
+                                <div class="integration-desc">Tambahkan otomatis agenda rapat ke akun Google Workspace Anda</div>
+                            </div>
+                            <label class="switch-toggle">
+                                <input type="checkbox" @bind="_googleCalendarSync" />
+                                <span class="slider-pill"></span>
+                            </label>
+                        </div>
+
+                        <div class="integration-card">
+                            <div class="integration-icon-wrap" style="background:#0078D4; color:#fff;">
+                                O
+                            </div>
+                            <div class="integration-info">
+                                <div class="integration-title">Microsoft Outlook</div>
+                                <div class="integration-desc">Sinkronkan undangan rapat dengan kalender Microsoft 365</div>
+                            </div>
+                            <label class="switch-toggle">
+                                <input type="checkbox" @bind="_outlookCalendarSync" />
+                                <span class="slider-pill"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            }
+            else if (_activeTab == "data")
+            {
+                <div class="panel-section">
+                    <h2 class="panel-title">Unduh Data Pribadi</h2>
+                    <p class="panel-desc">Minta salinan arsip riwayat pemesanan ruangan dan informasi akun Anda.</p>
+
+                    <div class="info-notice-box">
+                        Salinan data akun Anda akan disiapkan dalam format arsip terenkripsi (.zip) yang berisi riwayat pemesanan dan log aktivitas.
+                    </div>
+
+                    <div style="margin-top: 20px;">
+                        <button class="btn-primary-app" @onclick='() => ToastService.Success("Permintaan Diterima", "Tautan unduhan data telah dikirimkan ke email Anda.")'>
+                            Minta Salinan Data
+                        </button>
+                    </div>
+                </div>
+            }
+            else if (_activeTab == "deactivate")
+            {
+                <div class="panel-section">
+                    <h2 class="panel-title text-danger">Nonaktifkan Akun</h2>
+                    <p class="panel-desc">Menonaktifkan akun Anda bersifat sementara. Seluruh jadwal pemesanan yang aktif akan ditangguhkan.</p>
+
+                    <div class="warning-notice-box">
+                        <strong>Perhatian:</strong> Anda dapat mengaktifkan kembali akun kapan saja cukup dengan masuk (login) ulang menggunakan kredensial yang sama.
+                    </div>
+
+                    <div style="margin-top: 24px;">
+                        <button class="btn-danger-app" @onclick='() => ToastService.Warning("Fitur Dilindungi", "Konfirmasi penonaktifan memerlukan otorisasi administrator.")'>
+                            Nonaktifkan Akun Saya
+                        </button>
+                    </div>
+                </div>
+            }
+        </main>
     </div>
 </div>
 
-<AppModal @bind-Visible="isModalVisible" Size="md" ShowCloseButton="false" OnClose="CloseModal"><BodyContent>
-    @if (activeModal == nameof(ChangePasswordModal))
-    {
-        <ChangePasswordModal OnClose="CloseModal" />
-    }
-    else if (activeModal == nameof(TwoFactorAuthModal))
-    {
-        <TwoFactorAuthModal OnClose="CloseModal" />
-    }
-    else if (activeModal == nameof(ActiveSessionsModal))
-    {
-        <ActiveSessionsModal OnClose="CloseModal" />
-    }
-    else if (activeModal == nameof(NotificationsSettingsModal))
-    {
-        <NotificationsSettingsModal OnClose="CloseModal" />
-    }
-    else if (activeModal == nameof(DownloadDataModal))
-    {
-        <DownloadDataModal OnClose="CloseModal" />
-    }
-    else if (activeModal == nameof(DeactivateAccountModal))
-    {
-        <DeactivateAccountModal OnClose="CloseModal" />
-    }
-    else if (activeModal == nameof(DeleteAccountModal))
-    {
-        <DeleteAccountModal OnClose="CloseModal" />
-    }
-    else if (activeModal == nameof(ReportBugModal))
-    {
-        <ReportBugModal OnClose="CloseModal" />
-    }
-</BodyContent></AppModal>
-
-@code {
-    private bool isModalVisible = false;
-    private string activeModal = "";
-
-    private void ShowModal(string modalName)
-    {
-        activeModal = modalName;
-        isModalVisible = true;
-    }
-
-    private void CloseModal()
-    {
-        isModalVisible = false;
-        activeModal = "";
-    }
-}
-
 <style>
-    .settings-container { max-width: 800px; margin: 0 auto; padding: 2rem 1rem; }
-    .page-title { font-size: 1.75rem; font-weight: 700; color: #16305C; margin-bottom: 2rem; }
-    .settings-grid { display: flex; flex-direction: column; gap: 2rem; }
-    .settings-section { display: flex; flex-direction: column; gap: 0.75rem; }
-    .section-title { font-size: 1rem; font-weight: 600; color: #6B7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
-    
-    .settings-card { display: flex; align-items: center; padding: 1.25rem; background-color: white; border-radius: 14px; box-shadow: 0 4px 24px rgba(16, 48, 92, 0.04); cursor: pointer; transition: all 0.2s ease; text-decoration: none; color: inherit; border: 1px solid transparent; }
-    .settings-card:hover { box-shadow: 0 4px 24px rgba(16, 48, 92, 0.12); transform: translateY(-2px); border-color: #E5E7EB; }
-    
-    .card-icon { font-size: 1.5rem; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background-color: #F3F4F6; border-radius: 50%; margin-right: 1rem; }
-    .card-content { flex: 1; }
-    .card-content h3 { font-size: 1rem; font-weight: 600; color: #16305C; margin: 0 0 0.25rem 0; }
-    .card-content p { font-size: 0.875rem; color: #6B7280; margin: 0; }
-    .card-arrow { font-size: 1.5rem; color: #9CA3AF; }
-    
-    .danger-zone .section-title { color: #DC2626; }
-    .danger-zone .settings-card { border: 1px solid #FEE2E2; }
-    .danger-zone .settings-card:hover { background-color: #FEF2F2; }
-    .text-danger { color: #DC2626 !important; }
-    .text-warning { color: #D97706 !important; }
+    .settings-page-wrapper {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding-bottom: 40px;
+    }
+
+    .settings-page-header {
+        margin-bottom: 28px;
+    }
+
+    .settings-subtitle {
+        color: var(--persada-text-secondary, #6B7280);
+        margin: 6px 0 0 0;
+        font-size: 0.9375rem;
+    }
+
+    /* 2-Column Layout */
+    .settings-2col-layout {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 28px;
+        align-items: flex-start;
+    }
+
+    .settings-nav-sidebar {
+        background: var(--persada-white, #FFFFFF);
+        border: 1px solid var(--color-brand-gray-border, #E5E7EB);
+        border-radius: var(--persada-border-radius-card, 20px);
+        padding: 20px 14px;
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .settings-nav-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .settings-nav-group-title {
+        font-size: 0.6875rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        color: var(--persada-text-secondary, #6B7280);
+        padding: 0 12px 6px;
+    }
+
+    .settings-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 14px;
+        border-radius: 12px;
+        border: none;
+        background: transparent;
+        color: var(--persada-text-primary, #374151);
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-align: left;
+        transition: all 0.15s ease;
+    }
+
+    .settings-nav-item:hover {
+        background: rgba(15, 31, 61, 0.04);
+        color: var(--persada-navy-900, #0F1F3D);
+    }
+
+    body.dark-mode .settings-nav-item:hover {
+        background: rgba(255, 255, 255, 0.06);
+        color: #FFFFFF;
+    }
+
+    .settings-nav-item.active {
+        background: #EEF2FF;
+        color: #1F5D9A;
+        font-weight: 700;
+    }
+
+    body.dark-mode .settings-nav-item.active {
+        background: rgba(31, 93, 154, 0.35);
+        color: #93C5FD;
+    }
+
+    .settings-nav-item.danger {
+        color: #DC2626;
+    }
+
+    .settings-nav-item.danger.active {
+        background: #FEE2E2;
+        color: #B91C1C;
+    }
+
+    body.dark-mode .settings-nav-item.danger.active {
+        background: rgba(220, 38, 38, 0.25);
+        color: #FCA5A5;
+    }
+
+    /* Content Panel */
+    .settings-content-panel {
+        background: var(--persada-white, #FFFFFF);
+        border: 1px solid var(--color-brand-gray-border, #E5E7EB);
+        border-radius: var(--persada-border-radius-card, 20px);
+        padding: 32px;
+        box-shadow: var(--shadow-sm);
+        min-height: 480px;
+    }
+
+    .panel-title {
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: var(--persada-text-primary, #0F1F3D);
+        margin: 0 0 6px 0;
+    }
+
+    .panel-desc {
+        font-size: 0.875rem;
+        color: var(--persada-text-secondary, #6B7280);
+        margin: 0 0 28px 0;
+    }
+
+    .group-subtitle {
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        color: var(--persada-text-secondary, #6B7280);
+        margin-bottom: 12px;
+    }
+
+    /* Forms */
+    .settings-form {
+        max-width: 520px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .form-label {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: var(--persada-text-primary, #374151);
+    }
+
+    .form-control {
+        padding: 10px 14px;
+        border: 1px solid var(--color-border, #D1D5DB);
+        border-radius: 10px;
+        font-size: 0.875rem;
+        background: #FFFFFF;
+        color: var(--persada-text-primary, #111827);
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #1F5D9A;
+        box-shadow: 0 0 0 3px rgba(31, 93, 154, 0.15);
+    }
+
+    .form-actions {
+        margin-top: 10px;
+    }
+
+    /* Toggle Switches DS-06 */
+    .toggle-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px;
+        border: 1px solid var(--color-brand-gray-border, #E5E7EB);
+        border-radius: 14px;
+        margin-bottom: 12px;
+        background: rgba(248, 250, 252, 0.5);
+    }
+
+    body.dark-mode .toggle-card {
+        background: rgba(15, 23, 42, 0.4);
+    }
+
+    .toggle-card-info {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .toggle-card-title {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--persada-text-primary, #0F1F3D);
+    }
+
+    .toggle-card-desc {
+        font-size: 0.75rem;
+        color: var(--persada-text-secondary, #6B7280);
+    }
+
+    .switch-toggle {
+        position: relative;
+        display: inline-block;
+        width: 48px;
+        height: 26px;
+        flex-shrink: 0;
+    }
+
+    .switch-toggle input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider-pill {
+        position: absolute;
+        cursor: pointer;
+        inset: 0;
+        background-color: #CBD5E1;
+        border-radius: 999px;
+        transition: background-color 200ms ease;
+    }
+
+    .slider-pill:before {
+        position: absolute;
+        content: "";
+        height: 20px;
+        width: 20px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        border-radius: 50%;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        transition: transform 200ms ease;
+    }
+
+    .switch-toggle input:checked + .slider-pill {
+        background-color: #1F5D9A;
+    }
+
+    .switch-toggle input:checked + .slider-pill:before {
+        transform: translateX(22px);
+    }
+
+    /* Sessions */
+    .session-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .session-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px;
+        border: 1px solid var(--color-brand-gray-border, #E5E7EB);
+        border-radius: 14px;
+    }
+
+    .session-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: #EEF2FF;
+        color: #1F5D9A;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    body.dark-mode .session-icon {
+        background: rgba(31, 93, 154, 0.3);
+        color: #93C5FD;
+    }
+
+    .session-details {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .session-name {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: var(--persada-text-primary, #0F1F3D);
+    }
+
+    .session-meta {
+        font-size: 0.75rem;
+        color: var(--persada-text-secondary, #6B7280);
+    }
+
+    .badge-current-session {
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: #E7F8EF;
+        color: #16A34A;
+        font-size: 0.6875rem;
+        font-weight: 700;
+    }
+
+    .btn-logout-session {
+        background: none;
+        border: 1px solid #FECACA;
+        color: #DC2626;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-logout-session:hover {
+        background: #FEE2E2;
+    }
+
+    /* Appearance / Theme Cards */
+    .theme-options-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+    }
+
+    .theme-card {
+        border: 2px solid var(--color-brand-gray-border, #E5E7EB);
+        border-radius: 16px;
+        padding: 16px;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        transition: all 0.2s;
+    }
+
+    .theme-card:hover {
+        border-color: #94A3B8;
+        transform: translateY(-2px);
+    }
+
+    .theme-card.selected {
+        border-color: #1F5D9A;
+        background: rgba(31, 93, 154, 0.04);
+    }
+
+    body.dark-mode .theme-card.selected {
+        background: rgba(31, 93, 154, 0.2);
+    }
+
+    .theme-preview-box {
+        height: 90px;
+        border-radius: 10px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .light-box {
+        background: #F8FAFC;
+    }
+    .light-box .preview-header { height: 14px; background: #0F1F3D; border-radius: 4px; }
+    .light-box .preview-body { flex: 1; background: #FFFFFF; border-radius: 4px; border: 1px solid #E2E8F0; }
+
+    .dark-box {
+        background: #0B1120;
+    }
+    .dark-box .preview-header { height: 14px; background: #060B18; border-radius: 4px; }
+    .dark-box .preview-body { flex: 1; background: #131E32; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); }
+
+    .system-box {
+        background: linear-gradient(135deg, #F8FAFC 50%, #0B1120 50%);
+    }
+    .system-box .preview-header { height: 14px; background: linear-gradient(135deg, #0F1F3D 50%, #060B18 50%); border-radius: 4px; }
+    .system-box .preview-body { flex: 1; background: linear-gradient(135deg, #FFFFFF 50%, #131E32 50%); border-radius: 4px; }
+
+    .theme-label-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .theme-label-text {
+        font-size: 0.8125rem;
+        font-weight: 700;
+        color: var(--persada-text-primary, #0F1F3D);
+    }
+
+    /* Integration Cards */
+    .integration-cards-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .integration-card {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px;
+        border: 1px solid var(--color-brand-gray-border, #E5E7EB);
+        border-radius: 14px;
+    }
+
+    .integration-icon-wrap {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        font-size: 1.25rem;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .integration-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .integration-title {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: var(--persada-text-primary, #0F1F3D);
+    }
+
+    .integration-desc {
+        font-size: 0.75rem;
+        color: var(--persada-text-secondary, #6B7280);
+    }
+
+    /* Notice Boxes */
+    .info-notice-box {
+        background: #EFF6FF;
+        border-left: 4px solid #3B82F6;
+        color: #1E40AF;
+        padding: 14px 18px;
+        border-radius: 10px;
+        font-size: 0.8125rem;
+        line-height: 1.5;
+    }
+
+    body.dark-mode .info-notice-box {
+        background: rgba(30, 58, 138, 0.3);
+        color: #BFDBFE;
+    }
+
+    .warning-notice-box {
+        background: #FEF2F2;
+        border-left: 4px solid #EF4444;
+        color: #991B1B;
+        padding: 14px 18px;
+        border-radius: 10px;
+        font-size: 0.8125rem;
+        line-height: 1.5;
+    }
+
+    body.dark-mode .warning-notice-box {
+        background: rgba(127, 29, 29, 0.3);
+        color: #FECACA;
+    }
+
+    .btn-danger-app {
+        height: 42px;
+        padding: 0 24px;
+        font-size: 0.875rem;
+        font-weight: 700;
+        border-radius: 999px;
+        background-color: #EF4444;
+        color: #FFFFFF;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-danger-app:hover {
+        background-color: #DC2626;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
+    /* Responsive */
+    @@media (max-width: 860px) {
+        .settings-2col-layout {
+            grid-template-columns: 1fr;
+        }
+        .settings-nav-sidebar {
+            flex-direction: row;
+            overflow-x: auto;
+            padding: 12px;
+        }
+        .settings-nav-group {
+            flex-direction: row;
+            align-items: center;
+        }
+        .settings-nav-group-title {
+            display: none;
+        }
+    }
 </style>
 
+@code {
+    private string _activeTab = "password";
+    private bool _disposed = false;
+    private CancellationTokenSource? _cts;
+
+    // Form inputs
+    private string _currentPassword = "";
+    private string _newPassword = "";
+    private string _confirmPassword = "";
+    private bool _isSaving = false;
+
+    // Preferences
+    private bool _is2FaEnabled = false;
+    private bool _notifEmailBooking = true;
+    private bool _notifEmailReminder = true;
+    private bool _notifAppFacility = true;
+    private bool _notifAppUrgent = true;
+    private string _currentTheme = "light";
+    private string _selectedLanguage = "id";
+    private string _selectedTimezone = "WIB";
+    private bool _googleCalendarSync = true;
+    private bool _outlookCalendarSync = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                var theme = await JS.InvokeAsync<string>("localStorage.getItem", "theme");
+                if (!string.IsNullOrEmpty(theme))
+                {
+                    _currentTheme = theme;
+                    StateHasChanged();
+                }
+            }
+            catch { }
+        }
+    }
+
+    private void SetTab(string tab)
+    {
+        _activeTab = tab;
+    }
+
+    private async Task Toggle2FA(ChangeEventArgs e)
+    {
+        _is2FaEnabled = (bool)(e.Value ?? false);
+        if (_is2FaEnabled)
+        {
+            ToastService.Success("2FA Diaktifkan", "Autentikasi dua langkah kini aktif pada akun Anda.");
+        }
+        else
+        {
+            ToastService.Warning("2FA Dinonaktifkan", "Perlindungan dua langkah telah dimatikan.");
+        }
+    }
+
+    private async Task ChangeTheme(string theme)
+    {
+        _currentTheme = theme;
+        try
+        {
+            await JS.InvokeVoidAsync("localStorage.setItem", "theme", theme);
+            if (theme == "dark")
+            {
+                await JS.InvokeVoidAsync("document.body.classList.add", "dark-mode");
+                await JS.InvokeVoidAsync("document.documentElement.setAttribute", "data-theme", "dark");
+            }
+            else if (theme == "light")
+            {
+                await JS.InvokeVoidAsync("document.body.classList.remove", "dark-mode");
+                await JS.InvokeVoidAsync("document.documentElement.setAttribute", "data-theme", "light");
+            }
+            else // system
+            {
+                await JS.InvokeVoidAsync("document.body.classList.remove", "dark-mode");
+                await JS.InvokeVoidAsync("document.documentElement.removeAttribute", "data-theme");
+            }
+            ToastService.Info("Tema Diperbarui", $"Mode tampilan berhasil diubah ke {theme}.");
+        }
+        catch { }
+    }
+
+    private async Task SavePassword()
+    {
+        if (string.IsNullOrWhiteSpace(_currentPassword))
+        {
+            ToastService.Warning("Validasi Gagal", "Kata sandi saat ini wajib diisi.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_newPassword) || _newPassword.Length < 6)
+        {
+            ToastService.Warning("Validasi Gagal", "Kata sandi baru minimal 6 karakter.");
+            return;
+        }
+
+        if (_newPassword != _confirmPassword)
+        {
+            ToastService.Error("Validasi Gagal", "Konfirmasi kata sandi tidak cocok.");
+            return;
+        }
+
+        _isSaving = true;
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _cts = new CancellationTokenSource();
+
+        try
+        {
+            await Task.Delay(800, _cts.Token);
+            if (_disposed) return;
+            _currentPassword = "";
+            _newPassword = "";
+            _confirmPassword = "";
+            _isSaving = false;
+            ToastService.Success("Berhasil", "Kata sandi akun Anda telah berhasil diperbarui.");
+        }
+        catch (TaskCanceledException) { }
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        _cts?.Cancel();
+        _cts?.Dispose();
+    }
+}
 
