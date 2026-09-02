@@ -2,7 +2,7 @@
 @using booking_room.Services
 @inject IModalService ModalService
 
-<ModalBase Visible="true" Size="md" ShowCloseButton="false" OnClose="Close">
+<AppModal Visible="true" Size="md" ShowCloseButton="false" OnClose="Close">
     <HeaderContent>
         <div style="display: flex; align-items: center; gap: 12px;">
             <div style="width: 40px; height: 40px; border-radius: 12px; background: #FEE2E2; display: flex; align-items: center; justify-content: center; color: #DC2626; flex-shrink: 0;">
@@ -42,11 +42,11 @@
         </div>
     </ChildContent>
     <FooterContent>
-        <button class="btn btn-secondary" style="border-radius: 999px; padding: 8px 24px; font-weight: 600; border: 1px solid #CBD5E1; background: #FFFFFF; color: #475569;" @onclick="Close">
+        <button class="btn-secondary-app" @onclick="Close">
             Tutup
         </button>
     </FooterContent>
-</ModalBase>
+</AppModal>
 
 @code {
     [Parameter] public string Title { get; set; } = "Beban Lalu Lintas Tinggi";
@@ -58,3 +58,5 @@
         ModalService.CloseTopAsync(ModalResult.Ok());
     }
 }
+
+

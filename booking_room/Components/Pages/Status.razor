@@ -257,7 +257,7 @@
 </div>
 
 <!-- 4.3 Modal Konfirmasi Pembatalan Terpusat -->
-<Modal Visible="@isCancelModalOpen" 
+<AppModal Visible="@isCancelModalOpen" 
        VisibleChanged="@(v => isCancelModalOpen = v)"
        Title="Batalkan Pemesanan?"
        Subtitle="Tindakan ini akan membatalkan pemesanan dan membebaskan jadwal ruangan."
@@ -266,10 +266,10 @@
     <BodyContent>
         <CancelRequestModal Booking="@selectedBooking" OnClose="CloseCancelModal" OnConfirm="HandleCancelConfirm" />
     </BodyContent>
-</Modal>
+</AppModal>
 
 <!-- Modal Modifikasi Reservasi -->
-<Modal Visible="@isModifyModalOpen"
+<AppModal Visible="@isModifyModalOpen"
        VisibleChanged="@(v => isModifyModalOpen = v)"
        Title="Ubah Jadwal Pemesanan"
        Subtitle="Sesuaikan tanggal, waktu, atau catatan pemesanan ruangan Anda."
@@ -278,7 +278,7 @@
     <BodyContent>
         <ModifyBookingModal Booking="@selectedBooking" OnClose="CloseModifyModal" OnUpdate="HandleModifyUpdate" />
     </BodyContent>
-</Modal>
+</AppModal>
 
 <style>
     .status-page-wrapper {
@@ -1169,3 +1169,4 @@
         _countdownTimer?.Dispose();
     }
 }
+

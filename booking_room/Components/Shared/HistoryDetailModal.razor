@@ -1,6 +1,6 @@
 @using booking_room.Components.Models
 
-<div class="history-detail-modal" @onclick:stopPropagation="true">
+<div class="history-detail-modal">
     @if (Booking != null)
     {
         <!-- Header Image Full Width -->
@@ -202,3 +202,4 @@
         return BookingDataStore.GetStatusBadgeClass(Booking?.Status ?? "completed");
     }
 }
+

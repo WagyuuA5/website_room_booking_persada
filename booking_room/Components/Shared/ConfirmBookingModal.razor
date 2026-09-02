@@ -3,7 +3,7 @@
 @inject IToastService ToastService
 @inject IModalService ModalService
 
-<ModalBase Visible="true" Size="md" ShowCloseButton="false" OnClose="HandleBack">
+<AppModal Visible="true" Size="md" ShowCloseButton="false" OnClose="HandleBack">
     <HeaderContent>
         <div class="cbm-header-content">
             <h2 class="modal-title">Konfirmasi Pemesanan</h2>
@@ -139,10 +139,10 @@
     </ChildContent>
 
     <FooterContent>
-        <button class="btn-cancel" @onclick="HandleBack" disabled="@_isSubmitting">
+        <button class="btn-secondary-app" @onclick="HandleBack" disabled="@_isSubmitting">
             Batal
         </button>
-        <button class="btn-confirm" @onclick="HandleConfirm" disabled="@_isSubmitting">
+        <button class="btn-primary-app" @onclick="HandleConfirm" disabled="@_isSubmitting">
             @if (_isSubmitting)
             {
                 <svg class="spinner" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -163,7 +163,7 @@
             }
         </button>
     </FooterContent>
-</ModalBase>
+</AppModal>
 
 <style>
     .cbm-header-content {
@@ -557,3 +557,5 @@
         await OnConfirm.InvokeAsync();
     }
 }
+
+

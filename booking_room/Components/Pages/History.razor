@@ -48,9 +48,9 @@
 
 </div>
 
-<ModalOverlayBlur Visible="isDetailOpen" OnClose="CloseDetail" Size="default">
+<AppModal Visible="isDetailOpen" OnClose="CloseDetail" Size="md" ShowCloseButton="true"><BodyContent>
     <HistoryDetailModal Booking="selectedBooking" OnClose="CloseDetail" />
-</ModalOverlayBlur>
+</BodyContent></AppModal>
 
 <style>
     .history-page {
@@ -513,4 +513,5 @@
     private void OpenDetail(BookingItem booking) { selectedBooking = booking; isDetailOpen = true; }
     private void CloseDetail() { isDetailOpen = false; }
 }
+
 

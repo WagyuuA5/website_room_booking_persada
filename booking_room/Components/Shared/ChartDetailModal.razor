@@ -4,7 +4,7 @@
 @using System.Globalization
 @inject IModalService ModalService
 
-<ModalBase Visible="true" Size="lg" ShowCloseButton="false" OnClose="Close">
+<AppModal Visible="true" Size="lg" ShowCloseButton="false" OnClose="Close">
     <HeaderContent>
         <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
             <div style="display: flex; align-items: center; gap: 12px;">
@@ -27,11 +27,11 @@
         <AnalyticsDetailPopup SelectedPeriod="@SelectedPeriod" OnClose="Close" />
     </ChildContent>
     <FooterContent>
-        <button class="btn-modal-outline" style="padding: 10px 24px; border-radius: 999px; font-weight: 600; cursor: pointer; border: 1px solid #CBD5E1; background: transparent; color: #475569;" @onclick="Close">
+        <button class="btn-secondary-app" @onclick="Close">
             Tutup
         </button>
     </FooterContent>
-</ModalBase>
+</AppModal>
 
 @code {
     [Parameter] public string SelectedPeriod { get; set; } = "Minggu";
@@ -42,3 +42,5 @@
         ModalService.Close(ModalResult.Ok());
     }
 }
+
+

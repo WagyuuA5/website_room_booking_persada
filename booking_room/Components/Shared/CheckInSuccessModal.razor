@@ -2,7 +2,7 @@
 @using booking_room.Services
 @inject IModalService ModalService
 
-<Modal Visible="true" ShowHeader="false" ShowFooter="false" LayoutMode="solid-card" Size="sm" OnClose="Close">
+<AppModal Visible="true" ShowHeader="false" ShowFooter="false" LayoutMode="solid-card" Size="sm" OnClose="Close">
     <BodyContent>
         <div class="checkin-success-inner" style="display: flex; flex-direction: column; align-items: center; padding: 2.5rem 2rem; width: 100%; text-align: center; box-sizing: border-box; background: #0B1A3D; border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);">
             <!-- Success Icon -->
@@ -25,7 +25,7 @@
             </button>
         </div>
     </BodyContent>
-</Modal>
+</AppModal>
 
 <style>
     .check-animation {
@@ -64,3 +64,4 @@
         await ModalService.CloseTopAsync(ModalResult.Ok());
     }
 }
+

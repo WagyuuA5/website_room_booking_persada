@@ -2,7 +2,7 @@
 @using booking_room.Services
 @inject IModalService ModalService
 
-<ModalBase Visible="true" Size="sm" ShowCloseButton="false" OnClose="HandleKeep">
+<AppModal Visible="true" Size="sm" ShowCloseButton="false" OnClose="HandleKeep">
     <HeaderContent>
         <div style="display: flex; align-items: center; gap: 12px;">
             <div style="width: 40px; height: 40px; border-radius: 12px; background: #FEE2E2; display: flex; align-items: center; justify-content: center; color: #DC2626; flex-shrink: 0;">
@@ -29,14 +29,14 @@
         </div>
     </ChildContent>
     <FooterContent>
-        <button class="btn-outline" style="border-radius: 999px; padding: 12px 24px; font-weight: 600; border: 1px solid #CBD5E1; background: transparent; color: #475569;" @onclick="HandleKeep">
+        <button class="btn-secondary-app" @onclick="HandleKeep">
             Pertahankan Pemesanan
         </button>
-        <button class="btn-danger" style="border-radius: 999px; padding: 12px 24px; font-weight: 700; background: #DC2626; border: none; color: #FFFFFF; cursor: @(string.IsNullOrWhiteSpace(_reason) ? "not-allowed" : "pointer"); opacity: @(string.IsNullOrWhiteSpace(_reason) ? "0.6" : "1");" disabled="@string.IsNullOrWhiteSpace(_reason)" @onclick="SubmitCancel">
+        <button class="btn-primary-app" style="background: var(--color-danger-bg); color: var(--color-danger-text);" disabled="@string.IsNullOrWhiteSpace(_reason)" @onclick="SubmitCancel">
             Ya, Batalkan
         </button>
     </FooterContent>
-</ModalBase>
+</AppModal>
 
 @code {
     [Parameter] public BookingItem? Booking { get; set; }
@@ -66,3 +66,5 @@
         ModalService.Close(ModalResult.Cancel());
     }
 }
+
+

@@ -39,3 +39,10 @@ window.popoverHelper = {
         }
     }
 };
+window.registerEscapeKey = function (dotNetHelper) {
+    window.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' || e.key === 'Esc') {
+            dotNetHelper.invokeMethodAsync('OnEscapePressed');
+        }
+    });
+};

@@ -1,4 +1,44 @@
 /* ==========================================================================
+   Design Tokens - Revisi V18 (Master Reference)
+   ========================================================================== */
+:root {
+  /* 2.1 Glass Blur / Backdrop Overlay */
+  --overlay-blur: 8px;
+  --overlay-color: rgba(15, 23, 42, 0.45);
+
+  /* 2.2 Warna (Color Tokens) */
+  --color-navy-primary: #0F1F3D;
+  --color-gold-cta: #F5B301;
+  --color-gold-cta-hover: #E0A400;
+  --color-success-bg: rgba(16, 185, 129, 0.15);
+  --color-success-text: #1AA262;
+  --color-danger-bg: rgba(229, 72, 77, 0.15);
+  --color-danger-text: #E5484D;
+  --color-warning-bg: rgba(245, 158, 11, 0.15);
+  --color-warning-text: #D97706;
+  --color-text-primary: #0F1F3D;
+  --color-text-secondary: #6B7280;
+  --color-border: #E5E7EB;
+  --color-surface: #F3F4F6;
+  --color-surface-alt: #FFFFFF;
+
+  /* 2.3 Tipografi */
+  --font-title-lg: 28px;
+  --font-title-md: 18px;
+  --font-body: 14px;
+  --font-label: 12px;
+  --font-button: 14px;
+
+  /* 2.4 Spacing & Radius */
+  --radius-modal: 20px;
+  --radius-card: 12px;
+  --radius-button: 10px;
+  --radius-badge: 999px;
+  --space-modal-padding: 32px;
+  --space-section-gap: 20px;
+  --space-field-gap: 16px;
+}
+/* ==========================================================================
    Design Tokens — Sistem Manajemen Ruangan & Pemesanan PT PERSADA (V6)
    Acuan resmi warna status, tipografi, radius, shadow, dan spacing
    Revisi V6: navy gelap + aksen kuning/emas + Dynamic Island tokens
@@ -140,4 +180,85 @@
   border-color: var(--glass-border-dark) !important;
   box-shadow: var(--glass-shadow-dark) !important;
   color: #FFFFFF !important;
+}
+
+/* 2.5 Sistem Tombol */
+.btn-primary-app {
+    height: 42px;
+    padding: 0 24px;
+    font-family: inherit;
+    font-size: var(--font-button);
+    font-weight: 600;
+    border-radius: var(--radius-button);
+    background-color: var(--color-gold-cta);
+    color: var(--color-navy-primary);
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.btn-primary-app:hover {
+    background-color: var(--color-gold-cta-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.12);
+}
+.btn-primary-app svg {
+    width: 16px;
+    height: 16px;
+}
+.btn-secondary-app {
+    height: 42px;
+    padding: 0 24px;
+    font-family: inherit;
+    font-size: var(--font-button);
+    font-weight: 600;
+    border-radius: var(--radius-button);
+    background-color: var(--color-surface-alt);
+    color: var(--color-navy-primary);
+    border: 1px solid var(--color-border);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+.btn-secondary-app:hover {
+    background-color: var(--color-surface);
+}
+.btn-secondary-app svg {
+    width: 16px;
+    height: 16px;
+}
+.btn-tertiary-app {
+    height: 42px;
+    padding: 0 24px;
+    font-family: inherit;
+    font-size: var(--font-button);
+    font-weight: 600;
+    border-radius: var(--radius-button);
+    background-color: transparent;
+    color: var(--color-text-secondary);
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color 0.2s, background-color 0.2s;
+}
+.btn-tertiary-app:hover {
+    color: var(--color-navy-primary);
+    background-color: rgba(15, 31, 61, 0.05);
+}
+.btn-tertiary-app svg {
+    width: 16px;
+    height: 16px;
 }

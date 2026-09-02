@@ -3,8 +3,9 @@
 
 @if (Visible && Booking != null)
 {
-    <div class="srd-modal-overlay" @onclick="HandleOverlayClick">
-    <div class="srd-modal-content" @onclick:stopPropagation>
+    <AppModal Visible="true" Size="lg" ShowCloseButton="false" OnClose="CloseModal">
+        <BodyContent>
+    <div class="srd-modal-content">
         <!-- Header Image Area -->
         <div class="srd-modal-header">
             <img src="@Booking.PhotoUrl" alt="@Booking.RoomName" class="srd-modal-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'" />
@@ -55,15 +56,16 @@
             <div class="srd-modal-footer" style="display: flex; gap: 16px;">
                 @if (Booking.Status == "pending" || Booking.Status == "approved")
                 {
-                    <button class="btn-modal-primary" @onclick="HandleModify">
+                    <button class="btn-primary-app" @onclick="HandleModify">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         Ubah
                     </button>
                 }
-                <button class="btn-modal-outline" @onclick="CloseModal">Tutup</button>
+                <button class="btn-secondary-app" @onclick="CloseModal">Tutup</button>
             </div>
         </div>
-    </div>
+        </BodyContent>
+    </AppModal>
 }
 
 <style>
@@ -273,3 +275,4 @@
         return "";
     }
 }
+

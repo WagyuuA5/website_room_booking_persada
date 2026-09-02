@@ -1,6 +1,8 @@
 @using booking_room.Components.Models
 @inject booking_room.Services.LoadingStateService LoadingState
 
+<AppModal Visible="true" Size="lg" ShowCloseButton="false" OnClose="HandleClose">
+    <BodyContent>
 <div class="room-details-v6">
     @if (_isLoading)
     {
@@ -86,7 +88,7 @@
                     </div>
 
                     <div class="rd-actions-row">
-                        <button class="btn-book-now" @onclick="HandleBookNow">
+                        <button class="btn-primary-app" @onclick="HandleBookNow">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                                 <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -95,7 +97,7 @@
                             </svg>
                             Pesan Sekarang
                         </button>
-                        <button class="btn-cancel-outline" @onclick="OnClose">
+                        <button class="btn-secondary-app" @onclick="OnClose">
                             Tutup
                         </button>
                     </div>
@@ -104,6 +106,8 @@
         </div>
     }
 </div>
+    </BodyContent>
+</AppModal>
 
 <style>
     .room-details-v6 {
@@ -368,6 +372,14 @@
         }
     }
 
+    private async Task HandleClose()
+    {
+        if (OnClose.HasDelegate)
+        {
+            await OnClose.InvokeAsync();
+        }
+    }
+
     private async Task HandleBookNow()
     {
         if (Room != null)
@@ -376,3 +388,4 @@
         }
     }
 }
+

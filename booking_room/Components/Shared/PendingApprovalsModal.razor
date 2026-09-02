@@ -4,7 +4,7 @@
 @inject NavigationManager Navigation
 @inject IModalService ModalService
 
-<Modal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Title="Persetujuan Tertunda" LayoutMode="list" Size="md" ShowCloseButton="false" OnClose="OnClose">
+<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Title="Persetujuan Tertunda" LayoutMode="list" Size="md" ShowCloseButton="false" OnClose="OnClose">
     <HeaderContent>
         <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
             <div>
@@ -55,17 +55,17 @@
     </BodyContent>
     <FooterContent>
         <div style="display: flex; gap: 12px; width: 100%;">
-            <button class="btn-modal-outline" style="flex: 1;" @onclick="HandleClose">Tutup</button>
-            <button class="btn-modal-primary" style="flex: 1; background: #F59E0B; border-color: #F59E0B; color: #0F1F3D;" @onclick="ViewAllDetails">
+            <button class="btn-secondary-app" style="flex: 1;" @onclick="HandleClose">Tutup</button>
+            <button class="btn-primary-app" style="flex: 1;" @onclick="ViewAllDetails">
                 Lihat Semua Detail
             </button>
         </div>
     </FooterContent>
-</Modal>
+</AppModal>
 
 @if (_rejectingItem != null)
 {
-    <Modal Visible="true" VisibleChanged="HandleRejectVisibleChanged" Title="Tolak Persetujuan" LayoutMode="alert" Size="sm" ShowCloseButton="false" OnClose="CloseRejectModal">
+    <AppModal Visible="true" VisibleChanged="HandleRejectVisibleChanged" Title="Tolak Persetujuan" LayoutMode="alert" Size="sm" ShowCloseButton="false" OnClose="CloseRejectModal">
         <BodyContent>
             <div style="display: flex; flex-direction: column; gap: 16px;">
                 <p style="margin: 0; font-size: 0.875rem; color: var(--color-brand-text-muted, #6B7280);">Berikan alasan penolakan untuk <strong>@_rejectingItem.RoomName</strong>.</p>
@@ -74,11 +74,11 @@
         </BodyContent>
         <FooterContent>
             <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                <button class="btn-modal-outline" @onclick="HandleCloseReject">Batal</button>
-                <button class="btn-modal-primary" style="background: #E5484D; border-color: #E5484D;" @onclick="ConfirmReject" disabled="@string.IsNullOrWhiteSpace(_rejectReason)">Tolak</button>
+                <button class="btn-secondary-app" @onclick="HandleCloseReject">Batal</button>
+                <button class="btn-primary-app" style="background: var(--color-danger-bg); color: var(--color-danger-text);" @onclick="ConfirmReject" disabled="@string.IsNullOrWhiteSpace(_rejectReason)">Tolak</button>
             </div>
         </FooterContent>
-    </Modal>
+    </AppModal>
 }
 
 <style>
@@ -308,3 +308,5 @@
         CloseRejectModal();
     }
 }
+
+

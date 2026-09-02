@@ -1,4 +1,6 @@
-<div class="invitation-modal-v2">
+<AppModal Visible="true" Size="md" ShowCloseButton="false" OnClose="HandleClose">
+    <BodyContent>
+        <div class="invitation-modal-v2">
     <div class="invitation-header-v2">
         <div class="header-title-v2">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -29,13 +31,13 @@
     </div>
 
     <div class="invitation-footer-v2" style="margin-top: 24px;">
-        <button class="btn-accept-v2" @onclick='() => HandleRsvp("Accept")'>
+        <button class="btn-primary-app" style="width:100%;" @onclick='() => HandleRsvp("Accept")'>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Terima
         </button>
         <div class="footer-actions-row">
-            <button class="btn-maybe-v2" @onclick='() => HandleRsvp("Maybe")'>Mungkin</button>
-            <button class="btn-decline-v2" @onclick='() => HandleRsvp("Decline")'>Tolak</button>
+            <button class="btn-secondary-app" style="flex:1;" @onclick='() => HandleRsvp("Maybe")'>Mungkin</button>
+            <button class="btn-tertiary-app" style="flex:1;" @onclick='() => HandleRsvp("Decline")'>Tolak</button>
         </div>
     </div>
 
@@ -190,7 +192,9 @@
             color: #16305C;
         }
     </style>
-</div>
+        </div>
+    </BodyContent>
+</AppModal>
 
 @code {
     [Parameter] public string RoomName { get; set; } = "Alpha Boardroom";
@@ -204,9 +208,12 @@
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback<string> OnRsvp { get; set; }
 
+    private async Task HandleClose() { if (OnClose.HasDelegate) { await OnClose.InvokeAsync(); } }
     private async Task HandleRsvp(string status)
     {
         await OnRsvp.InvokeAsync(status);
         await OnClose.InvokeAsync();
     }
 }
+
+

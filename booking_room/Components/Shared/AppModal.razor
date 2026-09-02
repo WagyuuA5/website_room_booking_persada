@@ -1,109 +1,184 @@
 @namespace booking_room.Components.Shared
 @inject IJSRuntime JS
-@inject booking_room.Services.ModalStateService ModalState
-
-@if (UseQueue && ModalState.ActiveModal?.Key != ModalKey)
-{
-    return;
-}
 
 @if (Visible)
 {
-    <Modal Visible="true"
-           VisibleChanged="HandleVisibleChanged"
-           Title="@Title"
-           Subtitle="@Subtitle"
-           Size="@GetModalSize()"
-           LayoutMode="@LayoutMode"
-           DialogClass="@DialogClass"
-           ShowCloseButton="@ShowCloseButton"
-           ShowHeader="@ShowHeader"
-           ShowFooter="@ShowFooter"
-           OnClose="CloseAsync">
-        <HeaderContent>
-            @HeaderContent
-        </HeaderContent>
-        <BodyContent>
-            @if (BodyContent != null)
+    <div class="app-modal-overlay" @onclick="HandleOverlayClick">
+        <div class="app-modal-container" @onclick:stopPropagation="true" role="dialog" aria-modal="true" style="@(ComputedMaxWidth > 0 ? $"max-width: {ComputedMaxWidth}px" : "")">
+            @if (ShowCloseButton)
             {
-                @BodyContent
+                <button class="app-modal-close" @onclick="CloseAsync" aria-label="Tutup popup">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
             }
-            else if (ChildContent != null)
+
+            @if (HeaderContent != null)
             {
-                @ChildContent
+                <div class="app-modal-header">
+                    @HeaderContent
+                </div>
             }
-        </BodyContent>
-        <FooterContent>
-            @FooterContent
-        </FooterContent>
-    </Modal>
+
+            <div class="app-modal-body">
+                @if (BodyContent != null)
+                {
+                    @BodyContent
+                }
+                else
+                {
+                    @ChildContent
+                }
+            </div>
+
+            @if (FooterContent != null)
+            {
+                <div class="app-modal-footer">
+                    @FooterContent
+                </div>
+            }
+        </div>
+    </div>
 }
 
+<style>
+    /* Overlay Backdrop with fallback */
+    .app-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: var(--overlay-color);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* Fallback for backdrop-filter is just the background color above */
+        backdrop-filter: blur(var(--overlay-blur));
+        -webkit-backdrop-filter: blur(var(--overlay-blur));
+        
+        /* Animation fade */
+        animation: fadeInOverlay 0.2s ease-out forwards;
+    }
+
+    .app-modal-container {
+        background-color: var(--color-surface-alt);
+        border-radius: var(--radius-modal);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 480px; /* Default max-width, can be overridden */
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+        
+        /* Animation scale */
+        animation: scaleInModal 0.2s ease-out forwards;
+        transform: scale(0.96);
+        opacity: 0;
+    }
+
+    @@keyframes fadeInOverlay {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @@keyframes scaleInModal {
+        from {
+            transform: scale(0.96);
+            opacity: 0;
+        }
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    .app-modal-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: none;
+        border: none;
+        color: var(--color-text-secondary);
+        cursor: pointer;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background-color 0.15s, color 0.15s;
+        z-index: 10;
+    }
+
+    .app-modal-close:hover {
+        background-color: var(--color-surface);
+        color: var(--color-text-primary);
+    }
+
+    .app-modal-header {
+        padding: var(--space-modal-padding) var(--space-modal-padding) 0 var(--space-modal-padding);
+        flex-shrink: 0;
+    }
+
+    .app-modal-body {
+        padding: var(--space-modal-padding);
+        overflow-y: auto;
+        flex: 1 1 auto;
+    }
+
+    /* Remove top padding from body if header is present and padded */
+    .app-modal-header + .app-modal-body {
+        padding-top: var(--space-section-gap);
+    }
+
+    .app-modal-footer {
+        padding: var(--space-section-gap) var(--space-modal-padding) var(--space-modal-padding) var(--space-modal-padding);
+        background-color: var(--color-surface-alt);
+        border-top: 1px solid var(--color-border);
+        flex-shrink: 0;
+    }
+</style>
+
 @code {
-    [Parameter] public string ModalKey { get; set; } = "";
     [Parameter] public bool Visible { get; set; }
     [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
-    [Parameter] public string Title { get; set; } = "";
-    [Parameter] public string Subtitle { get; set; } = "";
-    [Parameter] public string Size { get; set; } = "md"; // sm, default, md, lg, xl, auto
-    [Parameter] public string LayoutMode { get; set; } = "form"; // form, list, split-detail, alert, invitation, solid-card
-    [Parameter] public string DialogClass { get; set; } = "";
-    [Parameter] public bool UseQueue { get; set; } = false;
+    
     [Parameter] public RenderFragment? HeaderContent { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public RenderFragment? BodyContent { get; set; }
     [Parameter] public RenderFragment? FooterContent { get; set; }
-    [Parameter] public RenderFragment? ChildContent { get; set; }
-    [Parameter] public bool ShowCloseButton { get; set; } = false;
-    [Parameter] public bool ShowHeader { get; set; } = true;
-    [Parameter] public bool ShowFooter { get; set; } = true;
+    
+    [Parameter] public bool ShowCloseButton { get; set; } = true;
+    [Parameter] public bool LockBackdrop { get; set; } = false;
+    [Parameter] public int MaxWidth { get; set; } = 480;
+    [Parameter] public string Size { get; set; } = "md"; // Maps to MaxWidth if MaxWidth is 480
+    [Parameter] public string LayoutMode { get; set; } = "";
     [Parameter] public EventCallback OnClose { get; set; }
 
-    private bool _enqueued;
-    private bool? _pendingLock;
-
-    protected override void OnInitialized()
+    private int ComputedMaxWidth
     {
-        if (UseQueue)
+        get
         {
-            ModalState.OnChange += StateHasChanged;
+            if (MaxWidth != 480) return MaxWidth;
+            return Size switch
+            {
+                "sm" => 400,
+                "md" => 480,
+                "lg" => 640,
+                "xl" => 800,
+                _ => 480
+            };
         }
     }
 
-    protected override void OnParametersSet()
+    private async Task HandleOverlayClick()
     {
-        if (UseQueue)
-        {
-            if (Visible && !_enqueued)
-            {
-                _enqueued = true;
-                ModalState.Enqueue(new booking_room.Services.ModalRequest { Key = ModalKey });
-            }
-
-            if (ModalState.ActiveModal?.Key == ModalKey && _enqueued)
-            {
-                if (!_pendingLock.HasValue)
-                {
-                    _pendingLock = true;
-                }
-            }
-            else if (ModalState.ActiveModal?.Key != ModalKey && _pendingLock == true)
-            {
-                _pendingLock = false;
-            }
-        }
-    }
-
-    private string GetModalSize() => Size switch
-    {
-        "sm" => "sm",
-        "lg" => "lg",
-        "xl" => "xl",
-        _ => "md"
-    };
-
-    private async Task HandleVisibleChanged(bool isVisible)
-    {
-        if (!isVisible)
+        if (!LockBackdrop)
         {
             await CloseAsync();
         }
@@ -113,36 +188,32 @@
     {
         Visible = false;
         await VisibleChanged.InvokeAsync(false);
-        _enqueued = false;
-        _pendingLock = false;
-
-        if (UseQueue)
-        {
-            ModalState.CloseActive();
-        }
-
         if (OnClose.HasDelegate)
         {
             await OnClose.InvokeAsync();
         }
     }
 
-    public async ValueTask DisposeAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (UseQueue)
-        {
-            ModalState.OnChange -= StateHasChanged;
-        }
-
-        if (Visible)
+        if (firstRender)
         {
             try
             {
-                await JS.InvokeVoidAsync("modalHelper.unlockBodyScroll");
+                var dotNetReference = DotNetObjectReference.Create(this);
+                await JS.InvokeVoidAsync("registerEscapeKey", dotNetReference);
             }
-            catch (JSDisconnectedException)
-            {
-            }
+            catch (Exception) { /* Ignored if JS not ready or missing */ }
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnEscapePressed()
+    {
+        if (Visible && !LockBackdrop)
+        {
+            await CloseAsync();
+            StateHasChanged();
         }
     }
 }

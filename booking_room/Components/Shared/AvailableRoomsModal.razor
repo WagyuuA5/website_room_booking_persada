@@ -4,7 +4,7 @@
 @inject NavigationManager Navigation
 @inject IModalService ModalService
 
-<Modal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Title="Ruangan Tersedia" LayoutMode="list" Size="lg" ShowCloseButton="false" OnClose="OnClose">
+<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Title="Ruangan Tersedia" LayoutMode="list" Size="lg" ShowCloseButton="false" OnClose="OnClose">
     <HeaderContent>
         <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
             <div>
@@ -60,11 +60,11 @@
         </div>
     </BodyContent>
     <FooterContent>
-        <button type="button" class="btn-modal-outline" style="border-radius: 999px; font-weight: 600; padding: 10px 24px; font-size: 0.875rem; border: 1.5px solid #CBD5E1; background: transparent; color: #475569; cursor: pointer;" @onclick="Close">
+        <button type="button" class="btn-secondary-app" @onclick="Close">
             Tutup
         </button>
     </FooterContent>
-</Modal>
+</AppModal>
 
 <style>
     .available-rooms-modal {
@@ -253,3 +253,5 @@
         }
     }
 }
+
+

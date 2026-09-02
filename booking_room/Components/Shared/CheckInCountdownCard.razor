@@ -6,7 +6,7 @@
 @inject IToastService ToastService
 @inject IModalService ModalService
 
-<Modal Visible="true" ShowHeader="false" ShowFooter="false" LayoutMode="solid-card" Size="md" OnClose="HandleCancelClose">
+<AppModal Visible="true" ShowHeader="false" ShowFooter="false" LayoutMode="solid-card" Size="md" OnClose="HandleCancelClose">
     <BodyContent>
         <div class="checkin-confirmation-modal">
             <!-- Header avatar & info -->
@@ -104,7 +104,7 @@
             </div>
         </div>
     </BodyContent>
-</Modal>
+</AppModal>
 
 <style>
     .checkin-confirmation-modal {
@@ -484,3 +484,4 @@
         _timer?.Dispose();
     }
 }
+

@@ -1,14 +1,14 @@
-﻿@namespace booking_room.Components.Shared
+@namespace booking_room.Components.Shared
 @using booking_room.Services
 @using booking_room.Components.Models
 @inject IModalService ModalService
 @inject NavigationManager Navigation
 
-<ModalBase Visible="true" Size="md" ShowCloseButton="false" OnClose="HandleClose">
+<AppModal Visible="true" Size="md" ShowCloseButton="false" OnClose="HandleClose">
     <HeaderContent>
         <div>
             <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--persada-navy-900, #0F1F3D);">@(Item?.RoomName ?? "Ruang Pertemuan")</h3>
-            <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #64748B;">@(Item?.TimeSlot ?? "") · @(Item?.Title ?? "")</p>
+            <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #64748B;">@(Item?.TimeSlot ?? "") � @(Item?.Title ?? "")</p>
         </div>
     </HeaderContent>
 
@@ -37,21 +37,21 @@
 
     <FooterContent>
         <div style="display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; width: 100%;">
-            <button type="button" class="btn-modal-outline" style="border-radius: 999px; font-weight: 600; padding: 10px 20px; font-size: 0.875rem; border: 1.5px solid #CBD5E1; background: transparent; color: #475569; cursor: pointer;" @onclick="HandleClose">
+            <button type="button" class="btn-secondary-app" @onclick="HandleClose">
                 Tutup
             </button>
-            <button type="button" class="btn-modal-outline" style="border-radius: 999px; font-weight: 600; padding: 10px 20px; font-size: 0.875rem; border: 1.5px solid #BFDBFE; background: transparent; color: var(--persada-accent-blue, #1F5D9A); cursor: pointer;" @onclick="OpenMap">
+            <button type="button" class="btn-secondary-app" @onclick="OpenMap">
                 Lihat di Peta
             </button>
             @if (Item?.Status == "sedang-berlangsung" || Item?.Status == "akan-datang")
             {
-                <button type="button" class="btn-modal-primary" style="border-radius: 999px; font-weight: 700; padding: 10px 20px; font-size: 0.875rem; background: var(--persada-yellow-500, #F59E0B); border: none; color: var(--persada-navy-900, #0F1F3D); cursor: pointer;" @onclick="HandleConfirmCheckIn">
+                <button type="button" class="btn-primary-app" @onclick="HandleConfirmCheckIn">
                     Konfirmasi Kehadiran
                 </button>
             }
         </div>
     </FooterContent>
-</ModalBase>
+</AppModal>
 
 @code {
     [Parameter] public TodayScheduleItem? Item { get; set; }
@@ -86,3 +86,4 @@
         }
     }
 }
+

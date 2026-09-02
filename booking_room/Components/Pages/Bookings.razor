@@ -218,12 +218,13 @@ else if (_activeTab == "Fasilitas")
     <booking_room.Components.Shared.FacilityRequestView />
 }
 
-<booking_room.Components.Shared.ModalOverlayBlur Visible="@_isRoomDetailVisible" OnClose="CloseDetail" Size="lg" ShowCloseButton="false">
+@if (_isRoomDetailVisible)
+{
     <booking_room.Components.Shared.RoomDetailsModal 
         Room="@_selectedRoomForDetail" 
         OnClose="CloseDetail" 
         OnBookNow="ProceedToBook" />
-</booking_room.Components.Shared.ModalOverlayBlur>
+}
 
 @if (_isConfirmBookingVisible)
 {
