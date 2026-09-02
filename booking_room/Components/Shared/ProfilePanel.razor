@@ -1,0 +1,67 @@
+@using booking_room.Services
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+@if (Visible)
+{
+    <div class="profile-dropdown-overlay" @onclick="ClosePanel"></div>
+    <div class="profile-dropdown-panel" @onclick:stopPropagation="true">
+        <div class="profile-header">
+            <div class="profile-avatar-large">
+                <img src="https://ui-avatars.com/api/?name=Admin+User&background=0f1f3d&color=fff" alt="User" />
+            </div>
+            <div class="profile-info">
+                <h4>Admin User</h4>
+                <p>admin@persada.co.id</p>
+            </div>
+        </div>
+        <div class="profile-menu">
+            <button class="menu-item" @onclick="NavigateToProfile">
+                <InlineSvg Src="/icons/icon_group.svg" Style="width: 18px; height: 18px; fill: currentColor;" />
+                Profil Saya
+            </button>
+            <button class="menu-item" @onclick="NavigateToSettings">
+                <InlineSvg Src="/icons/Icon_setting_1.svg" Style="width: 18px; height: 18px; fill: currentColor;" />
+                Pengaturan
+            </button>
+            <div class="menu-divider"></div>
+            <button class="menu-item text-danger" @onclick="HandleLogout">
+                <InlineSvg Src="/icons/icon_close.svg" Style="width: 18px; height: 18px; stroke: currentColor; fill: none;" />
+                Keluar
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private async Task ClosePanel()
+    {
+        if (OnClose.HasDelegate)
+        {
+            await OnClose.InvokeAsync();
+        }
+    }
+
+    private void NavigateToProfile()
+    {
+        _ = ClosePanel();
+        Navigation.NavigateTo("/profil");
+    }
+
+    private void NavigateToSettings()
+    {
+        _ = ClosePanel();
+        Navigation.NavigateTo("/pengaturan");
+    }
+
+    private async Task HandleLogout()
+    {
+        _ = ClosePanel();
+        await JS.InvokeVoidAsync("localStorage.removeItem", "isLoggedIn");
+        await JS.InvokeVoidAsync("localStorage.removeItem", "userRole");
+        Navigation.NavigateTo("/login", forceLoad: true);
+    }
+}

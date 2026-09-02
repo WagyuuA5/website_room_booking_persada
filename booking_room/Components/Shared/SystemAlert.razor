@@ -4,7 +4,7 @@
 {
     <div class="system-alert-banner alert-@Tone.ToString().ToLower()">
         <div class="alert-icon">
-            @RenderIcon()
+            <InlineSvg Src="@GetIconPath()" Style="width: 24px; height: 24px;" />
         </div>
         <div class="alert-content">
             <h4 class="alert-title">@Title</h4>
@@ -30,7 +30,7 @@ else if (Variant == SystemAlertVariant.Modal)
     <div class="system-alert-modal modal-content">
         <div class="modal-body alert-modal-body">
             <div class="alert-icon modal-icon alert-@Tone.ToString().ToLower()">
-                @RenderIcon()
+                <InlineSvg Src="@GetIconPath()" Style="width: 24px; height: 24px;" />
             </div>
             <h3 class="alert-title modal-title">@Title</h3>
             @if (!string.IsNullOrEmpty(Description))
@@ -52,9 +52,9 @@ else if (Variant == SystemAlertVariant.Modal)
 }
 else if (Variant == SystemAlertVariant.Toast)
 {
-    <div class="system-alert-toast alert-@Tone.ToString().ToLower()">
+    <div class="system-alert @ClassVariant @ClassTone" role="alert">
         <div class="alert-icon">
-            @RenderIcon()
+            <InlineSvg Src="@GetIconPath()" Style="width: 24px; height: 24px;" />
         </div>
         <div class="alert-content">
             <h4 class="alert-title">@Title</h4>
@@ -263,35 +263,15 @@ else if (Variant == SystemAlertVariant.Toast)
             await OnClose.InvokeAsync();
     }
 
-    private RenderFragment RenderIcon() => builder =>
+    private string GetIconPath()
     {
-        builder.OpenElement(0, "svg");
-        builder.AddAttribute(1, "width", "24");
-        builder.AddAttribute(2, "height", "24");
-        builder.AddAttribute(3, "viewBox", "0 0 24 24");
-        builder.AddAttribute(4, "fill", "none");
-        builder.AddAttribute(5, "stroke", "currentColor");
-        builder.AddAttribute(6, "stroke-width", "2");
-        builder.AddAttribute(7, "stroke-linecap", "round");
-        builder.AddAttribute(8, "stroke-linejoin", "round");
-
-        if (Tone == SystemAlertTone.Success)
+        return Tone switch
         {
-            builder.AddMarkupContent(9, "<path d=\"M22 11.08V12a10 10 0 1 1-5.93-9.14\"></path><polyline points=\"22 4 12 14.01 9 11.01\"></polyline>");
-        }
-        else if (Tone == SystemAlertTone.Warning)
-        {
-            builder.AddMarkupContent(10, "<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"12\" y1=\"8\" x2=\"12\" y2=\"12\"></line><line x1=\"12\" y1=\"16\" x2=\"12.01\" y2=\"16\"></line>");
-        }
-        else if (Tone == SystemAlertTone.Info)
-        {
-            builder.AddMarkupContent(11, "<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"12\" y1=\"16\" x2=\"12\" y2=\"12\"></line><line x1=\"12\" y1=\"8\" x2=\"12.01\" y2=\"8\"></line>");
-        }
-        else if (Tone == SystemAlertTone.Danger)
-        {
-            builder.AddMarkupContent(12, "<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"15\" y1=\"9\" x2=\"9\" y2=\"15\"></line><line x1=\"9\" y1=\"9\" x2=\"15\" y2=\"15\"></line>");
-        }
-
-        builder.CloseElement();
-    };
+            SystemAlertTone.Success => "/icons/icon_alert_success.svg",
+            SystemAlertTone.Warning => "/icons/icon_alert_warning.svg",
+            SystemAlertTone.Info => "/icons/icon_alert_info.svg",
+            SystemAlertTone.Danger => "/icons/icon_alert_danger.svg",
+            _ => "/icons/icon_alert_info.svg"
+        };
+    }
 }

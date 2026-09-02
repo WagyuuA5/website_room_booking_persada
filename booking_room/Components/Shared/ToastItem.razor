@@ -1,0 +1,48 @@
+@using booking_room.Services
+
+<div class="toast-item toast-@Toast.Type.ToString().ToLower()" @onclick="HandleClick">
+    <div class="toast-icon">
+        <InlineSvg Src="@GetIconPath()" Style="width: 24px; height: 24px;" />
+    </div>
+    <div class="toast-content">
+        <div class="toast-title">@Toast.Title</div>
+        @if (!string.IsNullOrEmpty(Toast.Message))
+        {
+            <div class="toast-message">@Toast.Message</div>
+        }
+    </div>
+    <button class="toast-close" @onclick="HandleClose" @onclick:stopPropagation>
+        <InlineSvg Src="/icons/icon_close.svg" Style="width: 16px; height: 16px;" />
+    </button>
+</div>
+
+@code {
+    [Parameter] public ToastMessage Toast { get; set; } = default!;
+    [Parameter] public EventCallback<string> OnClose { get; set; }
+
+    private async Task HandleClose()
+    {
+        if (OnClose.HasDelegate)
+        {
+            await OnClose.InvokeAsync(Toast.Id);
+        }
+    }
+
+    private void HandleClick()
+    {
+        // optional: dismiss on click
+        _ = HandleClose();
+    }
+
+    private string GetIconPath()
+    {
+        return Toast.Type switch
+        {
+            ToastType.Success => "/icons/icon_alert_success.svg",
+            ToastType.Warning => "/icons/icon_alert_warning.svg",
+            ToastType.Info => "/icons/icon_alert_info.svg",
+            ToastType.Error => "/icons/icon_alert_danger.svg",
+            _ => "/icons/icon_alert_info.svg"
+        };
+    }
+}
