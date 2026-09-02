@@ -10,7 +10,7 @@
 <PageTitle>Status Pemesanan — Persada Ruangan</PageTitle>
 
 <div class="content-fade-in status-page-wrapper">
-    <!-- Header Halaman CASE 5: Ruang atas proporsional & rapi -->
+    <!-- Header Halaman CASE 4: Ruang atas rapat & proporsional langsung di bawah navbar -->
     <div class="status-page-header">
         <div>
             <h1 class="status-hero-title">Status Pemesanan</h1>
@@ -75,17 +75,20 @@
                                 <span class="booking-card-id">#@booking.RequestId</span>
                             </div>
                             <div class="booking-card-time">@booking.Date • @booking.TimeSlot</div>
-                            <div class="booking-card-attendees">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                    <circle cx="9" cy="7" r="4"></circle>
-                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                                </svg>
-                                <span>@booking.Attendees Peserta</span>
-                            </div>
-                            <div class="booking-card-status">
-                                <StatusBadge Status="@booking.Status" />
+                            <!-- CASE 5: Card footer row rapi sejajar tanpa kotak kosong menggantung -->
+                            <div class="booking-card-footer-row">
+                                <div class="booking-card-attendees">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="9" cy="7" r="4"></circle>
+                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                    </svg>
+                                    <span>@booking.Attendees Peserta</span>
+                                </div>
+                                <div class="booking-card-status">
+                                    <StatusBadge Status="@booking.Status" />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -110,8 +113,8 @@
                     <div class="detail-panel-grid">
                         <div class="detail-info-block">
                             <label>PEMOHON</label>
-                            <div class="info-val-strong">Budi Santoso</div>
-                            <div class="info-val-sub">VP of Engineering</div>
+                            <div class="info-val-strong">@(string.IsNullOrEmpty(selectedBooking.RequestedBy) ? "Budi Santoso" : selectedBooking.RequestedBy)</div>
+                            <div class="info-val-sub">@(string.IsNullOrEmpty(selectedBooking.RequestedByTitle) ? "VP of Engineering" : selectedBooking.RequestedByTitle)</div>
                         </div>
                         <div class="detail-info-block">
                             <label>WAKTU & TANGGAL</label>
@@ -126,7 +129,7 @@
                         <div class="detail-info-block">
                             <label>LOKASI RUANGAN</label>
                             <div class="info-val-strong">Gedung Utama</div>
-                            <div class="info-val-sub">Lantai 3, Sayap Barat</div>
+                            <div class="info-val-sub">@(string.IsNullOrEmpty(selectedBooking.Floor) ? "Lantai 3, Sayap Barat" : selectedBooking.Floor)</div>
                         </div>
                     </div>
 
@@ -158,13 +161,13 @@
                         {
                             <button class="btn-action-modify" @onclick="OpenModifyModal">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M12 20h9"></path>
-                                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                                 </svg>
                                 <span>Modifikasi</span>
                             </button>
-                            <button class="btn-action-cancel" @onclick="OpenCancelModal">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <button class="btn-action-cancel-outline" @onclick="OpenCancelModal">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <circle cx="12" cy="12" r="10"></circle>
                                     <line x1="15" y1="9" x2="9" y2="15"></line>
                                     <line x1="9" y1="9" x2="15" y2="15"></line>
@@ -174,20 +177,14 @@
                         }
                         else if (selectedBooking.Status.Equals("approved", StringComparison.OrdinalIgnoreCase) || selectedBooking.Status.Equals("disetujui", StringComparison.OrdinalIgnoreCase))
                         {
-                            <button class="btn-action-modify" @onclick="OpenModifyModal">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M12 20h9"></path>
-                                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                            <button class="btn-action-view" @onclick='() => Navigation.NavigateTo($"/bookings")'>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
                                 </svg>
-                                <span>Modifikasi Jadwal</span>
-                            </button>
-                            <button class="btn-action-cancel" @onclick="OpenCancelModal">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <line x1="15" y1="9" x2="9" y2="15"></line>
-                                    <line x1="9" y1="9" x2="15" y2="15"></line>
-                                </svg>
-                                <span>Batalkan Reservasi</span>
+                                <span>Lihat Jadwal Ruangan</span>
                             </button>
                         }
                         else
@@ -280,30 +277,31 @@
 
 <style>
     .status-page-wrapper {
-        padding: 16px 24px 32px;
+        padding: 4px 24px 28px;
         max-width: 1400px;
         margin: 0 auto;
         display: flex;
         flex-direction: column;
-        gap: 18px;
+        gap: 16px;
     }
     
     .status-page-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding-top: 4px;
+        padding-top: 0;
     }
     
     .status-hero-title {
-        font-size: var(--fs-h1, 30px);
-        font-weight: var(--fw-h1, 700);
+        font-size: 1.75rem;
+        font-weight: 800;
         color: var(--persada-navy-900, #0F1F3D);
         margin: 0 0 4px 0;
+        letter-spacing: -0.02em;
     }
     
     .status-hero-subtitle {
-        font-size: 0.9375rem;
+        font-size: 0.875rem;
         color: var(--persada-text-secondary, #6B7280);
         margin: 0;
     }
@@ -408,7 +406,7 @@
         display: flex;
         flex-direction: column;
         gap: 12px;
-        max-height: calc(100vh - 200px);
+        max-height: calc(100vh - 180px);
         overflow-y: auto;
         padding-right: 6px;
     }
@@ -467,7 +465,7 @@
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        margin-bottom: 3px;
+        margin-bottom: 2px;
     }
     
     .booking-card-title {
@@ -489,6 +487,13 @@
         margin-bottom: 4px;
     }
     
+    .booking-card-footer-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 6px;
+    }
+
     .booking-card-attendees {
         display: flex;
         align-items: center;
@@ -498,7 +503,8 @@
     }
     
     .booking-card-status {
-        margin-top: 8px;
+        display: flex;
+        align-items: center;
     }
     
     /* CASE 1: Sticky detail panel */
@@ -511,16 +517,16 @@
         flex-direction: column;
         box-shadow: 0 4px 20px rgba(15, 31, 61, 0.06);
         position: sticky;
-        top: 20px;
-        max-height: calc(100vh - 200px);
+        top: 14px;
+        max-height: calc(100vh - 180px);
         overflow-y: auto;
     }
     
     .detail-panel-hero {
         position: relative;
+        width: 100%;
         height: 180px;
-        background: #F1F5F9;
-        flex-shrink: 0;
+        overflow: hidden;
     }
     
     .detail-hero-img {
@@ -532,48 +538,55 @@
     .detail-hero-status-badge {
         position: absolute;
         top: 14px;
-        left: 14px;
+        right: 14px;
     }
     
     .detail-panel-content {
-        padding: 20px 22px;
+        padding: 20px 24px 24px;
         display: flex;
         flex-direction: column;
-        gap: 14px;
+        gap: 16px;
     }
     
     .detail-panel-title {
-        margin: 0;
         font-size: 1.35rem;
-        font-weight: 700;
-        color: var(--persada-text-primary, #0F1F3D);
+        font-weight: 800;
+        color: var(--persada-navy-900, #0F1F3D);
+        margin: 0;
     }
     
     .detail-panel-id {
-        margin: -8px 0 2px 0;
         font-size: 0.8125rem;
         color: var(--persada-text-secondary, #6B7280);
+        margin: -10px 0 0 0;
+        font-weight: 600;
     }
     
     .detail-panel-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 12px;
+        gap: 14px;
+        padding-top: 6px;
+        border-top: 1px solid var(--divider-subtle, rgba(15, 23, 42, 0.06));
+    }
+    
+    .detail-info-block {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
     }
     
     .detail-info-block label {
-        display: block;
         font-size: 0.6875rem;
         font-weight: 700;
-        color: var(--persada-text-secondary, #9CA3AF);
+        color: #9CA3AF;
         letter-spacing: 0.05em;
-        margin-bottom: 3px;
     }
     
     .info-val-strong {
-        font-size: 0.875rem;
+        font-size: 0.9375rem;
         font-weight: 700;
-        color: var(--persada-text-primary, #111827);
+        color: var(--persada-navy-900, #0F1F3D);
     }
     
     .info-val-sub {
@@ -582,40 +595,43 @@
     }
     
     .info-val-purpose {
-        font-size: 0.8125rem;
-        color: var(--persada-text-primary, #374151);
+        font-size: 0.875rem;
         line-height: 1.5;
+        color: var(--persada-text-secondary, #4B5563);
         background: #F8FAFC;
         padding: 10px 12px;
         border-radius: 10px;
         border: 1px solid #E2E8F0;
     }
     body.dark-mode .info-val-purpose {
-        background: rgba(15, 23, 42, 0.4);
+        background: rgba(15, 23, 42, 0.5);
         border-color: rgba(255, 255, 255, 0.08);
+        color: #CBD5E1;
     }
     
     .detail-rejection-box {
         background: #FEF2F2;
-        border: 1px solid #FECACA;
-        border-radius: 10px;
-        padding: 10px 12px;
+        border: 1.5px solid #FECACA;
+        border-radius: 12px;
+        padding: 12px 14px;
     }
     body.dark-mode .detail-rejection-box {
-        background: rgba(127, 29, 29, 0.25);
-        border-color: rgba(239, 68, 68, 0.3);
+        background: rgba(127, 29, 29, 0.2);
+        border-color: rgba(239, 68, 68, 0.4);
     }
+    
     .rejection-title {
         display: flex;
         align-items: center;
         gap: 6px;
-        font-size: 0.75rem;
-        font-weight: 700;
         color: #DC2626;
+        font-size: 0.8125rem;
+        font-weight: 700;
         margin-bottom: 4px;
     }
+    
     .rejection-text {
-        font-size: 0.75rem;
+        font-size: 0.8125rem;
         color: #991B1B;
         margin: 0;
         line-height: 1.4;
@@ -626,104 +642,97 @@
     
     /* CASE 6: Redesigned Action Buttons */
     .detail-panel-actions {
-        margin-top: 10px;
         display: flex;
-        flex-direction: column;
         gap: 10px;
+        margin-top: 8px;
+        padding-top: 14px;
+        border-top: 1px solid var(--divider-subtle, rgba(15, 23, 42, 0.06));
     }
     
     .btn-action-modify {
-        width: 100%;
+        flex: 1;
         height: 42px;
-        padding: 0 18px;
         border-radius: 999px;
-        background: #F59E0B;
+        background: var(--color-brand-gold-500, #F59E0B);
         color: #0F1F3D;
-        border: none;
-        font-size: 0.875rem;
         font-weight: 700;
-        display: flex;
+        font-size: 0.875rem;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
+        border: none;
         cursor: pointer;
-        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25);
         transition: all 0.2s ease;
     }
     .btn-action-modify:hover {
         background: #D97706;
         transform: translateY(-1px);
-        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
-    }
-    .btn-action-modify:active {
-        transform: translateY(0);
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
     }
     
-    .btn-action-cancel {
-        width: 100%;
+    .btn-action-cancel-outline {
+        flex: 1;
         height: 42px;
-        padding: 0 18px;
         border-radius: 999px;
         background: transparent;
-        border: 1.5px solid #EF4444;
         color: #DC2626;
-        font-size: 0.875rem;
+        border: 1.5px solid #EF4444;
         font-weight: 700;
-        display: flex;
+        font-size: 0.875rem;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
         cursor: pointer;
         transition: all 0.2s ease;
     }
-    .btn-action-cancel:hover {
+    .btn-action-cancel-outline:hover {
         background: #FEE2E2;
-        border-color: #DC2626;
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
     }
-    .btn-action-cancel:active {
-        transform: translateY(0);
+    body.dark-mode .btn-action-cancel-outline:hover {
+        background: rgba(239, 68, 68, 0.15);
     }
     
-    .btn-action-rebook {
+    .btn-action-view, .btn-action-rebook {
         width: 100%;
         height: 42px;
-        padding: 0 18px;
         border-radius: 999px;
         background: #1F5D9A;
         color: #FFFFFF;
-        border: none;
-        font-size: 0.875rem;
         font-weight: 700;
-        display: flex;
+        font-size: 0.875rem;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
+        border: none;
         cursor: pointer;
         transition: all 0.2s ease;
     }
-    .btn-action-rebook:hover {
-        background: #184B7E;
+    .btn-action-view:hover, .btn-action-rebook:hover {
+        background: #164879;
         transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(31, 93, 154, 0.25);
     }
     
     .status-empty-state {
         padding: 48px 24px;
         text-align: center;
         background: var(--persada-white, #FFFFFF);
-        border: 1px dashed var(--color-brand-gray-border, #E5E7EB);
+        border: 1.5px dashed #CBD5E1;
         border-radius: 16px;
     }
     .empty-title {
         font-size: 1rem;
         font-weight: 700;
-        color: var(--persada-text-primary, #0F1F3D);
+        color: var(--persada-navy-900, #0F1F3D);
         margin: 12px 0 4px 0;
     }
     .empty-desc {
         font-size: 0.8125rem;
-        color: var(--persada-text-secondary, #6B7280);
+        color: #64748B;
         margin: 0;
     }
     
@@ -736,70 +745,49 @@
     }
     .form-control-modal {
         width: 100%;
-        box-sizing: border-box;
-        padding: 8px 12px;
-        border: 1px solid #D1D5DB;
+        height: 38px;
+        padding: 0 10px;
         border-radius: 8px;
+        border: 1px solid #D1D5DB;
         font-size: 0.875rem;
-        font-family: inherit;
-        background: #FFFFFF;
-        color: #111827;
+        box-sizing: border-box;
     }
     
-    @@media (max-width: 900px) {
+    @@media (max-width: 1024px) {
         .status-main-layout {
             grid-template-columns: 1fr;
         }
         .status-detail-panel {
-            position: fixed;
+            position: relative;
             top: 0;
-            left: 0;
-            width: 100%;
-            height: 100vh;
-            max-height: 100vh;
-            border-radius: 0;
-            z-index: 1000;
-            overflow-y: auto;
+            max-height: none;
         }
     }
 </style>
 
 @code {
-    private List<BookingItem> allBookings = new();
-    private BookingItem? selectedBooking;
-    private string activeFilter = "Semua Status";
-    [SupplyParameterFromQuery(Name = "filter")] public string? QueryFilter { get; set; }
     private string _searchQuery = "";
-    
-    private readonly object _disposeLock = new();
-    private bool _disposed = false;
-    private System.Timers.Timer? _countdownTimer;
-    private CancellationTokenSource _cts = new();
+    private string activeFilter = "Semua Status";
+    private readonly string[] _statusFilterOptions = new[] { "Semua Status", "Menunggu Persetujuan", "Disetujui", "Ditolak", "Dibatalkan", "Selesai" };
 
-    private bool isModifyModalOpen = false;
     private bool isCancelModalOpen = false;
+    private bool isModifyModalOpen = false;
 
-    private readonly string[] _statusFilterOptions = { "Semua Status", "Menunggu Persetujuan", "Disetujui", "Ditolak", "Selesai" };
+    private List<BookingItem> _allBookings = new();
+    private BookingItem? selectedBooking;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        if (!string.IsNullOrEmpty(QueryFilter) && _statusFilterOptions.Contains(QueryFilter))
-        {
-            activeFilter = QueryFilter;
-        }
-        try 
-        {
-            await Task.Delay(100, _cts.Token);
-            allBookings = BookingDataStore.AllBookings.ToList();
-            selectedBooking = FilteredBookings.FirstOrDefault();
+        LoadData();
+    }
 
-            _countdownTimer = new System.Timers.Timer(1000);
-            _countdownTimer.Elapsed += OnTimerElapsed;
-            _countdownTimer.Start();
-        }
-        catch (Exception ex) when (ex is ObjectDisposedException || ex is TaskCanceledException || ex is OperationCanceledException)
+    private void LoadData()
+    {
+        _allBookings = BookingDataStore.AllBookings.ToList();
+
+        if (selectedBooking == null && _allBookings.Count > 0)
         {
-            // Ignore
+            selectedBooking = _allBookings[0];
         }
     }
 
@@ -807,55 +795,64 @@
     {
         get
         {
-            var result = allBookings.AsEnumerable();
-            if (activeFilter != "Semua Status")
-            {
-                var filterKey = activeFilter switch
-                {
-                    "Menunggu Persetujuan" => "pending",
-                    "Disetujui" => "approved",
-                    "Ditolak" => "rejected",
-                    "Selesai" => "completed",
-                    _ => ""
-                };
-                if (!string.IsNullOrEmpty(filterKey))
-                    result = result.Where(b => b.Status.Equals(filterKey, StringComparison.OrdinalIgnoreCase));
-            }
+            var query = _allBookings.AsEnumerable();
+
             if (!string.IsNullOrWhiteSpace(_searchQuery))
             {
-                var q = _searchQuery.ToLower();
-                result = result.Where(b => b.RoomName.ToLower().Contains(q) || b.RequestId.ToLower().Contains(q));
+                query = query.Where(b => b.RoomName.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase)
+                                      || b.RequestId.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase));
             }
-            return result;
+
+            if (!string.IsNullOrEmpty(activeFilter) && activeFilter != "Semua Status")
+            {
+                query = activeFilter switch
+                {
+                    "Menunggu Persetujuan" => query.Where(b => b.Status.Equals("pending", StringComparison.OrdinalIgnoreCase)),
+                    "Disetujui" => query.Where(b => b.Status.Equals("approved", StringComparison.OrdinalIgnoreCase)),
+                    "Ditolak" => query.Where(b => b.Status.Equals("rejected", StringComparison.OrdinalIgnoreCase)),
+                    "Dibatalkan" => query.Where(b => b.Status.Equals("canceled", StringComparison.OrdinalIgnoreCase)),
+                    "Selesai" => query.Where(b => b.Status.Equals("completed", StringComparison.OrdinalIgnoreCase)),
+                    _ => query
+                };
+            }
+
+            return query;
         }
+    }
+
+    private void SelectBooking(BookingItem item)
+    {
+        selectedBooking = item;
     }
 
     private void OnFilterChanged()
     {
-        selectedBooking = FilteredBookings.FirstOrDefault();
+        var first = FilteredBookings.FirstOrDefault();
+        if (first != null) selectedBooking = first;
     }
 
-    private void SelectBooking(BookingItem booking)
+    private void RefreshData()
     {
-        selectedBooking = booking;
+        LoadData();
+        ToastService.Success("Data Diperbarui", "Status pemesanan berhasil disinkronkan.");
     }
 
     private void OpenCancelModal() => isCancelModalOpen = true;
     private void CloseCancelModal() => isCancelModalOpen = false;
     private void ConfirmCancel()
     {
+        isCancelModalOpen = false;
         if (selectedBooking != null)
         {
-            var index = allBookings.FindIndex(b => b.Id == selectedBooking.Id);
-            if (index >= 0)
+            var updated = selectedBooking with { Status = "rejected" };
+            var idx = _allBookings.FindIndex(b => b.Id == selectedBooking.Id);
+            if (idx >= 0)
             {
-                var updated = selectedBooking with { Status = "rejected" };
-                allBookings[index] = updated;
+                _allBookings[idx] = updated;
                 selectedBooking = updated;
             }
         }
-        isCancelModalOpen = false;
-        ToastService.Success("Berhasil Dibatalkan", "Permintaan pemesanan ruangan berhasil dibatalkan.");
+        ToastService.Success("Pemesanan Dibatalkan", "Permintaan reservasi berhasil dibatalkan.");
     }
 
     private void OpenModifyModal() => isModifyModalOpen = true;
@@ -863,45 +860,8 @@
     private void ConfirmModify()
     {
         isModifyModalOpen = false;
-        ToastService.Success("Pemesanan Diperbarui", "Jadwal dan catatan pemesanan berhasil disimpan.");
+        ToastService.Success("Perubahan Disimpan", "Detail reservasi berhasil diperbarui.");
     }
 
-    private void RefreshData()
-    {
-        allBookings = BookingDataStore.AllBookings.ToList();
-        selectedBooking = FilteredBookings.FirstOrDefault();
-        ToastService.Info("Data Diperbarui", "Daftar status pemesanan berhasil dimuat ulang.");
-    }
-
-    private void OnTimerElapsed(object? sender, System.Timers.ElapsedEventArgs e)
-    {
-        lock (_disposeLock)
-        {
-            if (_disposed) return;
-        }
-        try 
-        {
-            InvokeAsync(StateHasChanged);
-        }
-        catch (Exception ex) when (ex is ObjectDisposedException || ex is TaskCanceledException || ex is OperationCanceledException)
-        {
-            // Ignore if already disposed
-        }
-    }
-
-    public void Dispose()
-    {
-        lock (_disposeLock)
-        {
-            _disposed = true;
-        }
-        if (_countdownTimer != null)
-        {
-            _countdownTimer.Elapsed -= OnTimerElapsed;
-            _countdownTimer.Stop();
-            _countdownTimer.Dispose();
-        }
-        _cts.Cancel();
-        _cts.Dispose();
-    }
+    public void Dispose() { }
 }

@@ -4143,11 +4143,94 @@ body.dark-mode .info-box-val {
 }
 
 body.dark-mode .popover-card {
-    background: rgba(16, 27, 46, 0.90) !important;
+    background: rgba(16, 27, 46, 0.95) !important;
     border-color: rgba(255, 255, 255, 0.15) !important;
 }
 body.dark-mode .popover-header,
 body.dark-mode .popover-footer {
-    background: rgba(16, 27, 46, 0.8) !important;
+    background: rgba(16, 27, 46, 0.9) !important;
     border-color: rgba(255, 255, 255, 0.1) !important;
 }
+
+/* CASE 7: Navbar Header Icons & Dark Mode Contrast */
+.dashboard-header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dark-mode-toggle,
+.notif-bell-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: var(--persada-navy-900, #0F1F3D);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    padding: 0;
+}
+
+.dark-mode-toggle:hover,
+.notif-bell-btn:hover {
+    background: rgba(15, 31, 61, 0.06);
+    color: var(--persada-navy-900, #0F1F3D);
+}
+
+.dark-mode-toggle svg,
+.notif-bell-btn svg {
+    stroke: currentColor;
+    transition: color 0.2s ease;
+}
+
+body.dark-mode .dark-mode-toggle,
+body.dark-mode .notif-bell-btn {
+    color: #F8FAFC !important;
+}
+
+body.dark-mode .dark-mode-toggle:hover,
+body.dark-mode .notif-bell-btn:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
+    color: #FFFFFF !important;
+}
+
+.notification-dot {
+    position: absolute;
+    top: 7px;
+    right: 7px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #EF4444;
+    border: 2px solid #FFFFFF;
+}
+
+body.dark-mode .notification-dot {
+    border-color: #0B1120;
+}
+
+/* Notification Panel Dark Mode */
+body.dark-mode .notif-title { color: #FFFFFF !important; }
+body.dark-mode .notif-tab { color: #94A3B8; }
+body.dark-mode .notif-tab.active { background: #1E293B !important; color: #FFFFFF !important; }
+body.dark-mode .notif-item { border-bottom-color: rgba(255, 255, 255, 0.08) !important; }
+body.dark-mode .notif-item:hover { background-color: rgba(255, 255, 255, 0.05) !important; }
+body.dark-mode .notif-item.unread { background-color: rgba(30, 58, 138, 0.25) !important; }
+body.dark-mode .notif-item-title { color: #FFFFFF !important; }
+body.dark-mode .notif-item-desc { color: #CBD5E1 !important; }
+body.dark-mode .notif-item-source { color: #94A3B8 !important; }
+body.dark-mode .notif-item-time { color: #64748B !important; }
+body.dark-mode .btn-decline-inline {
+    background-color: #1E293B !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #CBD5E1 !important;
+}
+body.dark-mode .btn-decline-inline:hover {
+    background-color: #334155 !important;
+}
+

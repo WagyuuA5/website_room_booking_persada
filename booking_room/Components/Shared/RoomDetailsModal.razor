@@ -6,14 +6,14 @@
 <div class="room-details-v6">
     @if (_isLoading)
     {
-        <div class="skeleton-shimmer" style="width: 100%; height: 100%; border-radius: var(--modal-radius-outer, 28px);"></div>
+        <div class="skeleton-shimmer" style="width: 100%; height: 380px; border-radius: var(--modal-radius-outer, 24px);"></div>
     }
     else if (Room != null)
     {
         <div class="rd-split-layout">
-            <!-- Left: Foto 16:7 + Peta Lokasi Horizontal Landscape di Bawahnya (CASE 7) -->
+            <!-- Left: Foto 16:7 + Peta Lokasi Landscape Memanjang yang Diperbesar (CASE 1) -->
             <div class="rd-photo-column">
-                <!-- 1. Foto Ruangan Rasio 16:7 -->
+                <!-- 1. Foto Ruangan Rasio 16:7 Diperbesar -->
                 <div class="rd-photo-card">
                     <img src="@(string.IsNullOrEmpty(Room.PhotoUrl) ? "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80" : Room.PhotoUrl)" alt="@Room.Name" class="rd-photo-img-16-7" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'" />
                     <div class="rd-photo-placeholder" style="display:none; position:absolute; inset:0; align-items:center; justify-content:center; background:#f3f4f6;">
@@ -27,7 +27,7 @@
                     </div>
                 </div>
 
-                <!-- 2. Peta Lokasi Horizontal Landscape Tepat di Bawah Foto (CASE 7) -->
+                <!-- 2. Peta Lokasi Horizontal Landscape Diperbesar Proporsional -->
                 <div class="rd-map-card">
                     <div class="rd-map-header">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -35,7 +35,7 @@
                             <line x1="8" y1="2" x2="8" y2="18"></line>
                             <line x1="16" y1="6" x2="16" y2="22"></line>
                         </svg>
-                        <span>PETA LOKASI • @(string.IsNullOrEmpty(Room.Floor) ? "Lantai 3" : Room.Floor)</span>
+                        <span>DENAH & PETA LOKASI • @(string.IsNullOrEmpty(Room.Floor) ? "Lantai 3" : Room.Floor)</span>
                     </div>
                     <div class="rd-map-svg-wrap">
                         <svg viewBox="0 0 400 175" class="floor-map-svg" preserveAspectRatio="none">
@@ -69,9 +69,18 @@
                         </svg>
                     </div>
                 </div>
+
+                <!-- Info Banner Kiri Pengisi Ruang Natural CASE 1 -->
+                <div class="rd-location-quick-chip">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                    <span>Zona A • Dekat Tangga Darurat & Lift Timur</span>
+                </div>
             </div>
 
-            <!-- Right: Info (Tetap seperti kondisi sekarang sesuai CASE 7) -->
+            <!-- Right: Info (Tetap seperti kondisi sekarang sesuai CASE 7 revisi V23) -->
             <div class="rd-info-column">
                 <div class="rd-info-content">
                     <h2 class="rd-room-name">@Room.Name</h2>
@@ -134,7 +143,7 @@
                     <div class="rd-actions-row">
                         <button class="btn-primary-app" @onclick="HandleBookNow">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <rect x="3" y="4" width="18" height="18" rx="2"></rect>
                                 <line x1="16" y1="2" x2="16" y2="6"></line>
                                 <line x1="8" y1="2" x2="8" y2="6"></line>
                                 <line x1="3" y1="10" x2="21" y2="10"></line>
@@ -154,12 +163,12 @@
 </AppModal>
 
 <style>
+    /* CASE 1: Kontainer menyesuaikan tinggi konten aktual tanpa whitespace kosong berlebih */
     .room-details-v6 {
         position: relative;
         width: 100%;
         max-width: 100%;
-        min-height: 420px;
-        max-height: 90vh;
+        height: auto;
         overflow-y: auto;
         font-family: 'Inter', 'Poppins', sans-serif;
         display: flex;
@@ -168,18 +177,20 @@
 
     .rd-split-layout {
         display: grid;
-        grid-template-columns: 1fr 1fr;
-        min-height: 420px;
+        grid-template-columns: 1.05fr 1fr;
+        height: auto;
+        align-items: stretch;
     }
 
-    /* CASE 7: Foto 16:7 dan Peta Landscape Vertikal */
+    /* CASE 1: Foto 16:7 dan Peta Landscape diperbesar mengisi kolom */
     .rd-photo-column {
         display: flex;
         flex-direction: column;
-        gap: 14px;
-        padding: 24px;
+        gap: 12px;
+        padding: 20px;
         background: #F8FAFC;
         border-right: 1px solid var(--color-brand-gray-border, #E5E7EB);
+        justify-content: space-between;
     }
     body.dark-mode .rd-photo-column {
         background: rgba(15, 23, 42, 0.4);
@@ -189,12 +200,13 @@
     .rd-photo-card {
         position: relative;
         width: 100%;
-        aspect-ratio: 16 / 7;
+        height: 155px;
         border-radius: 14px;
         overflow: hidden;
         border: 1px solid rgba(0, 0, 0, 0.08);
         box-shadow: 0 4px 12px rgba(15, 31, 61, 0.06);
         background: #E2E8F0;
+        flex-shrink: 0;
     }
 
     .rd-photo-img-16-7 {
@@ -222,13 +234,13 @@
     }
 
     .rd-badge-available {
-        background: rgba(16, 185, 129, 0.9);
+        background: rgba(16, 185, 129, 0.95);
         color: #FFFFFF;
         box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
     }
 
     .rd-badge-booked {
-        background: rgba(229, 72, 77, 0.9);
+        background: rgba(229, 72, 77, 0.95);
         color: #FFFFFF;
         box-shadow: 0 2px 8px rgba(229, 72, 77, 0.35);
     }
@@ -240,11 +252,11 @@
         background-color: #FFFFFF;
     }
 
-    /* Peta Lokasi Horizontal Landscape CASE 7 */
+    /* Peta Lokasi Horizontal Landscape Diperbesar CASE 1 */
     .rd-map-card {
         position: relative;
         width: 100%;
-        aspect-ratio: 16 / 7;
+        height: 155px;
         border-radius: 14px;
         overflow: hidden;
         border: 1.5px solid var(--color-brand-gray-border, #E2E8F0);
@@ -252,6 +264,7 @@
         box-shadow: 0 4px 12px rgba(15, 31, 61, 0.04);
         display: flex;
         flex-direction: column;
+        flex-shrink: 0;
     }
     body.dark-mode .rd-map-card {
         background: #0B1120;
@@ -289,23 +302,39 @@
         display: block;
     }
 
+    .rd-location-quick-chip {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 8px;
+        background: #EEF2FF;
+        color: #3730A3;
+        font-size: 0.6875rem;
+        font-weight: 600;
+    }
+    body.dark-mode .rd-location-quick-chip {
+        background: rgba(49, 46, 129, 0.3);
+        color: #C7D2FE;
+    }
+
     /* Right column info styling (Preserved completely) */
     .rd-info-column {
         display: flex;
         flex-direction: column;
-        padding: 24px;
-        gap: 16px;
+        padding: 20px 24px;
+        gap: 14px;
     }
 
     .rd-info-content {
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: 14px;
         flex: 1;
     }
 
     .rd-room-name {
-        font-size: 1.45rem;
+        font-size: 1.4rem;
         font-weight: 800;
         color: var(--persada-navy-900, #0F1F3D);
         margin: 0;
@@ -328,15 +357,15 @@
 
     .rd-description {
         color: var(--persada-text-secondary, #6B7280);
-        font-size: 0.875rem;
-        line-height: 1.55;
+        font-size: 0.84375rem;
+        line-height: 1.5;
         margin: 0;
     }
 
     .rd-amenities-section {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 8px;
     }
 
     .rd-section-label {
@@ -351,7 +380,7 @@
     .rd-amenities-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 10px;
+        gap: 8px;
     }
 
     .rd-amenity-item {
@@ -386,14 +415,17 @@
 
     .rd-actions-row {
         display: flex;
-        gap: 12px;
+        gap: 10px;
         margin-top: auto;
-        padding-top: 8px;
+        padding-top: 6px;
     }
 
     @@media (max-width: 768px) {
         .rd-split-layout {
             grid-template-columns: 1fr;
+        }
+        .rd-photo-card, .rd-map-card {
+            height: 140px;
         }
     }
 </style>
