@@ -224,10 +224,11 @@ else if (_activeTab == "Fasilitas")
         OnBookNow="ProceedToBook" />
 </booking_room.Components.Shared.ModalOverlayBlur>
 
-<booking_room.Components.Shared.ModalOverlayBlur Visible="@_isConfirmBookingVisible" OnClose="CloseConfirm" Size="lg" ShowCloseButton="false">
+<booking_room.Components.Shared.ModalOverlayBlur Visible="@_isConfirmBookingVisible" OnClose="CloseConfirm" Size="md" ShowCloseButton="false">
     <booking_room.Components.Shared.ConfirmBookingModal 
-        InitialRoom="@_selectedRoomForBooking" 
-        OnClose="CloseConfirm" />
+        Room="@_selectedRoomForBooking" 
+        OnBack="CloseConfirm"
+        OnConfirm="CloseConfirm" />
 </booking_room.Components.Shared.ModalOverlayBlur>
 
 @code {

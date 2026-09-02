@@ -91,6 +91,10 @@
                 </div>
             </div>
         </div>
+
+        <button type="button" class="btn-profile-close" @onclick="CloseModal">
+            Tutup
+        </button>
     </div>
 </div>
 
@@ -240,6 +244,25 @@
 
     .profile-field-item.readonly {
         opacity: 0.8;
+    }
+
+    .btn-profile-close {
+        width: 100%;
+        margin-top: 20px;
+        padding: 10px 20px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #FFFFFF;
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-profile-close:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.3);
     }
 
     .field-icon-circle {

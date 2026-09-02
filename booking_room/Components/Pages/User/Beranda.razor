@@ -45,11 +45,11 @@ else
     <!-- Card Segera Tersedia -->
     @if (nextRoom is not null)
     {
-        <StatHighlightCard Title="Ruangan Segera Tersedia"
+        <StatHighlightCard Title="Tersedia Berikutnya"
                            Value="@nextRoom.RoomName"
-                           Subtitle="@($"Kapasitas: {nextRoom.Capacity} Orang")"
-                           BadgeText="@($"Tersedia Dalam {nextRoom.AvailableInMinutes} Menit")"
-                           ButtonText="Pemesanan Instan"
+                           Subtitle="@($"Kapasitas: {nextRoom.Capacity}")"
+                           BadgeText="@($"Tersedia dalam {nextRoom.AvailableInMinutes} menit")"
+                           ButtonText="Pesan Instan"
                            Variant="success"
                            OnClick='() => ShowPopup("QuickBook")'>
             <Icon>
@@ -61,16 +61,16 @@ else
     }
     else
     {
-        <StatHighlightCard Title="Status Ruangan"
-                           Value="Semua Tersedia"
-                           Subtitle="Tidak ada ruangan yang sedang terpakai saat ini"
-                           ButtonText="Lihat Semua Ruangan"
+        <StatHighlightCard Title="Butuh ruangan cepat?"
+                           Value="Ruangan Tersedia"
+                           Subtitle="Temukan ruangan tersedia di dekat Anda secara instan."
+                           ButtonText="Cari Ruangan"
                            Variant="info"
                            OnClick="ViewAllRooms" />
     }
 
-    <!-- Card Persetujuan Tertunda -->
-    <StatHighlightCard Title="Persetujuan Tertunda"
+    <!-- Card Menunggu Persetujuan -->
+    <StatHighlightCard Title="Menunggu Persetujuan"
                        Value="@DashboardData.PendingApprovals.ToString()"
                        Subtitle="Permintaan pemesanan menunggu tindakan"
                        Variant="warning"
@@ -134,8 +134,8 @@ else
 <div class="analytics-inline-panel" style="margin-top: 24px;">
     <div class="analytics-inline-header">
         <div>
-            <h2 class="analytics-inline-title">Analitik Utilisasi Ruangan</h2>
-            <p class="analytics-inline-subtitle">Tingkat penggunaan ruangan berdasarkan jam reservasi</p>
+            <h2 class="analytics-inline-title">Analitik Penggunaan Ruangan</h2>
+            <p class="analytics-inline-subtitle">5 Ruangan Paling Sering Dipesan</p>
         </div>
         <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
             <div class="analytics-toggle">
