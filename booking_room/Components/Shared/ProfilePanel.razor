@@ -36,6 +36,7 @@
 @code {
     [Parameter] public bool Visible { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnShowProfile { get; set; }
 
     private async Task ClosePanel()
     {
@@ -45,10 +46,13 @@
         }
     }
 
-    private void NavigateToProfile()
+    private async Task NavigateToProfile()
     {
-        _ = ClosePanel();
-        Navigation.NavigateTo("/profil");
+        await ClosePanel();
+        if (OnShowProfile.HasDelegate)
+        {
+            await OnShowProfile.InvokeAsync();
+        }
     }
 
     private void NavigateToSettings()

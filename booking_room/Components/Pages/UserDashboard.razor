@@ -299,8 +299,9 @@ else
         <QuickBookPopup OnClose="ClosePopup" RoomName="@(nextRoom?.RoomName ?? "Delta Boardroom")" AvailableInMinutes="nextRoom?.AvailableInMinutes ?? 45" Capacity="nextRoom?.Capacity ?? 12" />
     </BodyContent>
     <FooterContent>
-        <div class="modal-footer-custom">
-            <button class="popup-btn popup-btn-secondary" @onclick="ClosePopup">Tutup</button>
+        <div class="modal-footer-custom" style="display: flex; gap: 12px; justify-content: flex-end;">
+            <button class="btn-modal-outline" style="flex: 1; border-radius: 999px; font-weight: 600; padding: 12px 20px; font-size: 0.875rem; border: 1.5px solid #BFDBFE; background: transparent; color: var(--persada-accent-blue, #1F5D9A);" @onclick='() => { ClosePopup(); Navigation.NavigateTo("/bookings"); }'>Cari Ruangan Lain</button>
+            <button class="popup-btn popup-btn-secondary" style="flex: 1;" @onclick="ClosePopup">Tutup</button>
         </div>
     </FooterContent>
 </AppModal>

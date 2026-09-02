@@ -1,10 +1,6 @@
-@page "/profil"
-@using booking_room.Components.Models
-@inject NavigationManager Navigation
-
-<PageTitle>Profil Saya — Persada Ruangan</PageTitle>
-
-<div class="profile-page-modern">
+<booking_room.Components.Shared.Modal Visible="@Visible" VisibleChanged="HandleVisibleChanged" LayoutMode="solid-card" OnClose="CloseModal" ShowCloseButton="false" ShowHeader="false" ShowFooter="false">
+    <BodyContent>
+        <div class="profile-page-modern">
     <div class="profile-card-center">
         <div class="profile-pill-label">Profil</div>
         <p class="profile-sub-label">Data identitas Admin @UserProfile.Name</p>
@@ -111,24 +107,21 @@
         Perubahan berhasil disimpan
     </div>
 }
+    </BodyContent>
+</booking_room.Components.Shared.Modal>
 
 <style>
     .profile-page-modern {
-        min-height: 100vh;
-        background-color: #F8FAFC;
         display: flex;
         justify-content: center;
         align-items: center;
-        padding: 40px 20px;
         font-family: 'Inter', sans-serif;
-        background-image: radial-gradient(circle at top right, rgba(22, 48, 92, 0.05) 0%, transparent 40%),
-                          radial-gradient(circle at bottom left, rgba(234, 182, 60, 0.05) 0%, transparent 40%);
     }
 
     .profile-card-center {
         width: 100%;
         max-width: 420px;
-        background-color: rgba(22, 48, 92, 0.92);
+        background-color: var(--island-bg, rgba(22, 48, 92, 0.96));
         backdrop-filter: blur(12px);
         border-radius: 24px;
         padding: 32px 24px;
@@ -325,10 +318,36 @@
 </style>
 
 @code {
-    private UserProfileData UserProfile { get; set; } = BookingDataStore.CurrentUser;
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private bool _isEditing = false;
     private bool isToastVisible = false;
     private bool _uploadError = false;
     private string _uploadErrorMessage = "";
+
+    private async Task CloseModal()
+    {
+        if (OnClose.HasDelegate)
+        {
+            await OnClose.InvokeAsync();
+        }
+        else
+        {
+            await VisibleChanged.InvokeAsync(false);
+        }
+    }
+
+    private async Task HandleVisibleChanged(bool value)
+    {
+        if (VisibleChanged.HasDelegate)
+        {
+            await VisibleChanged.InvokeAsync(value);
+        }
+    }
+
+    private UserProfileData UserProfile { get; set; } = BookingDataStore.CurrentUser;
 
     private string GetInitials(string name)
     {

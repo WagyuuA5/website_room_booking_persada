@@ -66,10 +66,12 @@
                     {
                         <img src="https://ui-avatars.com/api/?name=Admin+User&background=0f1f3d&color=fff" alt="Profil Pengguna" class="profile-avatar" />
                     }
-                    <booking_room.Components.Shared.ProfilePanel Visible="@_showProfilePanel" OnClose="CloseProfilePanel" />
+                    <booking_room.Components.Shared.ProfilePanel Visible="@_showProfilePanel" OnClose="CloseProfilePanel" OnShowProfile="ShowUserProfileModal" />
                 </div>
             </div>
         </header>
+
+        <booking_room.Components.Shared.UserProfilePopup @bind-Visible="_showUserProfileModal" OnClose="() => _showUserProfileModal = false" />
 
         <main class="page-content">
             <ErrorBoundary>
@@ -112,6 +114,8 @@
 
     private void CloseSidebar() { }
 
+    private bool _showUserProfileModal = false;
+
     private void ToggleNotificationPanel()
     {
         _showNotificationPanel = !_showNotificationPanel;
@@ -132,6 +136,12 @@
     private void CloseProfilePanel()
     {
         _showProfilePanel = false;
+    }
+    
+    private void ShowUserProfileModal()
+    {
+        _showProfilePanel = false;
+        _showUserProfileModal = true;
     }
 
     protected override void OnInitialized()
