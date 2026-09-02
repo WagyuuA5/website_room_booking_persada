@@ -169,6 +169,20 @@
         color: #FFFFFF;
     }
 
+    /* Layout mode: solid-card */
+    .modal-mode-solid-card .modal-unified-dialog {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        width: auto !important;
+        max-width: none !important;
+    }
+    
+    .modal-mode-solid-card .modal-unified-body {
+        padding: 0 !important;
+    }
+
     /* Layout mode: alert */
     .modal-mode-alert .modal-unified-dialog {
         width: min(92vw, 420px);
@@ -285,7 +299,7 @@
 </style>
 
 @code {
-    [Parameter] public bool Visible { get; set; }
+    [Parameter] public bool Visible { get; set; } = true;
     [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
     [Parameter] public string Title { get; set; } = string.Empty;
     [Parameter] public string Subtitle { get; set; } = string.Empty;
@@ -319,6 +333,7 @@
         "split-detail" => "modal-mode-split-detail",
         "alert" => "modal-mode-alert",
         "invitation" => "modal-mode-invitation",
+        "solid-card" => "modal-mode-solid-card",
         _ => "modal-mode-form"
     };
 
@@ -328,6 +343,7 @@
         "split-detail" => "modal-mode-split-detail",
         "alert" => "modal-mode-alert",
         "invitation" => "modal-mode-invitation",
+        "solid-card" => "modal-mode-solid-card",
         _ => "modal-mode-form"
     };
 

@@ -15,11 +15,16 @@
 @code {
     protected override void OnInitialized()
     {
-        ModalService.OnChange += StateHasChanged;
+        ModalService.OnChange += OnModalServiceChange;
+    }
+
+    private void OnModalServiceChange()
+    {
+        InvokeAsync(StateHasChanged);
     }
 
     public void Dispose()
     {
-        ModalService.OnChange -= StateHasChanged;
+        ModalService.OnChange -= OnModalServiceChange;
     }
 }
