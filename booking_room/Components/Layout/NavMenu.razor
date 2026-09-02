@@ -49,6 +49,11 @@
 </div>
 
 @code {
+    [Parameter] public EventCallback OnToggleSidebar { get; set; }
+    [Parameter] public EventCallback OnSidebarClose { get; set; }
+    [Parameter] public bool IsCollapsed { get; set; }
+    [Parameter] public EventCallback OnToggleCollapse { get; set; }
+
     private string _homeUrl = "/beranda";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
