@@ -29,13 +29,13 @@
     </div>
 
     <div class="invitation-footer-v2" style="margin-top: 24px;">
-        <button class="btn-modal-primary" style="width: 100%; margin-bottom: 12px;" @onclick='() => HandleRsvp("Accept")'>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <button class="btn-accept-v2" @onclick='() => HandleRsvp("Accept")'>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Terima
         </button>
-        <div class="footer-actions-row" style="display: flex; gap: 12px; width: 100%;">
-            <button class="btn-modal-outline" style="flex: 1;" @onclick='() => HandleRsvp("Maybe")'>Mungkin</button>
-            <button class="btn-modal-outline" style="flex: 1; border-color: transparent; color: #6B7280;" @onclick='() => HandleRsvp("Decline")'>Tolak</button>
+        <div class="footer-actions-row">
+            <button class="btn-maybe-v2" @onclick='() => HandleRsvp("Maybe")'>Mungkin</button>
+            <button class="btn-decline-v2" @onclick='() => HandleRsvp("Decline")'>Tolak</button>
         </div>
     </div>
 
@@ -127,16 +127,19 @@
             color: #16305C;
             border: none;
             border-radius: 999px;
-            padding: 12px 24px;
+            padding: 10px 12px;
+            height: 42px;
             font-weight: 700;
-            font-size: 15px;
+            font-size: 0.875rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
             cursor: pointer;
             width: 100%;
             transition: opacity 0.2s;
+            margin-bottom: 12px;
+            white-space: nowrap;
         }
         .btn-accept-v2:hover {
             opacity: 0.9;
@@ -152,11 +155,16 @@
             border: 1px solid #E5E7EB;
             color: #16305C;
             border-radius: 999px;
-            padding: 10px 20px;
+            padding: 10px 12px;
+            height: 42px;
             font-weight: 600;
-            font-size: 14px;
+            font-size: 0.875rem;
             cursor: pointer;
             transition: background-color 0.2s;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
         .btn-maybe-v2:hover {
             background-color: #F9FAFB;
@@ -164,12 +172,19 @@
         .btn-decline-v2 {
             flex: 1;
             background: none;
-            border: none;
+            border: 1px solid transparent;
             color: #6B7280;
+            border-radius: 999px;
+            padding: 10px 12px;
+            height: 42px;
             font-weight: 600;
-            font-size: 14px;
+            font-size: 0.875rem;
             cursor: pointer;
             transition: color 0.2s;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
         .btn-decline-v2:hover {
             color: #16305C;

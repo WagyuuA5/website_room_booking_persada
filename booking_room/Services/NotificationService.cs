@@ -45,7 +45,7 @@ public class NotificationService : INotificationService
             IconType = "avatar",
             AvatarUrl = "https://ui-avatars.com/api/?name=Budi+Santoso&background=f59e0b&color=fff",
             ActionType = NotificationActionType.OpenModal,
-            ModalComponentKey = "RoomDetailsModal",
+            ModalComponentKey = "InvitationModal",
             ActionParameters = new Dictionary<string, object>
             {
                 { "RoomName", "Ruang Kolaborasi 2" },

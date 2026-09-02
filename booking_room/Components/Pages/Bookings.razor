@@ -196,7 +196,8 @@
                             </div>
                         </div>
                         <div class="room-card-footer">
-                            <button class="room-detail-btn" style="text-transform: uppercase; font-weight: 600; @(!isClickable ? "opacity:0.5; cursor:not-allowed;" : "")" @onclick="() => { if (isClickable) ViewDetail(room); }" disabled="@(!isClickable)">LIHAT DETAIL</button>
+                            <button class="room-detail-btn" style="flex:1; text-transform: uppercase; font-weight: 600; @(!isClickable ? "opacity:0.5; cursor:not-allowed;" : "")" @onclick="() => { if (isClickable) ViewDetail(room); }" disabled="@(!isClickable)">LIHAT DETAIL</button>
+                            <button class="btn-book-now" style="flex:1; padding: 10px 16px; border-radius: 8px; background: #F5B301; color: #0F1B3D; font-weight: 700; border: none; cursor: pointer; @(!isClickable ? "opacity:0.5; cursor:not-allowed;" : "")" @onclick="() => { if (isClickable) BookRoom(room); }" disabled="@(!isClickable)">PESAN SEKARANG</button>
                         </div>
                     </div>
                 }
@@ -224,12 +225,13 @@ else if (_activeTab == "Fasilitas")
         OnBookNow="ProceedToBook" />
 </booking_room.Components.Shared.ModalOverlayBlur>
 
-<booking_room.Components.Shared.ModalOverlayBlur Visible="@_isConfirmBookingVisible" OnClose="CloseConfirm" Size="md" ShowCloseButton="false">
+@if (_isConfirmBookingVisible)
+{
     <booking_room.Components.Shared.ConfirmBookingModal 
         Room="@_selectedRoomForBooking" 
         OnBack="CloseConfirm"
         OnConfirm="CloseConfirm" />
-</booking_room.Components.Shared.ModalOverlayBlur>
+}
 
 @code {
     private string _activeTab = "Daftar";

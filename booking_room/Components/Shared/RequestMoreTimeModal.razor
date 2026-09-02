@@ -46,15 +46,15 @@
         </div>
     </ChildContent>
     <FooterContent>
-        <button type="button" class="btn btn-outline-secondary" style="border-radius: 9999px; padding: 10px 20px; font-weight: 600; border: 1px solid #CBD5E1; background: #FFFFFF; color: #475569;" @onclick="HandleCancel">
+        <button type="button" class="btn btn-outline-secondary" style="border-radius: 9999px; padding: 10px 12px; height: 42px; font-weight: 600; border: 1px solid #CBD5E1; background: #FFFFFF; color: #475569; font-size: 0.875rem; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center;" @onclick="HandleCancel">
             Batal
         </button>
         <button type="button"
                 class="btn btn-warning"
-                style="border-radius: 9999px; padding: 10px 20px; font-weight: 700; background: #F59E0B; border: none; color: #0F1F3D; display: inline-flex; align-items: center; gap: 0.45rem;"
+                style="border-radius: 9999px; padding: 10px 12px; height: 42px; font-weight: 700; background: #F59E0B; border: none; color: #0F1F3D; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.875rem; white-space: nowrap;"
                 disabled="@string.IsNullOrWhiteSpace(_reason)"
                 @onclick="SubmitExtension">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10" />
                 <polyline points="12 6 12 12 16 14" />
             </svg>

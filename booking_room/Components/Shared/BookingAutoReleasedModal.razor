@@ -40,11 +40,11 @@
         </div>
     </div>
 
-    <div class="auto-release-footer" style="display: flex; gap: 16px; margin-top: 24px;">
-        <button type="button" class="btn-modal-outline" @onclick="HandleViewHistory">
+    <div class="auto-release-footer" style="display: flex; gap: 12px; margin-top: 24px;">
+        <button type="button" class="btn-history-outline" @onclick="HandleViewHistory">
             Lihat Riwayat
         </button>
-        <button type="button" class="btn-modal-primary" @onclick="HandleNewBooking">
+        <button type="button" class="btn-new-booking-gold" @onclick="HandleNewBooking">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
                 <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -209,7 +209,8 @@
     }
 
     .btn-history-outline {
-        padding: 0.55rem 1.15rem;
+        padding: 10px 12px;
+        height: 42px;
         border-radius: 9999px;
         background: #FFFFFF;
         border: 1.5px solid #CBD5E1;
@@ -219,6 +220,10 @@
         cursor: pointer;
         transition: all 0.2s ease;
         line-height: 1.2;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
     }
 
     .btn-history-outline:hover {
@@ -228,7 +233,8 @@
     }
 
     .btn-new-booking-gold {
-        padding: 0.55rem 1.25rem;
+        padding: 10px 12px;
+        height: 42px;
         border-radius: 9999px;
         background: #EAB63C;
         border: 1.5px solid #EAB63C;
@@ -238,9 +244,11 @@
         cursor: pointer;
         display: inline-flex;
         align-items: center;
-        gap: 5px;
+        justify-content: center;
+        gap: 6px;
         transition: all 0.2s ease;
         line-height: 1.2;
+        white-space: nowrap;
     }
 
     .btn-new-booking-gold:hover {
