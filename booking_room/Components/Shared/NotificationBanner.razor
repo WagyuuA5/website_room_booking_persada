@@ -1,4 +1,5 @@
 @implements IDisposable
+@namespace booking_room.Components.Shared
 
 <div class="notification-banner @(BannerType == booking_room.Services.NotificationState.BannerType.ActionRequired ? "action-required" : "reminder")">
     <div class="banner-content">
@@ -41,26 +42,32 @@
     [Parameter] public booking_room.Services.NotificationState.BannerType BannerType { get; set; }
     [Parameter] public EventCallback OnDismiss { get; set; }
     [Parameter] public EventCallback OnCheckIn { get; set; }
-
     [Parameter] public DateTime? TargetTime { get; set; }
 
     private string RemainingTimeFormatted = "00:00";
     private double countdownPercentage = 100;
     private double totalSeconds = 0;
     private System.Threading.Timer? _countdownTimer;
+    private bool _disposed;
 
     protected override void OnParametersSet()
     {
         if (BannerType == booking_room.Services.NotificationState.BannerType.ActionRequired && TargetTime.HasValue)
         {
-            if (_countdownTimer == null)
+            if (_countdownTimer == null && !_disposed)
             {
                 totalSeconds = (TargetTime.Value - DateTime.Now).TotalSeconds;
                 UpdateRemainingTime();
                 _countdownTimer = new System.Threading.Timer(_ =>
                 {
+                    if (_disposed) return;
                     UpdateRemainingTime();
-                    InvokeAsync(StateHasChanged);
+                    try
+                    {
+                        InvokeAsync(StateHasChanged);
+                    }
+                    catch (ObjectDisposedException) { }
+                    catch (InvalidOperationException) { }
                 }, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
             }
         }
@@ -103,6 +110,7 @@
 
     public void Dispose()
     {
+        _disposed = true;
         _countdownTimer?.Dispose();
     }
 }

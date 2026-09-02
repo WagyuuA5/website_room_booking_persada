@@ -39,7 +39,7 @@
                 </div>
             </div>
 
-            <!-- CASE 2: Pilihan Ruangan Horizontal Scroll dengan Scroll-Snap & Fade Indicator -->
+            <!-- CASE 2: Pilihan Ruangan Horizontal Scroll (width: 260px, gap: 16px, scroll-snap) -->
             <div class="cbm-form-group">
                 <div class="cbm-section-header-row">
                     <label class="cbm-label">Pilih Ruangan</label>
@@ -97,13 +97,10 @@
                 </div>
             </div>
 
-            <!-- CASE 3: Bagian Undang Peserta dengan Indikator Kapasitas Bar & Tag Konflik -->
+            <!-- CASE 3: Section Undang Peserta & Tamu Eksternal -->
             <div class="attendees-section-card">
                 <div class="attendees-header-row">
-                    <div>
-                        <div class="section-card-title">Undang Peserta</div>
-                        <div class="section-card-sub">Tambahkan rekan kerja internal untuk rapat ini</div>
-                    </div>
+                    <div class="section-card-title">Undang Peserta</div>
                     <div class="capacity-meter-box">
                         <div class="capacity-text">
                             <strong>@TotalAttendeesCount</strong> dari <strong>@CurrentMaxCapacity</strong> Kapasitas Ruangan
@@ -115,17 +112,25 @@
                     </div>
                 </div>
 
+                @if (IsOverCapacity)
+                {
+                    <div class="capacity-alert-message">
+                        <span>⚠ Kapasitas ruangan sudah penuh</span>
+                    </div>
+                }
+
                 <!-- Input Pencarian Kolega -->
                 <div class="attendee-search-row">
                     <div class="input-icon-wrap" style="flex: 1;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
                         </svg>
                         <input type="text" class="cbm-input has-icon" placeholder="Cari kolega..." 
-                               @bind="_newAttendeeInput" @bind:event="oninput" @onkeydown="HandleAttendeeKeyDown" />
+                               @bind="_newAttendeeInput" @bind:event="oninput" @onkeydown="HandleAttendeeKeyDown"
+                               disabled="@IsOverCapacity" />
                     </div>
-                    <button type="button" class="btn-add-attendee" @onclick="AddAttendee">
+                    <button type="button" class="btn-add-attendee" @onclick="AddAttendee" disabled="@IsOverCapacity">
                         + Tambah
                     </button>
                 </div>
@@ -135,42 +140,42 @@
                     <span class="quick-label">Saran Cepat:</span>
                     @foreach (var suggestion in _suggestedColleagues.Where(s => !_colleagues.Any(c => c.Name == s.Name)).Take(4))
                     {
-                        <button type="button" class="quick-colleague-chip" @onclick="() => AddQuickAttendee(suggestion)">
+                        <button type="button" class="quick-colleague-chip" @onclick="() => AddQuickAttendee(suggestion)" disabled="@IsOverCapacity">
                             + @suggestion.Name
                         </button>
                     }
                 </div>
 
-                <!-- Daftar Chip Peserta Terpilih -->
+                <!-- Chips Peserta Terpilih -->
                 <div class="attendees-chips-list">
                     @foreach (var c in _colleagues)
                     {
-                        <div class="attendee-chip @(c.HasConflict ? "has-conflict" : "")">
-                            <div class="chip-avatar" style="background: @c.AvatarBg;">
-                                @GetInitials(c.Name)
+                        <div class="attendee-chip-group">
+                            <div class="attendee-chip">
+                                <div class="chip-avatar" style="background: @c.AvatarBg;">
+                                    @GetInitials(c.Name)
+                                </div>
+                                <span class="chip-name">@c.Name</span>
+                                <button type="button" class="chip-remove-btn" @onclick="() => RemoveAttendee(c)" title="Hapus">
+                                    &times;
+                                </button>
                             </div>
-                            <span class="chip-name">@c.Name</span>
                             @if (c.HasConflict)
                             {
                                 <span class="chip-conflict-tag" title="Kolega memiliki agenda lain pada rentang waktu yang sama">
-                                    Potensi konflik jadwal
+                                    ⚠ Potensi konflik jadwal
                                 </span>
                             }
-                            <button type="button" class="chip-remove-btn" @onclick="() => RemoveAttendee(c)" title="Hapus">
-                                &times;
-                            </button>
                         </div>
                     }
                 </div>
-            </div>
 
-            <!-- CASE 3: Bagian Undang Tamu Eksternal -->
-            <div class="external-guests-card">
+                <!-- Divider Tipis -->
+                <div class="attendee-section-divider"></div>
+
+                <!-- Section Undang Tamu Eksternal -->
                 <div class="external-toggle-row">
-                    <div>
-                        <div class="section-card-title">Undang Tamu Eksternal</div>
-                        <div class="section-card-sub">Kirimkan tautan dan undangan otomatis ke email luar</div>
-                    </div>
+                    <div class="section-card-title">Undang Tamu Eksternal</div>
                     <label class="cbm-switch">
                         <input type="checkbox" @bind="_inviteExternal" />
                         <span class="cbm-slider"></span>
@@ -187,9 +192,10 @@
                                     <polyline points="22,6 12,13 2,6"></polyline>
                                 </svg>
                                 <input type="email" class="cbm-input has-icon" placeholder="Email Tamu (contoh: tamu@perusahaan.com)" 
-                                       @bind="_newExternalEmail" @onkeydown="HandleExternalKeyDown" />
+                                       @bind="_newExternalEmail" @onkeydown="HandleExternalKeyDown"
+                                       disabled="@IsOverCapacity" />
                             </div>
-                            <button type="button" class="btn-add-attendee" @onclick="AddExternalGuest">
+                            <button type="button" class="btn-add-attendee" @onclick="AddExternalGuest" disabled="@IsOverCapacity">
                                 Tambah Email
                             </button>
                         </div>
@@ -210,7 +216,7 @@
                 }
             </div>
 
-            <!-- Toggle Jadikan Berulang (Recurring Booking) -->
+            <!-- Toggle Jadikan Berulang -->
             <div class="recurring-toggle-card">
                 <div class="recurring-toggle-info">
                     <div class="toggle-title">Jadikan Berulang (Recurring Booking)</div>
@@ -225,7 +231,6 @@
             @if (IsRecurring)
             {
                 <div class="cbm-sub-panel recurring-panel content-fade-in">
-                    <!-- Segmented Control Pola Perulangan -->
                     <div class="cbm-form-group">
                         <label class="cbm-label">Pola Perulangan</label>
                         <div class="cbm-segmented-tabs">
@@ -235,7 +240,6 @@
                         </div>
                     </div>
 
-                    <!-- Pemilih Hari (Inisial Hari Indonesia) -->
                     @if (RecurringType == "Mingguan")
                     {
                         <div class="cbm-form-group">
@@ -253,7 +257,6 @@
                         </div>
                     }
 
-                    <!-- Opsi Batas Berakhir -->
                     <div class="cbm-form-row">
                         <div class="cbm-form-group">
                             <label class="cbm-label">Berakhir Setelah</label>
@@ -268,7 +271,6 @@
                         </div>
                     </div>
 
-                    <!-- Preview Jadwal Hasil Perulangan -->
                     <div class="schedule-preview-box">
                         <div class="schedule-preview-header">
                             <span class="preview-title">Preview Jadwal (@_previewDates.Count Tanggal)</span>
@@ -347,6 +349,7 @@
         color: var(--persada-navy-900, #0F1F3D);
         margin: 0;
     }
+    body.dark-mode .modal-title { color: #F8FAFC; }
     .modal-subtitle {
         font-size: 0.875rem;
         color: var(--persada-text-secondary, #6B7280);
@@ -383,12 +386,14 @@
         color: #1F5D9A;
         font-weight: 600;
     }
+    body.dark-mode .cbm-sub-indicator { color: #60A5FA; }
 
     .cbm-label {
         font-size: 0.8125rem;
         font-weight: 600;
         color: var(--persada-text-primary, #374151);
     }
+    body.dark-mode .cbm-label { color: #CBD5E1; }
 
     .input-icon-wrap {
         position: relative;
@@ -415,6 +420,11 @@
         outline: none;
         transition: border-color 0.2s, box-shadow 0.2s;
     }
+    body.dark-mode .cbm-input {
+        background: #1C1C1E;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #F8FAFC;
+    }
     .cbm-input.has-icon {
         padding-left: 38px;
     }
@@ -428,7 +438,7 @@
         resize: vertical;
     }
 
-    /* CASE 2: Room Carousel with Scroll-Snap & Fade Edge */
+    /* CASE 2: Room Carousel (width: 260px, gap: 16px, scroll-snap-type: x mandatory) */
     .room-carousel-outer {
         position: relative;
         width: 100%;
@@ -436,26 +446,21 @@
 
     .room-horizontal-carousel {
         display: flex;
-        gap: 12px;
+        gap: 16px;
         overflow-x: auto;
         scroll-snap-type: x mandatory;
-        padding: 4px 12px 10px 2px;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: thin;
+        padding: 4px 12px 8px 2px;
+        scrollbar-width: none;
     }
     .room-horizontal-carousel::-webkit-scrollbar {
-        height: 5px;
-    }
-    .room-horizontal-carousel::-webkit-scrollbar-thumb {
-        background: #CBD5E1;
-        border-radius: 999px;
+        display: none;
     }
 
     .room-carousel-card {
         scroll-snap-align: start;
-        flex: 0 0 240px;
-        width: 240px;
-        padding: 12px;
+        flex: 0 0 auto;
+        width: 260px;
+        padding: 12px 14px;
         background: #F8FAFC;
         border: 1.5px solid #E2E8F0;
         border-radius: 14px;
@@ -515,11 +520,11 @@
         border-radius: 999px;
     }
     .carousel-status-badge.available {
-        background: #E7F8EF;
-        color: #16A34A;
+        background: #DCFCE7;
+        color: #15803D;
     }
     .carousel-status-badge.booked {
-        background: #FFF4E5;
+        background: #FEF3C7;
         color: #D97706;
     }
 
@@ -532,6 +537,7 @@
         overflow: hidden;
         text-overflow: ellipsis;
     }
+    body.dark-mode .carousel-room-name { color: #F8FAFC; }
 
     .carousel-room-meta {
         font-size: 0.72rem;
@@ -568,18 +574,17 @@
         right: 0;
         bottom: 8px;
         width: 32px;
-        background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.9));
+        background: linear-gradient(to right, transparent, var(--surface-card, #FFFFFF));
         pointer-events: none;
         border-radius: 0 14px 14px 0;
     }
     body.dark-mode .carousel-fade-edge {
-        background: linear-gradient(to right, transparent, rgba(16, 27, 46, 0.9));
+        background: linear-gradient(to right, transparent, #1C1C1E);
     }
 
     /* CASE 3: Attendees Section & Capacity Meter */
-    .attendees-section-card,
-    .external-guests-card {
-        padding: 14px 16px;
+    .attendees-section-card {
+        padding: 16px;
         background: #F8FAFC;
         border: 1.5px solid var(--color-brand-gray-border, #E5E7EB);
         border-radius: 14px;
@@ -587,8 +592,7 @@
         flex-direction: column;
         gap: 12px;
     }
-    body.dark-mode .attendees-section-card,
-    body.dark-mode .external-guests-card {
+    body.dark-mode .attendees-section-card {
         background: rgba(15, 23, 42, 0.5);
         border-color: rgba(255, 255, 255, 0.1);
     }
@@ -605,10 +609,7 @@
         font-weight: 700;
         color: var(--persada-text-primary, #0F1F3D);
     }
-    .section-card-sub {
-        font-size: 0.72rem;
-        color: var(--persada-text-secondary, #6B7280);
-    }
+    body.dark-mode .section-card-title { color: #F8FAFC; }
 
     .capacity-meter-box {
         display: flex;
@@ -621,6 +622,7 @@
         font-size: 0.75rem;
         color: var(--persada-text-primary, #374151);
     }
+    body.dark-mode .capacity-text { color: #CBD5E1; }
 
     .capacity-progress-track {
         width: 140px;
@@ -629,18 +631,25 @@
         border-radius: 999px;
         overflow: hidden;
     }
-    body.dark-mode .capacity-progress-track {
-        background: #334155;
-    }
+    body.dark-mode .capacity-progress-track { background: #334155; }
 
     .capacity-progress-fill {
         height: 100%;
-        background: #F59E0B;
+        background: var(--brand-gold-500, #F59E0B);
         border-radius: 999px;
         transition: width 0.3s ease;
     }
     .capacity-progress-fill.over-capacity {
-        background: #EF4444;
+        background: var(--status-unavailable, #EF4444);
+    }
+
+    .capacity-alert-message {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #DC2626;
+        background: #FEE2E2;
+        padding: 6px 10px;
+        border-radius: 8px;
     }
 
     .attendee-search-row,
@@ -662,8 +671,9 @@
         white-space: nowrap;
         transition: background 0.15s ease;
     }
-    .btn-add-attendee:hover {
-        background: #164879;
+    .btn-add-attendee:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
     }
 
     .quick-colleagues-row {
@@ -693,10 +703,9 @@
         border-color: #334155;
         color: #CBD5E1;
     }
-    .quick-colleague-chip:hover {
+    .quick-colleague-chip:hover:not(:disabled) {
         background: #EEF2FF;
         color: #1F5D9A;
-        border-color: #C7D2FE;
     }
 
     .attendees-chips-list,
@@ -707,66 +716,75 @@
         margin-top: 4px;
     }
 
+    .attendee-chip-group {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
     .attendee-chip {
         display: inline-flex;
         align-items: center;
         gap: 6px;
         padding: 4px 8px 4px 4px;
-        background: #FFFFFF;
-        border: 1.5px solid #E2E8F0;
-        border-radius: 999px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: var(--persada-navy-900, #0F1F3D);
+        background: var(--surface-card, #FFFFFF);
+        border: 1px solid var(--color-brand-gray-border, #E5E7EB);
+        border-radius: var(--radius-pill, 999px);
         box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
     body.dark-mode .attendee-chip {
         background: #1E293B;
         border-color: rgba(255,255,255,0.1);
-        color: #F8FAFC;
-    }
-    .attendee-chip.has-conflict {
-        border-color: #FECACA;
-        background: #FEF2F2;
-    }
-    body.dark-mode .attendee-chip.has-conflict {
-        background: rgba(127, 29, 29, 0.25);
-        border-color: #EF4444;
     }
 
     .chip-avatar {
-        width: 22px;
-        height: 22px;
+        width: 24px;
+        height: 24px;
         border-radius: 50%;
         color: #FFFFFF;
-        font-size: 0.625rem;
+        font-size: 0.6875rem;
         font-weight: 700;
         display: flex;
         align-items: center;
         justify-content: center;
     }
 
+    .chip-name {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--persada-navy-900, #0F1F3D);
+    }
+    body.dark-mode .chip-name { color: #F8FAFC; }
+
     .chip-conflict-tag {
-        font-size: 0.625rem;
-        font-weight: 700;
-        background: #FEE2E2;
-        color: #DC2626;
-        padding: 1px 6px;
-        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        background: rgba(229, 72, 77, 0.1);
+        color: var(--status-unavailable, #EF4444);
+        padding: 4px 8px;
+        border-radius: 8px;
     }
 
     .chip-remove-btn {
         background: transparent;
         border: none;
         color: #9CA3AF;
-        font-size: 1rem;
+        font-size: 16px;
         line-height: 1;
         cursor: pointer;
         padding: 0 2px;
+        transition: color 0.15s ease;
     }
     .chip-remove-btn:hover {
         color: #EF4444;
     }
+
+    .attendee-section-divider {
+        height: 1px;
+        background: var(--divider-subtle, #E2E8F0);
+        margin: 4px 0;
+    }
+    body.dark-mode .attendee-section-divider { background: rgba(255, 255, 255, 0.08); }
 
     .external-email-chip {
         display: inline-flex;
@@ -805,6 +823,7 @@
         font-weight: 700;
         color: var(--persada-text-primary, #0F1F3D);
     }
+    body.dark-mode .toggle-title { color: #F8FAFC; }
     .toggle-desc {
         font-size: 0.72rem;
         color: var(--persada-text-secondary, #6B7280);
@@ -849,7 +868,6 @@
         transform: translateX(20px);
     }
 
-    /* Sub-panel */
     .cbm-sub-panel {
         padding: 16px;
         background: #F8FAFC;
@@ -864,7 +882,6 @@
         border-color: rgba(255, 255, 255, 0.1);
     }
 
-    /* Segmented Control */
     .cbm-segmented-tabs {
         display: flex;
         background: #E2E8F0;
@@ -872,9 +889,7 @@
         border-radius: 10px;
         gap: 2px;
     }
-    body.dark-mode .cbm-segmented-tabs {
-        background: #1E293B;
-    }
+    body.dark-mode .cbm-segmented-tabs { background: #1E293B; }
     .segmented-tab {
         flex: 1;
         height: 34px;
@@ -885,7 +900,6 @@
         color: #64748B;
         border-radius: 8px;
         cursor: pointer;
-        transition: all 0.15s ease;
     }
     .segmented-tab.active {
         background: #FFFFFF;
@@ -898,7 +912,6 @@
         color: #FFFFFF;
     }
 
-    /* Day selector */
     .cbm-days-grid {
         display: grid;
         grid-template-columns: repeat(7, 1fr);
@@ -914,7 +927,6 @@
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        transition: all 0.15s ease;
     }
     body.dark-mode .cbm-day-bubble {
         background: #1E293B;
@@ -925,9 +937,7 @@
         font-weight: 700;
         color: #0F1F3D;
     }
-    body.dark-mode .bubble-initial {
-        color: #F8FAFC;
-    }
+    body.dark-mode .bubble-initial { color: #F8FAFC; }
     .bubble-sub {
         font-size: 0.625rem;
         color: #64748B;
@@ -941,7 +951,6 @@
         color: #FFFFFF;
     }
 
-    /* Schedule Preview */
     .schedule-preview-box {
         background: #FFFFFF;
         border: 1px solid #E2E8F0;
@@ -963,6 +972,7 @@
         font-weight: 700;
         color: var(--persada-text-primary, #0F1F3D);
     }
+    body.dark-mode .preview-title { color: #F8FAFC; }
     .preview-note {
         font-size: 0.6875rem;
         color: #16A34A;
@@ -997,6 +1007,7 @@
         font-weight: 600;
         color: var(--persada-text-primary, #0F1F3D);
     }
+    body.dark-mode .date-item-title { color: #F8FAFC; }
     .date-item-time {
         font-size: 0.6875rem;
         color: #64748B;
@@ -1007,8 +1018,8 @@
         gap: 6px;
     }
     .badge-slot-ok {
-        background: #E7F8EF;
-        color: #16A34A;
+        background: #DCFCE7;
+        color: #15803D;
         font-size: 0.6875rem;
         font-weight: 700;
         padding: 2px 6px;
@@ -1031,9 +1042,6 @@
         padding: 2px 6px;
         border-radius: 4px;
         cursor: pointer;
-    }
-    .btn-skip-slot:hover {
-        background: #F1F5F9;
     }
 
     .input-suffix-wrap {
@@ -1078,7 +1086,7 @@
     private RoomItem? SelectedRoom;
     private readonly List<RoomItem> _availableRoomOptions = new()
     {
-        new("1", "Executive Boardroom A", 15, "Ruang rapat eksekutif premium.", "available", new() { "TV LED", "WiFi", "Proyektor" }, "Lantai 3"),
+        new("1", "Executive Boardroom A", 12, "Ruang rapat eksekutif premium.", "available", new() { "TV LED", "WiFi", "Proyektor" }, "Lantai 3"),
         new("2", "Training Room B", 30, "Ruang pelatihan interaktif.", "available", new() { "Audio", "Papan Tulis", "WiFi" }, "Lantai 2"),
         new("3", "Innovation Lab", 15, "Lab inovasi & prototyping.", "available", new() { "Smart Display", "3D Printer" }, "Lantai 3"),
         new("4", "Conference Hall", 50, "Aula konferensi kapasitas besar.", "available", new() { "Panggung", "Full AV", "WiFi" }, "Lantai 1"),
@@ -1119,7 +1127,7 @@
     private string _newExternalEmail = "";
     private List<string> _externalGuests = new();
 
-    private int CurrentMaxCapacity => SelectedRoom?.Capacity ?? Room?.Capacity ?? 15;
+    private int CurrentMaxCapacity => SelectedRoom?.Capacity ?? Room?.Capacity ?? 12;
     private int TotalAttendeesCount => _colleagues.Count + _externalGuests.Count;
     private double CapacityPercentage => Math.Min(100, Math.Round(((double)TotalAttendeesCount / Math.Max(1, CurrentMaxCapacity)) * 100));
     private bool IsOverCapacity => TotalAttendeesCount > CurrentMaxCapacity;
@@ -1175,6 +1183,7 @@
 
     private void AddAttendee()
     {
+        if (IsOverCapacity) return;
         if (string.IsNullOrWhiteSpace(_newAttendeeInput)) return;
         var name = _newAttendeeInput.Trim();
         if (!_colleagues.Any(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
@@ -1189,6 +1198,7 @@
 
     private void AddQuickAttendee(ColleagueItem item)
     {
+        if (IsOverCapacity) return;
         if (!_colleagues.Any(c => c.Name == item.Name))
         {
             _colleagues.Add(item);
@@ -1213,6 +1223,7 @@
 
     private void AddExternalGuest()
     {
+        if (IsOverCapacity) return;
         if (string.IsNullOrWhiteSpace(_newExternalEmail)) return;
         var email = _newExternalEmail.Trim();
         if (!_externalGuests.Contains(email))
@@ -1279,7 +1290,7 @@
             {
                 nextDate = baseDate.AddDays(i * 7);
             }
-            else // Bulanan
+            else
             {
                 nextDate = baseDate.AddMonths(i);
             }
@@ -1334,6 +1345,7 @@
             await OnConfirm.InvokeAsync();
         }
         catch (TaskCanceledException) { }
+        catch (ObjectDisposedException) { }
     }
 
     public void Dispose()

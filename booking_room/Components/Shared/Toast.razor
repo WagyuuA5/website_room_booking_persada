@@ -63,14 +63,28 @@
 </style>
 
 @code {
+    private bool _disposed;
+
     protected override void OnInitialized()
     {
-        ToastService.OnChange += StateHasChanged;
+        ToastService.OnChange += SafeStateHasChanged;
+    }
+
+    private void SafeStateHasChanged()
+    {
+        if (_disposed) return;
+        try
+        {
+            InvokeAsync(StateHasChanged);
+        }
+        catch (ObjectDisposedException) { }
+        catch (InvalidOperationException) { }
     }
 
     public void Dispose()
     {
-        ToastService.OnChange -= StateHasChanged;
+        _disposed = true;
+        ToastService.OnChange -= SafeStateHasChanged;
     }
 
     private string GetToastIcon(ToastType type)

@@ -1,455 +1,364 @@
 @using booking_room.Components.Models
-@inject booking_room.Services.LoadingStateService LoadingState
+@using booking_room.Services
+@inject LoadingStateService LoadingState
 
-<AppModal Visible="true" Size="lg" ShowCloseButton="false" OnClose="HandleClose">
+<AppModal Visible="@Visible" Size="lg" ShowHeader="false" ShowFooter="false" ShowCloseButton="true" OnClose="CloseModal">
     <BodyContent>
-<div class="room-details-v6">
-    @if (_isLoading)
-    {
-        <div class="skeleton-shimmer" style="width: 100%; height: 380px; border-radius: var(--modal-radius-outer, 24px);"></div>
-    }
-    else if (Room != null)
-    {
-        <div class="rd-split-layout">
-            <!-- Left: Foto 16:7 + Peta Lokasi Landscape Memanjang yang Diperbesar (CASE 1) -->
-            <div class="rd-photo-column">
-                <!-- 1. Foto Ruangan Rasio 16:7 Diperbesar -->
-                <div class="rd-photo-card">
-                    <img src="@(string.IsNullOrEmpty(Room.PhotoUrl) ? "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80" : Room.PhotoUrl)" alt="@Room.Name" class="rd-photo-img-16-7" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'" />
-                    <div class="rd-photo-placeholder" style="display:none; position:absolute; inset:0; align-items:center; justify-content:center; background:#f3f4f6;">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                    </div>
-                    <div class="rd-photo-overlay">
-                        <span class="rd-status-badge @(Room.Status == "available" ? "rd-badge-available" : "rd-badge-booked")">
-                            <span class="rd-status-dot @(Room.Status == "available" ? "rd-dot-available" : "rd-dot-booked")"></span>
-                            @(Room.Status == "available" ? "Tersedia Sekarang" : "Dipesan")
-                        </span>
-                    </div>
+        <div class="rdm-container">
+            <!-- Kolom Kiri CASE 1: Foto 16:7 + Peta Denah 120px min-height + padding 16px + gap 12px & 16px -->
+            <div class="rdm-left-col">
+                <div class="rdm-photo-box">
+                    <img src="@(string.IsNullOrEmpty(Room?.PhotoUrl) ? "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80" : Room.PhotoUrl)" 
+                         alt="@Room?.Name" class="rdm-photo" />
                 </div>
 
-                <!-- 2. Peta Lokasi Horizontal Landscape Diperbesar Proporsional -->
-                <div class="rd-map-card">
-                    <div class="rd-map-header">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
-                            <line x1="8" y1="2" x2="8" y2="18"></line>
-                            <line x1="16" y1="6" x2="16" y2="22"></line>
-                        </svg>
-                        <span>DENAH & PETA LOKASI • @(string.IsNullOrEmpty(Room.Floor) ? "Lantai 3" : Room.Floor)</span>
+                <div class="rdm-map-box">
+                    <div class="map-grid-header">
+                        <span class="map-label">DENAH LOKASI RUANGAN</span>
+                        <span class="map-badge">@(string.IsNullOrEmpty(Room?.Floor) ? "Lantai 3, Sayap Barat" : Room.Floor)</span>
                     </div>
-                    <div class="rd-map-svg-wrap">
-                        <svg viewBox="0 0 400 175" class="floor-map-svg" preserveAspectRatio="none">
-                            <!-- Background denah lantai -->
-                            <rect x="8" y="8" width="384" height="159" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" />
-                            
-                            <!-- Koridor Utama -->
-                            <rect x="25" y="75" width="350" height="25" fill="#EEF2FF" stroke="#C7D2FE" stroke-width="1" stroke-dasharray="4,4" />
-                            <text x="200" y="91" fill="#6366F1" font-size="9" font-weight="700" text-anchor="middle" font-family="Inter, sans-serif">KORIDOR UTAMA</text>
-                            
-                            <!-- Ruangan samping kiri -->
-                            <rect x="25" y="18" width="95" height="48" rx="5" fill="#F1F5F9" stroke="#94A3B8" stroke-width="1" />
-                            <text x="72" y="46" fill="#64748B" font-size="9" text-anchor="middle" font-family="Inter, sans-serif">Ruang 301</text>
-                            
-                            <!-- Ruangan Target Terpilih (Highlight Emas/Oranye) -->
-                            <rect x="135" y="16" width="130" height="52" rx="6" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2" />
-                            <text x="200" y="42" fill="#92400E" font-size="9.5" font-weight="800" text-anchor="middle" font-family="Inter, sans-serif">@Room.Name</text>
-                            <circle cx="200" cy="54" r="3" fill="#D97706" />
-
-                            <!-- Ruangan samping kanan -->
-                            <rect x="280" y="18" width="95" height="48" rx="5" fill="#F1F5F9" stroke="#94A3B8" stroke-width="1" />
-                            <text x="327" y="46" fill="#64748B" font-size="9" text-anchor="middle" font-family="Inter, sans-serif">Ruang 303</text>
-
-                            <!-- Ruangan bawah kiri -->
-                            <rect x="25" y="108" width="165" height="48" rx="5" fill="#F1F5F9" stroke="#94A3B8" stroke-width="1" />
-                            <text x="107" y="136" fill="#64748B" font-size="9" text-anchor="middle" font-family="Inter, sans-serif">Area Kolaborasi</text>
-
-                            <!-- Ruangan bawah kanan -->
-                            <rect x="210" y="108" width="165" height="48" rx="5" fill="#F1F5F9" stroke="#94A3B8" stroke-width="1" />
-                            <text x="292" y="136" fill="#64748B" font-size="9" text-anchor="middle" font-family="Inter, sans-serif">Pantry & Lift</text>
-                        </svg>
+                    <div class="map-grid-visual">
+                        <div class="map-zone other">ZONA A</div>
+                        <div class="map-zone active">@Room?.Name (LOKASI INI)</div>
+                        <div class="map-zone other">ZONA B</div>
+                        <div class="map-zone other">LOBBY / LIFT</div>
                     </div>
-                </div>
-
-                <!-- Info Banner Kiri Pengisi Ruang Natural CASE 1 -->
-                <div class="rd-location-quick-chip">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                        <circle cx="12" cy="10" r="3"></circle>
-                    </svg>
-                    <span>Zona A • Dekat Tangga Darurat & Lift Timur</span>
                 </div>
             </div>
 
-            <!-- Right: Info (Tetap seperti kondisi sekarang sesuai CASE 7 revisi V23) -->
-            <div class="rd-info-column">
-                <div class="rd-info-content">
-                    <h2 class="rd-room-name">@Room.Name</h2>
-                    <div class="rd-location-row">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <!-- Kolom Kanan: Detail Informasi, Fasilitas, & Aksi Pemesanan -->
+            <div class="rdm-right-col">
+                <div class="rdm-header-info">
+                    <div class="rdm-title-row">
+                        <h2 class="rdm-title">@Room?.Name</h2>
+                        <span class="rdm-status-pill @(Room?.Status == "available" ? "available" : "booked")">
+                            @(Room?.Status == "available" ? "Tersedia" : "Dipesan")
+                        </span>
+                    </div>
+                    <p class="rdm-floor-text">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                             <circle cx="12" cy="10" r="3"></circle>
                         </svg>
-                        <span>@Room.Floor, Sayap Utara, Persada HQ</span>
-                    </div>
+                        <span>Gedung Utama, @(string.IsNullOrEmpty(Room?.Floor) ? "Lantai 3" : Room.Floor)</span>
+                    </p>
+                </div>
 
-                    <p class="rd-description">@Room.Description</p>
-
-                    <div class="rd-amenities-section">
-                        <h3 class="rd-section-label">FASILITAS TERMASUK</h3>
-                        <div class="rd-amenities-grid">
-                            <div class="rd-amenity-item">
-                                <div class="rd-amenity-icon">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M5 12.55a11 11 0 0114.08 0"></path>
-                                        <path d="M1.42 9a16 16 0 0121.16 0"></path>
-                                        <path d="M8.53 16.11a6 6 0 016.95 0"></path>
-                                        <circle cx="12" cy="20" r="1"></circle>
-                                    </svg>
-                                </div>
-                                <span>WiFi</span>
-                            </div>
-                            <div class="rd-amenity-item">
-                                <div class="rd-amenity-icon">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
-                                        <polyline points="17 2 12 7 7 2"></polyline>
-                                    </svg>
-                                </div>
-                                <span>Layar 85 Inci</span>
-                            </div>
-                            <div class="rd-amenity-item">
-                                <div class="rd-amenity-icon">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <polygon points="23 7 16 12 23 17 23 7"></polygon>
-                                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
-                                    </svg>
-                                </div>
-                                <span>Konferensi Video</span>
-                            </div>
-                            <div class="rd-amenity-item">
-                                <div class="rd-amenity-icon">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                        <circle cx="9" cy="7" r="4"></circle>
-                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                                    </svg>
-                                </div>
-                                <span>Hingga @Room.Capacity Orang</span>
-                            </div>
-                        </div>
+                <div class="rdm-specs-row">
+                    <div class="rdm-spec-card">
+                        <span class="spec-label">KAPASITAS</span>
+                        <span class="spec-value">@Room?.Capacity Orang</span>
                     </div>
-
-                    <div class="rd-actions-row">
-                        <button class="btn-primary-app" @onclick="HandleBookNow">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="4" width="18" height="18" rx="2"></rect>
-                                <line x1="16" y1="2" x2="16" y2="6"></line>
-                                <line x1="8" y1="2" x2="8" y2="6"></line>
-                                <line x1="3" y1="10" x2="21" y2="10"></line>
-                            </svg>
-                            Pesan Sekarang
-                        </button>
-                        <button class="btn-secondary-app" @onclick="OnClose">
-                            Tutup
-                        </button>
+                    <div class="rdm-spec-card">
+                        <span class="spec-label">TIPE RUANGAN</span>
+                        <span class="spec-value">Rapat & Konferensi</span>
                     </div>
+                </div>
+
+                <div class="rdm-desc-box">
+                    <span class="section-micro-label">DESKRIPSI RUANGAN</span>
+                    <p class="rdm-desc-text">
+                        @(string.IsNullOrEmpty(Room?.Description) ? "Ruangan berstandar modern yang dilengkapi dengan fasilitas lengkap untuk mendukung presentasi, rapat harian, dan konferensi virtual." : Room.Description)
+                    </p>
+                </div>
+
+                <div class="rdm-amenities-box">
+                    <span class="section-micro-label">FASILITAS TERSEDIA</span>
+                    <div class="amenities-chips-wrap">
+                        @if (Room?.Amenities != null && Room.Amenities.Any())
+                        {
+                            @foreach (var amenity in Room.Amenities)
+                            {
+                                <div class="amenity-badge">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2.5">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                    <span>@amenity</span>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="amenity-badge"><span>WiFi Cepat</span></div>
+                            <div class="amenity-badge"><span>TV LED 4K</span></div>
+                            <div class="amenity-badge"><span>Papan Tulis</span></div>
+                            <div class="amenity-badge"><span>Pendingin Ruangan (AC)</span></div>
+                        }
+                    </div>
+                </div>
+
+                <div class="rdm-action-footer">
+                    <button type="button" class="btn-rdm-close" @onclick="CloseModal">Tutup</button>
+                    @if (Room?.Status == "available")
+                    {
+                        <button type="button" class="btn-rdm-book" @onclick="HandleBook">Pesan Ruangan Ini</button>
+                    }
                 </div>
             </div>
         </div>
-    }
-</div>
     </BodyContent>
 </AppModal>
 
 <style>
-    /* CASE 1: Kontainer menyesuaikan tinggi konten aktual tanpa whitespace kosong berlebih */
-    .room-details-v6 {
-        position: relative;
-        width: 100%;
-        max-width: 100%;
-        height: auto;
-        overflow-y: auto;
-        font-family: 'Inter', 'Poppins', sans-serif;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .rd-split-layout {
+    .rdm-container {
         display: grid;
-        grid-template-columns: 1.05fr 1fr;
+        grid-template-columns: 1fr 1.2fr;
+        gap: 24px;
+        align-items: start;
         height: auto;
-        align-items: stretch;
     }
 
-    /* CASE 1: Foto 16:7 dan Peta Landscape diperbesar mengisi kolom */
-    .rd-photo-column {
+    /* CASE 1: Left column layout strictly sized */
+    .rdm-left-col {
         display: flex;
         flex-direction: column;
         gap: 12px;
-        padding: 20px;
-        background: #F8FAFC;
-        border-right: 1px solid var(--color-brand-gray-border, #E5E7EB);
-        justify-content: space-between;
-    }
-    body.dark-mode .rd-photo-column {
-        background: rgba(15, 23, 42, 0.4);
-        border-right-color: rgba(255, 255, 255, 0.08);
+        height: auto;
     }
 
-    .rd-photo-card {
-        position: relative;
+    .rdm-photo-box {
         width: 100%;
-        height: 155px;
-        border-radius: 14px;
+        aspect-ratio: 16 / 7;
+        border-radius: 12px;
         overflow: hidden;
-        border: 1px solid rgba(0, 0, 0, 0.08);
-        box-shadow: 0 4px 12px rgba(15, 31, 61, 0.06);
-        background: #E2E8F0;
-        flex-shrink: 0;
+        background: #F1F5F9;
+        box-shadow: 0 2px 8px rgba(15, 31, 61, 0.06);
     }
-
-    .rd-photo-img-16-7 {
+    .rdm-photo {
         width: 100%;
         height: 100%;
         object-fit: cover;
-    }
-
-    .rd-photo-overlay {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        z-index: 10;
-    }
-
-    .rd-status-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 4px 10px;
-        border-radius: 999px;
-        font-size: 0.6875rem;
-        font-weight: 700;
-        backdrop-filter: blur(8px);
-    }
-
-    .rd-badge-available {
-        background: rgba(16, 185, 129, 0.95);
-        color: #FFFFFF;
-        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
-    }
-
-    .rd-badge-booked {
-        background: rgba(229, 72, 77, 0.95);
-        color: #FFFFFF;
-        box-shadow: 0 2px 8px rgba(229, 72, 77, 0.35);
-    }
-
-    .rd-status-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background-color: #FFFFFF;
-    }
-
-    /* Peta Lokasi Horizontal Landscape Diperbesar CASE 1 */
-    .rd-map-card {
-        position: relative;
-        width: 100%;
-        height: 155px;
-        border-radius: 14px;
-        overflow: hidden;
-        border: 1.5px solid var(--color-brand-gray-border, #E2E8F0);
-        background: #FFFFFF;
-        box-shadow: 0 4px 12px rgba(15, 31, 61, 0.04);
-        display: flex;
-        flex-direction: column;
-        flex-shrink: 0;
-    }
-    body.dark-mode .rd-map-card {
-        background: #0B1120;
-        border-color: rgba(255, 255, 255, 0.1);
-    }
-
-    .rd-map-header {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 12px;
-        background: #F1F5F9;
-        font-size: 0.6875rem;
-        font-weight: 700;
-        color: var(--persada-navy-900, #0F1F3D);
-        border-bottom: 1px solid #E2E8F0;
-        letter-spacing: 0.04em;
-    }
-    body.dark-mode .rd-map-header {
-        background: #1E293B;
-        border-bottom-color: rgba(255, 255, 255, 0.08);
-        color: #F8FAFC;
-    }
-
-    .rd-map-svg-wrap {
-        flex: 1;
-        width: 100%;
-        height: 100%;
-        position: relative;
-    }
-
-    .floor-map-svg {
-        width: 100%;
-        height: 100%;
         display: block;
     }
 
-    .rd-location-quick-chip {
+    .rdm-map-box {
+        width: 100%;
+        min-height: 120px;
+        padding: 16px;
+        box-sizing: border-box;
+        border-radius: 12px;
+        background: #F8FAFC;
+        border: 1.5px solid #E2E8F0;
         display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 4px;
+    }
+    body.dark-mode .rdm-map-box {
+        background: rgba(15, 23, 42, 0.5);
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .map-grid-header {
+        display: flex;
+        justify-content: space-between;
         align-items: center;
-        gap: 6px;
-        padding: 6px 10px;
-        border-radius: 8px;
-        background: #EEF2FF;
-        color: #3730A3;
-        font-size: 0.6875rem;
-        font-weight: 600;
     }
-    body.dark-mode .rd-location-quick-chip {
-        background: rgba(49, 46, 129, 0.3);
-        color: #C7D2FE;
-    }
-
-    /* Right column info styling (Preserved completely) */
-    .rd-info-column {
-        display: flex;
-        flex-direction: column;
-        padding: 20px 24px;
-        gap: 14px;
-    }
-
-    .rd-info-content {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-        flex: 1;
-    }
-
-    .rd-room-name {
-        font-size: 1.4rem;
-        font-weight: 800;
-        color: var(--persada-navy-900, #0F1F3D);
-        margin: 0;
-        line-height: 1.2;
-        letter-spacing: -0.01em;
-    }
-
-    .rd-location-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--persada-text-secondary, #6B7280);
-        font-size: 0.8125rem;
-        font-weight: 500;
-    }
-
-    .rd-location-row svg {
-        color: #9CA3AF;
-    }
-
-    .rd-description {
-        color: var(--persada-text-secondary, #6B7280);
-        font-size: 0.84375rem;
-        line-height: 1.5;
-        margin: 0;
-    }
-
-    .rd-amenities-section {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .rd-section-label {
+    .map-label {
         font-size: 0.6875rem;
         font-weight: 700;
-        color: #9CA3AF;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        margin: 0;
+        color: #64748B;
+        letter-spacing: 0.05em;
+    }
+    .map-badge {
+        font-size: 0.6875rem;
+        font-weight: 700;
+        background: #EFF6FF;
+        color: #1F5D9A;
+        padding: 2px 8px;
+        border-radius: 999px;
+    }
+    body.dark-mode .map-badge {
+        background: rgba(31, 93, 154, 0.3);
+        color: #93C5FD;
     }
 
-    .rd-amenities-grid {
+    .map-grid-visual {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 8px;
     }
+    .map-zone {
+        padding: 10px 8px;
+        border-radius: 8px;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        text-align: center;
+    }
+    .map-zone.other {
+        background: #FFFFFF;
+        border: 1px dashed #CBD5E1;
+        color: #94A3B8;
+    }
+    body.dark-mode .map-zone.other {
+        background: rgba(30, 41, 59, 0.4);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    .map-zone.active {
+        background: #1F5D9A;
+        color: #FFFFFF;
+        box-shadow: 0 2px 6px rgba(31, 93, 154, 0.3);
+    }
 
-    .rd-amenity-item {
+    /* Right column */
+    .rdm-right-col {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .rdm-title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+    }
+    .rdm-title {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: var(--persada-navy-900, #0F1F3D);
+        margin: 0;
+    }
+    body.dark-mode .rdm-title { color: #F8FAFC; }
+
+    .rdm-status-pill {
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 999px;
+    }
+    .rdm-status-pill.available { background: #DCFCE7; color: #15803D; }
+    .rdm-status-pill.booked { background: #FEF3C7; color: #D97706; }
+
+    .rdm-floor-text {
+        font-size: 0.8125rem;
+        color: var(--persada-text-secondary, #6B7280);
+        margin: 4px 0 0 0;
         display: flex;
         align-items: center;
-        gap: 8px;
-        padding: 8px 10px;
-        background: var(--surface-card, #FFFFFF);
+        gap: 6px;
+    }
+
+    .rdm-specs-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    .rdm-spec-card {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
         border-radius: 10px;
-        border: 1px solid var(--color-brand-gray-border, #E5E7EB);
-        font-size: 0.75rem;
-        font-weight: 600;
+        padding: 10px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    body.dark-mode .rdm-spec-card {
+        background: rgba(15, 23, 42, 0.5);
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+    .spec-label {
+        font-size: 0.625rem;
+        font-weight: 700;
+        color: #94A3B8;
+        letter-spacing: 0.05em;
+    }
+    .spec-value {
+        font-size: 0.875rem;
+        font-weight: 700;
         color: var(--persada-navy-900, #0F1F3D);
     }
+    body.dark-mode .spec-value { color: #F8FAFC; }
 
-    .rd-amenity-icon {
-        width: 24px;
-        height: 24px;
-        border-radius: 6px;
-        background: #F3F4F6;
+    .section-micro-label {
+        font-size: 0.6875rem;
+        font-weight: 700;
+        color: #94A3B8;
+        letter-spacing: 0.05em;
+        display: block;
+        margin-bottom: 6px;
+    }
+    .rdm-desc-text {
+        font-size: 0.8125rem;
+        color: var(--persada-text-secondary, #4B5563);
+        line-height: 1.5;
+        margin: 0;
+    }
+    body.dark-mode .rdm-desc-text { color: #CBD5E1; }
+
+    .amenities-chips-wrap {
         display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        color: #6B7280;
+        flex-wrap: wrap;
+        gap: 6px;
     }
-    
-    .rd-amenity-icon svg {
-        width: 14px;
-        height: 14px;
+    .amenity-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--persada-text-primary, #374151);
+    }
+    body.dark-mode .amenity-badge {
+        background: rgba(30, 41, 59, 0.5);
+        border-color: rgba(255, 255, 255, 0.08);
+        color: #CBD5E1;
     }
 
-    .rd-actions-row {
+    .rdm-action-footer {
         display: flex;
         gap: 10px;
-        margin-top: auto;
-        padding-top: 6px;
+        margin-top: 8px;
+        padding-top: 14px;
+        border-top: 1px solid var(--divider-subtle, #F1F5F9);
     }
+    body.dark-mode .rdm-action-footer { border-color: rgba(255, 255, 255, 0.08); }
+
+    .btn-rdm-close {
+        flex: 1;
+        height: 40px;
+        border-radius: 999px;
+        background: transparent;
+        border: 1.5px solid #CBD5E1;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        color: #475569;
+        cursor: pointer;
+    }
+    body.dark-mode .btn-rdm-close {
+        border-color: rgba(255, 255, 255, 0.2);
+        color: #CBD5E1;
+    }
+    .btn-rdm-book {
+        flex: 1.5;
+        height: 40px;
+        border-radius: 999px;
+        background: #1F5D9A;
+        border: none;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        color: #FFFFFF;
+        cursor: pointer;
+        transition: background 0.15s ease;
+    }
+    .btn-rdm-book:hover { background: #164879; }
 
     @@media (max-width: 768px) {
-        .rd-split-layout {
-            grid-template-columns: 1fr;
-        }
-        .rd-photo-card, .rd-map-card {
-            height: 140px;
-        }
+        .rdm-container { grid-template-columns: 1fr; }
     }
 </style>
 
 @code {
+    [Parameter] public bool Visible { get; set; }
     [Parameter] public RoomItem? Room { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
-    [Parameter] public EventCallback<RoomItem> OnBookNow { get; set; }
+    [Parameter] public EventCallback OnBook { get; set; }
 
-    private bool _isLoading = true;
-
-    protected override void OnParametersSet()
-    {
-        if (Room != null)
-        {
-            _isLoading = false;
-        }
-        else
-        {
-            _isLoading = true;
-        }
-    }
-
-    private async Task HandleClose()
+    private async Task CloseModal()
     {
         if (OnClose.HasDelegate)
         {
@@ -457,11 +366,13 @@
         }
     }
 
-    private async Task HandleBookNow()
+    private async Task HandleBook()
     {
-        if (Room != null)
+        if (OnBook.HasDelegate)
         {
-            await OnBookNow.InvokeAsync(Room);
+            await OnBook.InvokeAsync();
         }
     }
 }
+
+

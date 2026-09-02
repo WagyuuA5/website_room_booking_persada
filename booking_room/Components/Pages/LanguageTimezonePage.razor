@@ -1,109 +1,64 @@
-@page "/pengaturan/bahasa-zona-waktu"
+@page "/pengaturan/bahasa"
+@page "/language"
 @inject NavigationManager Navigation
+@implements IDisposable
 
-<PageTitle>Bahasa & Zona Waktu</PageTitle>
+<PageTitle>Bahasa & Zona Waktu — Persada</PageTitle>
 
-<div class="subpage-container">
-    @if (_isToastVisible)
-    {
-        <div class="save-toast">Perubahan berhasil disimpan</div>
-    }
-    <div class="header">
-        <a href="/pengaturan" class="back-link">‹ Kembali ke Pengaturan</a>
-        <h1 class="page-title">Bahasa & Zona Waktu</h1>
-    </div>
-
-    <div class="card">
-        <div class="form-group">
-            <label>Bahasa Antarmuka</label>
-            <select class="form-control">
-                <option value="id" selected>Bahasa Indonesia</option>
-                <option value="en">English</option>
-            </select>
-            <p class="help-text">Memilih bahasa untuk seluruh tampilan aplikasi.</p>
-        </div>
-
-        <div class="form-group">
-            <label>Zona Waktu</label>
-            <select class="form-control">
-                <option value="WIB" selected>WIB (Waktu Indonesia Barat) - UTC+7</option>
-                <option value="WITA">WITA (Waktu Indonesia Tengah) - UTC+8</option>
-                <option value="WIT">WIT (Waktu Indonesia Timur) - UTC+9</option>
-            </select>
-            <p class="help-text">Digunakan untuk menampilkan waktu pemesanan ruangan secara akurat.</p>
-        </div>
-
-        <div class="form-group">
-            <label>Format Waktu</label>
-            <select class="form-control">
-                <option value="24h" selected>24 Jam (14:30)</option>
-                <option value="12h">12 Jam (14:30)</option>
+<div class="content-fade-in" style="padding: 24px; max-width: 800px; margin: 0 auto;">
+    <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--persada-navy-900, #0F1F3D); margin-bottom: 20px;">Bahasa & Zona Waktu</h2>
+    
+    <div style="background: var(--surface-card, #FFFFFF); border: 1.5px solid var(--color-brand-gray-border, #E5E7EB); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+        <div>
+            <label style="font-size: 0.8125rem; font-weight: 700; color: var(--persada-text-primary, #374151); display: block; margin-bottom: 6px;">Bahasa Tampilan</label>
+            <select class="form-control" style="width: 100%; height: 42px; border-radius: 10px; border: 1.5px solid #E5E7EB; padding: 0 12px; font-weight: 600;">
+                <option value="id" selected>Bahasa Indonesia (ID)</option>
+                <option value="en">English (US)</option>
             </select>
         </div>
 
-        <div class="actions">
-            <button class="btn btn-primary" @onclick="SaveAndNavigateBack">Simpan Perubahan</button>
+        <div>
+            <label style="font-size: 0.8125rem; font-weight: 700; color: var(--persada-text-primary, #374151); display: block; margin-bottom: 6px;">Zona Waktu</label>
+            <select class="form-control" style="width: 100%; height: 42px; border-radius: 10px; border: 1.5px solid #E5E7EB; padding: 0 12px; font-weight: 600;">
+                <option value="WIB" selected>Waktu Indonesia Barat (WIB) - UTC+07:00</option>
+                <option value="WITA">Waktu Indonesia Tengah (WITA) - UTC+08:00</option>
+                <option value="WIT">Waktu Indonesia Timur (WIT) - UTC+09:00</option>
+            </select>
         </div>
+
+        <button class="btn btn-primary" style="height: 42px; border-radius: 999px; font-weight: 700; background: #1F5D9A; border: none; margin-top: 10px;" @onclick="SaveAndNavigateBack">
+            Simpan Perubahan
+        </button>
     </div>
 </div>
 
-<style>
-    .subpage-container { max-width: 600px; margin: 0 auto; padding: 2rem 1rem; }
-    .back-link { display: inline-block; color: #6B7280; text-decoration: none; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; transition: color 0.2s; }
-    .back-link:hover { color: #16305C; }
-    .page-title { font-size: 1.75rem; font-weight: 700; color: #16305C; margin-top: 0; margin-bottom: 2rem; }
-    
-    .card { background-color: white; border-radius: 14px; padding: 1.5rem; box-shadow: 0 4px 24px rgba(16, 48, 92, 0.04); }
-    
-    .form-group { margin-bottom: 1.5rem; }
-    .form-group label { display: block; font-size: 0.875rem; font-weight: 600; color: #16305C; margin-bottom: 0.5rem; }
-    .form-control { width: 100%; padding: 0.75rem 1rem; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; box-sizing: border-box; font-family: inherit; background-color: white; }
-    .form-control:focus { outline: none; border-color: #16305C; box-shadow: 0 0 0 1px #16305C; }
-    .help-text { font-size: 0.75rem; color: #6B7280; margin-top: 0.25rem; margin-bottom: 0; }
-    
-    .actions { margin-top: 2rem; display: flex; justify-content: flex-end; }
-    .btn { padding: 0.75rem 1.5rem; border-radius: 999px; font-size: 0.875rem; font-weight: 600; cursor: pointer; border: none; transition: background-color 0.2s; }
-    .btn-primary { background-color: #16305C; color: white; }
-    .btn-primary:hover { background-color: #0F2346; }
-    .btn-primary:focus-visible { outline: 2px solid #16305C; outline-offset: 2px; }
-
-    .save-toast {
-        position: fixed;
-        bottom: 32px;
-        left: 50%;
-        transform: translateX(-50%);
-        background-color: #10B981;
-        color: #FFFFFF;
-        padding: 12px 24px;
-        border-radius: 999px;
-        font-size: 14px;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
-        z-index: 1000;
-        animation: toastFade 3s forwards;
-    }
-
-    @@keyframes toastFade {
-        0% { opacity: 0; transform: translate(-50%, 20px); }
-        10% { opacity: 1; transform: translate(-50%, 0); }
-        90% { opacity: 1; transform: translate(-50%, 0); }
-        100% { opacity: 0; transform: translate(-50%, -20px); }
-    }
-</style>
-
 @code {
-    private bool _isToastVisible = false;
+    private bool _disposed;
+    private CancellationTokenSource? _cts;
 
     private async Task SaveAndNavigateBack()
     {
-        _isToastVisible = true;
-        StateHasChanged();
+        if (_disposed) return;
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _cts = new CancellationTokenSource();
+        var token = _cts.Token;
 
-        await Task.Delay(3000);
-        _isToastVisible = false;
-        Navigation.NavigateTo("/pengaturan");
+        try
+        {
+            await Task.Delay(500, token);
+            if (!_disposed && !token.IsCancellationRequested)
+            {
+                Navigation.NavigateTo("/settings");
+            }
+        }
+        catch { }
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        _cts?.Cancel();
+        _cts?.Dispose();
     }
 }

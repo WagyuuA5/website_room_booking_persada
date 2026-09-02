@@ -13,6 +13,8 @@
 }
 
 @code {
+    private bool _disposed;
+
     protected override void OnInitialized()
     {
         ModalService.OnChange += OnModalServiceChange;
@@ -20,11 +22,18 @@
 
     private void OnModalServiceChange()
     {
-        InvokeAsync(StateHasChanged);
+        if (_disposed) return;
+        try
+        {
+            InvokeAsync(StateHasChanged);
+        }
+        catch (ObjectDisposedException) { }
+        catch (InvalidOperationException) { }
     }
 
     public void Dispose()
     {
+        _disposed = true;
         ModalService.OnChange -= OnModalServiceChange;
     }
 }

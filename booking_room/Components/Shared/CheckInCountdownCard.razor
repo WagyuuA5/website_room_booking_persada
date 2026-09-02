@@ -10,7 +10,7 @@
     <BodyContent>
         <div class="checkin-confirmation-modal">
             <!-- Header avatar & info -->
-    <div class="checkin-top-header">
+            <div class="checkin-top-header">
                 <div class="room-avatar">
                     <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=128&h=128&fit=crop" alt="Avatar Ruangan" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'" />
                     <div class="room-avatar-fallback">
@@ -46,7 +46,7 @@
             <div class="checkin-meta-grid">
                 <div class="checkin-meta-item">
                     <div class="meta-icon-wrap">
-                        <InlineSvg Src="/icons/Icon_clndr.svg" Style="width: 16px; height: 16px; color: currentColor;" />
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                     </div>
                     <div>
                         <div class="meta-label">WAKTU</div>
@@ -55,7 +55,7 @@
                 </div>
                 <div class="checkin-meta-item">
                     <div class="meta-icon-wrap">
-                        <InlineSvg Src="/icons/icon_location.svg" Style="width: 16px; height: 16px; color: currentColor;" />
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                     </div>
                     <div>
                         <div class="meta-label">LOKASI</div>
@@ -64,7 +64,7 @@
                 </div>
                 <div class="checkin-meta-item full-width">
                     <div class="meta-icon-wrap">
-                        <InlineSvg Src="/icons/icon_group.svg" Style="width: 16px; height: 16px; color: currentColor;" />
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                     </div>
                     <div>
                         <div class="meta-label">KAPASITAS</div>
@@ -82,7 +82,7 @@
                 Konfirmasi
             </button>
 
-            <!-- Secondary Actions Row (Neat side-by-side or stacked list with icons) -->
+            <!-- Secondary Actions Row -->
             <div class="checkin-secondary-actions">
                 @if (!_hasExtended)
                 {
@@ -99,7 +99,7 @@
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
                     </svg>
-                    <span>Batalkan pemesanan ini</span>
+                    <span>Lepas / Batalkan Pemesanan</span>
                 </button>
             </div>
         </div>
@@ -111,255 +111,241 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        padding: 8px 4px;
-        width: 100%;
-        box-sizing: border-box;
+        text-align: center;
+        padding: 4px;
+        gap: 16px;
     }
 
     .checkin-top-header {
         display: flex;
         flex-direction: column;
         align-items: center;
-        margin-bottom: 12px;
+        gap: 8px;
     }
 
     .room-avatar {
-        width: 52px;
-        height: 52px;
-        border-radius: 50%;
-        background: #E2E8F0;
+        width: 54px;
+        height: 54px;
+        border-radius: 14px;
         overflow: hidden;
-        margin-bottom: 8px;
-        border: 2px solid #FFFFFF;
-        box-shadow: 0 4px 10px rgba(15, 31, 61, 0.12);
-        position: relative;
+        border: 2px solid #E2E8F0;
+        box-shadow: 0 4px 12px rgba(15, 31, 61, 0.08);
     }
-
-    .room-avatar img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .room-avatar-fallback {
-        display: none;
-        position: absolute;
-        inset: 0;
-        align-items: center;
-        justify-content: center;
-        background: #F1F5F9;
-    }
+    .room-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .room-avatar-fallback { width: 100%; height: 100%; display: none; align-items: center; justify-content: center; background: #F1F5F9; }
 
     .checkin-room-title {
-        color: var(--persada-navy-900, #0F1F3D);
-        font-weight: 800;
         font-size: 1.25rem;
-        margin: 0 0 6px 0;
-        letter-spacing: -0.01em;
-        text-align: center;
+        font-weight: 800;
+        color: var(--persada-navy-900, #0F1F3D);
+        margin: 0;
     }
+    body.dark-mode .checkin-room-title { color: #F8FAFC; }
 
     .checkin-status-pill {
-        background: rgba(245, 158, 11, 0.12);
-        padding: 4px 12px;
-        border-radius: 999px;
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        font-size: 0.7rem;
+        background: #DCFCE7;
+        color: #15803D;
+        font-size: 0.6875rem;
         font-weight: 700;
-        color: #B45309;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.04em;
+        padding: 4px 10px;
+        border-radius: 999px;
+    }
+    body.dark-mode .checkin-status-pill {
+        background: rgba(22, 163, 74, 0.2);
+        color: #4ADE80;
     }
 
     .status-pulse-dot {
         width: 6px;
         height: 6px;
-        background: var(--persada-yellow-500, #F59E0B);
         border-radius: 50%;
-        display: inline-block;
+        background: #16A34A;
+        animation: pulse 1.5s infinite;
+    }
+    @@keyframes pulse {
+        0% { transform: scale(0.95); opacity: 0.8; }
+        50% { transform: scale(1.4); opacity: 1; }
+        100% { transform: scale(0.95); opacity: 0.8; }
     }
 
     .countdown-ring-box {
         position: relative;
         width: 112px;
         height: 112px;
-        margin-bottom: 16px;
         display: flex;
-        flex-direction: column;
-        justify-content: center;
         align-items: center;
+        justify-content: center;
+        margin: 2px 0;
     }
-
-    .countdown-svg {
-        position: absolute;
-        top: 0;
-        left: 0;
-    }
-
+    .countdown-svg { transform: rotate(-90deg); }
+    .countdown-ring { transition: stroke-dashoffset 1s linear, stroke 0.5s ease; }
     .countdown-text-box {
-        z-index: 1;
-        text-align: center;
+        position: absolute;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
     }
-
     .countdown-digits {
         font-size: 1.5rem;
         font-weight: 800;
         color: var(--persada-navy-900, #0F1F3D);
-        line-height: 1;
+        line-height: 1.1;
     }
-
+    body.dark-mode .countdown-digits { color: #FFFFFF; }
     .countdown-subtext {
-        font-size: 0.7rem;
-        color: #94A3B8;
+        font-size: 0.625rem;
         font-weight: 600;
-        margin-top: 2px;
+        color: #94A3B8;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
     .checkin-meta-grid {
+        width: 100%;
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        width: 100%;
-        margin-bottom: 16px;
+        gap: 8px;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 12px;
+        text-align: left;
+    }
+    body.dark-mode .checkin-meta-grid {
+        background: rgba(15, 23, 42, 0.5);
+        border-color: rgba(255, 255, 255, 0.08);
     }
 
     .checkin-meta-item {
         display: flex;
+        align-items: center;
         gap: 8px;
-        align-items: flex-start;
-        background: var(--surface-card, #FFFFFF);
-        border: 1px solid var(--divider-subtle, rgba(15, 23, 42, 0.08));
-        padding: 8px 12px;
-        border-radius: 12px;
     }
-
     .checkin-meta-item.full-width {
         grid-column: 1 / -1;
+        border-top: 1px solid #E2E8F0;
+        padding-top: 8px;
+        margin-top: 2px;
     }
+    body.dark-mode .checkin-meta-item.full-width { border-color: rgba(255, 255, 255, 0.08); }
 
     .meta-icon-wrap {
-        color: #64748B;
-        margin-top: 2px;
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        color: #1F5D9A;
         display: flex;
         align-items: center;
         justify-content: center;
+        flex-shrink: 0;
+    }
+    body.dark-mode .meta-icon-wrap {
+        background: #1E293B;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #93C5FD;
     }
 
     .meta-label {
-        font-size: 0.65rem;
-        color: #94A3B8;
+        font-size: 0.625rem;
         font-weight: 700;
-        letter-spacing: 0.04em;
+        color: #94A3B8;
+        letter-spacing: 0.05em;
     }
-
     .meta-value {
-        font-size: 0.8125rem;
+        font-size: 0.75rem;
         font-weight: 700;
         color: var(--persada-navy-900, #0F1F3D);
-        margin-top: 1px;
     }
+    body.dark-mode .meta-value { color: #F8FAFC; }
 
     .btn-checkin-confirm {
         width: 100%;
-        padding: 12px;
+        height: 44px;
         border-radius: 999px;
-        border: none;
-        background: var(--persada-yellow-500, #F59E0B);
-        color: var(--persada-navy-900, #0F1F3D);
+        background: #1F5D9A;
+        color: #FFFFFF;
+        font-size: 0.9375rem;
         font-weight: 700;
-        font-size: 0.95rem;
+        border: none;
         cursor: pointer;
-        display: flex;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
-        margin-bottom: 12px;
-        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        transition: all 0.2s ease;
     }
-
     .btn-checkin-confirm:hover {
+        background: #164879;
         transform: translateY(-1px);
-        box-shadow: 0 6px 16px rgba(245, 158, 11, 0.35);
+        box-shadow: 0 4px 12px rgba(31, 93, 154, 0.25);
     }
 
     .checkin-secondary-actions {
-        display: flex;
-        gap: 8px;
         width: 100%;
-        padding-top: 8px;
-        border-top: 1px solid rgba(226, 232, 240, 0.6);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
     }
 
     .btn-secondary-action {
-        flex: 1;
-        display: flex;
+        width: 100%;
+        height: 36px;
+        border-radius: 999px;
+        background: transparent;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        border: 1px solid #E2E8F0;
+        color: #64748B;
+        cursor: pointer;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 6px;
-        background: transparent;
-        border-radius: 999px;
-        height: 38px;
-        font-weight: 600;
-        font-size: 0.775rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        padding: 0 10px;
-        white-space: nowrap;
+        transition: all 0.15s ease;
     }
-
-    .btn-time-more {
-        border: 1px solid #CBD5E1;
-        color: #475569;
-    }
-
-    .btn-time-more:hover {
+    .btn-secondary-action:hover {
         background: #F1F5F9;
-        color: var(--persada-navy-900, #0F1F3D);
+        color: #0F1F3D;
     }
-
-    .btn-cancel-booking {
-        border: 1px solid #FECACA;
-        color: #DC2626;
+    body.dark-mode .btn-secondary-action {
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #CBD5E1;
     }
-
+    body.dark-mode .btn-secondary-action:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: #FFFFFF;
+    }
     .btn-cancel-booking:hover {
-        background: #FEF2F2;
-    }
-
-    .pulse-ring {
-        animation: pulseRing 1s infinite;
-    }
-
-    @@keyframes pulseRing {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.5; }
+        color: #DC2626 !important;
+        background: #FEE2E2 !important;
+        border-color: #FECACA !important;
     }
 </style>
 
 @code {
-    [Parameter] public string RoomName { get; set; } = "Alpha Boardroom";
-    [Parameter] public string TimeSlot { get; set; } = "09:00 - 11:00";
-    [Parameter] public string Location { get; set; } = "Lantai 2, Sayap A";
+    [Parameter] public string RoomName { get; set; } = "Ruang Rapat Utama";
+    [Parameter] public string TimeSlot { get; set; } = "10:00 - 11:30";
+    [Parameter] public string Location { get; set; } = "Lantai 3, Gedung A";
     [Parameter] public int Capacity { get; set; } = 12;
     [Parameter] public DateTime TargetTime { get; set; } = DateTime.Now.AddMinutes(15);
-
     [Parameter] public EventCallback OnConfirm { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
     [Parameter] public EventCallback OnAutoReleased { get; set; }
 
     private PeriodicTimer? _timer;
+    private CancellationTokenSource? _cts;
+    private bool _disposed;
     private string RemainingTimeFormatted = "15:00";
-    private double RemainingOffset = 0;
-    private double _totalSeconds;
     private double _remainingPercentage = 100;
-
-    private double RemainingPercentage => _remainingPercentage;
+    private double _totalSeconds = 15 * 60;
+    private bool _hasExtended = false;
 
     private string RingColorClass => _remainingPercentage switch
     {
@@ -373,17 +359,29 @@
         _totalSeconds = 15 * 60;
         UpdateCountdown();
     }
-    
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (firstRender && !_disposed)
         {
+            _cts = new CancellationTokenSource();
             _timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
-            while (await _timer.WaitForNextTickAsync())
+            try
             {
-                UpdateCountdown();
-                await InvokeAsync(StateHasChanged);
+                while (!_disposed && await _timer.WaitForNextTickAsync(_cts.Token))
+                {
+                    if (_disposed) break;
+                    UpdateCountdown();
+                    try
+                    {
+                        await InvokeAsync(StateHasChanged);
+                    }
+                    catch (ObjectDisposedException) { break; }
+                    catch (InvalidOperationException) { break; }
+                }
             }
+            catch (OperationCanceledException) { }
+            catch (ObjectDisposedException) { }
         }
     }
 
@@ -394,34 +392,36 @@
         {
             remaining = TimeSpan.Zero;
             _timer?.Dispose();
-            InvokeAsync(() => OnAutoReleased.InvokeAsync());
+            if (!_disposed)
+            {
+                try
+                {
+                    InvokeAsync(() => OnAutoReleased.InvokeAsync());
+                }
+                catch { }
+            }
         }
 
         RemainingTimeFormatted = remaining.ToString(@"mm\:ss");
-        
         double progress = remaining.TotalSeconds / _totalSeconds;
         progress = Math.Max(0, Math.Min(1, progress));
-        RemainingOffset = 326.7 * (1 - progress);
         _remainingPercentage = progress * 100;
     }
 
     private async Task ConfirmCheckIn()
     {
         _timer?.Dispose();
+        _cts?.Cancel();
         if (OnConfirm.HasDelegate)
         {
             await OnConfirm.InvokeAsync();
         }
         else
         {
-            await ModalService.ReplaceTopAsync(typeof(CheckInSuccessModal), new Dictionary<string, object>
-            {
-                { "Timestamp", DateTime.Now }
-            });
+            await ModalService.CloseTopAsync(ModalResult.Ok());
+            ToastService.Success("Check-In Berhasil", "Kehadiran Anda telah dikonfirmasi.");
         }
     }
-
-    private bool _hasExtended = false;
 
     private async Task OpenExtendModal()
     {
@@ -436,7 +436,7 @@
     private void HandleRequestExtension(string reason)
     {
         ExtendWindow();
-        ToastService.Info("Waktu ditambah 10 menit");
+        ToastService.Info("Waktu Tambahan Diberikan", "Batas check-in diperpanjang 10 menit.");
     }
 
     private void ExtendWindow()
@@ -463,6 +463,7 @@
     private async Task HandleConfirmCancel()
     {
         _timer?.Dispose();
+        _cts?.Cancel();
         if (OnCancel.HasDelegate)
         {
             await OnCancel.InvokeAsync();
@@ -473,6 +474,7 @@
     private async Task HandleCancelClose()
     {
         _timer?.Dispose();
+        _cts?.Cancel();
         if (OnCancel.HasDelegate)
         {
             await OnCancel.InvokeAsync();
@@ -481,8 +483,9 @@
 
     public void Dispose()
     {
+        _disposed = true;
+        _cts?.Cancel();
+        _cts?.Dispose();
         _timer?.Dispose();
     }
 }
-
-

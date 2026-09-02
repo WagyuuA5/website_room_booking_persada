@@ -1,7 +1,13 @@
 /* ==========================================================================
-   Design Tokens - Revisi V18 (Master Reference)
+   Design Tokens - Revisi V26 (Master Reference)
    ========================================================================== */
 :root {
+  /* CASE 7 Theme Tokens */
+  --icon-color-default: #1D1D1F;
+  --surface-card: #FFFFFF;
+  --brand-gold-500: #F59E0B;
+  --status-unavailable: #EF4444;
+
   /* DS-04 Glass Blur / Backdrop Overlay Standard */
   --overlay-blur: 5px;
   --overlay-color: rgba(15, 23, 42, 0.45);
@@ -61,231 +67,19 @@
   --radius-card: 16px;
   --radius-button: 10px;
   --radius-badge: 999px;
+  --radius-pill: 999px;
   --space-modal-padding: 32px;
   --space-section-gap: 20px;
   --space-field-gap: 16px;
 }
-/* ==========================================================================
-   Design Tokens — Sistem Manajemen Ruangan & Pemesanan PT PERSADA (V6)
-   Acuan resmi warna status, tipografi, radius, shadow, dan spacing
-   Revisi V6: navy gelap + aksen kuning/emas + Dynamic Island tokens
-   ========================================================================== */
 
-:root {
-  /* --- Warna Status (V6 - diperbaiki sesuai Figma) --- */
-  --color-status-available-bg: #E7F8EF;
-  --color-status-available-text: #1AA262;
-  --color-status-available-border: #BBF7D0;
-  --color-status-available-dot: #1AA262;
-
-  --color-status-unavailable-bg: #FDE8E8;
-  --color-status-unavailable-text: #E5484D;
-  --color-status-unavailable-border: #FECACA;
-  --color-status-unavailable-dot: #E5484D;
-
-  --color-status-booked-bg: #FFF4E5;
-  --color-status-booked-text: #D97706;
-  --color-status-booked-border: #FED7AA;
-  --color-status-booked-dot: #F59E0B;
-
-  --color-status-pending-bg: #FEF3C7;
-  --color-status-pending-text: #F2B705;
-  --color-status-pending-border: #FDE68A;
-  --color-status-pending-dot: #F2B705;
-
-  --color-status-approved-bg: #E7F8EF;
-  --color-status-approved-text: #1AA262;
-  --color-status-approved-border: #BBF7D0;
-  --color-status-approved-dot: #1AA262;
-
-  --color-status-rejected-bg: #FDE8E8;
-  --color-status-rejected-text: #E5484D;
-  --color-status-rejected-border: #FECACA;
-  --color-status-rejected-dot: #E5484D;
-
-  --color-status-completed-bg: #E8ECFB;
-  --color-status-completed-text: #3B4BA6;
-  --color-status-completed-border: #C7D2FE;
-  --color-status-completed-dot: #4F46E5;
-
-  /* --- Radius Standar (V6 - compound modal radius diperbarui) --- */
-  --radius-xs: 4px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-card: 16px;
-  --radius-modal: 28px;
-  --radius-pill: 999px;
-  --radius-badge: 999px;
-  --radius-button: 12px;
-
-  /* --- Shadow Standar --- */
-  --shadow-card: 0 1px 3px rgba(17, 24, 39, 0.06), 0 1px 2px rgba(17, 24, 39, 0.04);
-  --shadow-card-hover: 0 10px 25px -5px rgba(15, 31, 61, 0.1), 0 8px 10px -6px rgba(15, 31, 61, 0.04);
-  --shadow-modal: 0 20px 40px rgba(17, 24, 39, 0.18), 0 10px 15px -3px rgba(17, 24, 39, 0.08);
-  --shadow-popover: 0 12px 28px rgba(17, 24, 39, 0.14), 0 4px 10px rgba(17, 24, 39, 0.05);
-
-  /* --- Spacing Skala 4px --- */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-10: 40px;
-
-  /* --- Modal Layout Dimensions --- */
-  --modal-max-height: 90vh;
-  --modal-max-width-sm: 440px;
-  --modal-max-width-md: 560px;
-  --modal-max-width-lg: 720px;
-  --modal-max-width-xl: 960px;
-
-  /* --- Tipografi Font Families & Weights --- */
-  --font-family-primary: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-weight-regular: 400;
-  --font-weight-medium: 500;
-  --font-weight-semibold: 600;
-  --font-weight-bold: 700;
-  --font-weight-extrabold: 800;
-
-  /* --- Warna Brand Persada (V6 - navy lebih gelap + gold) --- */
-  --color-brand-navy-950: #0A1330;
-  --color-brand-navy-900: #0F1B3D;
-  --color-brand-navy-800: #15294D;
-  --color-brand-navy-700: #1E3A5F;
-  --color-brand-gold-500: #F5B301;
-  --color-brand-gold-600: #E0A400;
-  --color-brand-gold-700: #C49100;
-  --color-brand-blue: #1F5D9A;
-  --color-brand-gray-bg: #F8FAFC;
-  --color-brand-gray-border: #E5E7EB;
-  --color-brand-text-muted: #6B7280;
-  --color-brand-text-heading: #111827;
-
-  /* --- Dynamic Island Tokens (V6 final) --- */
-  --island-radius-compact: 999px;
-  --island-radius-expanded: 28px;
-  --island-bg: #0B0B0C;
-  --island-bg-elevated: #14141A;
-  --island-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --island-duration-expand: 380ms;
-  --island-duration-collapse: 220ms;
-  --island-shadow: 0 16px 36px rgba(0, 0, 0, 0.35), 0 4px 12px rgba(0, 0, 0, 0.2);
-  --island-border: rgba(255, 255, 255, 0.12);
-
-  /* --- Modal Backdrop (V6 - blur wajib di semua modal) --- */
-  --modal-backdrop-blur: blur(18px);
-  --modal-backdrop-scrim: rgba(10, 19, 48, 0.35);
-  --modal-radius-outer: 28px;
-
-  /* --- Glassmorphism Tokens (V9) --- */
-  --glass-bg-light: rgba(255, 255, 255, 0.75);
-  --glass-border-light: rgba(255, 255, 255, 0.5);
-
-  --glass-bg-dark: rgba(11, 26, 61, 0.85);
-  --glass-border-dark: rgba(255, 255, 255, 0.14);
-
-  --glass-blur: 20px;
-  --glass-saturate: 160%;
-  --glass-shadow: 0 8px 32px rgba(15, 23, 42, 0.18);
-  --glass-shadow-dark: 0 8px 32px rgba(0, 0, 0, 0.35);
-}
-
-/* Glass Surface Utility Classes */
-.glass-surface {
-  background: var(--glass-bg-light) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-  border: 1px solid var(--glass-border-light) !important;
-  box-shadow: var(--glass-shadow) !important;
-  border-radius: var(--persada-border-radius-card, 20px);
-}
-
-.glass-surface.tone-dark {
-  background: var(--glass-bg-dark) !important;
-  border-color: var(--glass-border-dark) !important;
-  box-shadow: var(--glass-shadow-dark) !important;
-  color: #FFFFFF !important;
-}
-
-/* 2.5 Sistem Tombol */
-.btn-primary-app {
-    height: 42px;
-    padding: 0 24px;
-    font-family: inherit;
-    font-size: var(--font-button);
-    font-weight: 600;
-    border-radius: var(--radius-button);
-    background-color: var(--color-gold-cta);
-    color: var(--color-navy-primary);
-    border: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-.btn-primary-app:hover {
-    background-color: var(--color-gold-cta-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.12);
-}
-.btn-primary-app svg {
-    width: 16px;
-    height: 16px;
-}
-.btn-secondary-app {
-    height: 42px;
-    padding: 0 24px;
-    font-family: inherit;
-    font-size: var(--font-button);
-    font-weight: 600;
-    border-radius: var(--radius-button);
-    background-color: var(--color-surface-alt);
-    color: var(--color-navy-primary);
-    border: 1px solid var(--color-border);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: background-color 0.2s, color 0.2s;
-}
-.btn-secondary-app:hover {
-    background-color: var(--color-surface);
-}
-.btn-secondary-app svg {
-    width: 16px;
-    height: 16px;
-}
-.btn-tertiary-app {
-    height: 42px;
-    padding: 0 24px;
-    font-family: inherit;
-    font-size: var(--font-button);
-    font-weight: 600;
-    border-radius: var(--radius-button);
-    background-color: transparent;
-    color: var(--color-text-secondary);
-    border: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: color 0.2s, background-color 0.2s;
-}
-.btn-tertiary-app:hover {
-    color: var(--color-navy-primary);
-    background-color: rgba(15, 31, 61, 0.05);
-}
-.btn-tertiary-app svg {
-    width: 16px;
-    height: 16px;
+[data-theme="dark"], body.dark-mode {
+  --icon-color-default: #F5F5F7;
+  --surface-card: #1C1C1E;
+  --persada-navy-900: #F8FAFC;
+  --color-text-primary: #F8FAFC;
+  --color-text-secondary: #94A3B8;
+  --color-border: rgba(255, 255, 255, 0.12);
+  --color-surface: #141416;
+  --color-surface-alt: #1C1C1E;
 }

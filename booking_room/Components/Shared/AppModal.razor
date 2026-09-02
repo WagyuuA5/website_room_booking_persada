@@ -1,59 +1,59 @@
 @namespace booking_room.Components.Shared
 @inject IJSRuntime JS
+@implements IAsyncDisposable
 
 @if (Visible)
 {
-    <div class="app-modal-overlay" @onclick="HandleOverlayClick">
-        <div class="app-modal-container" @onclick:stopPropagation="true" role="dialog" aria-modal="true" style="@(ComputedMaxWidth > 0 ? $"max-width: {ComputedMaxWidth}px" : "")">
+    <div class="modal-backdrop-overlay @(LockBackdrop ? "backdrop-locked" : "") animate-fade-in" 
+         @onclick="HandleOverlayClick"
+         tabindex="-1">
+        
+        <div class="modal-surface-container size-@Size mode-@LayoutMode @Class animate-scale-up" 
+             @onclick:stopPropagation="true"
+             role="dialog" 
+             aria-modal="true"
+             aria-labelledby="@(string.IsNullOrEmpty(Title) ? null : "modal-title-heading")">
+            
             @if (ShowCloseButton)
             {
-                <button class="app-modal-close" @onclick="CloseAsync" aria-label="Tutup popup">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <button type="button" class="modal-close-icon-btn" @onclick="CloseAsync" aria-label="Tutup dialog">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
                     </svg>
                 </button>
             }
 
-            @if (HeaderContent != null)
+            @if (ShowHeader && (HeaderContent != null || !string.IsNullOrEmpty(Title)))
             {
-                <div class="app-modal-header">
-                    @HeaderContent
-                </div>
-            }
-            else if (!string.IsNullOrEmpty(Title))
-            {
-                <div class="app-modal-header" style="display: flex; align-items: flex-start; gap: 16px;">
-                    @if (IconContent != null)
+                <div class="modal-header-zone">
+                    @if (HeaderContent != null)
                     {
-                        <div class="app-modal-header-icon" style="flex-shrink: 0; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: #E0F2FE; color: #0EA5E9; border-radius: 12px;">
-                            @IconContent
+                        @HeaderContent
+                    }
+                    else
+                    {
+                        <div class="modal-default-header">
+                            <h3 id="modal-title-heading" class="modal-heading-text">@Title</h3>
                         </div>
                     }
-                    <div style="flex: 1; padding-top: 2px;">
-                        <h2 class="app-modal-title" style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #0F1F3D;">@Title</h2>
-                        @if (!string.IsNullOrEmpty(Subtitle))
-                        {
-                            <p class="app-modal-subtitle" style="margin: 4px 0 0 0; font-size: 0.875rem; color: #6B7280; line-height: 1.4;">@Subtitle</p>
-                        }
-                    </div>
                 </div>
             }
 
-            <div class="app-modal-body">
+            <div class="modal-body-zone @(NoPadding ? "no-padding" : "")">
                 @if (BodyContent != null)
                 {
                     @BodyContent
                 }
-                else
+                else if (ChildContent != null)
                 {
                     @ChildContent
                 }
             </div>
 
-            @if (FooterContent != null)
+            @if (ShowFooter && FooterContent != null)
             {
-                <div class="app-modal-footer">
+                <div class="modal-footer-zone">
                     @FooterContent
                 </div>
             }
@@ -62,142 +62,156 @@
 }
 
 <style>
-    /* Overlay Backdrop with fallback */
-    .app-modal-overlay {
+    .modal-backdrop-overlay {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background-color: var(--overlay-color);
-        z-index: 10000;
+        inset: 0;
+        z-index: 1050;
         display: flex;
         align-items: center;
         justify-content: center;
-        /* Fallback for backdrop-filter is just the background color above */
-        backdrop-filter: blur(var(--overlay-blur));
-        -webkit-backdrop-filter: blur(var(--overlay-blur));
-        
-        /* Animation fade */
-        animation: fadeInOverlay 0.25s ease-out forwards;
+        background-color: rgba(15, 23, 42, 0.65);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        padding: 16px;
+        overflow-y: auto;
     }
 
-    .app-modal-container { outline: none;
-        background-color: var(--color-surface-alt);
-        border-radius: var(--radius-modal);
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    .modal-surface-container {
+        position: relative;
         width: 100%;
-        max-width: 480px; /* Default max-width, can be overridden */
-        max-height: 90vh;
+        background-color: var(--surface-card, #FFFFFF);
+        border: 1px solid var(--color-brand-gray-border, #E5E7EB);
+        border-radius: var(--radius-card, 20px);
+        box-shadow: 0 20px 40px -8px rgba(15, 31, 61, 0.15), 0 0 1px rgba(0, 0, 0, 0.1);
         display: flex;
         flex-direction: column;
-        position: relative;
+        max-height: calc(100vh - 48px);
         overflow: hidden;
-        
-        /* Animation scale */
-        animation: scaleInModal 0.25s ease-out forwards;
-        transform: scale(0.95);
-        opacity: 0;
+    }
+    body.dark-mode .modal-surface-container {
+        background-color: #1C1C1E;
+        border-color: rgba(255, 255, 255, 0.12);
+        color: #F8FAFC;
     }
 
-    @@keyframes fadeInOverlay {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
+    .modal-surface-container.size-sm { max-width: 420px; }
+    .modal-surface-container.size-md { max-width: 580px; }
+    .modal-surface-container.size-lg { max-width: 840px; }
+    .modal-surface-container.size-xl { max-width: 1040px; }
 
-    @@keyframes scaleInModal {
-        from {
-            transform: scale(0.95);
-            opacity: 0;
-        }
-        to {
-            transform: scale(1);
-            opacity: 1;
-        }
-    }
-
-    .app-modal-close {
+    .modal-close-icon-btn {
         position: absolute;
-        top: 20px;
-        right: 20px;
-        background: none;
-        border: none;
-        color: var(--color-text-secondary);
-        cursor: pointer;
-        padding: 4px;
+        top: 16px;
+        right: 16px;
+        z-index: 20;
+        width: 32px;
+        height: 32px;
         display: flex;
         align-items: center;
         justify-content: center;
+        background-color: #F1F5F9;
+        border: 1px solid #E2E8F0;
         border-radius: 50%;
-        transition: background-color 0.15s, color 0.15s;
-        z-index: 10;
+        color: #64748B;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    body.dark-mode .modal-close-icon-btn {
+        background-color: #2C2C2E;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #CBD5E1;
+    }
+    .modal-close-icon-btn:hover {
+        background-color: #E2E8F0;
+        color: #0F1F3D;
+        transform: scale(1.05);
     }
 
-    .app-modal-close:hover {
-        background-color: var(--color-surface);
-        color: var(--color-text-primary);
+    .modal-header-zone {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--divider-subtle, #F1F5F9);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    body.dark-mode .modal-header-zone {
+        border-color: rgba(255, 255, 255, 0.08);
     }
 
-    .app-modal-header {
-        padding: var(--space-modal-padding) var(--space-modal-padding) 0 var(--space-modal-padding);
-        flex-shrink: 0;
+    .modal-heading-text {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--persada-navy-900, #0F1F3D);
+        margin: 0;
+        letter-spacing: -0.01em;
+    }
+    body.dark-mode .modal-heading-text {
+        color: #F8FAFC;
     }
 
-    .app-modal-body {
-        padding: var(--space-modal-padding);
+    .modal-body-zone {
+        padding: 24px;
         overflow-y: auto;
         flex: 1 1 auto;
     }
-
-    /* Remove top padding from body if header is present and padded */
-    .app-modal-header + .app-modal-body {
-        padding-top: var(--space-section-gap);
+    .modal-body-zone.no-padding {
+        padding: 0;
     }
 
-    .app-modal-footer {
-        padding: var(--space-section-gap) var(--space-modal-padding) var(--space-modal-padding) var(--space-modal-padding);
-        background-color: var(--color-surface-alt);
-        border-top: 1px solid var(--color-border);
-        flex-shrink: 0;
+    .modal-footer-zone {
+        padding: 16px 24px;
+        border-top: 1px solid var(--divider-subtle, #F1F5F9);
+        background-color: #F8FAFC;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 12px;
+        border-bottom-left-radius: inherit;
+        border-bottom-right-radius: inherit;
+    }
+    body.dark-mode .modal-footer-zone {
+        background-color: #161618;
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .animate-fade-in {
+        animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .animate-scale-up {
+        animation: modalScaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @@keyframes modalFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    @@keyframes modalScaleUp {
+        from { opacity: 0; transform: scale(0.96) translateY(8px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
     }
 </style>
 
 @code {
-    [Parameter] public bool Visible { get; set; }
+    [Parameter] public bool Visible { get; set; } = false;
     [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
-    
-    [Parameter] public RenderFragment? HeaderContent { get; set; }
-    [Parameter] public string? Title { get; set; }
-    [Parameter] public string? Subtitle { get; set; }
-    [Parameter] public RenderFragment? IconContent { get; set; }
-    [Parameter] public RenderFragment? ChildContent { get; set; }
-    [Parameter] public RenderFragment? BodyContent { get; set; }
-    [Parameter] public RenderFragment? FooterContent { get; set; }
-    
+    [Parameter] public string Size { get; set; } = "md";
+    [Parameter] public string LayoutMode { get; set; } = "standard";
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public bool ShowHeader { get; set; } = true;
+    [Parameter] public bool ShowFooter { get; set; } = true;
     [Parameter] public bool ShowCloseButton { get; set; } = true;
     [Parameter] public bool LockBackdrop { get; set; } = false;
-    [Parameter] public int MaxWidth { get; set; } = 480;
-    [Parameter] public string Size { get; set; } = "md"; // Maps to MaxWidth if MaxWidth is 480
-    [Parameter] public string LayoutMode { get; set; } = "";
+    [Parameter] public bool NoPadding { get; set; } = false;
+    [Parameter] public string? Class { get; set; }
+
+    [Parameter] public RenderFragment? HeaderContent { get; set; }
+    [Parameter] public RenderFragment? BodyContent { get; set; }
+    [Parameter] public RenderFragment? FooterContent { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
 
-    private int ComputedMaxWidth
-    {
-        get
-        {
-            if (MaxWidth != 480) return MaxWidth;
-            return Size switch
-            {
-                "sm" => 400,
-                "md" => 480,
-                "lg" => 640,
-                "xl" => 800,
-                _ => 480
-            };
-        }
-    }
-
-    
+    private DotNetObjectReference<AppModal>? _dotNetReference;
+    private bool _disposed;
 
     private async Task HandleOverlayClick()
     {
@@ -219,31 +233,38 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (firstRender && Visible)
         {
             try
             {
-                var dotNetReference = DotNetObjectReference.Create(this);
-                await JS.InvokeVoidAsync("registerEscapeKey", dotNetReference);
+                _dotNetReference ??= DotNetObjectReference.Create(this);
+                await JS.InvokeVoidAsync("registerEscapeKey", _dotNetReference);
             }
-            catch (Exception) { /* Ignored if JS not ready or missing */ }
+            catch { }
         }
     }
 
     [JSInvokable]
     public async Task OnEscapePressed()
     {
-        if (Visible && !LockBackdrop)
+        if (_disposed) return;
+        try
         {
-            await CloseAsync();
-            StateHasChanged();
+            if (Visible && !LockBackdrop)
+            {
+                await CloseAsync();
+                if (!_disposed) await InvokeAsync(StateHasChanged);
+            }
         }
+        catch (ObjectDisposedException) { }
+        catch (InvalidOperationException) { }
+        catch (Microsoft.JSInterop.JSDisconnectedException) { }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        _dotNetReference?.Dispose();
+        await Task.CompletedTask;
     }
 }
-
-
-
-
-
-
-

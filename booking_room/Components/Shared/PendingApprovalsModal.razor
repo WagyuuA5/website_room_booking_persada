@@ -4,15 +4,7 @@
 @inject NavigationManager Navigation
 @inject IModalService ModalService
 
-<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Title="Menunggu Persetujuan" Subtitle="Tinjau permintaan pemesanan terbaru Anda." LayoutMode="list" Size="md" ShowCloseButton="false" OnClose="OnClose">
-    <IconContent>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
-            <path d="M9 14l2 2 4-4"></path>
-        </svg>
-    </IconContent>
-    
+<AppModal Visible="@Visible" Title="Menunggu Persetujuan" Size="md" ShowCloseButton="true" OnClose="OnClose">
     <BodyContent>
         <div class="pending-approvals-list">
             @foreach (var item in PendingItems)
@@ -26,56 +18,15 @@
                     <div class="pending-approval-content">
                         <div class="pending-approval-room">@item.RoomName</div>
                         <div class="pending-approval-meta">
-                            <span>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                                @item.Date
-                            </span>
-                            <span>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                @item.TimeSlot
-                            </span>
+                            <span>@item.Date • @item.TimeSlot</span>
                         </div>
-                        <div class="pending-approval-requested">Oleh @item.RequestedBy</div>
-                    </div>
-                    <div class="pending-approval-actions">
-                        <span class="pending-badge-pill">
-                            <span class="pending-badge-dot"></span>
-                            Menunggu
-                        </span>
-                        <button class="btn-approve-sm" @onclick="() => ApproveItem(item)">Setujui</button>
-                        <button class="btn-reject-sm" @onclick="() => ShowRejectModal(item)">Tolak</button>
+                        <div class="pending-approval-purpose">@item.Purpose</div>
                     </div>
                 </div>
             }
         </div>
     </BodyContent>
-    <FooterContent>
-        <div style="display: flex; gap: 12px; width: 100%;">
-            <button class="btn-secondary-app" style="flex: 1;" @onclick="HandleClose">Tutup</button>
-            <button class="btn-primary-app" style="flex: 1;" @onclick="ViewAllDetails">
-                Lihat Semua Detail
-            </button>
-        </div>
-    </FooterContent>
 </AppModal>
-
-@if (_rejectingItem != null)
-{
-    <AppModal Visible="true" VisibleChanged="HandleRejectVisibleChanged" Title="Tolak Persetujuan" LayoutMode="alert" Size="sm" ShowCloseButton="false" OnClose="CloseRejectModal">
-        <BodyContent>
-            <div style="display: flex; flex-direction: column; gap: 16px;">
-                <p style="margin: 0; font-size: 0.875rem; color: var(--color-brand-text-muted, #6B7280);">Berikan alasan penolakan untuk <strong>@_rejectingItem.RoomName</strong>.</p>
-                <textarea class="form-textarea-reason" @bind="_rejectReason" placeholder="Alasan penolakan..." rows="3"></textarea>
-            </div>
-        </BodyContent>
-        <FooterContent>
-            <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                <button class="btn-secondary-app" @onclick="HandleCloseReject">Batal</button>
-                <button class="btn-primary-app" style="background: var(--color-danger-bg); color: var(--color-danger-text);" @onclick="ConfirmReject" disabled="@string.IsNullOrWhiteSpace(_rejectReason)">Tolak</button>
-            </div>
-        </FooterContent>
-    </AppModal>
-}
 
 <style>
     .pending-approvals-list {
@@ -83,228 +34,58 @@
         flex-direction: column;
         gap: 12px;
     }
-
     .pending-approval-item {
         display: flex;
         align-items: flex-start;
         gap: 12px;
-        padding: 16px;
-        background: var(--surface-card, #FFFFFF);
-        border: 1px solid var(--divider-subtle, rgba(15, 23, 42, 0.08));
-        border-radius: 16px;
-        transition: all 0.2s ease;
+        padding: 12px;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
     }
-
-    .pending-approval-item:hover {
-        border-color: #CBD5E1;
-        box-shadow: 0 2px 8px rgba(15, 31, 61, 0.04);
+    body.dark-mode .pending-approval-item {
+        background: rgba(15, 23, 42, 0.4);
+        border-color: rgba(255, 255, 255, 0.08);
     }
-
     .pending-approval-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background: #EFF6FF;
+        color: #1F5D9A;
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
     }
-
-    .icon-blue { background: #DBEAFE; color: #2563EB; }
-    .icon-purple { background: #EDE9FE; color: #7C3AED; }
-    .icon-light-blue { background: #E0F2FE; color: #0284C7; }
-
-    .pending-approval-content {
-        flex: 1;
-        min-width: 0;
+    body.dark-mode .pending-approval-icon {
+        background: rgba(31, 93, 154, 0.3);
+        color: #93C5FD;
     }
-
+    .pending-approval-content { flex: 1; min-width: 0; }
     .pending-approval-room {
-        font-weight: 700;
-        font-size: 0.9375rem;
-        color: var(--color-brand-navy, #0F1B3D);
-        margin-bottom: 4px;
-    }
-
-    .pending-approval-meta {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        font-size: 0.8rem;
-        color: var(--color-brand-text-muted, #6B7280);
-    }
-
-    .pending-approval-meta span {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .pending-approval-requested {
-        font-size: 0.75rem;
-        color: #94a3b8;
-        margin-top: 4px;
-    }
-
-    .pending-approval-actions {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 6px;
-        flex-shrink: 0;
-    }
-
-    .pending-badge-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 4px 10px;
-        border-radius: 999px;
-        background: #FEF3C7;
-        color: #F2B705;
-        font-size: 0.75rem;
-        font-weight: 700;
-    }
-
-    .pending-badge-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: #F2B705;
-    }
-
-    .btn-approve-sm {
-        padding: 6px 14px;
-        border-radius: 999px;
-        border: none;
-        background: #1AA262;
-        color: white;
-        font-weight: 700;
-        font-size: 0.75rem;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .btn-approve-sm:hover {
-        background: #158A50;
-        transform: translateY(-1px);
-    }
-
-    .btn-reject-sm {
-        padding: 6px 14px;
-        border-radius: 999px;
-        border: 1px solid #FECACA;
-        background: white;
-        color: #E5484D;
-        font-weight: 700;
-        font-size: 0.75rem;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .btn-reject-sm:hover {
-        background: #FEF2F2;
-    }
-
-    .form-textarea-reason {
-        width: 100%;
-        padding: 12px;
-        border: 1.5px solid var(--color-brand-gray-border, #E5E7EB);
-        border-radius: 12px;
         font-size: 0.875rem;
-        font-family: 'Inter', sans-serif;
-        resize: vertical;
-        box-sizing: border-box;
-        outline: none;
+        font-weight: 700;
+        color: var(--persada-navy-900, #0F1F3D);
     }
-
-    .form-textarea-reason:focus {
-        border-color: var(--color-brand-gold-500, #F5B301);
-        box-shadow: 0 0 0 3px rgba(245, 179, 1, 0.15);
+    body.dark-mode .pending-approval-room { color: #F8FAFC; }
+    .pending-approval-meta {
+        font-size: 0.72rem;
+        color: #6B7280;
+        margin: 2px 0;
     }
+    .pending-approval-purpose {
+        font-size: 0.75rem;
+        color: #4B5563;
+    }
+    body.dark-mode .pending-approval-purpose { color: #CBD5E1; }
 </style>
 
 @code {
     [Parameter] public bool Visible { get; set; }
-    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
 
-    private BookingItem? _rejectingItem = null;
-    private string _rejectReason = "";
-
-    private List<BookingItem> PendingItems = new();
-
-    protected override void OnInitialized()
-    {
-        PendingItems = BookingDataStore.AllBookings.Where(b => b.Status == "pending").ToList();
-    }
-
-    private int PendingCount => PendingItems.Count;
-
-    private async Task ApproveItem(BookingItem item)
-    {
-        PendingItems.Remove(item);
-        StateHasChanged();
-    }
-
-    private void ShowRejectModal(BookingItem item)
-    {
-        _rejectingItem = item;
-        _rejectReason = "";
-    }
-
-    private void CloseRejectModal()
-    {
-        _rejectingItem = null;
-        _rejectReason = "";
-    }
-
-    private async Task ConfirmReject()
-    {
-        if (_rejectingItem != null && !string.IsNullOrWhiteSpace(_rejectReason))
-        {
-            PendingItems.Remove(_rejectingItem);
-            _rejectingItem = null;
-            _rejectReason = "";
-            StateHasChanged();
-        }
-    }
-
-    private async Task ViewAllDetails()
-    {
-        await OnClose.InvokeAsync();
-        await ModalService.CloseTopAsync();
-        Navigation.NavigateTo("/status?filter=Menunggu%20Persetujuan");
-    }
-
-    private async Task HandleClose()
-    {
-        await OnClose.InvokeAsync();
-        await ModalService.CloseTopAsync();
-    }
-
-    private async Task HandleVisibleChanged(bool visible)
-    {
-        if (!visible)
-        {
-            await HandleClose();
-        }
-    }
-
-    private async Task HandleRejectVisibleChanged(bool visible)
-    {
-        if (!visible)
-        {
-            CloseRejectModal();
-        }
-    }
-
-    private async Task HandleCloseReject()
-    {
-        CloseRejectModal();
-    }
+    private List<BookingItem> PendingItems = BookingDataStore.AllBookings.Where(b => b.Status == "pending").ToList();
 }
-
-
 
 

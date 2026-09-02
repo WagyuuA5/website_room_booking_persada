@@ -1,199 +1,565 @@
 @page "/beranda"
-@page "/dashboard"
+@page "/user/beranda"
 @using booking_room.Components.Models
 @using booking_room.Components.Shared
+@using booking_room.Services
 @inject NavigationManager Navigation
-@inject booking_room.Services.NotificationState NotificationState
+@inject NotificationState NotificationState
 @inject booking_room.Services.LoadingStateService LoadingState
-@inject booking_room.Services.IModalService ModalService
-@inject IJSRuntime JS
+@inject IToastService ToastService
+@inject IModalService ModalService
 @implements IDisposable
-<PageTitle>Beranda — Persada Ruangan</PageTitle>
 
-@if (NotificationState.CurrentBannerType != booking_room.Services.NotificationState.BannerType.None)
-{
-    <NotificationBanner TargetTime="@NotificationState.NextBookingTime" 
-                        BannerType="@NotificationState.CurrentBannerType"
-                        OnCheckIn="HandleCheckInClick" 
-                        OnDismiss="DismissReminder" />
-}
+<PageTitle>Beranda — Persada Booking Ruangan</PageTitle>
 
 @if (LoadingState.IsLoading)
 {
-    <div class="content-fade-in">
-        <div class="skeleton-shimmer" style="height: 100px; border-radius: 1rem; margin-bottom: 1.5rem;"></div>
-        <div class="skeleton-stat-grid">
-            <div class="skeleton-stat-card"><div class="skeleton-shimmer skeleton-title"></div><div class="skeleton-shimmer skeleton-text"></div></div>
-            <div class="skeleton-stat-card"><div class="skeleton-shimmer skeleton-title"></div><div class="skeleton-shimmer skeleton-text"></div></div>
-            <div class="skeleton-stat-card"><div class="skeleton-shimmer skeleton-title"></div><div class="skeleton-shimmer skeleton-text"></div></div>
-        </div>
-        <div class="skeleton-grid">
-            <div class="skeleton-card" style="grid-column: span 2;"><div class="skeleton-shimmer" style="height: 250px;"></div></div>
-            <div class="skeleton-card"><div class="skeleton-shimmer" style="height: 250px;"></div></div>
+    <div class="content-loading-shimmer" style="padding: 24px;">
+        <div class="skeleton-banner" style="height: 60px; border-radius: 12px; margin-bottom: 20px;"></div>
+        <div class="skeleton-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;">
+            <div class="skeleton-card" style="height: 110px; border-radius: 16px;"></div>
+            <div class="skeleton-card" style="height: 110px; border-radius: 16px;"></div>
+            <div class="skeleton-card" style="height: 110px; border-radius: 16px;"></div>
+            <div class="skeleton-card" style="height: 110px; border-radius: 16px;"></div>
         </div>
     </div>
 }
 else
 {
-<div class="content-fade-in">
-<div class="hero-card">
-    <h1 class="hero-title">Selamat Datang, @(BookingDataStore.CurrentUser?.Name ?? "Pengguna")</h1>
-    <p class="hero-subtitle">Kelola pemesanan ruangan perusahaan Anda dengan efisien. Pantau penggunaan ruangan, reservasi mendatang, dan analitik sistem dalam satu tempat.</p>
-</div>
+    <div class="beranda-container content-fade-in">
+        @if (NotificationState.CurrentBannerType != NotificationState.BannerType.None)
+        {
+            <NotificationBanner BannerType="@NotificationState.CurrentBannerType"
+                                TargetTime="@NotificationState.NextBookingTime"
+                                OnDismiss="DismissReminder"
+                                OnCheckIn="HandleCheckInClick" />
+        }
 
-<div class="summary-cards">
-    <!-- Card Segera Tersedia -->
-    @if (nextRoom is not null)
-    {
-        <StatHighlightCard Title="Tersedia Berikutnya"
-                           Value="@nextRoom.RoomName"
-                           Subtitle="@($"Kapasitas: {nextRoom.Capacity}")"
-                           BadgeText="@($"Tersedia dalam {nextRoom.AvailableInMinutes} menit")"
-                           ButtonText="Pesan Instan"
-                           Variant="success"
-                           OnClick='() => ShowPopup("QuickBook")'>
-            <Icon>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
-                </svg>
-            </Icon>
-        </StatHighlightCard>
-    }
-    else
-    {
-        <StatHighlightCard Title="Butuh ruangan cepat?"
-                           Value="Ruangan Tersedia"
-                           Subtitle="Temukan ruangan tersedia di dekat Anda secara instan."
-                           ButtonText="Cari Ruangan"
-                           Variant="info"
-                           OnClick="ViewAllRooms" />
-    }
-
-    <!-- Card Menunggu Persetujuan -->
-    <StatHighlightCard Title="Menunggu Persetujuan"
-                       Value="@DashboardData.PendingApprovals.ToString()"
-                       Subtitle="Permintaan pemesanan menunggu tindakan"
-                       Variant="warning"
-                       ShowArrow="true"
-                       OnClick='() => ShowPopup("PendingApprovals")'>
-        <Icon>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
-                <circle cx="12" cy="14" r="3"></circle>
-                <path d="M12 12v2l1 1"></path>
-            </svg>
-        </Icon>
-    </StatHighlightCard>
-</div>
-
-<div class="dashboard-lower-layout">
-    <!-- Jadwal Saya Hari Ini -->
-    @if (IsWidgetVisible("TodaySchedule"))
-    {
-        <div class="dashboard-widget upcoming-bookings-panel">
-            <div class="upcoming-header">
-                <h2 class="upcoming-title">Jadwal Saya Hari Ini</h2>
-                <span class="upcoming-badge">@DashboardData.TodaySchedule.Count Agenda</span>
+        <div class="hero-welcome-card">
+            <div class="hero-text-content">
+                <h1 class="hero-greeting">Selamat Datang, <span>@BookingDataStore.CurrentUser.FullName</span> 👋</h1>
+                <p class="hero-subtext">Kelola reservasi ruangan kerja dan jadwal pertemuan Anda dengan mudah dan cepat.</p>
             </div>
-            <div class="upcoming-list">
-                @foreach (var item in DashboardData.TodaySchedule)
-                {
-                    <div class="upcoming-card" style="cursor: pointer;" @onclick="() => NavigateToBookingDetail(item)">
-                        <div class="upcoming-accent" style="background-color: @item.AccentColor;"></div>
-                        <div class="upcoming-content">
-                            <div class="upcoming-top">
-                                <div>
-                                    <h3 class="upcoming-room-name">@item.RoomName</h3>
-                                    <p class="upcoming-location">@item.Title</p>
-                                </div>
-                                <StatusBadge Status="@item.Status" CustomLabel="@item.StatusLabel" />
+            <div class="hero-quick-actions">
+                <button class="btn-hero-action primary" @onclick='() => Navigation.NavigateTo("/bookings")'>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <span>Pesan Ruangan</span>
+                </button>
+                <button class="btn-hero-action secondary" @onclick='() => Navigation.NavigateTo("/status")'>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    <span>Status Reservasi</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="stats-overview-grid">
+            <div class="stat-card">
+                <div class="stat-icon-wrap navy">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Total Ruangan</span>
+                    <h3 class="stat-value">20</h3>
+                    <span class="stat-hint positive">14 Tersedia Hari Ini</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon-wrap gold">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Pemesanan Aktif</span>
+                    <h3 class="stat-value">3</h3>
+                    <span class="stat-hint">1 Perlu Konfirmasi</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon-wrap green">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Tingkat Utilisasi</span>
+                    <h3 class="stat-value">62%</h3>
+                    <span class="stat-hint positive">↑ 8% minggu ini</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon-wrap purple">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Rekan Terhubung</span>
+                    <h3 class="stat-value">48</h3>
+                    <span class="stat-hint">Divisi IT & Eksekutif</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-main-columns">
+            <div class="dashboard-card upcoming-card">
+                <div class="dashboard-card-header">
+                    <div>
+                        <h2 class="card-title">Jadwal Pertemuan Mendatang</h2>
+                        <p class="card-subtitle">Daftar agenda rapat dan reservasi terdekat Anda</p>
+                    </div>
+                    <button class="btn-card-more" @onclick='() => Navigation.NavigateTo("/status")'>
+                        Lihat Semua
+                    </button>
+                </div>
+
+                <div class="upcoming-items-list">
+                    @foreach (var item in DashboardData.UpcomingBookings.Take(3))
+                    {
+                        <div class="upcoming-item-row" @onclick='() => Navigation.NavigateTo("/status")'>
+                            <div class="item-time-box">
+                                <span class="time-main">@(item.Date.Split(',').Length > 1 ? item.Date.Split(',')[1].Trim() : item.Date)</span>
+                                <span class="time-sub">@item.TimeSlot</span>
                             </div>
-                            <div class="upcoming-bottom">
-                                <div class="upcoming-schedule">
-                                    <span>
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" fill="currentColor"/></svg>
-                                        @item.TimeSlot
-                                    </span>
+                            <div class="item-divider-line"></div>
+                            <div class="item-content-box">
+                                <h4 class="item-title">@item.RoomName</h4>
+                                <p class="item-purpose">@item.Location</p>
+                                <div class="item-tags-row">
+                                    <span class="tag-chip">@item.Category</span>
+                                    <span class="tag-chip status-ok">Terkonfirmasi</span>
                                 </div>
+                            </div>
+                            <div class="item-arrow">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
                             </div>
                         </div>
-                    </div>
-                }
-            </div>
-            @if (!DashboardData.TodaySchedule.Any())
-            {
-                <div style="text-align: center; padding: 2rem; color: #94a3b8;">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style="margin-bottom: 1rem; opacity: 0.5;"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-                    <p style="font-weight: 600; margin-bottom: 0.5rem;">Tidak ada jadwal hari ini</p>
-                    <p style="font-size: 0.85rem; margin-bottom: 1rem;">Ayo pesan ruangan!</p>
-                    <button class="btn btn-primary" style="border-radius: 999px; padding: 0.5rem 1.25rem; font-size: 0.85rem;" @onclick="ViewAllRooms">Cari Ruangan</button>
+                    }
                 </div>
-            }
+            </div>
+
+            <div class="dashboard-card available-rooms-card">
+                <div class="dashboard-card-header">
+                    <div>
+                        <h2 class="card-title">Rekomendasi Ruangan</h2>
+                        <p class="card-subtitle">Ruangan siap pakai dengan fasilitas terbaik</p>
+                    </div>
+                    <button class="btn-card-more" @onclick='() => Navigation.NavigateTo("/bookings")'>
+                        Katalog Ruangan
+                    </button>
+                </div>
+
+                <div class="rooms-preview-grid">
+                    @foreach (var r in DashboardData.AllRooms.Where(x => x.Status == "Tersedia").Take(3))
+                    {
+                        <div class="room-preview-item" @onclick='() => Navigation.NavigateTo("/bookings")'>
+                            <div class="room-preview-avatar">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                            </div>
+                            <div class="room-preview-info">
+                                <h4 class="room-preview-name">@r.RoomName</h4>
+                                <span class="room-preview-meta">@r.Floor • Kapasitas @r.Capacity Orang</span>
+                            </div>
+                            <button class="btn-room-quick-book" @onclick='() => Navigation.NavigateTo("/bookings")' @onclick:stopPropagation="true">
+                                Pesan
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
         </div>
-    }
-</div>
-
-<!-- DS-02 Grafik Tren Pemesanan Saya -->
-<div style="margin-top: 24px;">
-    <UserTrendChart />
-</div>
-
-</div>
+    </div>
 }
 
-@code {
-    private NextAvailableRoom? nextRoom;
-    private DateTime checkInTimestamp;
-    private bool showAllUpcoming = false;
+<style>
+    .beranda-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
 
-    private List<RoomItem> _allRooms = new()
-    {
-        new("1", "Executive Boardroom A", 12, "Ruang rapat unggulan.", "available", new() { "AC" }, "Lantai 3", ""),
-        new("2", "Training Ruangan B", 30, "Ruang pelatihan kapasitas besar.", "booked", new() { "AC" }, "Lantai 2", ""),
-        new("3", "Huddle Space C", 6, "Ruang kolaborasi kecil.", "available", new() { "AC" }, "Lantai 1", ""),
-        new("4", "Studio Webinar", 15, "Ruang siaran.", "unavailable", new() { "AC" }, "Lantai 4", ""),
-        new("5", "Focus Ruangan Alpha", 4, "Ruang sunyi.", "available", new() { "AC" }, "Lantai 1", ""),
-        new("6", "Meeting Ruangan Prime", 8, "Ruang rapat standar.", "booked", new() { "AC" }, "Lantai 2", ""),
-    };
+    .hero-welcome-card {
+        background: linear-gradient(135deg, #0F1F3D 0%, #1F5D9A 100%);
+        border-radius: 20px;
+        padding: 32px;
+        color: #FFFFFF;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 10px 25px -5px rgba(15, 31, 61, 0.2);
+    }
+    .hero-greeting {
+        font-size: 1.75rem;
+        font-weight: 800;
+        margin: 0 0 8px 0;
+        letter-spacing: -0.02em;
+    }
+    .hero-greeting span { color: #F59E0B; }
+    .hero-subtext {
+        font-size: 0.9375rem;
+        color: rgba(255, 255, 255, 0.8);
+        margin: 0;
+        max-width: 540px;
+        line-height: 1.5;
+    }
+    .hero-quick-actions { display: flex; gap: 12px; }
+    .btn-hero-action {
+        height: 44px;
+        padding: 0 20px;
+        border-radius: 999px;
+        font-size: 0.875rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .btn-hero-action.primary {
+        background: #F59E0B;
+        color: #0F1F3D;
+        border: none;
+    }
+    .btn-hero-action.primary:hover {
+        background: #D97706;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
+    }
+    .btn-hero-action.secondary {
+        background: rgba(255, 255, 255, 0.15);
+        color: #FFFFFF;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(8px);
+    }
+    .btn-hero-action.secondary:hover {
+        background: rgba(255, 255, 255, 0.25);
+        transform: translateY(-1px);
+    }
+
+    .stats-overview-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+    }
+    .stat-card {
+        background: var(--surface-card, #FFFFFF);
+        border: 1.5px solid var(--color-brand-gray-border, #E5E7EB);
+        border-radius: 16px;
+        padding: 20px;
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        box-shadow: 0 2px 10px rgba(15, 31, 61, 0.03);
+    }
+    body.dark-mode .stat-card {
+        background: #1C1C1E;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    .stat-icon-wrap {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .stat-icon-wrap.navy { background: #EEF2FF; color: #1F5D9A; }
+    .stat-icon-wrap.gold { background: #FEF3C7; color: #D97706; }
+    .stat-icon-wrap.green { background: #DCFCE7; color: #16A34A; }
+    .stat-icon-wrap.purple { background: #F3E8FF; color: #9333EA; }
+    body.dark-mode .stat-icon-wrap.navy { background: rgba(31, 93, 154, 0.25); color: #93C5FD; }
+    body.dark-mode .stat-icon-wrap.gold { background: rgba(245, 158, 11, 0.25); color: #FCD34D; }
+    body.dark-mode .stat-icon-wrap.green { background: rgba(22, 163, 74, 0.25); color: #86EFAC; }
+    body.dark-mode .stat-icon-wrap.purple { background: rgba(147, 51, 234, 0.25); color: #D8B4FE; }
+
+    .stat-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--persada-text-secondary, #6B7280);
+        display: block;
+        margin-bottom: 2px;
+    }
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--persada-navy-900, #0F1F3D);
+        margin: 0 0 2px 0;
+    }
+    body.dark-mode .stat-value { color: #F8FAFC; }
+    .stat-hint {
+        font-size: 0.6875rem;
+        font-weight: 600;
+        color: #6B7280;
+    }
+    .stat-hint.positive { color: #16A34A; }
+    body.dark-mode .stat-hint.positive { color: #4ADE80; }
+
+    .dashboard-main-columns {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 24px;
+    }
+    .dashboard-card {
+        background: var(--surface-card, #FFFFFF);
+        border: 1.5px solid var(--color-brand-gray-border, #E5E7EB);
+        border-radius: 20px;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 4px 16px rgba(15, 31, 61, 0.04);
+    }
+    body.dark-mode .dashboard-card {
+        background: #1C1C1E;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    .dashboard-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+    .card-title {
+        font-size: 1.125rem;
+        font-weight: 800;
+        color: var(--persada-navy-900, #0F1F3D);
+        margin: 0 0 4px 0;
+    }
+    body.dark-mode .card-title { color: #F8FAFC; }
+    .card-subtitle {
+        font-size: 0.8125rem;
+        color: var(--persada-text-secondary, #6B7280);
+        margin: 0;
+    }
+    .btn-card-more {
+        background: transparent;
+        border: 1px solid #E2E8F0;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #1F5D9A;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .btn-card-more:hover {
+        background: #EFF6FF;
+        border-color: #BFDBFE;
+    }
+    body.dark-mode .btn-card-more {
+        border-color: rgba(255, 255, 255, 0.15);
+        color: #60A5FA;
+    }
+
+    .upcoming-items-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .upcoming-item-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 14px 16px;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .upcoming-item-row:hover {
+        border-color: #CBD5E1;
+        background: #FFFFFF;
+        box-shadow: 0 4px 12px rgba(15, 31, 61, 0.05);
+        transform: translateY(-1px);
+    }
+    body.dark-mode .upcoming-item-row {
+        background: rgba(15, 23, 42, 0.5);
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+    .item-time-box {
+        display: flex;
+        flex-direction: column;
+        min-width: 100px;
+    }
+    .time-main {
+        font-size: 0.8125rem;
+        font-weight: 700;
+        color: var(--persada-navy-900, #0F1F3D);
+    }
+    body.dark-mode .time-main { color: #F8FAFC; }
+    .time-sub {
+        font-size: 0.6875rem;
+        color: #6B7280;
+    }
+    .item-divider-line {
+        width: 1px;
+        height: 36px;
+        background: #E2E8F0;
+    }
+    body.dark-mode .item-divider-line { background: rgba(255, 255, 255, 0.1); }
+    .item-content-box {
+        flex: 1;
+        min-width: 0;
+    }
+    .item-title {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: var(--persada-navy-900, #0F1F3D);
+        margin: 0 0 2px 0;
+    }
+    body.dark-mode .item-title { color: #F8FAFC; }
+    .item-purpose {
+        font-size: 0.75rem;
+        color: #6B7280;
+        margin: 0 0 6px 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .item-tags-row { display: flex; gap: 6px; }
+    .tag-chip {
+        font-size: 0.625rem;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        color: #475569;
+    }
+    body.dark-mode .tag-chip {
+        background: #1E293B;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #CBD5E1;
+    }
+    .tag-chip.status-ok {
+        background: #DCFCE7;
+        border-color: #BBF7D0;
+        color: #15803D;
+    }
+    body.dark-mode .tag-chip.status-ok {
+        background: rgba(22, 163, 74, 0.2);
+        border-color: rgba(74, 222, 128, 0.3);
+        color: #4ADE80;
+    }
+    .item-arrow { color: #9CA3AF; }
+
+    .rooms-preview-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .room-preview-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    body.dark-mode .room-preview-item {
+        background: rgba(15, 23, 42, 0.5);
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+    .room-preview-item:hover {
+        background: #EFF6FF;
+        border-color: #BFDBFE;
+    }
+    .room-preview-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        color: #1F5D9A;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    body.dark-mode .room-preview-avatar {
+        background: #1E293B;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #93C5FD;
+    }
+    .room-preview-info {
+        flex: 1;
+        min-width: 0;
+    }
+    .room-preview-name {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: var(--persada-navy-900, #0F1F3D);
+        margin: 0;
+    }
+    body.dark-mode .room-preview-name { color: #F8FAFC; }
+    .room-preview-meta {
+        font-size: 0.72rem;
+        color: #6B7280;
+    }
+    .btn-room-quick-book {
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: #1F5D9A;
+        color: #FFFFFF;
+        font-size: 0.75rem;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        transition: background 0.15s ease;
+    }
+    .btn-room-quick-book:hover { background: #164879; }
+
+    @@media (max-width: 1024px) {
+        .stats-overview-grid { grid-template-columns: repeat(2, 1fr); }
+        .dashboard-main-columns { grid-template-columns: 1fr; }
+        .hero-welcome-card { flex-direction: column; gap: 20px; align-items: flex-start; }
+    }
+    @@media (max-width: 640px) {
+        .stats-overview-grid { grid-template-columns: 1fr; }
+    }
+</style>
+
+@code {
+    private bool _disposed;
 
     protected override void OnInitialized()
     {
         DashboardData.CurrentUserRole = "User";
-        nextRoom = DashboardData.NextAvailableRooms.FirstOrDefault();
-        NotificationState.OnChange += StateHasChanged;
-        LoadingState.OnChange += StateHasChanged;
+        NotificationState.OnChange += SafeStateHasChanged;
+        LoadingState.OnChange += SafeStateHasChanged;
     }
-    
-    protected override Task OnAfterRenderAsync(bool firstRender)
+
+    private void SafeStateHasChanged()
     {
-        return Task.CompletedTask;
+        if (_disposed) return;
+        try
+        {
+            InvokeAsync(StateHasChanged);
+        }
+        catch (ObjectDisposedException) { }
+        catch (InvalidOperationException) { }
     }
 
     public void Dispose()
     {
-        NotificationState.OnChange -= StateHasChanged;
-        LoadingState.OnChange -= StateHasChanged;
-    }
-
-    private void ToggleShowAllUpcoming()
-    {
-        showAllUpcoming = !showAllUpcoming;
-    }
-
-    private bool IsWidgetVisible(string widgetName)
-    {
-        var role = DashboardData.CurrentUserRole;
-        if (DashboardData.RoleWidgetPriority.TryGetValue(role, out var widgets))
-        {
-            return widgets.Contains(widgetName);
-        }
-        return true;
-    }
-
-    private void ViewAllRooms()
-    {
-        Navigation.NavigateTo("/bookings");
+        _disposed = true;
+        NotificationState.OnChange -= SafeStateHasChanged;
+        LoadingState.OnChange -= SafeStateHasChanged;
     }
 
     private void DismissReminder()
@@ -205,182 +571,10 @@ else
     {
         await ModalService.ShowAsync<CheckInCountdownCard>(new Dictionary<string, object>
         {
-            { "RoomName", "Alpha Boardroom" },
+            { "RoomName", "Executive Boardroom A" },
             { "TimeSlot", "09:00 - 11:00" },
-            { "Location", "Lantai 2, Sayap A" },
-            { "Capacity", "12" },
-            { "TargetTime", NotificationState.NextBookingTime ?? DateTime.Now },
-            { "OnConfirm", EventCallback.Factory.Create(this, HandleConfirmCheckIn) },
-            { "OnAutoReleased", EventCallback.Factory.Create(this, HandleBookingAutoReleased) }
-        });
-    }
-
-    private async Task HandleConfirmCheckIn()
-    {
-        checkInTimestamp = DateTime.Now;
-        await ModalService.ReplaceTopAsync(typeof(CheckInSuccessModal), new Dictionary<string, object>
-        {
-            { "Timestamp", checkInTimestamp },
-            { "OnClose", EventCallback.Factory.Create(this, HandleSuccessClose) }
-        });
-    }
-
-    private async Task HandleBookingAutoReleased()
-    {
-        await ModalService.ReplaceTopAsync(typeof(BookingAutoReleasedModal), new Dictionary<string, object>
-        {
-            { "RoomName", "Alpha Boardroom" },
-            { "OnBookAnother", EventCallback.Factory.Create(this, HandleBookAnother) }
-        });
-    }
-
-    private void HandleBookAnother()
-    {
-        Navigation.NavigateTo("/bookings");
-    }
-
-    private void HandleSuccessClose()
-    {
-        NotificationState.DismissBanner();
-        ModalService.CloseAllAsync();
-    }
-
-    private async Task ShowPopup(string popupName)
-    {
-        if (popupName == "RoomAvailable" || popupName == "QuickBook")
-        {
-            await ModalService.ShowAsync<AvailableRoomsModal>();
-        }
-        else if (popupName == "PendingApprovals" || popupName == "PendingApproval")
-        {
-            await ModalService.ShowAsync<PendingApprovalsModal>();
-        }
-    }
-
-    private async Task NavigateToBookingDetail(TodayScheduleItem item)
-    {
-        await ModalService.ShowAsync<ScheduleDetailModal>(new Dictionary<string, object>
-        {
-            { "Item", item },
-            { "OnCheckIn", EventCallback.Factory.Create(this, HandleCheckInClick) }
+            { "Location", "Lantai 3, Sayap Utara" },
+            { "Capacity", 15 }
         });
     }
 }
-
-<style>
-    .dashboard-lower-layout {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 24px;
-        margin-top: 24px;
-    }
-    
-    .upcoming-bookings-panel {
-        background: var(--persada-white);
-        border-radius: var(--persada-border-radius-card);
-        padding: 24px;
-        box-shadow: var(--shadow-sm);
-        border: 1px solid #E5E7EB;
-    }
-    
-    .upcoming-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-    
-    .upcoming-title {
-        font-size: 1.125rem;
-        font-weight: 700;
-        color: var(--persada-navy-900);
-        margin: 0;
-    }
-    
-    .upcoming-badge {
-        background: #F3F4F6;
-        color: #4B5563;
-        font-size: 0.75rem;
-        font-weight: 600;
-        padding: 4px 10px;
-        border-radius: 999px;
-    }
-    
-    .upcoming-list {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-    
-    .upcoming-card {
-        display: flex;
-        background: #FFFFFF;
-        border: 1px solid #E5E7EB;
-        border-radius: 12px;
-        overflow: hidden;
-        transition: var(--transition-fast);
-    }
-    
-    .upcoming-card:hover {
-        border-color: #CBD5E1;
-        box-shadow: var(--shadow-md);
-    }
-    
-    .upcoming-accent {
-        width: 4px;
-        flex-shrink: 0;
-    }
-    
-    .upcoming-content {
-        padding: 16px;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-    
-    .upcoming-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-    }
-    
-    .upcoming-room-name {
-        font-size: 0.95rem;
-        font-weight: 700;
-        color: var(--persada-navy-900);
-        margin: 0 0 4px 0;
-    }
-    
-    .upcoming-location {
-        font-size: 0.8rem;
-        color: #6B7280;
-        margin: 0;
-    }
-    
-    .upcoming-bottom {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-top: 1px solid #F3F4F6;
-        padding-top: 12px;
-    }
-    
-    .upcoming-schedule {
-        display: flex;
-        gap: 16px;
-        font-size: 0.8rem;
-        color: #4B5563;
-        font-weight: 500;
-    }
-    
-    .upcoming-schedule span {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-    
-    .upcoming-schedule svg {
-        color: #9CA3AF;
-    }
-</style>
