@@ -1,0 +1,88 @@
+﻿@namespace booking_room.Components.Shared
+@using booking_room.Services
+@using booking_room.Components.Models
+@inject IModalService ModalService
+@inject NavigationManager Navigation
+
+<ModalBase Visible="true" Size="md" ShowCloseButton="false" OnClose="HandleClose">
+    <HeaderContent>
+        <div>
+            <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--persada-navy-900, #0F1F3D);">@(Item?.RoomName ?? "Ruang Pertemuan")</h3>
+            <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #64748B;">@(Item?.TimeSlot ?? "") · @(Item?.Title ?? "")</p>
+        </div>
+    </HeaderContent>
+
+    <ChildContent>
+        <div style="display: flex; flex-direction: column; gap: 16px; padding: 4px 0;">
+            <div style="display: flex; align-items: center; gap: 12px; font-size: 0.925rem; color: #334155;">
+                <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(31, 93, 154, 0.08); display: flex; align-items: center; justify-content: center; color: var(--persada-accent-blue, #1F5D9A); flex-shrink: 0;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                </div>
+                <span>Lantai 3, Sayap Utara, Persada HQ</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px; font-size: 0.925rem; color: #334155;">
+                <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(31, 93, 154, 0.08); display: flex; align-items: center; justify-content: center; color: var(--persada-accent-blue, #1F5D9A); flex-shrink: 0;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </div>
+                <span>Host: @(BookingDataStore.CurrentUser?.Name ?? "Pengguna")</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px; font-size: 0.925rem; color: #334155;">
+                <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(31, 93, 154, 0.08); display: flex; align-items: center; justify-content: center; color: var(--persada-accent-blue, #1F5D9A); flex-shrink: 0;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                </div>
+                <span>3 peserta terkonfirmasi</span>
+            </div>
+        </div>
+    </ChildContent>
+
+    <FooterContent>
+        <div style="display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; width: 100%;">
+            <button type="button" class="btn-modal-outline" style="border-radius: 999px; font-weight: 600; padding: 10px 20px; font-size: 0.875rem; border: 1.5px solid #CBD5E1; background: transparent; color: #475569; cursor: pointer;" @onclick="HandleClose">
+                Tutup
+            </button>
+            <button type="button" class="btn-modal-outline" style="border-radius: 999px; font-weight: 600; padding: 10px 20px; font-size: 0.875rem; border: 1.5px solid #BFDBFE; background: transparent; color: var(--persada-accent-blue, #1F5D9A); cursor: pointer;" @onclick="OpenMap">
+                Lihat di Peta
+            </button>
+            @if (Item?.Status == "sedang-berlangsung" || Item?.Status == "akan-datang")
+            {
+                <button type="button" class="btn-modal-primary" style="border-radius: 999px; font-weight: 700; padding: 10px 20px; font-size: 0.875rem; background: var(--persada-yellow-500, #F59E0B); border: none; color: var(--persada-navy-900, #0F1F3D); cursor: pointer;" @onclick="HandleConfirmCheckIn">
+                    Konfirmasi Kehadiran
+                </button>
+            }
+        </div>
+    </FooterContent>
+</ModalBase>
+
+@code {
+    [Parameter] public TodayScheduleItem? Item { get; set; }
+    [Parameter] public EventCallback OnCheckIn { get; set; }
+
+    private async Task HandleClose()
+    {
+        await ModalService.CloseTopAsync(ModalResult.Cancel());
+    }
+
+    private async Task OpenMap()
+    {
+        await ModalService.CloseTopAsync(ModalResult.Cancel());
+        Navigation.NavigateTo("/bookings?tab=Peta");
+    }
+
+    private async Task HandleConfirmCheckIn()
+    {
+        if (OnCheckIn.HasDelegate)
+        {
+            await OnCheckIn.InvokeAsync();
+        }
+        else
+        {
+            await ModalService.ReplaceTopAsync(typeof(CheckInCountdownCard), new Dictionary<string, object>
+            {
+                { "RoomName", Item?.RoomName ?? "Alpha Boardroom" },
+                { "TimeSlot", Item?.TimeSlot ?? "09:00 - 11:00" },
+                { "Location", "Lantai 3, Sayap Utara" },
+                { "Capacity", 12 }
+            });
+        }
+    }
+}

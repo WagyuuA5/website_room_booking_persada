@@ -112,6 +112,7 @@ namespace booking_room.Services
                 "incidentdetailmodal" or "systemalert" or "serveralert" => typeof(IncidentDetailModal),
                 "requestmoretimemodal" or "requestmoretime" => typeof(RequestMoreTimeModal),
                 "bookingautoreleasedmodal" or "autoreleased" => typeof(BookingAutoReleasedModal),
+                "scheduledetailmodal" or "scheduledetail" => typeof(ScheduleDetailModal),
                 "reportbugmodal" or "reportbug" => typeof(ReportBugModal),
                 _ => typeof(CheckInCountdownCard)
             };

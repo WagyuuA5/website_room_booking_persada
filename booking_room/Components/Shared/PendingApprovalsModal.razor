@@ -1,6 +1,8 @@
 @namespace booking_room.Components.Shared
 @using booking_room.Components.Models
+@using booking_room.Services
 @inject NavigationManager Navigation
+@inject IModalService ModalService
 
 <Modal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Title="Persetujuan Tertunda" LayoutMode="list" Size="md" ShowCloseButton="false" OnClose="OnClose">
     <HeaderContent>
@@ -275,19 +277,21 @@
     private async Task ViewAllDetails()
     {
         await OnClose.InvokeAsync();
+        await ModalService.CloseTopAsync();
         Navigation.NavigateTo("/status");
     }
 
     private async Task HandleClose()
     {
         await OnClose.InvokeAsync();
+        await ModalService.CloseTopAsync();
     }
 
     private async Task HandleVisibleChanged(bool visible)
     {
         if (!visible)
         {
-            await OnClose.InvokeAsync();
+            await HandleClose();
         }
     }
 

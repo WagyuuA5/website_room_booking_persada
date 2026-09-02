@@ -1,32 +1,10 @@
-.profile-dropdown-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 990;
-    background: transparent;
-}
-
-.profile-dropdown-panel {
-    position: absolute;
-    top: calc(100% + 12px);
-    right: 0;
-    width: 260px;
-    background: var(--persada-white, #FFFFFF);
-    border-radius: 16px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
-    border: 1px solid #E5E7EB;
-    z-index: 999;
-    overflow: hidden;
-    animation: dropdownPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    transform-origin: top right;
-}
-
 .profile-header {
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 16px;
-    background: var(--surface-card, #FFFFFF);
-    border-bottom: 1px solid #E5E7EB;
+    background: transparent;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.6);
 }
 
 .profile-avatar-large {

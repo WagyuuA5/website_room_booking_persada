@@ -1,4 +1,5 @@
 @page "/beranda"
+@page "/dashboard"
 @using booking_room.Components.Models
 @using booking_room.Components.Shared
 @inject NavigationManager Navigation
@@ -74,7 +75,7 @@ else
                        Subtitle="Permintaan pemesanan menunggu tindakan"
                        Variant="warning"
                        ShowArrow="true"
-                       OnClick="GoToStatusPage">
+                       OnClick='() => ShowPopup("PendingApprovals")'>
         <Icon>
             <InlineSvg Src="/icons/Icon_clndr.svg" Class="icon-main" />
         </Icon>
@@ -170,48 +171,6 @@ else
 
 <!-- Pop-ups are now handled by ModalService via ModalHost -->
 
-<!-- Schedule Detail Popup -->
-@if (_scheduleDetailPopupVisible && _selectedScheduleItem != null)
-{
-    <AppModal Visible="true" VisibleChanged="ScheduleDetailVisibleChanged" OnClose="CloseScheduleDetail" ShowCloseButton="true">
-        <HeaderContent>
-            <div>
-                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-navy);">@_selectedScheduleItem.RoomName</h3>
-                <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #64748b;">@_selectedScheduleItem.TimeSlot · @_selectedScheduleItem.Title</p>
-            </div>
-        </HeaderContent>
-        <BodyContent>
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-                <div style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #4B5563;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                    Lantai 3, Sayap Utara, Persada HQ
-                </div>
-                <div style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #4B5563;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                    Host: @(BookingDataStore.CurrentUser?.Name ?? "Pengguna")
-                </div>
-                <div style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #4B5563;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                    3 peserta terkonfirmasi
-                </div>
-            </div>
-        </BodyContent>
-        <FooterContent>
-            <div style="display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; width: 100%;">
-                <button class="btn-modal-outline" style="border-radius: 999px; font-weight: 600; padding: 10px 20px; font-size: 0.875rem; border: 1.5px solid #BFDBFE; background: transparent; color: var(--persada-accent-blue, #1F5D9A);" @onclick="OpenMap">
-                    Lihat di Peta Interaktif
-                </button>
-                @if (_selectedScheduleItem.Status == "sedang-berlangsung" || _selectedScheduleItem.Status == "akan-datang")
-                {
-                    <button class="btn-modal-primary" style="border-radius: 999px; font-weight: 700; padding: 10px 20px; font-size: 0.875rem; background: var(--persada-yellow-500, #F59E0B); border: none; color: var(--persada-navy-900, #0F1F3D);" @onclick="HandleConfirmCheckIn">
-                        Konfirmasi Kehadiran
-                    </button>
-                }
-            </div>
-        </FooterContent>
-    </AppModal>
-}
-
 @code {
     private NextAvailableRoom? nextRoom;
     private AnalyticsData analyticsData = DashboardData.WeeklyData;
@@ -231,9 +190,6 @@ else
         new("6", "Meeting Ruangan Prime", 8, "Ruang rapat standar.", "booked", new() { "AC" }, "Lantai 2", ""),
     };
 
-
-    private bool _scheduleDetailPopupVisible = false;
-    private TodayScheduleItem? _selectedScheduleItem = null;
 
     protected override void OnInitialized()
     {
@@ -373,6 +329,10 @@ else
         {
             await OpenChartDetailModal();
         }
+        else if (popupName == "PendingApprovals" || popupName == "PendingApproval")
+        {
+            await ModalService.ShowAsync<PendingApprovalsModal>();
+        }
     }
 
     private void ClosePopup()
@@ -397,25 +357,13 @@ else
         Navigation.NavigateTo("/bookings");
     }
 
-    private void NavigateToBookingDetail(TodayScheduleItem item)
+    private async Task NavigateToBookingDetail(TodayScheduleItem item)
     {
-        _selectedScheduleItem = item;
-        _scheduleDetailPopupVisible = true;
-    }
-
-    private void CloseScheduleDetail()
-    {
-        _scheduleDetailPopupVisible = false;
-        _selectedScheduleItem = null;
-    }
-
-    private Task ScheduleDetailVisibleChanged(bool visible)
-    {
-        if (!visible)
+        await ModalService.ShowAsync<ScheduleDetailModal>(new Dictionary<string, object>
         {
-            CloseScheduleDetail();
-        }
-        return Task.CompletedTask;
+            { "Item", item },
+            { "OnCheckIn", EventCallback.Factory.Create(this, HandleCheckInClick) }
+        });
     }
 
     private void OpenMap()
