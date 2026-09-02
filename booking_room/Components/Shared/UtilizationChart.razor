@@ -1,0 +1,209 @@
+@namespace booking_room.Components.Shared
+@using booking_room.Components.Models
+@using System.Globalization
+
+<div class="utilization-trend-container">
+    <div class="utilization-trend-header">
+        <h4 class="utilization-trend-title">TREN PENGGUNAAN</h4>
+    </div>
+
+    <div class="utilization-trend-chart-box">
+        <svg viewBox="0 0 600 200" class="trend-svg" preserveAspectRatio="none">
+            <defs>
+                <linearGradient id="persadaTrendGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.35" />
+                    <stop offset="80%" stop-color="#3B82F6" stop-opacity="0.08" />
+                    <stop offset="100%" stop-color="#3B82F6" stop-opacity="0.00" />
+                </linearGradient>
+            </defs>
+
+            <!-- 3 Horizontal dashed grid lines -->
+            <line x1="10" y1="30" x2="590" y2="30" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="5 5" />
+            <line x1="10" y1="100" x2="590" y2="100" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="5 5" />
+            <line x1="10" y1="170" x2="590" y2="170" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="5 5" />
+
+            <!-- Area fill -->
+            <path d="@_areaPath" fill="url(#persadaTrendGradient)" />
+
+            <!-- Line stroke -->
+            <path d="@_linePath" fill="none" stroke="#3B82F6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+
+            <!-- Circular data points -->
+            @foreach (var pt in _chartPoints)
+            {
+                <circle cx="@pt.X.ToString("F1", CultureInfo.InvariantCulture)"
+                        cy="@pt.Y.ToString("F1", CultureInfo.InvariantCulture)"
+                        r="5"
+                        fill="#3B82F6"
+                        stroke="#FFFFFF"
+                        stroke-width="2"
+                        class="trend-point-dot">
+                    <title>@pt.Label: @pt.Value jam</title>
+                </circle>
+            }
+        </svg>
+
+        <!-- X-axis Labels -->
+        <div class="trend-labels-row">
+            @foreach (var pt in _chartPoints)
+            {
+                <span class="trend-x-label">@pt.Label</span>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .utilization-trend-container {
+        width: 100%;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: var(--persada-border-radius-card, 20px);
+        padding: 20px 24px 16px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .utilization-trend-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .utilization-trend-title {
+        font-size: 0.8125rem;
+        font-weight: 700;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin: 0;
+    }
+
+    .utilization-trend-chart-box {
+        position: relative;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .trend-svg {
+        width: 100%;
+        height: 180px;
+        overflow: visible;
+    }
+
+    .trend-point-dot {
+        transition: r 0.2s ease, fill 0.2s ease;
+        cursor: pointer;
+    }
+
+    .trend-point-dot:hover {
+        r: 7;
+        fill: #1D4ED8;
+    }
+
+    .trend-labels-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 10px 0;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #94A3B8;
+    }
+
+    .trend-x-label {
+        text-align: center;
+        min-width: 30px;
+    }
+
+    @@media (max-width: 640px) {
+        .utilization-trend-container {
+            padding: 16px;
+        }
+        .trend-svg {
+            height: 140px;
+        }
+        .trend-labels-row {
+            font-size: 0.6875rem;
+        }
+    }
+</style>
+
+@code {
+    [Parameter] public string SelectedPeriod { get; set; } = "Minggu";
+
+    private record ChartPt(double X, double Y, string Label, double Value);
+    private List<ChartPt> _chartPoints = new();
+    private string _linePath = "";
+    private string _areaPath = "";
+
+    protected override void OnParametersSet()
+    {
+        ComputeChartData();
+    }
+
+    private void ComputeChartData()
+    {
+        _chartPoints.Clear();
+
+        string[] labels;
+        double[] values;
+
+        if (SelectedPeriod == "Bulan")
+        {
+            labels = new[] { "M1", "M2", "M3", "M4" };
+            values = new double[] { 78, 42, 65, 88 };
+        }
+        else if (SelectedPeriod == "Tahun")
+        {
+            labels = new[] { "Q1", "Q2", "Q3", "Q4" };
+            values = new double[] { 310, 180, 260, 390 };
+        }
+        else
+        {
+            // Minggu: 7 data points matching the screenshot
+            labels = new[] { "Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min" };
+            // Exact curve shape: High -> Low flat -> Low flat -> Mid peak -> Low -> Rising -> High peak
+            values = new double[] { 85, 20, 20, 58, 25, 38, 92 };
+        }
+
+        double width = 600;
+        double height = 200;
+        double padLeft = 30;
+        double padRight = 30;
+        double padTop = 30;
+        double padBottom = 30;
+
+        double chartW = width - (padLeft + padRight);
+        double chartH = height - (padTop + padBottom);
+
+        double maxVal = values.Max();
+        double minVal = values.Min();
+        double valRange = maxVal - minVal;
+        if (valRange == 0) valRange = 1;
+
+        var pointsList = new List<string>();
+
+        for (int i = 0; i < values.Length; i++)
+        {
+            double x = padLeft + (i / (double)(values.Length - 1)) * chartW;
+            double norm = (values[i] - minVal) / valRange; // 0..1
+            double y = (padTop + chartH) - (norm * chartH);
+
+            _chartPoints.Add(new ChartPt(x, y, labels[i], values[i]));
+            pointsList.Add($"{x.ToString("F1", CultureInfo.InvariantCulture)},{y.ToString("F1", CultureInfo.InvariantCulture)}");
+        }
+
+        if (pointsList.Count > 0)
+        {
+            _linePath = $"M {string.Join(" L ", pointsList)}";
+            var firstX = _chartPoints[0].X.ToString("F1", CultureInfo.InvariantCulture);
+            var lastX = _chartPoints[^1].X.ToString("F1", CultureInfo.InvariantCulture);
+            var bottomY = (padTop + chartH).ToString("F1", CultureInfo.InvariantCulture);
+
+            _areaPath = $"{_linePath} L {lastX},{bottomY} L {firstX},{bottomY} Z";
+        }
+    }
+}

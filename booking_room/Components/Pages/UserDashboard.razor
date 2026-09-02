@@ -188,9 +188,9 @@ else
     <div class="analytics-inline-header">
         <div>
             <h2 class="analytics-inline-title">Analitik Utilisasi Ruangan</h2>
-            <p class="analytics-inline-subtitle">5 Ruangan Paling Sering Dipesan</p>
+            <p class="analytics-inline-subtitle">Tingkat penggunaan ruangan berdasarkan jam reservasi</p>
         </div>
-        <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
             <div class="analytics-toggle">
                 @foreach (var period in periods)
                 {
@@ -198,58 +198,22 @@ else
                 }
             </div>
             <div class="analytics-export-btns">
-                <button class="btn-export" @onclick="ExportCSV" title="Download CSV">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                <button class="btn-export" @onclick="ExportCSV" title="Unduh CSV">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                     CSV
                 </button>
-                <button class="btn-export" @onclick="ExportJSON" title="Download JSON">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                <button class="btn-export" @onclick="ExportJSON" title="Unduh JSON">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                     JSON
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Horizontal Bar Chart (Opsi A - Bersih & Mudah Dibaca) -->
-    <div class="analytics-horizontal-bars">
-        @{
-            int rank = 0;
-            var rooms = analyticsData.Rooms.OrderByDescending(r => r.HoursUsed).Take(5).ToList();
-            var maxHours = rooms.Count > 0 ? rooms.Max(r => r.HoursUsed) : 1;
-            if (maxHours == 0) maxHours = 1;
-        }
-        @foreach (var room in rooms)
-        {
-            rank++;
-            var percentage = Math.Round((double)room.HoursUsed / maxHours * 100, 1);
-            var rankColor = rank switch
-            {
-                1 => "#0F1F3D",
-                2 => "#1E40AF",
-                3 => "#3B82F6",
-                4 => "#60A5FA",
-                _ => "#93C5FD"
-            };
+    <!-- Chart Tren Penggunaan sesuai Gambar Referensi -->
+    <UtilizationChart SelectedPeriod="@selectedPeriod" />
 
-            <div class="hbar-item" @onclick='() => OpenChartDetailModal(room.RoomName)' title="Klik untuk lihat detail @room.RoomName">
-                <div class="hbar-header">
-                    <div class="hbar-room-info">
-                        <span class="hbar-rank" style="background: @rankColor; color: white;">#@rank</span>
-                        <span class="hbar-name">@room.RoomName</span>
-                    </div>
-                    <div class="hbar-value-wrap">
-                        <span class="hbar-hours">@room.HoursUsed jam</span>
-                        <span class="hbar-percent">(@percentage%)</span>
-                    </div>
-                </div>
-                <div class="hbar-track">
-                    <div class="hbar-fill" style="width: @(percentage.ToString(System.Globalization.CultureInfo.InvariantCulture))%; background: @rankColor;"></div>
-                </div>
-            </div>
-        }
-    </div>
-
-    <div class="analytics-inline-footer">
+    <div class="analytics-inline-footer" style="margin-top: 16px;">
         <button class="btn btn-outline-primary" style="border-radius: 999px; font-weight: 600; padding: 0.5rem 1.25rem;" @onclick='() => OpenChartDetailModal()'>
             Lihat Detail
         </button>
