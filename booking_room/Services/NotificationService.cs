@@ -68,6 +68,19 @@ public class NotificationService : INotificationService
 
         _notifications.Add(new NotificationItem
         {
+            SourceName = "Admin Sistem",
+            Title = "Persetujuan Tertunda",
+            Description = "Anda memiliki permintaan pemesanan yang menunggu persetujuan.",
+            Timestamp = DateTime.Now.AddMinutes(-12),
+            IsRead = false,
+            Category = "System",
+            IconType = "calendar",
+            ActionType = NotificationActionType.OpenModal,
+            ModalComponentKey = "PendingApprovalsModal"
+        });
+
+        _notifications.Add(new NotificationItem
+        {
             SourceName = "Siti Aminah",
             Title = "Laporan Mingguan Siap",
             Description = "Data analitik penggunaan ruangan untuk minggu kedua siap diunduh.",

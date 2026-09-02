@@ -1,160 +1,42 @@
 @using booking_room.Components.Models
+@using booking_room.Services
+@inject IModalService ModalService
 
-<div class="cancel-modal">
-    <div class="cancel-header">
-        <div class="cancel-header-left">
-            <div class="cancel-icon-bg">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<ModalBase Visible="true" Size="sm" ShowCloseButton="false" OnClose="HandleKeep">
+    <HeaderContent>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 40px; height: 40px; border-radius: 12px; background: #FEE2E2; display: flex; align-items: center; justify-content: center; color: #DC2626; flex-shrink: 0;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
             </div>
-            <h2 class="cancel-title">Batalkan Pemesanan</h2>
+            <div>
+                <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #991B1B;">Batalkan Pemesanan</h3>
+                <p style="margin: 2px 0 0 0; font-size: 0.85rem; color: #64748B;">@(Booking?.RoomName ?? "Alpha Boardroom")</p>
+            </div>
         </div>
-    </div>
-
-    <div class="cancel-body">
-        <p class="cancel-desc">Harap berikan alasan pembatalan pesanan ini. Tindakan ini tidak dapat dibatalkan.</p>
-        
-        <div class="form-group">
-            <label class="reason-label">ALASAN PEMBATALAN</label>
-            <textarea class="form-control-blue" rows="4" placeholder="cth., Rapat dijadwalkan ulang, ruangan tidak lagi dibutuhkan..." @bind="_reason" @bind:event="oninput"></textarea>
+    </HeaderContent>
+    <ChildContent>
+        <div style="padding: 8px 0; color: #4B5563; font-size: 0.95rem; line-height: 1.5; display: flex; flex-direction: column; gap: 16px;">
+            <div>Harap berikan alasan pembatalan pesanan ini. Tindakan ini tidak dapat dibatalkan.</div>
+            
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-size: 0.75rem; font-weight: 700; color: #64748B; letter-spacing: 0.05em;">ALASAN PEMBATALAN</label>
+                <textarea rows="4" placeholder="cth., Rapat dijadwalkan ulang, ruangan tidak lagi dibutuhkan..." 
+                          @bind="_reason" @bind:event="oninput"
+                          style="width: 100%; border-radius: 12px; padding: 12px 14px; border: 1px solid #E2E8F0; background-color: var(--surface-card, #FFFFFF); color: #0F1F3D; font-family: inherit; font-size: 0.9rem; resize: vertical; box-sizing: border-box;"></textarea>
+            </div>
         </div>
-    </div>
-
-    <div class="cancel-footer">
-        <button class="btn-confirm-cancel @(string.IsNullOrWhiteSpace(_reason) ? "disabled" : "")" disabled="@string.IsNullOrWhiteSpace(_reason)" @onclick="SubmitCancel">
-            Konfirmasi Pembatalan
+    </ChildContent>
+    <FooterContent>
+        <button class="btn-outline" style="border-radius: 999px; padding: 12px 24px; font-weight: 600; border: 1px solid #CBD5E1; background: transparent; color: #475569;" @onclick="HandleKeep">
+            Pertahankan Pemesanan
         </button>
-        <button class="btn-keep-booking" @onclick="OnClose">
-            Tetap Simpan Pesanan
+        <button class="btn-danger" style="border-radius: 999px; padding: 12px 24px; font-weight: 700; background: #DC2626; border: none; color: #FFFFFF; cursor: @(string.IsNullOrWhiteSpace(_reason) ? "not-allowed" : "pointer"); opacity: @(string.IsNullOrWhiteSpace(_reason) ? "0.6" : "1");" disabled="@string.IsNullOrWhiteSpace(_reason)" @onclick="SubmitCancel">
+            Ya, Batalkan
         </button>
-    </div>
-</div>
-
-<style>
-    .cancel-modal {
-        width: 100%;
-        max-width: 440px;
-        background: #FFFFFF;
-        border-radius: var(--radius-modal, 20px);
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        max-height: var(--modal-max-height, 90vh);
-        box-shadow: var(--shadow-modal);
-        font-family: var(--font-family-primary, 'Inter', sans-serif);
-    }
-    .cancel-header {
-        position: sticky;
-        top: 0;
-        background: #fff;
-        z-index: 10;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 20px 24px 16px;
-        border-bottom: 1px solid #E5E7EB;
-    }
-    .cancel-header-left {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-    .cancel-body {
-        padding: 20px 24px;
-        flex: 1;
-    }
-    .cancel-icon-bg {
-        width: 40px;
-        height: 40px;
-        background-color: #FEE2E2;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-    .cancel-title {
-        color: #16305C;
-        font-size: 20px;
-        font-weight: 700;
-        margin: 0;
-    }
-    .cancel-desc {
-        color: #6B7280;
-        font-size: 14px;
-        line-height: 1.5;
-        margin: 0 0 24px 0;
-    }
-    .reason-label {
-        display: block;
-        color: #6B7280;
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 8px;
-    }
-    .form-control-blue {
-        width: 100%;
-        padding: 12px;
-        background-color: #F8FAFC;
-        border: 1px solid #E2E8F0;
-        border-radius: 14px;
-        font-size: 14px;
-        color: #1F2937;
-        font-family: inherit;
-        resize: none;
-        transition: border-color 0.2s;
-        box-sizing: border-box;
-    }
-    .form-control-blue:focus {
-        outline: none;
-        border-color: #94A3B8;
-    }
-    .cancel-footer {
-        position: sticky;
-        bottom: 0;
-        background: #fff;
-        z-index: 10;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        padding: 16px 24px 20px;
-        border-top: 1px solid #E5E7EB;
-    }
-    .btn-confirm-cancel {
-        width: 100%;
-        background-color: #EF4444;
-        color: white;
-        border: none;
-        border-radius: 999px;
-        padding: 14px;
-        font-weight: 600;
-        font-size: 15px;
-        cursor: pointer;
-        transition: opacity 0.2s;
-    }
-    .btn-confirm-cancel:hover:not(.disabled) {
-        opacity: 0.9;
-    }
-    .btn-confirm-cancel.disabled {
-        background-color: #FCA5A5;
-        cursor: not-allowed;
-    }
-    .btn-keep-booking {
-        width: 100%;
-        background: none;
-        border: none;
-        color: #6B7280;
-        font-weight: 600;
-        font-size: 14px;
-        cursor: pointer;
-        padding: 8px;
-        transition: color 0.2s;
-    }
-    .btn-keep-booking:hover {
-        color: #16305C;
-    }
-</style>
+    </FooterContent>
+</ModalBase>
 
 @code {
     [Parameter] public BookingItem? Booking { get; set; }
@@ -167,7 +49,20 @@
     {
         if (!string.IsNullOrWhiteSpace(_reason) && Booking != null)
         {
-            await OnConfirm.InvokeAsync(Booking);
+            if (OnConfirm.HasDelegate)
+            {
+                await OnConfirm.InvokeAsync(Booking);
+            }
+            ModalService.Close(ModalResult.Ok());
         }
+    }
+
+    private async Task HandleKeep()
+    {
+        if (OnClose.HasDelegate)
+        {
+            await OnClose.InvokeAsync();
+        }
+        ModalService.Close(ModalResult.Cancel());
     }
 }

@@ -1,8 +1,11 @@
 @using Microsoft.AspNetCore.Components
 @inject NavigationManager Navigation
+@inject booking_room.Services.IModalService ModalService
 
-<div class="auto-release-modal-card">
-    <div class="auto-release-header-row">
+<ModalBase Visible="true" Size="md" ShowCloseButton="false" IsSolidCard="true" OnClose="HandleViewHistory">
+    <ChildContent>
+        <div class="auto-release-modal-card">
+            <div class="auto-release-header-row">
         <div class="system-alert-badge">
             <span class="system-alert-icon">!</span>
             <span class="system-alert-label">PERINGATAN SISTEM</span>
@@ -49,7 +52,9 @@
             Pesanan Baru
         </button>
     </div>
-</div>
+        </div>
+    </ChildContent>
+</ModalBase>
 
 <style>
     :root {
@@ -165,8 +170,8 @@
 
     .auto-release-info-card {
         width: 100%;
-        background-color: #F3F4F6;
-        border: 1px solid #E5E7EB;
+        background-color: var(--surface-card, #FFFFFF);
+        border: 1px solid var(--divider-subtle, rgba(15, 23, 42, 0.08));
         border-radius: 12px;
         padding: 0.85rem 1rem;
         box-sizing: border-box;
@@ -269,6 +274,7 @@
     private async Task HandleViewHistory()
     {
         await OnClose.InvokeAsync();
+        ModalService.Close();
         if (OnViewHistory.HasDelegate)
         {
             await OnViewHistory.InvokeAsync();
@@ -282,6 +288,7 @@
     private async Task HandleNewBooking()
     {
         await OnClose.InvokeAsync();
+        ModalService.Close();
         if (OnBookAnother.HasDelegate)
         {
             await OnBookAnother.InvokeAsync();

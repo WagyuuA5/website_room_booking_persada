@@ -2,7 +2,7 @@
 @using booking_room.Services
 @inject IModalService ModalService
 
-<ModalBase Visible="true" Size="md" ShowCloseButton="true" OnClose="Close">
+<ModalBase Visible="true" Size="md" ShowCloseButton="false" OnClose="Close">
     <HeaderContent>
         <div style="display: flex; align-items: center; gap: 12px;">
             <div style="width: 40px; height: 40px; border-radius: 12px; background: #FEE2E2; display: flex; align-items: center; justify-content: center; color: #DC2626; flex-shrink: 0;">
@@ -26,11 +26,11 @@
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                <div style="padding: 12px 14px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px;">
+                <div style="padding: 12px 14px; background: var(--surface-card, #FFFFFF); border: 1px solid var(--divider-subtle, rgba(15, 23, 42, 0.08)); border-radius: 10px;">
                     <div style="font-size: 0.75rem; font-weight: 600; color: #64748B; text-transform: uppercase;">Klaster Terkena Dampak</div>
                     <div style="font-size: 0.9rem; font-weight: 700; color: #0F1F3D; margin-top: 4px;">Asia Tenggara (ID-JKT)</div>
                 </div>
-                <div style="padding: 12px 14px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px;">
+                <div style="padding: 12px 14px; background: var(--surface-card, #FFFFFF); border: 1px solid var(--divider-subtle, rgba(15, 23, 42, 0.08)); border-radius: 10px;">
                     <div style="font-size: 0.75rem; font-weight: 600; color: #64748B; text-transform: uppercase;">Tingkat Keparahan</div>
                     <div style="font-size: 0.9rem; font-weight: 700; color: #DC2626; margin-top: 4px;">Tinggi (Level 2)</div>
                 </div>

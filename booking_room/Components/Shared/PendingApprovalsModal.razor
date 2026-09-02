@@ -2,7 +2,7 @@
 @using booking_room.Components.Models
 @inject NavigationManager Navigation
 
-<Modal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Title="Persetujuan Tertunda" LayoutMode="list" Size="md" ShowCloseButton="true" OnClose="OnClose">
+<Modal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Title="Persetujuan Tertunda" LayoutMode="list" Size="md" ShowCloseButton="false" OnClose="OnClose">
     <HeaderContent>
         <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
             <div>
@@ -20,9 +20,9 @@
             @foreach (var item in PendingItems)
             {
                 <div class="pending-approval-item">
-                    <div class="pending-approval-icon @item.ColorClass">
+                    <div class="pending-approval-icon icon-blue">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="@item.IconPath" fill="currentColor" stroke="none"/>
+                            <path d="M19 2H5C3.9 2 3 2.9 3 4V20C3 21.1 3.9 22 5 22H19C20.1 22 21 21.1 21 20V4C21 2.9 20.1 2 19 2ZM15 20H9V12H15V20Z" fill="currentColor" stroke="none"/>
                         </svg>
                     </div>
                     <div class="pending-approval-content">
@@ -30,11 +30,11 @@
                         <div class="pending-approval-meta">
                             <span>
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                                @item.DateStr
+                                @item.Date
                             </span>
                             <span>
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                @item.TimeStr
+                                @item.TimeSlot
                             </span>
                         </div>
                         <div class="pending-approval-requested">Oleh @item.RequestedBy</div>
@@ -54,7 +54,7 @@
     <FooterContent>
         <div style="display: flex; gap: 12px; width: 100%;">
             <button class="btn-modal-outline" style="flex: 1;" @onclick="HandleClose">Tutup</button>
-            <button class="btn-modal-primary" style="flex: 1;" @onclick="ViewAllDetails">
+            <button class="btn-modal-primary" style="flex: 1; background: #F59E0B; border-color: #F59E0B; color: #0F1F3D;" @onclick="ViewAllDetails">
                 Lihat Semua Detail
             </button>
         </div>
@@ -231,27 +231,25 @@
     [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
 
-    private PendingApprovalItemCustom? _rejectingItem = null;
+    private BookingItem? _rejectingItem = null;
     private string _rejectReason = "";
 
-    private record PendingApprovalItemCustom(string RoomName, string RequestedBy, string DateStr, string TimeStr, string ColorClass, string IconPath);
+    private List<BookingItem> PendingItems = new();
 
-    private List<PendingApprovalItemCustom> PendingItems = new()
+    protected override void OnInitialized()
     {
-        new("Executive Boardroom A", "J. Smith", "14 Agustus 2026", "10:00 - 12:00", "icon-blue", "M19 2H5C3.9 2 3 2.9 3 4V20C3 21.1 3.9 22 5 22H19C20.1 22 21 21.1 21 20V4C21 2.9 20.1 2 19 2ZM15 20H9V12H15V20Z"),
-        new("Studio 4 (Webinar)", "A. Chen", "15 Agustus 2026", "14:30 - 16:00", "icon-purple", "M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"),
-        new("Training Ruangan C", "M. Davis", "16 Agustus 2026", "09:00 - 17:00", "icon-light-blue", "M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z")
-    };
+        PendingItems = BookingDataStore.AllBookings.Where(b => b.Status == "pending").ToList();
+    }
 
     private int PendingCount => PendingItems.Count;
 
-    private async Task ApproveItem(PendingApprovalItemCustom item)
+    private async Task ApproveItem(BookingItem item)
     {
         PendingItems.Remove(item);
         StateHasChanged();
     }
 
-    private void ShowRejectModal(PendingApprovalItemCustom item)
+    private void ShowRejectModal(BookingItem item)
     {
         _rejectingItem = item;
         _rejectReason = "";

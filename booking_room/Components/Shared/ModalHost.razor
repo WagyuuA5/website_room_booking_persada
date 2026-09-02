@@ -5,14 +5,11 @@
 
 @if (ModalService.Stack.Count > 0)
 {
-    @for (int i = 0; i < ModalService.Stack.Count; i++)
-    {
-        var modal = ModalService.Stack[i];
-        var zIndex = 1050 + (i * 10);
-        <div class="modal-stack-layer" style="position: relative; z-index: @zIndex;" @key="modal.Id">
-            <DynamicComponent Type="@modal.ComponentType" Parameters="@modal.Parameters" />
-        </div>
-    }
+    var modal = ModalService.Stack[^1];
+    var zIndex = 1050 + ((ModalService.Stack.Count - 1) * 10);
+    <div class="modal-stack-layer" style="position: relative; z-index: @zIndex;" @key="modal.Id">
+        <DynamicComponent Type="@modal.ComponentType" Parameters="@modal.Parameters" />
+    </div>
 }
 
 @code {

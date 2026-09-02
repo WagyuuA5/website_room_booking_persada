@@ -32,6 +32,8 @@ namespace booking_room.Services
         Task<ModalResult> ShowAsync<TComponent>(IDictionary<string, object>? parameters = null) where TComponent : IComponent;
         Task<ModalResult> ShowAsync(string componentKey, IDictionary<string, object>? parameters = null);
         Task<ModalResult> ShowAsync(Type componentType, IDictionary<string, object>? parameters = null);
+        Task<ModalResult> ReplaceTopAsync(string componentKey, IDictionary<string, object>? parameters = null);
+        Task<ModalResult> ReplaceTopAsync(Type componentType, IDictionary<string, object>? parameters = null);
         Task CloseTopAsync(ModalResult? result = null);
         Task CloseAllAsync();
         void Close(ModalResult? result = null);

@@ -2,26 +2,30 @@
 @using booking_room.Services
 @inject IModalService ModalService
 
-<div class="checkin-success-inner" style="display: flex; flex-direction: column; align-items: center; padding: 2.5rem 2rem; width: 100%; text-align: center; box-sizing: border-box;">
-    <!-- Success Icon -->
-    <div style="margin-bottom: 1.5rem;">
-        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="check-animation">
-            <circle cx="12" cy="12" r="10" class="circle-animation"></circle>
-            <path d="M8 12.5l3 3 5-6" class="check-path-animation"></path>
-        </svg>
-    </div>
+<Modal Visible="true" ShowHeader="false" ShowFooter="false" LayoutMode="solid-card" Size="sm" OnClose="Close">
+    <BodyContent>
+        <div class="checkin-success-inner" style="display: flex; flex-direction: column; align-items: center; padding: 2.5rem 2rem; width: 100%; text-align: center; box-sizing: border-box;">
+            <!-- Success Icon -->
+            <div style="margin-bottom: 1.5rem;">
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="check-animation">
+                    <circle cx="12" cy="12" r="10" class="circle-animation"></circle>
+                    <path d="M8 12.5l3 3 5-6" class="check-path-animation"></path>
+                </svg>
+            </div>
 
-    <!-- Title -->
-    <h2 style="font-weight: 800; font-size: 1.5rem; margin: 0 0 0.5rem 0; letter-spacing: -0.02em; color: #FFFFFF;">Kehadiran Berhasil</h2>
-    
-    <!-- Subtitle with dynamic timestamp -->
-    <p style="color: #94A3B8; font-size: 0.95rem; font-weight: 500; margin: 0 0 2rem 0;">pada @(Timestamp == default ? DateTime.Now.ToString("HH:mm") : Timestamp.ToString("HH:mm"))</p>
+            <!-- Title -->
+            <h2 style="font-weight: 800; font-size: 1.5rem; margin: 0 0 0.5rem 0; letter-spacing: -0.02em; color: #FFFFFF;">Kehadiran Berhasil</h2>
+            
+            <!-- Subtitle with dynamic timestamp -->
+            <p style="color: #94A3B8; font-size: 0.95rem; font-weight: 500; margin: 0 0 2rem 0;">pada @(Timestamp == default ? DateTime.Now.ToString("HH:mm") : Timestamp.ToString("HH:mm"))</p>
 
-    <!-- Close Button -->
-    <button @onclick="Close" style="width: 100%; padding: 0.875rem; border-radius: 9999px; border: none; background: #F59E0B; color: #0F1F3D; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;">
-        Tutup
-    </button>
-</div>
+            <!-- Close Button -->
+            <button @onclick="Close" style="width: 100%; padding: 0.875rem; border-radius: 9999px; border: none; background: #F59E0B; color: #0F1F3D; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;">
+                Tutup
+            </button>
+        </div>
+    </BodyContent>
+</Modal>
 
 <style>
     .check-animation {

@@ -6,8 +6,10 @@
 @inject IToastService ToastService
 @inject IModalService ModalService
 
-<div class="checkin-confirmation-modal">
-    <!-- Header avatar & info -->
+<Modal Visible="true" ShowHeader="false" ShowFooter="false" LayoutMode="solid-card" Size="md" OnClose="HandleCancelClose">
+    <BodyContent>
+        <div class="checkin-confirmation-modal">
+            <!-- Header avatar & info -->
     <div class="checkin-top-header">
                 <div class="room-avatar">
                     <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=128&h=128&fit=crop" alt="Avatar Ruangan" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'" />
@@ -101,6 +103,8 @@
                 </button>
             </div>
         </div>
+    </BodyContent>
+</Modal>
 
 <style>
     .checkin-confirmation-modal {
@@ -410,8 +414,7 @@
         }
         else
         {
-            await ModalService.CloseTopAsync(ModalResult.Ok());
-            await ModalService.ShowAsync<CheckInSuccessModal>(new Dictionary<string, object>
+            await ModalService.ReplaceTopAsync(typeof(CheckInSuccessModal), new Dictionary<string, object>
             {
                 { "Timestamp", DateTime.Now }
             });

@@ -38,6 +38,32 @@ namespace booking_room.Services
             return instance.TaskSource.Task;
         }
 
+        public Task<ModalResult> ReplaceTopAsync(string componentKey, IDictionary<string, object>? parameters = null)
+        {
+            var componentType = ResolveComponentType(componentKey);
+            return ReplaceTopAsync(componentType, parameters);
+        }
+
+        public Task<ModalResult> ReplaceTopAsync(Type componentType, IDictionary<string, object>? parameters = null)
+        {
+            if (_stack.Count > 0)
+            {
+                var top = _stack[^1];
+                _stack.RemoveAt(_stack.Count - 1);
+                top.TaskSource.TrySetResult(ModalResult.Cancel());
+            }
+
+            var instance = new ModalInstance
+            {
+                ComponentType = componentType,
+                Parameters = parameters
+            };
+
+            _stack.Add(instance);
+            OnChange?.Invoke();
+            return instance.TaskSource.Task;
+        }
+
         public Task CloseTopAsync(ModalResult? result = null)
         {
             if (_stack.Count > 0)
