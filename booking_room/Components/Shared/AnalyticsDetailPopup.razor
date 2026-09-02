@@ -80,69 +80,156 @@
             }
         </div>
 
-        <!-- Crypto-style trend chart -->
+        <!-- Interactive Utilization Chart with scrub gesture and no Tren Penggunaan title -->
         <div class="popup-trend-chart">
-            <div class="popup-trend-title">Tren Penggunaan</div>
-            @{
-                var chartData = DashboardData.GetChartData(SelectedPeriod);
-                var trendSvg = BuildTrendChart(chartData);
-            }
-            <svg viewBox="0 0 400 160" class="popup-trend-svg" preserveAspectRatio="none">
-                <defs>
-                    <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.25"/>
-                        <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
-                    </linearGradient>
-                </defs>
-                @trendSvg
-            </svg>
+            <UtilizationChart SelectedPeriod="@SelectedPeriod" />
         </div>
     </div>
 </div>
 
 <style>
-    .popup-stat-card-hover {
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        cursor: default;
+    .analytics-detail-body {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
     }
-    .popup-stat-card-hover:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(16,48,92,0.12);
+
+    .popup-stats-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
     }
-    .popup-stat-card.stat-blue {
-        background: linear-gradient(135deg, #eff6ff, #bfdbfe);
-    }
-    .popup-stat-icon {
-        position: absolute;
-        top: 12px;
-        right: 12px;
-        opacity: 0.7;
-    }
+
     .popup-stat-card {
         position: relative;
         overflow: hidden;
+        border-radius: 16px;
+        padding: 16px 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .popup-stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(15, 31, 61, 0.08);
+    }
+
+    .popup-stat-card.stat-green {
+        background: linear-gradient(135deg, #F0FDF4, #DCFCE7);
+        border-color: #BBF7D0;
+    }
+
+    .popup-stat-card.stat-red {
+        background: linear-gradient(135deg, #FEF2F2, #FEE2E2);
+        border-color: #FECACA;
+    }
+
+    .popup-stat-card.stat-blue {
+        background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+        border-color: #BFDBFE;
+    }
+
+    .popup-stat-icon {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        opacity: 0.85;
+    }
+
+    .popup-stat-value {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--persada-navy-900, #0F1F3D);
+        line-height: 1.2;
+    }
+
+    .popup-stat-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-top: 4px;
+    }
+
+    .popup-analytics-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .popup-analytics-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 14px;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+    }
+
+    .popup-analytics-rank {
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .rank-1 { background: #DBEAFE; color: #1E40AF; }
+    .rank-2 { background: #E0E7FF; color: #3730A3; }
+    .rank-3 { background: #EDE9FE; color: #5B21B6; }
+    .rank-4 { background: #F1F5F9; color: #475569; }
+    .rank-5 { background: #F8FAFC; color: #64748B; }
+
+    .popup-analytics-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .popup-analytics-name {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: var(--persada-navy-900, #0F1F3D);
+        margin-bottom: 6px;
+    }
+
+    .popup-analytics-bar-bg {
+        width: 100%;
+        height: 8px;
+        background: #E2E8F0;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .popup-analytics-bar-fill {
+        height: 100%;
+        border-radius: 999px;
+        transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .bar-1 { background: linear-gradient(90deg, #3B82F6, #2563EB); }
+    .bar-2 { background: linear-gradient(90deg, #60A5FA, #3B82F6); }
+    .bar-3 { background: linear-gradient(90deg, #818CF8, #6366F1); }
+    .bar-4 { background: linear-gradient(90deg, #94A3B8, #64748B); }
+    .bar-5 { background: linear-gradient(90deg, #CBD5E1, #94A3B8); }
+
+    .popup-analytics-value {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: var(--persada-navy-900, #0F1F3D);
+        white-space: nowrap;
     }
 
     .popup-trend-chart {
-        margin-top: 1.5rem;
-        padding: 1rem;
-        background: #f8fafc;
-        border-radius: 12px;
-        border: 1px solid #e2e8f0;
-    }
-
-    .popup-trend-title {
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: #64748b;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 0.75rem;
-    }
-
-    .popup-trend-svg {
-        width: 100%;
-        height: 120px;
+        margin-top: 12px;
     }
 </style>
 

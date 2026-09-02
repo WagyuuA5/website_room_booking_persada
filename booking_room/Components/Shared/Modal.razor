@@ -5,7 +5,7 @@
 {
     <div class="modal-unified-backdrop @BackdropClass @GetLayoutModeClass()" @onclick="HandleBackdropClick">
         <div class="modal-unified-dialog @GetSizeClass() @DialogClass @GetDialogModeClass()" @onclick:stopPropagation="true" role="dialog" aria-modal="true">
-            @if (ShowHeader && (HeaderContent != null || !string.IsNullOrEmpty(Title) || ShowCloseButton))
+            @if (ShowHeader && (HeaderContent != null || !string.IsNullOrEmpty(Title)))
             {
                 <div class="modal-unified-header @GetHeaderModeClass()">
                     @if (HeaderContent != null)
@@ -25,16 +25,6 @@
                             }
                         </div>
                     }
-
-                    @if (ShowCloseButton)
-                    {
-                        <button class="modal-unified-close-btn" @onclick="CloseAsync" type="button" aria-label="Tutup modal">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="18" y1="6" x2="6" y2="18"></line>
-                                <line x1="6" y1="6" x2="18" y2="18"></line>
-                            </svg>
-                        </button>
-                    }
                 </div>
             }
 
@@ -49,10 +39,19 @@
                 }
             </div>
 
-            @if (ShowFooter && FooterContent != null)
+            @if (ShowFooter && (FooterContent != null || ShowCloseButton))
             {
                 <div class="modal-unified-footer">
-                    @FooterContent
+                    @if (FooterContent != null)
+                    {
+                        @FooterContent
+                    }
+                    else if (ShowCloseButton)
+                    {
+                        <button class="btn-modal-outline" style="padding: 10px 24px; border-radius: 999px; font-weight: 600; cursor: pointer; border: 1px solid #CBD5E1; background: transparent; color: #475569;" @onclick="CloseAsync">
+                            Tutup
+                        </button>
+                    }
                 </div>
             }
         </div>

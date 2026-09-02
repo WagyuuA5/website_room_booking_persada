@@ -208,14 +208,14 @@ else
                     </svg>
                 </div>
                 <div class="modal-header-info">
-                    <h3>Pesan Ruangan — @(nextRoom?.RoomName ?? "")</h3>
-                    <p>Tersedia dalam @(nextRoom?.AvailableInMinutes ?? 0) menit • Kapasitas @(nextRoom?.Capacity ?? 0) orang</p>
+                    <h3>Pesan Ruangan — @(nextRoom?.RoomName ?? "Delta Boardroom")</h3>
+                    <p>Tersedia dalam @(nextRoom?.AvailableInMinutes ?? 45) menit • Kapasitas @(nextRoom?.Capacity ?? 12) orang</p>
                 </div>
             </div>
         </div>
     </HeaderContent>
     <BodyContent>
-        <QuickBookPopup OnClose="ClosePopup" RoomName="@(nextRoom?.RoomName ?? "")" AvailableInMinutes="nextRoom?.AvailableInMinutes ?? 0" Capacity="nextRoom?.Capacity ?? 0" />
+        <QuickBookPopup OnClose="ClosePopup" RoomName="@(nextRoom?.RoomName ?? "Delta Boardroom")" AvailableInMinutes="nextRoom?.AvailableInMinutes ?? 45" Capacity="nextRoom?.Capacity ?? 12" />
     </BodyContent>
     <FooterContent>
         <div class="modal-footer-custom">
@@ -329,13 +329,13 @@ else
             </div>
         </BodyContent>
         <FooterContent>
-            <div style="display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap;">
-                <button class="btn btn-outline-primary" style="border-radius: 999px; font-weight: 600; padding: 0.5rem 1rem; font-size: 0.85rem;" @onclick="OpenMap">
+            <div style="display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; width: 100%;">
+                <button class="btn-modal-outline" style="border-radius: 999px; font-weight: 600; padding: 10px 20px; font-size: 0.875rem; border: 1.5px solid #BFDBFE; background: transparent; color: var(--persada-accent-blue, #1F5D9A);" @onclick="OpenMap">
                     Lihat di Peta Interaktif
                 </button>
                 @if (_selectedScheduleItem.Status == "sedang-berlangsung" || _selectedScheduleItem.Status == "akan-datang")
                 {
-                    <button class="btn btn-primary" style="border-radius: 999px; font-weight: 600; padding: 0.5rem 1rem; font-size: 0.85rem;" @onclick="HandleConfirmCheckIn">
+                    <button class="btn-modal-primary" style="border-radius: 999px; font-weight: 700; padding: 10px 20px; font-size: 0.875rem; background: var(--persada-yellow-500, #F59E0B); border: none; color: var(--persada-navy-900, #0F1F3D);" @onclick="HandleConfirmCheckIn">
                         Konfirmasi Kehadiran
                     </button>
                 }

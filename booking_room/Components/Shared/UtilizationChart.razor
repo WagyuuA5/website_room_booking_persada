@@ -3,11 +3,11 @@
 @using System.Globalization
 
 <div class="utilization-trend-container">
-    <div class="utilization-trend-header">
-        <h4 class="utilization-trend-title">TREN PENGGUNAAN</h4>
-    </div>
-
-    <div class="utilization-trend-chart-box">
+    <div class="utilization-trend-chart-box" 
+         @onmousemove="HandleMouseMove" 
+         @onmouseleave="HandleMouseLeave"
+         @ontouchmove="HandleTouchMove"
+         @ontouchend="HandleTouchEnd">
         <svg viewBox="0 0 600 200" class="trend-svg" preserveAspectRatio="none">
             <defs>
                 <linearGradient id="persadaTrendGradient" x1="0" y1="0" x2="0" y2="1">
@@ -33,21 +33,48 @@
             {
                 <circle cx="@pt.X.ToString("F1", CultureInfo.InvariantCulture)"
                         cy="@pt.Y.ToString("F1", CultureInfo.InvariantCulture)"
-                        r="5"
-                        fill="#3B82F6"
+                        r="@(_activePoint == pt ? "7" : "5")"
+                        fill="@(_activePoint == pt ? "#1D4ED8" : "#3B82F6")"
                         stroke="#FFFFFF"
                         stroke-width="2"
                         class="trend-point-dot">
-                    <title>@pt.Label: @pt.Value jam</title>
                 </circle>
             }
+
+            <!-- Scrubbing vertical line and indicator -->
+            @if (_activePoint != null)
+            {
+                <line x1="@_activePoint.X.ToString("F1", CultureInfo.InvariantCulture)" 
+                      y1="20" 
+                      x2="@_activePoint.X.ToString("F1", CultureInfo.InvariantCulture)" 
+                      y2="180" 
+                      stroke="#3B82F6" 
+                      stroke-width="2" 
+                      stroke-dasharray="4 4" />
+                
+                <circle cx="@_activePoint.X.ToString("F1", CultureInfo.InvariantCulture)"
+                        cy="@_activePoint.Y.ToString("F1", CultureInfo.InvariantCulture)"
+                        r="8"
+                        fill="#1D4ED8"
+                        stroke="#FFFFFF"
+                        stroke-width="3" />
+            }
         </svg>
+
+        <!-- Floating Tooltip -->
+        @if (_activePoint != null)
+        {
+            <div class="chart-scrub-tooltip" style="left: @((_activePoint.X / 600.0 * 100).ToString("F1", CultureInfo.InvariantCulture))%;">
+                <div class="tooltip-label">@_activePoint.Label</div>
+                <div class="tooltip-value">@_activePoint.Value jam</div>
+            </div>
+        }
 
         <!-- X-axis Labels -->
         <div class="trend-labels-row">
             @foreach (var pt in _chartPoints)
             {
-                <span class="trend-x-label">@pt.Label</span>
+                <span class="trend-x-label @(_activePoint == pt ? "active-x-label" : "")">@pt.Label</span>
             }
         </div>
     </div>
@@ -63,22 +90,7 @@
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
-        gap: 12px;
-    }
-
-    .utilization-trend-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .utilization-trend-title {
-        font-size: 0.8125rem;
-        font-weight: 700;
-        color: #64748B;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        margin: 0;
+        gap: 8px;
     }
 
     .utilization-trend-chart-box {
@@ -86,6 +98,8 @@
         width: 100%;
         display: flex;
         flex-direction: column;
+        cursor: crosshair;
+        touch-action: pan-y;
     }
 
     .trend-svg {
@@ -96,12 +110,46 @@
 
     .trend-point-dot {
         transition: r 0.2s ease, fill 0.2s ease;
-        cursor: pointer;
     }
 
-    .trend-point-dot:hover {
-        r: 7;
-        fill: #1D4ED8;
+    .chart-scrub-tooltip {
+        position: absolute;
+        top: 10px;
+        transform: translateX(-50%);
+        background: var(--persada-navy-900, #0F1F3D);
+        color: #FFFFFF;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+        pointer-events: none;
+        z-index: 10;
+        text-align: center;
+        white-space: nowrap;
+        animation: tooltipPop 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .chart-scrub-tooltip::after {
+        content: '';
+        position: absolute;
+        bottom: -4px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+        border-top: 4px solid var(--persada-navy-900, #0F1F3D);
+    }
+
+    .tooltip-label {
+        font-weight: 500;
+        color: #94A3B8;
+        font-size: 0.7rem;
+    }
+
+    .tooltip-value {
+        font-weight: 700;
+        color: #60A5FA;
+        font-size: 0.85rem;
     }
 
     .trend-labels-row {
@@ -116,6 +164,23 @@
     .trend-x-label {
         text-align: center;
         min-width: 30px;
+        transition: color 0.2s ease, font-weight 0.2s ease;
+    }
+
+    .active-x-label {
+        color: #2563EB;
+        font-weight: 700;
+    }
+
+    @@keyframes tooltipPop {
+        from {
+            opacity: 0;
+            transform: translate(-50%, 4px);
+        }
+        to {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
     }
 
     @@media (max-width: 640px) {
@@ -138,6 +203,7 @@
     private List<ChartPt> _chartPoints = new();
     private string _linePath = "";
     private string _areaPath = "";
+    private ChartPt? _activePoint = null;
 
     protected override void OnParametersSet()
     {
@@ -165,7 +231,6 @@
         {
             // Minggu: 7 data points matching the screenshot
             labels = new[] { "Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min" };
-            // Exact curve shape: High -> Low flat -> Low flat -> Mid peak -> Low -> Rising -> High peak
             values = new double[] { 85, 20, 20, 58, 25, 38, 92 };
         }
 
@@ -189,7 +254,7 @@
         for (int i = 0; i < values.Length; i++)
         {
             double x = padLeft + (i / (double)(values.Length - 1)) * chartW;
-            double norm = (values[i] - minVal) / valRange; // 0..1
+            double norm = (values[i] - minVal) / valRange;
             double y = (padTop + chartH) - (norm * chartH);
 
             _chartPoints.Add(new ChartPt(x, y, labels[i], values[i]));
@@ -205,5 +270,52 @@
 
             _areaPath = $"{_linePath} L {lastX},{bottomY} L {firstX},{bottomY} Z";
         }
+    }
+
+    private void HandleMouseMove(MouseEventArgs e)
+    {
+        UpdateScrubPosition(e.OffsetX);
+    }
+
+    private void HandleMouseLeave()
+    {
+        _activePoint = null;
+    }
+
+    private void HandleTouchMove(TouchEventArgs e)
+    {
+        if (e.Touches.Length > 0)
+        {
+            var touch = e.Touches[0];
+            UpdateScrubPosition(touch.ClientX);
+        }
+    }
+
+    private void HandleTouchEnd()
+    {
+        _activePoint = null;
+    }
+
+    private void UpdateScrubPosition(double currentCoord)
+    {
+        if (!_chartPoints.Any()) return;
+
+        // Find nearest point
+        // If currentCoord is ratio or offset:
+        ChartPt? nearest = null;
+        double minDistance = double.MaxValue;
+
+        // Normalizing coordinate
+        foreach (var pt in _chartPoints)
+        {
+            double dist = Math.Abs(pt.X - (currentCoord));
+            if (dist < minDistance)
+            {
+                minDistance = dist;
+                nearest = pt;
+            }
+        }
+
+        _activePoint = nearest;
     }
 }

@@ -7,16 +7,6 @@
 {
     <div class="modal-overlay @OverlayClass @(IsSolidCard ? "solid-card-overlay" : "")" @onclick="HandleBackdropClick">
         <div class="modal-content glass-surface @SizeClass @ContentClass @(IsSolidCard ? "solid-card tone-dark" : "")" @onclick:stopPropagation="true" role="dialog" aria-modal="true">
-            @if (ShowCloseButton && !IsSolidCard)
-            {
-                <button class="modal-base-close-btn" @onclick="CloseAsync" type="button" aria-label="Tutup modal">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
-            }
-
             @if (HeaderContent != null && !IsSolidCard)
             {
                 <div class="modal-base-header @HeaderClass">
@@ -31,10 +21,19 @@
                 }
             </div>
 
-            @if (FooterContent != null && !IsSolidCard)
+            @if (!IsSolidCard && (FooterContent != null || ShowCloseButton))
             {
                 <div class="modal-base-footer @FooterClass">
-                    @FooterContent
+                    @if (FooterContent != null)
+                    {
+                        @FooterContent
+                    }
+                    else if (ShowCloseButton)
+                    {
+                        <button class="btn-modal-outline" style="padding: 10px 24px; border-radius: 999px; font-weight: 600; cursor: pointer; border: 1px solid #CBD5E1; background: transparent; color: #475569;" @onclick="CloseAsync">
+                            Tutup
+                        </button>
+                    }
                 </div>
             }
         </div>
