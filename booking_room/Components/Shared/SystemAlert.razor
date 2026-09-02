@@ -263,6 +263,23 @@ else if (Variant == SystemAlertVariant.Toast)
             await OnClose.InvokeAsync();
     }
 
+    private string ClassVariant => Variant switch
+    {
+        SystemAlertVariant.Banner => "alert-variant-banner",
+        SystemAlertVariant.Modal => "alert-variant-modal",
+        SystemAlertVariant.Toast => "alert-variant-toast",
+        _ => ""
+    };
+
+    private string ClassTone => Tone switch
+    {
+        SystemAlertTone.Success => "alert-tone-success",
+        SystemAlertTone.Warning => "alert-tone-warning",
+        SystemAlertTone.Info => "alert-tone-info",
+        SystemAlertTone.Danger => "alert-tone-danger",
+        _ => ""
+    };
+
     private string GetIconPath()
     {
         return Tone switch

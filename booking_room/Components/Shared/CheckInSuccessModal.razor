@@ -1,23 +1,21 @@
-@using booking_room.Components.Shared
-
-<div class="modal-body-custom checkin-success-modal" style="display: flex; flex-direction: column; align-items: center; padding: 3rem 2rem; background: var(--persada-navy-900, #0f1f3d); color: white; border-radius: inherit; text-align: center;">
+<div class="checkin-success-card" style="display: flex; flex-direction: column; align-items: center; padding: 2.5rem 2rem; background: var(--persada-navy-900, #0F1F3D); color: white; border-radius: var(--persada-border-radius-card, 20px); box-shadow: var(--shadow-modal, 0 20px 60px rgba(0, 0, 0, 0.25)); width: min(92vw, 400px); max-width: 400px; text-align: center; margin: auto; box-sizing: border-box;">
     
     <!-- Success Icon -->
     <div style="margin-bottom: 1.5rem;">
-        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="var(--persada-success-green, #00A372)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="check-animation">
+        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="var(--persada-success-green, #10B981)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="check-animation">
             <circle cx="12" cy="12" r="10" class="circle-animation"></circle>
             <path d="M8 12.5l3 3 5-6" class="check-path-animation"></path>
         </svg>
     </div>
 
     <!-- Title -->
-    <h2 style="font-weight: 800; font-size: 1.75rem; margin: 0 0 0.5rem 0; letter-spacing: -0.02em;">Kehadiran Berhasil</h2>
+    <h2 style="font-weight: 800; font-size: 1.5rem; margin: 0 0 0.5rem 0; letter-spacing: -0.02em; color: #FFFFFF;">Kehadiran Berhasil</h2>
     
     <!-- Subtitle with dynamic timestamp -->
-    <p style="color: #cbd5e1; font-size: 1rem; font-weight: 500; margin: 0 0 2.5rem 0;">pada @Timestamp.ToString("HH:mm")</p>
+    <p style="color: #94A3B8; font-size: 0.95rem; font-weight: 500; margin: 0 0 2rem 0;">pada @Timestamp.ToString("HH:mm")</p>
 
     <!-- Close Button -->
-    <button @onclick="Close" style="width: 100%; padding: 0.875rem; border-radius: 9999px; border: none; background: var(--persada-yellow-500, #EAB63C); color: var(--persada-navy-900, #0f1f3d); font-weight: 700; font-size: 1rem; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;">
+    <button @onclick="Close" style="width: 100%; padding: 0.875rem; border-radius: 9999px; border: none; background: var(--persada-yellow-500, #F59E0B); color: var(--persada-navy-900, #0F1F3D); font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;">
         Tutup
     </button>
 </div>

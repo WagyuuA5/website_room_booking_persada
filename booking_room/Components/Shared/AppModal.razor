@@ -14,6 +14,8 @@
            Title="@Title"
            Subtitle="@Subtitle"
            Size="@GetModalSize()"
+           LayoutMode="@LayoutMode"
+           DialogClass="@DialogClass"
            ShowCloseButton="@ShowCloseButton"
            ShowHeader="@ShowHeader"
            ShowFooter="@ShowFooter"
@@ -43,7 +45,9 @@
     [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
     [Parameter] public string Title { get; set; } = "";
     [Parameter] public string Subtitle { get; set; } = "";
-    [Parameter] public string Size { get; set; } = "md"; // sm, default, md, lg, xl
+    [Parameter] public string Size { get; set; } = "md"; // sm, default, md, lg, xl, auto
+    [Parameter] public string LayoutMode { get; set; } = "form"; // form, list, split-detail, alert, invitation, solid-card
+    [Parameter] public string DialogClass { get; set; } = "";
     [Parameter] public bool UseQueue { get; set; } = false;
     [Parameter] public RenderFragment? HeaderContent { get; set; }
     [Parameter] public RenderFragment? BodyContent { get; set; }

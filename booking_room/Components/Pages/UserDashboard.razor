@@ -209,45 +209,44 @@ else
         </div>
     </div>
 
-    <div style="width: 100%; min-height: 280px; position: relative;">
-        @if (_apexChartSeries != null && _apexChartSeries.Count > 0)
+    <!-- Horizontal Bar Chart (Opsi A - Bersih & Mudah Dibaca) -->
+    <div class="analytics-horizontal-bars">
+        @{
+            int rank = 0;
+            var rooms = analyticsData.Rooms.OrderByDescending(r => r.HoursUsed).Take(5).ToList();
+            var maxHours = rooms.Count > 0 ? rooms.Max(r => r.HoursUsed) : 1;
+            if (maxHours == 0) maxHours = 1;
+        }
+        @foreach (var room in rooms)
         {
-            <div class="chart-legend-chips">
-                @foreach (var series in _apexChartSeries)
-                {
-                    <button class="legend-chip @(series.Show ? "active" : "")" 
-                            style="border-color: @series.Color; @(series.Show ? $"background: {series.Color}15; color: {series.Color};" : $"color: {series.Color};")"
-                            @onclick="() => ToggleSeries(series.Name)">
-                        <span class="legend-dot" style="background: @series.Color;"></span>
-                        @series.Name
-                    </button>
-                }
+            rank++;
+            var percentage = Math.Round((double)room.HoursUsed / maxHours * 100, 1);
+            var rankColor = rank switch
+            {
+                1 => "#0F1F3D",
+                2 => "#1E40AF",
+                3 => "#3B82F6",
+                4 => "#60A5FA",
+                _ => "#93C5FD"
+            };
+
+            <div class="hbar-item" @onclick='() => ShowPopup("AnalyticsDetail")' title="Klik untuk lihat detail @room.RoomName">
+                <div class="hbar-header">
+                    <div class="hbar-room-info">
+                        <span class="hbar-rank" style="background: @rankColor; color: white;">#@rank</span>
+                        <span class="hbar-name">@room.RoomName</span>
+                    </div>
+                    <div class="hbar-value-wrap">
+                        <span class="hbar-hours">@room.HoursUsed jam</span>
+                        <span class="hbar-percent">(@percentage%)</span>
+                    </div>
+                </div>
+                <div class="hbar-track">
+                    <div class="hbar-fill" style="width: @(percentage.ToString(System.Globalization.CultureInfo.InvariantCulture))%; background: @rankColor;"></div>
+                </div>
             </div>
-            <ApexChart TItem="RoomUsagePoint"
-                       Options="_apexChartOptions"
-                       @ref="_apexChartRef"
-                       Height="280">
-                @foreach (var series in _apexChartSeries.Where(s => s.Show))
-                {
-                     <ApexPointSeries TItem="RoomUsagePoint"
-                                      Items="series.Points"
-                                      Name="@series.Name"
-                                      SeriesType="SeriesType.Area"
-                                      XValue="@(p => p.Label)"
-                                      YValue="@(p => p.Value)"
-                                      Stroke="@(new SeriesStroke { Width = 2, Color = series.Color })" />
-                }
-            </ApexChart>
         }
     </div>
-
-    @if (_highlightedRoom != null)
-    {
-        <div class="drilldown-banner">
-            <span>Menampilkan: <strong>@_highlightedRoom</strong></span>
-            <button class="drilldown-clear" @onclick="ClearDrillDown">Tampilkan Semua</button>
-        </div>
-    }
 
     <div class="analytics-inline-footer">
         <button class="btn btn-outline-primary" style="border-radius: 999px; font-weight: 600; padding: 0.5rem 1.25rem;" @onclick='() => ShowPopup("AnalyticsDetail")'>
@@ -259,7 +258,7 @@ else
 }
 
 <!-- Pop-ups -->
-<AppModal Visible="@(activePopup == "RoomAvailable")" VisibleChanged="VisibleChanged" OnClose="ClosePopup" ShowCloseButton="false">
+<AppModal Visible="@(activePopup == "RoomAvailable")" VisibleChanged="VisibleChanged" OnClose="ClosePopup" ShowCloseButton="true" Size="lg">
     <HeaderContent>
         <div class="modal-header-custom" style="padding: 0;">
             <div class="modal-header-left">
@@ -285,7 +284,7 @@ else
     </FooterContent>
 </AppModal>
 
-<AppModal Visible="@(activePopup == "PendingApproval" && DashboardData.CurrentUserRole == "Admin")" VisibleChanged="VisibleChanged" OnClose="ClosePopup" ShowCloseButton="false">
+<AppModal Visible="@(activePopup == "PendingApproval" && DashboardData.CurrentUserRole == "Admin")" VisibleChanged="VisibleChanged" OnClose="ClosePopup" ShowCloseButton="true" Size="lg">
     <HeaderContent>
         <div class="modal-header-custom" style="padding: 0;">
             <div class="modal-header-left">
@@ -312,7 +311,7 @@ else
     </FooterContent>
 </AppModal>
 
-<AppModal Visible="@(activePopup == "QuickBook")" VisibleChanged="VisibleChanged" OnClose="ClosePopup" ShowCloseButton="false">
+<AppModal Visible="@(activePopup == "QuickBook")" VisibleChanged="VisibleChanged" OnClose="ClosePopup" ShowCloseButton="true" Size="md">
     <HeaderContent>
         <div class="modal-header-custom" style="padding: 0;">
             <div class="modal-header-left">
@@ -334,9 +333,14 @@ else
     <BodyContent>
         <QuickBookPopup OnClose="ClosePopup" RoomName="@(nextRoom?.RoomName ?? "")" AvailableInMinutes="nextRoom?.AvailableInMinutes ?? 0" Capacity="nextRoom?.Capacity ?? 0" />
     </BodyContent>
+    <FooterContent>
+        <div class="modal-footer-custom">
+            <button class="popup-btn popup-btn-secondary" @onclick="ClosePopup">Batal</button>
+        </div>
+    </FooterContent>
 </AppModal>
 
-<AppModal Visible="@(activePopup == "AnalyticsDetail")" VisibleChanged="VisibleChanged" OnClose="ClosePopup" ShowCloseButton="false">
+<AppModal Visible="@(activePopup == "AnalyticsDetail")" VisibleChanged="VisibleChanged" OnClose="ClosePopup" ShowCloseButton="true" Size="lg">
     <HeaderContent>
         <div class="modal-header-custom" style="padding: 0;">
             <div class="modal-header-left">
@@ -365,25 +369,7 @@ else
     </FooterContent>
 </AppModal>
 
-<AppModal Visible="@(activePopup == "CheckInConfirmation")" VisibleChanged="VisibleChanged" OnClose="ClosePopup">
-    <HeaderContent>
-        <div class="modal-header-custom" style="padding: 0;">
-            <div class="modal-header-left">
-                <div class="modal-header-icon icon-navy">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M11 21H5C3.9 21 3 20.1 3 19V5C3 3.9 3.9 3 5 3H19C20.1 3 21 3.9 21 5V11.5" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-                        <path d="M7 7H17M7 11H13M7 15H11" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-                        <circle cx="18" cy="18" r="4" fill="#f59e0b"/>
-                        <path d="M16.5 18L17.5 19L19.5 17" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </div>
-                <div class="modal-header-info">
-                    <h3>Konfirmasi Kehadiran</h3>
-                    <p>Pastikan Anda berada di lokasi yang benar.</p>
-                </div>
-            </div>
-        </div>
-    </HeaderContent>
+<AppModal Visible="@(activePopup == "CheckInConfirmation")" VisibleChanged="VisibleChanged" OnClose="ClosePopup" ShowHeader="false" ShowFooter="false" LayoutMode="solid-card" Size="md">
     <BodyContent>
         <CheckInCountdownCard 
             RoomName="Alpha Boardroom"
@@ -397,7 +383,7 @@ else
     </BodyContent>
 </AppModal>
 
-<AppModal Visible="@(activePopup == "BookingAutoReleased")" VisibleChanged="VisibleChanged" OnClose="ClosePopup" ShowCloseButton="false">
+<AppModal Visible="@(activePopup == "BookingAutoReleased")" VisibleChanged="VisibleChanged" OnClose="ClosePopup" ShowCloseButton="true" Size="sm">
     <HeaderContent>
         <div class="modal-header-custom" style="padding: 0;">
             <div class="modal-header-left">
@@ -424,23 +410,7 @@ else
     </FooterContent>
 </AppModal>
 
-<AppModal Visible="@(activePopup == "CheckInSuccess")" VisibleChanged="VisibleChanged" OnClose="HandleSuccessClose" ShowCloseButton="false">
-    <HeaderContent>
-        <div class="modal-header-custom" style="padding: 0;">
-            <div class="modal-header-left">
-                <div class="modal-header-icon icon-green">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M9 12l2 2 4-4" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <circle cx="12" cy="12" r="10" stroke="#10B981" stroke-width="2"/>
-                    </svg>
-                </div>
-                <div class="modal-header-info">
-                    <h3>Check-in Berhasil</h3>
-                    <p>Selamat menikmati ruangan.</p>
-                </div>
-            </div>
-        </div>
-    </HeaderContent>
+<AppModal Visible="@(activePopup == "CheckInSuccess")" VisibleChanged="VisibleChanged" OnClose="HandleSuccessClose" ShowHeader="false" ShowFooter="false" LayoutMode="solid-card" Size="sm">
     <BodyContent>
         <CheckInSuccessModal 
             Timestamp="@checkInTimestamp"
@@ -510,11 +480,6 @@ else
         new("6", "Meeting Ruangan Prime", 8, "Ruang rapat standar.", "booked", new() { "AC" }, "Lantai 2", ""),
     };
 
-    // ApexChart state
-    private ApexChart<RoomUsagePoint>? _apexChartRef;
-    private ApexChartOptions<RoomUsagePoint> _apexChartOptions = new();
-    private List<ApexChartSeries> _apexChartSeries = new();
-
     private string activePopup = "";
     private bool _scheduleDetailPopupVisible = false;
     private TodayScheduleItem? _selectedScheduleItem = null;
@@ -524,9 +489,6 @@ else
         nextRoom = DashboardData.NextAvailableRooms.FirstOrDefault();
         NotificationState.OnChange += StateHasChanged;
         LoadingState.OnChange += StateHasChanged;
-
-        ConfigureApexChartOptions();
-        LoadApexChartData(selectedPeriod);
     }
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -543,102 +505,7 @@ else
                 }
             }
             catch { }
-            await JS.InvokeVoidAsync("document.body.classList.add", "page-slide-in-left");
         }
-    }
-
-    private void ConfigureApexChartOptions()
-    {
-        _apexChartOptions = new ApexChartOptions<RoomUsagePoint>
-        {
-            Markers = new Markers
-            {
-                Size = 4,
-                Colors = new List<string> { "#0f1f3d", "#1e40af", "#3b82f6", "#60a5fa", "#93c5fd" }
-            },
-            Chart = new Chart
-            {
-                Toolbar = new Toolbar { Show = false },
-                Animations = new Animations
-                {
-                    Enabled = true,
-                    Speed = 600,
-                    AnimateGradually = new AnimateGradually { Enabled = true, Delay = 150 }
-                },
-                FontFamily = "'Inter', 'Poppins', sans-serif"
-            },
-            Stroke = new Stroke
-            {
-                Curve = Curve.Smooth,
-                Width = 2
-            },
-            Fill = new Fill
-            {
-                Type = FillType.Gradient,
-                Gradient = new FillGradient
-                {
-                    ShadeIntensity = 1,
-                    OpacityFrom = 0.35,
-                    OpacityTo = 0.05,
-                    Stops = new List<double> { 0, 90, 100 }
-                }
-            },
-            Xaxis = new XAxis
-            {
-                Labels = new XAxisLabels
-                {
-                    Style = new AxisLabelStyle { FontSize = "11px", Colors = "#94a3b8" }
-                }
-            },
-            Yaxis = new List<YAxis>
-            {
-                new YAxis
-                {
-                    Labels = new YAxisLabels
-                    {
-                        Style = new AxisLabelStyle { FontSize = "11px", Colors = "#94a3b8" }
-                    }
-                }
-            },
-            Grid = new Grid
-            {
-                BorderColor = "#f1f5f9",
-                StrokeDashArray = 4
-            },
-            Legend = new Legend
-            {
-                Position = LegendPosition.Top,
-                HorizontalAlign = ApexCharts.Align.Left,
-                FontSize = "12px",
-                Labels = new LegendLabels { Colors = "#64748b" }
-            },
-            Tooltip = new Tooltip
-            {
-                Enabled = true,
-                Theme = Mode.Light
-            },
-            Colors = new List<string> { "#0f1f3d", "#1e40af", "#3b82f6", "#60a5fa", "#93c5fd" }
-        };
-    }
-
-    private void LoadApexChartData(string period)
-    {
-        var chartData = DashboardData.GetChartData(period);
-        _apexChartSeries = chartData.Datasets.Select(ds =>
-        {
-            var points = chartData.Labels.Select((label, i) => new RoomUsagePoint
-            {
-                Label = label,
-                Value = (decimal)ds.Data[i]
-            }).ToList();
-
-            return new ApexChartSeries
-            {
-                Name = ds.Label,
-                Color = ds.BorderColor,
-                Points = points
-            };
-        }).ToList();
     }
 
     public void Dispose()
@@ -682,11 +549,10 @@ else
         Navigation.NavigateTo("/status");
     }
 
-    private async Task SelectPeriod(string period)
+    private void SelectPeriod(string period)
     {
         selectedPeriod = period;
         analyticsData = DashboardData.GetAnalytics(period);
-        LoadApexChartData(period);
         StateHasChanged();
     }
 
@@ -792,57 +658,20 @@ else
         public decimal Value { get; set; }
     }
 
-    public class ApexChartSeries
-    {
-        public string Name { get; set; } = "";
-        public string Color { get; set; } = "";
-        public bool Show { get; set; } = true;
-        public List<RoomUsagePoint> Points { get; set; } = new();
-    }
-
-    private string? _highlightedRoom = null;
-
-    private void ToggleSeries(string seriesName)
-    {
-        if (_highlightedRoom == seriesName)
-        {
-            ClearDrillDown();
-        }
-        else
-        {
-            _highlightedRoom = seriesName;
-            foreach (var s in _apexChartSeries)
-            {
-                s.Show = s.Name == seriesName;
-            }
-        }
-        StateHasChanged();
-    }
-
-    private void ClearDrillDown()
-    {
-        _highlightedRoom = null;
-        foreach (var s in _apexChartSeries)
-        {
-            s.Show = true;
-        }
-        StateHasChanged();
-    }
-
     private void ExportCSV()
     {
         var csv = new System.Text.StringBuilder();
-        csv.AppendLine("Ruangan," + string.Join(",", _apexChartSeries.FirstOrDefault()?.Points.Select(p => p.Label) ?? Enumerable.Empty<string>()));
-        foreach (var series in _apexChartSeries)
+        csv.AppendLine("Ruangan,Jam Penggunaan");
+        foreach (var room in analyticsData.Rooms)
         {
-            csv.AppendLine($"{series.Name}," + string.Join(",", series.Points.Select(p => p.Value)));
+            csv.AppendLine($"{room.RoomName},{room.HoursUsed}");
         }
         DownloadFile(csv.ToString(), $"analytics-{selectedPeriod}.csv", "text/csv");
     }
 
     private void ExportJSON()
     {
-        var json = System.Text.Json.JsonSerializer.Serialize(new { Period = selectedPeriod, Series = _apexChartSeries.Select(s => new { s.Name, s.Points }) });
+        var json = System.Text.Json.JsonSerializer.Serialize(new { Period = selectedPeriod, Rooms = analyticsData.Rooms });
         DownloadFile(json, $"analytics-{selectedPeriod}.json", "application/json");
     }
 
@@ -857,6 +686,91 @@ else
 }
 
 <style>
+    .analytics-horizontal-bars {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 12px 0 16px;
+    }
+
+    .hbar-item {
+        cursor: pointer;
+        padding: 12px 16px;
+        border-radius: 14px;
+        transition: all 0.2s ease;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+    }
+
+    .hbar-item:hover {
+        background: #F1F5F9;
+        border-color: #CBD5E1;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(15, 31, 61, 0.06);
+    }
+
+    .hbar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .hbar-room-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .hbar-rank {
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .hbar-name {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: var(--persada-navy-900, #0F1F3D);
+    }
+
+    .hbar-value-wrap {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.85rem;
+    }
+
+    .hbar-hours {
+        font-weight: 700;
+        color: var(--persada-navy-900, #0F1F3D);
+    }
+
+    .hbar-percent {
+        color: #64748B;
+        font-size: 0.8rem;
+    }
+
+    .hbar-track {
+        width: 100%;
+        height: 8px;
+        background: #E2E8F0;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .hbar-fill {
+        height: 100%;
+        border-radius: 999px;
+        transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
     .dashboard-lower-layout {
         display: grid;
         grid-template-columns: 1fr;

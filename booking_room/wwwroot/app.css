@@ -3771,45 +3771,6 @@ input:checked + .slider:before { transform: translateX(20px); }
     }
     100% {
         transform: translateX(350%);
-    }
-}
-
-/* ============================================
-   Page Transition Animations
-   ============================================ */
-.page-slide-out-right {
-    animation: slideOutRight 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-.page-slide-in-left {
-    animation: slideInLeft 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-@keyframes slideOutRight {
-    0% {
-        transform: translateX(0);
-        opacity: 1;
-    }
-    100% {
-        transform: translateX(30%);
-        opacity: 0;
-    }
-}
-
-@keyframes slideInLeft {
-    0% {
-        transform: translateX(-30%);
-        opacity: 0;
-    }
-    100% {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
-
-
- # b l a z o r - e r r o r - u i   { 
      b a c k g r o u n d :   v a r ( - - c a r d - b g ,   # f f f ) ; 
      c o l o r :   v a r ( - - t e x t - n a v y ) ; 
      b o r d e r - t o p :   1 p x   s o l i d   r g b a ( 1 5 ,   3 1 ,   6 1 ,   0 . 1 ) ; 

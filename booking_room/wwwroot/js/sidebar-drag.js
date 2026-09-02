@@ -49,17 +49,22 @@
         width = Math.max(MIN_WIDTH, Math.min(MAX_EXPANDED_WIDTH * 1.1, width));
         currentWidth = width;
 
+        document.documentElement.style.setProperty('--sidebar-width', width + 'px');
+
         if (animate) {
             sidebar.style.transition = 'width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), min-width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)';
+            mainContent.style.transition = 'margin-left 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)';
         } else {
             sidebar.style.transition = 'none';
+            mainContent.style.transition = 'none';
         }
         sidebar.style.width = width + 'px';
         sidebar.style.minWidth = width + 'px';
         sidebar.style.transform = 'none';
         sidebar.style.overflow = 'visible';
 
-        mainContent.style.marginLeft = '0';
+        mainContent.style.marginLeft = width + 'px';
+        mainContent.style.width = `calc(100% - ${width}px)`;
     }
 
     function snapToNearest(width) {
