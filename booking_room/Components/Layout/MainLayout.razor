@@ -7,7 +7,7 @@
 @inject IJSRuntime JS
 @implements IDisposable
 
-<div class="page d-flex">
+<div class="app-shell">
     @if (_showSplitAnimation)
     {
         <div class="split-transition-overlay @(_splitOpening ? "opening" : "")">
@@ -28,12 +28,12 @@
         <NavMenu />
     </aside>
 
-    <main class="main-content flex-grow-1">
-        <header class="dashboard-header">
+    <div class="main-area">
+        <header class="navbar">
             <div class="d-flex align-items-center gap-2">
             </div>
             <div class="dashboard-header-right">
-                <button class="dark-mode-toggle" @onclick="ToggleDarkMode" aria-label="Toggle Dark Mode" style="background: none; border: none; color: var(--persada-text-primary); cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; margin-right: 8px;">
+                <button class="dark-mode-toggle" @onclick="ToggleDarkMode" aria-label="Ganti Mode Gelap" title="Ganti Mode Gelap" style="background: none; border: none; color: var(--persada-text-primary); cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; margin-right: 8px;">
                     @if (_isDarkMode)
                     {
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
@@ -44,12 +44,12 @@
                     }
                 </button>
                 <div class="notification-bell-wrapper" style="position: relative;">
-                    <div class="notification-bell" @onclick="ToggleNotificationPanel" style="cursor: pointer;">
+                    <div class="notification-bell" @onclick="ToggleNotificationPanel" style="cursor: pointer;" title="Notifikasi" aria-label="Notifikasi">
                         <InlineSvg Src="/icons/icon_bell_notif.svg" />
                     </div>
                     <booking_room.Components.Shared.NotificationPanel Visible="@_showNotificationPanel" OnClose="CloseNotificationPanel" />
                 </div>
-                <div class="profile-avatar-wrapper" @onclick="ToggleProfilePanel" style="cursor: pointer; position: relative;">
+                <div class="profile-avatar-wrapper" @onclick="ToggleProfilePanel" style="cursor: pointer; position: relative;" title="Profil Pengguna" aria-label="Profil Pengguna">
                     @if (!string.IsNullOrEmpty(BookingDataStore.CurrentUser.PhotoUrl))
                     {
                         <img src="@BookingDataStore.CurrentUser.PhotoUrl" alt="Profil Pengguna" class="profile-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'" />
@@ -64,25 +64,25 @@
             </div>
         </header>
 
-        <div class="dashboard-body">
+        <main class="page-content">
             <ErrorBoundary>
                 <ChildContent>
                     @Body
                 </ChildContent>
                 <ErrorContent>
-                    <div class="app-error-fallback" style="padding: 24px; text-align: center; border-radius: var(--card-radius); background: var(--card-bg); box-shadow: var(--shadow-sm); margin: 24px auto; max-width: 400px;">
-                        <div style="color: var(--accent-red); margin-bottom: 16px;">
+                    <div class="app-error-fallback" style="padding: 24px; text-align: center; border-radius: var(--persada-border-radius-card, 20px); background: #FFFFFF; box-shadow: var(--shadow-sm); margin: 24px auto; max-width: 400px;">
+                        <div style="color: #EF4444; margin-bottom: 16px;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                         </div>
-                        <p style="color: var(--text-navy); font-weight: 500; margin-bottom: 16px;">Terjadi kesalahan saat memuat halaman ini.</p>
-                        <button class="btn btn-primary" style="background: var(--accent-amber); border: none; padding: 10px 20px; border-radius: 999px; font-weight: 600; color: #fff;" @onclick="() => Navigation.NavigateTo(Navigation.Uri, forceLoad: true)">
+                        <p style="color: var(--persada-navy-900, #0F1F3D); font-weight: 600; margin-bottom: 16px;">Terjadi kesalahan saat memuat halaman ini.</p>
+                        <button class="btn btn-primary" style="background: var(--persada-yellow-500, #F59E0B); border: none; padding: 10px 20px; border-radius: 999px; font-weight: 700; color: #0F1F3D;" @onclick="() => Navigation.NavigateTo(Navigation.Uri, forceLoad: true)">
                             Muat Ulang Halaman
                         </button>
                     </div>
                 </ErrorContent>
             </ErrorBoundary>
-        </div>
-    </main>
+        </main>
+    </div>
 </div>
 
 <div id="blazor-error-ui" data-nosnippet>

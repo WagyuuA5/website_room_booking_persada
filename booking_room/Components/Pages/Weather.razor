@@ -1,25 +1,25 @@
-﻿@page "/weather"
+@page "/weather"
 @attribute [StreamRendering]
 
-<PageTitle>Weather</PageTitle>
+<PageTitle>Cuaca</PageTitle>
 
-<h1>Weather</h1>
+<h1>Informasi Cuaca</h1>
 
-<p>This component demonstrates showing data.</p>
+<p>Komponen ini menampilkan data perkiraan cuaca.</p>
 
 @if (forecasts == null)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Memuat...</em></p>
 }
 else
 {
     <table class="table">
         <thead>
             <tr>
-                <th>Date</th>
-                <th aria-label="Temperature in Celsius">Temp. (C)</th>
-                <th aria-label="Temperature in Fahrenheit">Temp. (F)</th>
-                <th>Summary</th>
+                <th>Tanggal</th>
+                <th aria-label="Suhu dalam Celsius">Suhu (°C)</th>
+                <th aria-label="Suhu dalam Fahrenheit">Suhu (°F)</th>
+                <th>Kondisi</th>
             </tr>
         </thead>
         <tbody>

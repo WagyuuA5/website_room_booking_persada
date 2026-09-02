@@ -21,7 +21,7 @@
 
     function getElements() {
         sidebar = document.querySelector('.sidebar');
-        mainContent = document.querySelector('.main-content');
+        mainContent = document.querySelector('.main-area') || document.querySelector('.main-content');
         return sidebar && mainContent;
     }
 

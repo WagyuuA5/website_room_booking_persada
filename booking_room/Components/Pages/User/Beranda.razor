@@ -4,6 +4,7 @@
 @inject NavigationManager Navigation
 @inject booking_room.Services.NotificationState NotificationState
 @inject booking_room.Services.LoadingStateService LoadingState
+@inject booking_room.Services.IModalService ModalService
 @inject IJSRuntime JS
 @implements IDisposable
 <PageTitle>Beranda — Persada Ruangan</PageTitle>
@@ -176,7 +177,7 @@ else
                 _ => "#93C5FD"
             };
 
-            <div class="hbar-item" @onclick='() => ShowPopup("AnalyticsDetail")' title="Klik untuk lihat detail @room.RoomName">
+            <div class="hbar-item" @onclick='() => OpenChartDetailModal(room.RoomName)' title="Klik untuk lihat detail @room.RoomName">
                 <div class="hbar-header">
                     <div class="hbar-room-info">
                         <span class="hbar-rank" style="background: @rankColor; color: white;">#@rank</span>
@@ -195,7 +196,7 @@ else
     </div>
 
     <div class="analytics-inline-footer">
-        <button class="btn btn-outline-primary" style="border-radius: 999px; font-weight: 600; padding: 0.5rem 1.25rem;" @onclick='() => ShowPopup("AnalyticsDetail")'>
+        <button class="btn btn-outline-primary" style="border-radius: 999px; font-weight: 600; padding: 0.5rem 1.25rem;" @onclick='() => OpenChartDetailModal()'>
             Lihat Detail
         </button>
     </div>
@@ -499,6 +500,19 @@ else
     {
         NotificationState.DismissBanner();
         activePopup = "";
+    }
+
+    private async Task OpenChartDetailModal(string? roomName = null)
+    {
+        var parameters = new Dictionary<string, object>
+        {
+            { "SelectedPeriod", selectedPeriod }
+        };
+        if (!string.IsNullOrEmpty(roomName))
+        {
+            parameters["HighlightRoom"] = roomName;
+        }
+        await ModalService.ShowAsync<ChartDetailModal>(parameters);
     }
 
     private void ShowPopup(string popupName)

@@ -1,0 +1,22 @@
+﻿@namespace booking_room.Components.Shared
+@using booking_room.Services
+@inject IModalService ModalService
+@implements IDisposable
+
+@if (ModalService.ActiveModal != null)
+{
+    <DynamicComponent Type=@ModalService.ActiveModal.ComponentType
+                      Parameters=@ModalService.ActiveModal.Parameters />
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        ModalService.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        ModalService.OnChange -= StateHasChanged;
+    }
+}
