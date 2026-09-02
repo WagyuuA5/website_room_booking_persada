@@ -67,9 +67,8 @@
     private int capacityFilter = 0;
     private bool _isLoading = true;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        await Task.Delay(250);
         _isLoading = false;
     }
 

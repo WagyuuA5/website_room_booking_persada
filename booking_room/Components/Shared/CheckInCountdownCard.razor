@@ -6,11 +6,9 @@
 @inject IToastService ToastService
 @inject IModalService ModalService
 
-<ModalBase Visible="true" Size="md" ShowCloseButton="false" OnClose="HandleCancelClose">
-    <ChildContent>
-        <div class="checkin-confirmation-modal">
-            <!-- Header avatar & info -->
-            <div class="checkin-top-header">
+<div class="checkin-confirmation-modal">
+    <!-- Header avatar & info -->
+    <div class="checkin-top-header">
                 <div class="room-avatar">
                     <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=128&h=128&fit=crop" alt="Avatar Ruangan" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'" />
                     <div class="room-avatar-fallback">
@@ -103,8 +101,6 @@
                 </button>
             </div>
         </div>
-    </ChildContent>
-</ModalBase>
 
 <style>
     .checkin-confirmation-modal {

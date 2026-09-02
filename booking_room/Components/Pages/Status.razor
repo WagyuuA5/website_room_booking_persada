@@ -989,7 +989,6 @@
             }
         };
 
-        await Task.Delay(250);
         allBookings = BookingDataStore.AllBookings.ToList();
         selectedBooking = allBookings.FirstOrDefault();
         _activeUpcomingBooking = allBookings.FirstOrDefault(b => b.Status.Equals("approved", StringComparison.OrdinalIgnoreCase) || b.Status.Equals("pending", StringComparison.OrdinalIgnoreCase));

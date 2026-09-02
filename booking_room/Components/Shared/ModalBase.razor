@@ -71,8 +71,7 @@
         max-height: 85vh;
         display: flex;
         flex-direction: column;
-        overflow-y: auto;
-        overflow-x: hidden;
+        overflow: hidden;
         margin: auto;
         animation: modalScaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
@@ -82,18 +81,6 @@
     .modal-content.modal-md { width: min(92vw, 560px); max-width: 560px; }
     .modal-content.modal-lg { width: min(92vw, 760px); max-width: 760px; }
     .modal-content.modal-xl { width: min(92vw, 960px); max-width: 960px; }
-
-    /* Custom slim scrollbar */
-    .modal-content::-webkit-scrollbar {
-        width: 6px;
-    }
-    .modal-content::-webkit-scrollbar-track {
-        background: transparent;
-    }
-    .modal-content::-webkit-scrollbar-thumb {
-        background: rgba(15, 23, 42, 0.15);
-        border-radius: 999px;
-    }
 
     /* Solid card - single dark glass layer */
     .modal-content.solid-card {
