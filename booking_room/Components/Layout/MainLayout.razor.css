@@ -7,6 +7,7 @@
 
 .sidebar {
     width: 260px;
+    min-width: 260px;
     background-color: var(--sidebar-bg);
     height: 100vh;
     position: sticky;
@@ -16,49 +17,9 @@
     flex-shrink: 0;
     z-index: 20;
     overflow-y: auto;
-    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                min-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.page.sidebar-collapsed .sidebar {
-    width: 0;
-    min-width: 0;
-    transform: translateX(-100%);
-    overflow: hidden;
-}
-
-.page.sidebar-collapsed .main-content {
-    margin-left: 0;
-}
-
-.sidebar-toggle {
-    background: none;
-    border: none;
-    color: var(--text-navy);
-    padding: 0.5rem;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    display: none;
-}
-
-.sidebar-toggle:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-}
-
-.sidebar-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background-color: rgba(0, 0, 0, 0.4);
-    z-index: 15;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.sidebar-overlay.show {
-    display: block;
-    opacity: 1;
+    overflow-x: hidden;
+    transition: width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+                min-width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .main-content {
@@ -67,7 +28,6 @@
     flex-direction: column;
     min-width: 0;
     margin-left: 0;
-    transition: margin-left 0.3s ease;
 }
 
 .dashboard-header {
@@ -83,39 +43,51 @@
     flex: 1;
 }
 
-@media (max-width: 767.98px) {
-    .sidebar {
-        width: 260px;
-        position: fixed;
-        left: -260px;
-        top: 0;
-        height: 100vh;
-        transition: left 0.3s ease;
-    }
-
-    .sidebar.show {
-        left: 0;
-    }
-
-    .sidebar-toggle {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
+/* ============================================ */
+/* SIDEBAR DRAG HANDLE                          */
+/* ============================================ */
+.sidebar-drag-handle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 8px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
 }
 
-@media (max-width: 640.98px) {
-    .dashboard-header {
-        padding: 0.75rem 1rem;
-    }
+.sidebar-drag-handle:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
 
-    .dashboard-body {
-        padding: 0 1rem 1.5rem 1rem;
-    }
+.drag-handle-strip {
+    width: 4px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.drag-handle-indicator {
+    width: 3px;
+    height: 24px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.15);
+    transition: all 0.2s ease;
+}
+
+.sidebar-drag-handle:hover .drag-handle-indicator {
+    background: rgba(255, 255, 255, 0.35);
+    height: 40px;
 }
 
 /* ============================================ */
-/* SPLIT SCREEN TRANSITION OVERLAY               */
+/* SPLIT SCREEN TRANSITION OVERLAY              */
 /* ============================================ */
 .split-transition-overlay {
     position: fixed;
@@ -164,9 +136,19 @@
     z-index: 1000;
 }
 
-    #blazor-error-ui .dismiss {
-        cursor: pointer;
-        position: absolute;
-        right: 0.75rem;
-        top: 0.5rem;
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
+}
+
+@media (max-width: 640.98px) {
+    .dashboard-header {
+        padding: 0.75rem 1rem;
     }
+
+    .dashboard-body {
+        padding: 0 1rem 1.5rem 1rem;
+    }
+}

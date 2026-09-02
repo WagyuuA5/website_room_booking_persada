@@ -1,0 +1,242 @@
+@namespace booking_room.Components.Shared
+@using booking_room.Components.Models
+@inject NavigationManager Navigation
+
+<Modal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Title="Ruangan Tersedia" LayoutMode="list" Size="lg" ShowCloseButton="true" OnClose="OnClose">
+    <HeaderContent>
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <div>
+                <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--color-brand-navy, #0F1F3D);">Ruangan Tersedia</h3>
+                <p style="margin: 4px 0 0 0; font-size: 0.8125rem; color: var(--color-brand-text-muted, #6B7280);">Pilih ruangan untuk rapat Anda berikutnya.</p>
+            </div>
+        </div>
+    </HeaderContent>
+    <BodyContent>
+        <div class="available-rooms-modal">
+            <div class="filter-pills-row">
+                <button class="filter-pill @(_filterPeriod == "Today" ? "active" : "")" @onclick="SetFilterToday">
+                    Hari Ini
+                </button>
+                <button class="filter-pill @(_filterPeriod == "Any" ? "active" : "")" @onclick="SetFilterAny">
+                    Kapasitas Apa Pun
+                </button>
+            </div>
+
+            <div class="room-grid">
+                @foreach (var room in FilteredRooms)
+                {
+                    <div class="room-mini-card" @onclick="() => SelectRoom(room)">
+                        <div class="room-mini-photo">
+                            @if (!string.IsNullOrEmpty(room.PhotoUrl))
+                            {
+                                <img src="@room.PhotoUrl" alt="@room.Name" style="width: 100%; height: 100%; object-fit: cover;" />
+                            }
+                            else
+                            {
+                                <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #f1f5f9;">
+                                    <svg width="24" height="24" viewBox="0 0 18 18" fill="none"><path d="M0 18V16H2V0H12V1H16V16H18V18H14V3H12V18H0ZM4 2V16V2ZM8 10C8.28 10 8.52 9.9 8.71 9.71C8.9 9.52 9 9.28 9 9C9 8.72 8.9 8.48 8.71 8.29C8.52 8.1 8.28 8 8 8C7.72 8 7.48 8.1 7.29 8.29C7.1 8.48 7 8.72 7 9C7 9.28 7.1 9.52 7.29 9.71C7.48 9.9 7.72 10 8 10ZM4 16H10V2H4V16Z" fill="#93c5fd"/></svg>
+                                </div>
+                            }
+                            <div class="room-mini-badge @(room.Status == "available" ? "badge-available" : "badge-booked")">
+                                @(room.Status == "available" ? "Tersedia Sekarang" : "Dipesan")
+                            </div>
+                        </div>
+                        <div class="room-mini-info">
+                            <div class="room-mini-name">@room.Name</div>
+                            <div class="room-mini-meta">@room.Floor · @room.Capacity Orang</div>
+                            @if (room.Status == "available")
+                            {
+                                <div class="room-mini-time">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                    Tersedia sekarang
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </BodyContent>
+</Modal>
+
+<style>
+    .available-rooms-modal {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .filter-pills-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .filter-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 999px;
+        border: 1px solid var(--color-brand-gray-border, #E5E7EB);
+        background: #FFFFFF;
+        color: var(--color-brand-text-muted, #6B7280);
+        font-size: 0.8125rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .filter-pill:hover {
+        background: #F8FAFC;
+        border-color: #CBD5E1;
+    }
+
+    .filter-pill.active {
+        background: var(--color-brand-navy-900, #0F1B3D);
+        color: #FFFFFF;
+        border-color: var(--color-brand-navy-900, #0F1B3D);
+    }
+
+    .room-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 12px;
+    }
+
+    .room-mini-card {
+        background: #FFFFFF;
+        border: 1px solid var(--color-brand-gray-border, #E5E7EB);
+        border-radius: 16px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .room-mini-card:hover {
+        border-color: var(--color-brand-gold-500, #F5B301);
+        box-shadow: 0 4px 12px rgba(245, 179, 1, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .room-mini-photo {
+        position: relative;
+        width: 100%;
+        height: 100px;
+        overflow: hidden;
+    }
+
+    .room-mini-photo img {
+        transition: transform 0.3s ease;
+    }
+
+    .room-mini-card:hover .room-mini-photo img {
+        transform: scale(1.05);
+    }
+
+    .room-mini-badge {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        padding: 3px 8px;
+        border-radius: 999px;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }
+
+    .badge-available {
+        background: #E7F8EF;
+        color: #1AA262;
+    }
+
+    .badge-booked {
+        background: #FDE8E8;
+        color: #E5484D;
+    }
+
+    .room-mini-info {
+        padding: 12px;
+    }
+
+    .room-mini-name {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: var(--color-brand-navy, #0F1F3D);
+        margin-bottom: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .room-mini-meta {
+        font-size: 0.75rem;
+        color: var(--color-brand-text-muted, #6B7280);
+        font-weight: 500;
+    }
+
+    .room-mini-time {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: 6px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #1AA262;
+        background: #E7F8EF;
+        padding: 2px 8px;
+        border-radius: 999px;
+    }
+
+    .room-mini-time svg {
+        color: #1AA262;
+    }
+</style>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private string _filterPeriod = "Today";
+    private List<RoomItem> _allRooms = new();
+
+    protected override void OnInitialized()
+    {
+        _allRooms = new List<RoomItem>
+        {
+            new RoomItem("1", "Executive Boardroom A", 12, "Ruang rapat unggulan.", "available", new() { "AC", "Proyektor" }, "Lantai 3", "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=80"),
+            new RoomItem("2", "Huddle Space C", 6, "Ruang kolaborasi kecil.", "available", new() { "AC" }, "Lantai 1", "https://images.unsplash.com/photo-1556761175-5973dc0f32b7?w=400&q=80"),
+            new RoomItem("3", "Focus Room Alpha", 4, "Ruang sunyi.", "available", new() { "AC" }, "Lantai 1", "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400&q=80"),
+            new RoomItem("4", "Meeting Room Prime", 8, "Ruang rapat standar.", "booked", new() { "AC", "Proyektor" }, "Lantai 2", "https://images.unsplash.com/photo-1600508774634-4e11d34730e2?w=400&q=80"),
+        };
+    }
+
+    private IEnumerable<RoomItem> FilteredRooms => _allRooms.Where(r => r.Status == "available");
+
+    private void SetFilterToday()
+    {
+        _filterPeriod = "Today";
+        StateHasChanged();
+    }
+
+    private void SetFilterAny()
+    {
+        _filterPeriod = "Any";
+        StateHasChanged();
+    }
+
+    private async Task SelectRoom(RoomItem room)
+    {
+        await OnClose.InvokeAsync();
+        Navigation.NavigateTo($"/bookings?room={room.Id}");
+    }
+
+    private async Task HandleVisibleChanged(bool visible)
+    {
+        if (!visible)
+        {
+            await OnClose.InvokeAsync();
+        }
+    }
+}

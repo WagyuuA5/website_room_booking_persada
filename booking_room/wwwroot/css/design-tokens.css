@@ -1,51 +1,52 @@
 /* ==========================================================================
-   Design Tokens — Sistem Manajemen Ruangan & Pemesanan PT PERSADA
+   Design Tokens — Sistem Manajemen Ruangan & Pemesanan PT PERSADA (V6)
    Acuan resmi warna status, tipografi, radius, shadow, dan spacing
+   Revisi V6: navy gelap + aksen kuning/emas + Dynamic Island tokens
    ========================================================================== */
 
 :root {
-  /* --- Warna Status (Acuan resmi kartu ruangan & tabel) --- */
+  /* --- Warna Status (V6 - diperbaiki sesuai Figma) --- */
   --color-status-available-bg: #E7F8EF;
-  --color-status-available-text: #16A34A;
+  --color-status-available-text: #1AA262;
   --color-status-available-border: #BBF7D0;
-  --color-status-available-dot: #10B981;
+  --color-status-available-dot: #1AA262;
 
   --color-status-unavailable-bg: #FDE8E8;
-  --color-status-unavailable-text: #DC2626;
+  --color-status-unavailable-text: #E5484D;
   --color-status-unavailable-border: #FECACA;
-  --color-status-unavailable-dot: #EF4444;
+  --color-status-unavailable-dot: #E5484D;
 
   --color-status-booked-bg: #FFF4E5;
   --color-status-booked-text: #D97706;
   --color-status-booked-border: #FED7AA;
   --color-status-booked-dot: #F59E0B;
 
-  --color-status-pending-bg: #FFF4E5;
-  --color-status-pending-text: #D97706;
-  --color-status-pending-border: #FED7AA;
-  --color-status-pending-dot: #F59E0B;
+  --color-status-pending-bg: #FEF3C7;
+  --color-status-pending-text: #F2B705;
+  --color-status-pending-border: #FDE68A;
+  --color-status-pending-dot: #F2B705;
 
   --color-status-approved-bg: #E7F8EF;
-  --color-status-approved-text: #16A34A;
+  --color-status-approved-text: #1AA262;
   --color-status-approved-border: #BBF7D0;
-  --color-status-approved-dot: #10B981;
+  --color-status-approved-dot: #1AA262;
 
   --color-status-rejected-bg: #FDE8E8;
-  --color-status-rejected-text: #DC2626;
+  --color-status-rejected-text: #E5484D;
   --color-status-rejected-border: #FECACA;
-  --color-status-rejected-dot: #EF4444;
+  --color-status-rejected-dot: #E5484D;
 
   --color-status-completed-bg: #E8ECFB;
   --color-status-completed-text: #3B4BA6;
   --color-status-completed-border: #C7D2FE;
   --color-status-completed-dot: #4F46E5;
 
-  /* --- Radius Standar --- */
+  /* --- Radius Standar (V6 - compound modal radius diperbarui) --- */
   --radius-xs: 4px;
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-card: 16px;
-  --radius-modal: 20px;
+  --radius-modal: 28px;
   --radius-pill: 999px;
   --radius-badge: 999px;
   --radius-button: 12px;
@@ -81,25 +82,33 @@
   --font-weight-bold: 700;
   --font-weight-extrabold: 800;
 
-  /* --- Warna Brand Persada --- */
-  --color-brand-navy: #0F1F3D;
-  --color-brand-navy-light: #16305C;
-  --color-brand-yellow: #F59E0B;
-  --color-brand-yellow-hover: #D97706;
+  /* --- Warna Brand Persada (V6 - navy lebih gelap + gold) --- */
+  --color-brand-navy-950: #0A1330;
+  --color-brand-navy-900: #0F1B3D;
+  --color-brand-navy-800: #15294D;
+  --color-brand-navy-700: #1E3A5F;
+  --color-brand-gold-500: #F5B301;
+  --color-brand-gold-600: #E0A400;
+  --color-brand-gold-700: #C49100;
   --color-brand-blue: #1F5D9A;
   --color-brand-gray-bg: #F8FAFC;
   --color-brand-gray-border: #E5E7EB;
   --color-brand-text-muted: #6B7280;
   --color-brand-text-heading: #111827;
 
-  /* --- Dynamic Island Tokens --- */
+  /* --- Dynamic Island Tokens (V6 final) --- */
   --island-radius-compact: 999px;
   --island-radius-expanded: 28px;
   --island-bg: #0B0B0C;
-  --island-bg-elevated: #141416;
+  --island-bg-elevated: #14141A;
   --island-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --island-duration-expand: 380ms;
   --island-duration-collapse: 220ms;
   --island-shadow: 0 16px 36px rgba(0, 0, 0, 0.35), 0 4px 12px rgba(0, 0, 0, 0.2);
   --island-border: rgba(255, 255, 255, 0.12);
+
+  /* --- Modal Backdrop (V6 - blur wajib di semua modal) --- */
+  --modal-backdrop-blur: blur(18px);
+  --modal-backdrop-scrim: rgba(10, 19, 48, 0.35);
+  --modal-radius-outer: 28px;
 }

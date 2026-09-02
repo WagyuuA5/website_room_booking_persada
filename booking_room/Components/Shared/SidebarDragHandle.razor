@@ -1,0 +1,28 @@
+@namespace booking_room.Components.Shared
+@inject IJSRuntime JS
+
+<div class="sidebar-drag-handle" title="Geser untuk ubah ukuran sidebar">
+    <div class="drag-handle-strip">
+        <div class="drag-handle-indicator"></div>
+    </div>
+</div>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                await JS.InvokeVoidAsync("sidebarDragSetCallback", DotNetObjectReference.Create(this));
+            }
+            catch { }
+        }
+    }
+
+    [JSInvokable]
+    public async Task NotifyWidthChanged(double width, bool isCollapsed)
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+}

@@ -1,6 +1,8 @@
 @implements IDisposable
 @using booking_room.Components.Shared
 @using System.Globalization
+@using booking_room.Components.Models
+@inject booking_room.Services.IToastService ToastService
 
 <div class="modal-body-custom checkin-confirmation-modal" style="display: flex; flex-direction: column; align-items: center; padding-top: 2rem;">
     <!-- Avatar -->
@@ -34,7 +36,7 @@
         </svg>
         <div style="z-index: 1; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
             <span style="font-size: 1.75rem; font-weight: 800; color: var(--text-navy); line-height: 1;">@RemainingTimeFormatted</span>
-            <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-top: 0.25rem;">Sisa Waktu</span>
+            <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-top: 0.25rem;">Waktu Tersisa</span>
         </div>
     </div>
 
@@ -64,7 +66,7 @@
             </div>
             <div>
                 <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.1rem;">KAPASITAS</div>
-                <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-navy);">@Capacity peserta diharapkan</div>
+                <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-navy);">@Capacity peserta diperkirakan hadir</div>
             </div>
         </div>
     </div>
@@ -75,7 +77,7 @@
             <circle cx="12" cy="12" r="10" fill="currentColor" fill-opacity="0.2"/>
             <path d="M8 12L11 15L16 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        Konfirmasi Kehadiran
+        Konfirmasi Check-in
     </button>
 
     <!-- Footer Actions -->
@@ -87,7 +89,7 @@
                     <circle cx="12" cy="12" r="10"></circle>
                     <polyline points="12 6 12 12 16 14"></polyline>
                 </svg>
-                Butuh Waktu
+                Saya butuh waktu tambahan
             </button>
         }
         <button @onclick="CancelBooking" style="display: flex; align-items: center; justify-content: center; gap: 8px; background: transparent; border: 1px solid #FECACA; color: #DC2626; font-weight: 600; font-size: 14px; padding: 0 20px; border-radius: 9999px; height: 44px; cursor: pointer; transition: all 0.2s;">
@@ -95,7 +97,7 @@
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
-            Batalkan
+            Batalkan pemesanan ini
         </button>
     </div>
 </div>
@@ -110,10 +112,10 @@
 
 <style>
     .pulse-ring {
-        animation: @@keyframes pulseRing 1s infinite;
+        animation: pulseRing 1s infinite;
     }
 
-    @@keyframes pulseRing {
+    @keyframes pulseRing {
         0%, 100% { opacity: 1; }
         50% { opacity: 0.5; }
     }
@@ -206,6 +208,7 @@
     {
         CloseExtendModal();
         ExtendWindow();
+        ToastService.Show(ToastType.Info, "Waktu ditambah 10 menit");
     }
 
     private void ExtendWindow()

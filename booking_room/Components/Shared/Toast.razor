@@ -9,19 +9,17 @@
         @foreach (var toast in ToastService.ActiveToasts)
         {
             <div class="island-toast-item" key="@toast.Id">
-                <IslandCapsule State="compact"
+                <IslandCapsule Mode="toast"
                                AccentColor="@toast.AccentColor"
                                Title="@toast.Title"
                                Subtitle="@toast.Message"
-                               CompactText="@toast.Title"
-                               BadgeText="@toast.BadgeText"
+                               ToastIcon="@GetToastIcon(toast.Type)"
                                ShowCloseButton="true"
-                               OnClose="() => ToastService.Remove(toast.Id)">
+                               OnClose="() => ToastService.Remove(toast.Id)"
+                               AutoDismissMs="@toast.DurationMs"
+                               Class="island-toast-capsule">
                     <ChildContent>
-                        @if (!string.IsNullOrEmpty(toast.Message))
-                        {
-                            <div style="font-size: 0.8125rem; color: #E5E7EB; margin-top: 4px;">@toast.Message</div>
-                        }
+                        <button class="island-toast-close-btn" @onclick:stopPropagation="true" @onclick="() => ToastService.Remove(toast.Id)">Tutup</button>
                     </ChildContent>
                 </IslandCapsule>
             </div>
@@ -48,6 +46,10 @@
         animation: toastDropIn 0.35s var(--island-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) forwards;
     }
 
+    .island-toast-capsule {
+        border-radius: 28px;
+    }
+
     @@keyframes toastDropIn {
         from {
             opacity: 0;
@@ -69,5 +71,16 @@
     public void Dispose()
     {
         ToastService.OnChange -= StateHasChanged;
+    }
+
+    private string GetToastIcon(ToastType type)
+    {
+        return type switch
+        {
+            ToastType.Success => "<svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M8 12l2 2 4-4\"/><circle cx=\"12\" cy=\"12\" r=\"10\"/></svg>",
+            ToastType.Warning => "<svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z\"/><line x1=\"12\" y1=\"9\" x2=\"12\" y2=\"13\"/><line x1=\"12\" y1=\"17\" x2=\"12.01\" y2=\"17\"/></svg>",
+            ToastType.Error => "<svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"15\" y1=\"9\" x2=\"9\" y2=\"15\"/><line x1=\"9\" y1=\"9\" x2=\"15\" y2=\"15\"/></svg>",
+            _ => "<svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"12\" y1=\"16\" x2=\"12\" y2=\"12\"/><line x1=\"12\" y1=\"8\" x2=\"12.01\" y2=\"8\"/></svg>"
+        };
     }
 }

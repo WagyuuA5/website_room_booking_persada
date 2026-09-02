@@ -32,6 +32,8 @@
     transition: all 0.2s ease;
     font-weight: 500;
     font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .nav-menu-item:hover {

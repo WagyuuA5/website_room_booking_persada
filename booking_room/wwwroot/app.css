@@ -166,7 +166,8 @@ h1:focus {
 }
 
 .sidebar {
-    background-color: var(--sidebar-bg);
+    background-color: var(--color-brand-navy-950);
+    position: relative;
 }
 
 .navbar-brand-persada {

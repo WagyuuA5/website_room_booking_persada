@@ -2,75 +2,145 @@
 @inject IJSRuntime JS
 @implements IDisposable
 
-<div class="island-container @(IsToast ? "island-toast-mode" : "") @Class" style="@Style">
+<div class="island-container @(IsToast ? "island-toast-mode" : "") @Class @GetModeClass()" style="@Style">
     <div class="island-capsule @(IsExpanded ? "island-expanded" : "island-compact") @GetAccentClass()"
          @onclick="ToggleExpand"
          role="@(Clickable ? "button" : null)"
          tabindex="@(Clickable ? 0 : -1)">
-        
-        <!-- Ambient subtle glow -->
-        <div class="island-ambient-glow" style="@GetGlowStyle()"></div>
+         
+         <!-- Ambient subtle glow -->
+         <div class="island-ambient-glow" style="@GetGlowStyle()"></div>
 
-        <!-- Inner Content Area with physical spring morph -->
-        <div class="island-content-wrapper">
-            @if (IsExpanded)
-            {
-                <div class="island-expanded-view animate-fade-scale-in">
-                    @if (ExpandedContent != null)
-                    {
-                        @ExpandedContent
-                    }
-                    else
-                    {
-                        <div class="island-default-expanded">
-                            <div class="island-expanded-top">
-                                <div class="island-indicator-dot" style="@GetDotStyle()"></div>
-                                <span class="island-expanded-title">@Title</span>
-                                @if (ShowCloseButton)
-                                {
-                                    <button class="island-close-btn" @onclick="HandleClose" @onclick:stopPropagation="true" type="button" aria-label="Tutup">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                                        </svg>
-                                    </button>
-                                }
-                            </div>
-                            @if (!string.IsNullOrEmpty(Subtitle))
-                            {
-                                <div class="island-expanded-subtitle">@Subtitle</div>
-                            }
-                            @if (ChildContent != null)
-                            {
-                                <div class="island-expanded-body">
-                                    @ChildContent
-                                </div>
-                            }
-                        </div>
-                    }
-                </div>
-            }
-            else
-            {
-                <div class="island-compact-view animate-fade-scale-in">
-                    @if (CompactContent != null)
-                    {
-                        @CompactContent
-                    }
-                    else
-                    {
-                        <div class="island-default-compact">
-                            <div class="island-indicator-dot pulse" style="@GetDotStyle()"></div>
-                            <span class="island-compact-text">@(string.IsNullOrEmpty(CompactText) ? Title : CompactText)</span>
-                            @if (!string.IsNullOrEmpty(BadgeText))
-                            {
-                                <span class="island-compact-badge">@BadgeText</span>
-                            }
-                        </div>
-                    }
-                </div>
-            }
-        </div>
+         <!-- Inner Content Area with physical spring morph -->
+         <div class="island-content-wrapper">
+             @if (Mode == "toast")
+             {
+                 <div class="island-toast-view animate-fade-scale-in">
+                     <div class="island-toast-icon-wrap">
+                         <div class="island-toast-status-icon" style="@GetToastIconStyle()">
+                             @if (!string.IsNullOrEmpty(ToastIcon))
+                             {
+                                 @ToastIcon
+                             }
+                         </div>
+                     </div>
+                     <div class="island-toast-text">
+                         <span class="island-toast-title">@Title</span>
+                         @if (!string.IsNullOrEmpty(Subtitle))
+                         {
+                             <span class="island-toast-subtitle">@Subtitle</span>
+                         }
+                     </div>
+                     @if (ShowCloseButton)
+                     {
+                         <button class="island-toast-close-btn" @onclick="HandleClose" @onclick:stopPropagation="true" type="button" aria-label="Tutup">
+                             Tutup
+                         </button>
+                     }
+                 </div>
+             }
+             else if (Mode == "ring-timer")
+             {
+                 <div class="island-ring-timer-view animate-fade-scale-in">
+                     <div class="ring-timer-container">
+                         <svg class="ring-timer-svg" viewBox="0 0 120 120">
+                             <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="8" />
+                             <circle cx="60" cy="60" r="52" fill="none" stroke="@AccentColor" stroke-width="8"
+                                     stroke-linecap="round"
+                                     stroke-dasharray="326.7"
+                                     stroke-dashoffset="@RingTimerOffset.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                     transform="rotate(-90 60 60)" />
+                         </svg>
+                         <div class="ring-timer-center">
+                             <span class="ring-timer-value">@RingTimerValue</span>
+                             @if (!string.IsNullOrEmpty(RingTimerLabel))
+                             {
+                                 <span class="ring-timer-label">@RingTimerLabel</span>
+                             }
+                         </div>
+                     </div>
+                     @if (ChildContent != null)
+                     {
+                         <div class="ring-timer-actions">
+                             @ChildContent
+                         </div>
+                     }
+                 </div>
+             }
+             else if (Mode == "dashboard-highlight")
+             {
+                 <div class="island-dashboard-highlight-view animate-fade-scale-in">
+                     <span class="dashboard-highlight-title">@Title</span>
+                     @if (!string.IsNullOrEmpty(Subtitle))
+                     {
+                         <span class="dashboard-highlight-subtitle">@Subtitle</span>
+                     }
+                     @if (ChildContent != null)
+                     {
+                         <div class="dashboard-highlight-cta">
+                             @ChildContent
+                         </div>
+                     }
+                 </div>
+             }
+             else if (IsExpanded)
+             {
+                 <div class="island-expanded-view animate-fade-scale-in">
+                     @if (ExpandedContent != null)
+                     {
+                         @ExpandedContent
+                     }
+                     else
+                     {
+                         <div class="island-default-expanded">
+                             <div class="island-expanded-top">
+                                 <div class="island-indicator-dot" style="@GetDotStyle()"></div>
+                                 <span class="island-expanded-title">@Title</span>
+                                 @if (ShowCloseButton)
+                                 {
+                                     <button class="island-close-btn" @onclick="HandleClose" @onclick:stopPropagation="true" type="button" aria-label="Tutup">
+                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                             <line x1="18" y1="6" x2="6" y2="18"></line>
+                                             <line x1="6" y1="6" x2="18" y2="18"></line>
+                                         </svg>
+                                     </button>
+                                 }
+                             </div>
+                             @if (!string.IsNullOrEmpty(Subtitle))
+                             {
+                                 <div class="island-expanded-subtitle">@Subtitle</div>
+                             }
+                             @if (ChildContent != null)
+                             {
+                                 <div class="island-expanded-body">
+                                     @ChildContent
+                                 </div>
+                             }
+                         </div>
+                     }
+                 </div>
+             }
+             else
+             {
+                 <div class="island-compact-view animate-fade-scale-in">
+                     @if (CompactContent != null)
+                     {
+                         @CompactContent
+                     }
+                     else
+                     {
+                         <div class="island-default-compact">
+                             <div class="island-indicator-dot pulse" style="@GetDotStyle()"></div>
+                             <span class="island-compact-text">@(string.IsNullOrEmpty(CompactText) ? Title : CompactText)</span>
+                             @if (!string.IsNullOrEmpty(BadgeText))
+                             {
+                                 <span class="island-compact-badge">@BadgeText</span>
+                             }
+                         </div>
+                     }
+                 </div>
+             }
+         </div>
     </div>
 </div>
 
@@ -123,7 +193,7 @@
         padding: 20px 24px;
         min-width: 320px;
         max-width: 580px;
-        background-color: var(--island-bg-elevated, #141416);
+        background-color: var(--island-bg-elevated, #14141A);
     }
 
     .island-ambient-glow {
@@ -140,6 +210,181 @@
         position: relative;
         z-index: 2;
         width: 100%;
+    }
+
+    /* --- Toast Mode --- */
+    .island-toast-view {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        padding: 16px 20px;
+        text-align: center;
+        min-width: 280px;
+    }
+
+    .island-toast-icon-wrap {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 4px;
+    }
+
+    .island-toast-status-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .island-toast-text {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .island-toast-title {
+        font-size: 0.9375rem;
+        font-weight: 700;
+        color: #FFFFFF;
+        line-height: 1.3;
+    }
+
+    .island-toast-subtitle {
+        font-size: 0.8125rem;
+        color: #9CA3AF;
+        line-height: 1.4;
+    }
+
+    .island-toast-close-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 18px;
+        border-radius: 999px;
+        background: var(--color-brand-gold-500, #F5B301);
+        color: var(--color-brand-navy-900, #0F1B3D);
+        font-size: 0.8125rem;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-top: 4px;
+    }
+
+    .island-toast-close-btn:hover {
+        background: var(--color-brand-gold-600, #E0A400);
+    }
+
+    /* --- Ring Timer Mode --- */
+    .island-ring-timer-view {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        padding: 20px;
+        text-align: center;
+        min-width: 200px;
+    }
+
+    .ring-timer-container {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .ring-timer-svg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 120px;
+        height: 120px;
+        transform: rotate(-90deg);
+    }
+
+    .ring-timer-center {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .ring-timer-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #FFFFFF;
+        line-height: 1;
+    }
+
+    .ring-timer-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #9CA3AF;
+        margin-top: 2px;
+    }
+
+    .ring-timer-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+
+    /* --- Dashboard Highlight Mode --- */
+    .island-dashboard-highlight-view {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        padding: 14px 18px;
+        background: var(--color-brand-navy-900, #0F1B3D);
+        border-radius: var(--island-radius-expanded, 28px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        min-width: 180px;
+    }
+
+    .dashboard-highlight-title {
+        font-size: 0.6875rem;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.5);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+
+    .dashboard-highlight-subtitle {
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .dashboard-highlight-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: var(--color-brand-gold-500, #F5B301);
+        color: var(--color-brand-navy-900, #0F1B3D);
+        font-size: 0.8125rem;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-top: 4px;
+    }
+
+    .dashboard-highlight-cta:hover {
+        background: var(--color-brand-gold-600, #E0A400);
     }
 
     /* --- Compact Layout --- */
@@ -246,10 +491,10 @@
 </style>
 
 @code {
-    [Parameter] public string State { get; set; } = "compact"; // compact | expanded
+    [Parameter] public string State { get; set; } = "compact";
     [Parameter] public bool IsExpanded { get; set; } = false;
     [Parameter] public EventCallback<bool> IsExpandedChanged { get; set; }
-    [Parameter] public string AccentColor { get; set; } = "#10B981"; // Status color
+    [Parameter] public string AccentColor { get; set; } = "#10B981";
     [Parameter] public string Title { get; set; } = string.Empty;
     [Parameter] public string Subtitle { get; set; } = string.Empty;
     [Parameter] public string CompactText { get; set; } = string.Empty;
@@ -260,6 +505,12 @@
     [Parameter] public int AutoDismissMs { get; set; } = 0;
     [Parameter] public string? Class { get; set; }
     [Parameter] public string? Style { get; set; }
+
+    [Parameter] public string Mode { get; set; } = string.Empty;
+    [Parameter] public string ToastIcon { get; set; } = string.Empty;
+    [Parameter] public string RingTimerValue { get; set; } = string.Empty;
+    [Parameter] public string RingTimerLabel { get; set; } = string.Empty;
+    [Parameter] public double RingTimerOffset { get; set; } = 0;
 
     [Parameter] public RenderFragment? CompactContent { get; set; }
     [Parameter] public RenderFragment? ExpandedContent { get; set; }
@@ -275,6 +526,11 @@
             IsExpanded = true;
         }
 
+        if (!string.IsNullOrEmpty(Mode))
+        {
+            IsToast = Mode == "toast";
+        }
+
         if (AutoDismissMs > 0 && _dismissTimer == null)
         {
             _dismissTimer = new System.Threading.Timer(async _ =>
@@ -284,11 +540,22 @@
         }
     }
 
+    private string GetModeClass() => string.IsNullOrEmpty(Mode) ? string.Empty : $"island-mode-{Mode}";
+
     private string GetAccentClass() => string.Empty;
 
     private string GetDotStyle() => $"background-color: {AccentColor}; color: {AccentColor};";
 
     private string GetGlowStyle() => $"background: radial-gradient(circle, {AccentColor} 0%, transparent 70%);";
+
+    private string GetToastIconStyle()
+    {
+        if (!string.IsNullOrEmpty(ToastIcon))
+        {
+            return $"background-color: {AccentColor}20; color: {AccentColor};";
+        }
+        return $"background-color: {AccentColor}20; color: {AccentColor};";
+    }
 
     private async Task ToggleExpand()
     {
