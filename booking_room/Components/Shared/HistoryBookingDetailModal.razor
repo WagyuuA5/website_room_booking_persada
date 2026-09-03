@@ -1,19 +1,290 @@
 @namespace booking_room.Components.Shared
-<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Title="Detail Riwayat" Size="md">
+@using booking_room.Components.Models
+
+<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Size="md" ShowHeader="false" ShowFooter="false" NoPadding="true">
     <BodyContent>
-        <div style="display:flex; flex-direction:column; gap:12px;">
-            <p>Informasi lengkap mengenai pemesanan sebelumnya.</p>
+        <div class="history-detail-modal">
+            <!-- 1. Foto ruangan besar memenuhi lebar bagian atas modal tanpa padding (UI-12) -->
+            <div class="history-detail-photo-wrap">
+                <img src="@(string.IsNullOrEmpty(Booking?.PhotoUrl) ? "https://images.unsplash.com/photo-1497215842964-222b430dc094?auto=format&fit=crop&w=800&q=80" : Booking.PhotoUrl)" 
+                     alt="@Booking?.RoomName" 
+                     class="history-detail-photo"
+                     onerror="this.src='https://images.unsplash.com/photo-1497215842964-222b430dc094?auto=format&fit=crop&w=800&q=80'" />
+            </div>
+
+            <div class="history-detail-body">
+                <!-- 3. Baris judul: Nama ruangan besar & bold sejajar dengan badge status (UI-12) -->
+                <div class="history-detail-title-row">
+                    <h2 class="history-detail-room-name">@Booking?.RoomName</h2>
+                    <span class="history-status-pill @GetStatusBadgeClass(Booking?.Status)">
+                        <div class="status-dot"></div>
+                        @GetStatusLabel(Booking?.Status)
+                    </span>
+                </div>
+
+                <!-- 4. Subjudul lokasi: teks abu-abu kecil (UI-12) -->
+                <div class="history-detail-location">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                    <span>@(string.IsNullOrEmpty(Booking?.Floor) ? "Lantai 4, Sayap Timur, Persada HQ" : Booking.Floor)</span>
+                </div>
+
+                <!-- 5. Tiga baris info dengan background biru muda rounded (UI-12) -->
+                <div class="history-detail-info-rows">
+                    <!-- TANGGAL -->
+                    <div class="info-rounded-box">
+                        <div class="info-icon-circle">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                        </div>
+                        <div class="info-text-col">
+                            <span class="info-label-caps">TANGGAL</span>
+                            <span class="info-val-bold">@(string.IsNullOrEmpty(Booking?.Date) ? "12 Mei 2024" : Booking.Date)</span>
+                        </div>
+                    </div>
+
+                    <!-- WAKTU -->
+                    <div class="info-rounded-box">
+                        <div class="info-icon-circle">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                        </div>
+                        <div class="info-text-col">
+                            <span class="info-label-caps">WAKTU</span>
+                            <span class="info-val-bold">@(string.IsNullOrEmpty(Booking?.TimeSlot) ? "09:00 - 11:30" : Booking.TimeSlot)</span>
+                        </div>
+                    </div>
+
+                    <!-- PESERTA -->
+                    <div class="info-rounded-box">
+                        <div class="info-icon-circle">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                        </div>
+                        <div class="info-text-col">
+                            <span class="info-label-caps">PESERTA</span>
+                            <span class="info-val-bold">@((Booking != null ? Booking.Attendees : 12)) Peserta</span>
+                        </div>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Booking?.Purpose))
+                {
+                    <div class="history-detail-purpose">
+                        <label class="info-label-caps">TUJUAN RAPAT</label>
+                        <p class="purpose-text">@Booking.Purpose</p>
+                    </div>
+                }
+            </div>
+
+            <!-- 6. Footer: tombol 'Tutup' pill warna netral/outline (UI-12, UI-04 no X icon) -->
+            <div class="history-detail-footer">
+                <button type="button" class="btn-outline-pill" style="width: 100%;" @onclick="Close">
+                    Tutup
+                </button>
+            </div>
         </div>
     </BodyContent>
-    <FooterContent>
-        <button class="btn-secondary" @onclick="Close" style="padding:8px 16px; background:transparent; border:1px solid var(--color-neutral-400); border-radius:var(--radius-full); cursor:pointer;">Tutup</button>
-    </FooterContent>
 </AppModal>
+
+<style>
+    .history-detail-modal {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .history-detail-photo-wrap {
+        width: 100%;
+        height: 220px;
+        position: relative;
+        background: var(--color-neutral-100, #F5F5F7);
+        border-top-left-radius: var(--radius-lg, 22px);
+        border-top-right-radius: var(--radius-lg, 22px);
+        overflow: hidden;
+    }
+    .history-detail-photo {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .history-detail-body {
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .history-detail-title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .history-detail-room-name {
+        margin: 0;
+        font-size: var(--fs-h2, 24px);
+        line-height: var(--lh-h2, 30px);
+        font-weight: var(--fw-bold, 700);
+        color: var(--color-navy, #0F172A);
+    }
+    body.dark-mode .history-detail-room-name { color: var(--color-white, #FFFFFF); }
+
+    .history-status-pill {
+        padding: 6px 14px;
+        border-radius: var(--radius-full, 999px);
+        font-size: var(--fs-xs, 12px);
+        font-weight: var(--fw-semibold, 600);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+    .badge-approved { background: rgba(52, 211, 153, 0.15); color: #059669; }
+    .badge-pending { background: rgba(245, 158, 11, 0.15); color: #D97706; }
+    .badge-rejected { background: rgba(239, 68, 68, 0.15); color: #DC2626; }
+    .badge-completed { background: rgba(59, 130, 246, 0.15); color: #2563EB; }
+
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+
+    .history-detail-location {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: var(--fs-sm, 14px);
+        color: var(--color-neutral-600, #6E6E73);
+    }
+    .history-detail-location svg { color: var(--color-neutral-400, #86868B); }
+
+    /* 3 Rounded Info Boxes */
+    .history-detail-info-rows {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 4px;
+    }
+
+    .info-rounded-box {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 12px 16px;
+        background: #EFF6FF; /* soft light blue */
+        border: 1px solid #DBEAFE;
+        border-radius: var(--radius-md, 14px);
+    }
+    body.dark-mode .info-rounded-box {
+        background: rgba(30, 58, 138, 0.25);
+        border-color: rgba(59, 130, 246, 0.2);
+    }
+
+    .info-icon-circle {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--color-white, #FFFFFF);
+        color: var(--color-neutral-600, #6E6E73);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    }
+    body.dark-mode .info-icon-circle {
+        background: rgba(255,255,255,0.1);
+        color: #93C5FD;
+    }
+
+    .info-text-col {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .info-label-caps {
+        font-size: var(--fs-xs, 12px);
+        font-weight: var(--fw-semibold, 600);
+        color: #3B82F6;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+    body.dark-mode .info-label-caps { color: #93C5FD; }
+
+    .info-val-bold {
+        font-size: var(--fs-base, 15px);
+        font-weight: var(--fw-bold, 700);
+        color: var(--color-navy, #0F172A);
+    }
+    body.dark-mode .info-val-bold { color: var(--color-white, #FFFFFF); }
+
+    .history-detail-purpose {
+        background: var(--color-neutral-100, #F5F5F7);
+        border-radius: var(--radius-sm, 8px);
+        padding: 12px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    body.dark-mode .history-detail-purpose { background: rgba(255,255,255,0.05); }
+    .purpose-text {
+        margin: 0;
+        font-size: var(--fs-sm, 14px);
+        color: var(--color-neutral-900, #1D1D1F);
+        line-height: var(--lh-sm, 20px);
+    }
+    body.dark-mode .purpose-text { color: var(--color-white, #FFFFFF); }
+
+    .history-detail-footer {
+        padding: 16px 24px 24px 24px;
+        display: flex;
+        justify-content: flex-end;
+    }
+</style>
 
 @code {
     [Parameter] public bool Visible { get; set; }
     [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
-    [Parameter] public dynamic? Booking { get; set; }
-    private async Task HandleVisibleChanged(bool value) { Visible = value; await VisibleChanged.InvokeAsync(value); }
-    private async Task Close() { await HandleVisibleChanged(false); }
+    [Parameter] public BookingItem? Booking { get; set; }
+
+    private string GetStatusLabel(string? status) => status switch
+    {
+        "approved" => "Disetujui",
+        "pending" => "Menunggu",
+        "rejected" => "Ditolak",
+        "completed" => "Selesai",
+        _ => "Disetujui"
+    };
+
+    private string GetStatusBadgeClass(string? status) => status switch
+    {
+        "approved" => "badge-approved",
+        "pending" => "badge-pending",
+        "rejected" => "badge-rejected",
+        "completed" => "badge-completed",
+        _ => "badge-approved"
+    };
+
+    private async Task HandleVisibleChanged(bool val)
+    {
+        Visible = val;
+        await VisibleChanged.InvokeAsync(val);
+    }
+
+    private async Task Close()
+    {
+        await HandleVisibleChanged(false);
+    }
 }

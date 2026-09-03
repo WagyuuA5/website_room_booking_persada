@@ -8,13 +8,7 @@
 <PageTitle>Pemesanan Ruangan — Persada</PageTitle>
 
 <div class="content-fade-in bookings-page-wrapper">
-    <!-- Header -->
-    <div class="bookings-header-row">
-        <div>
-            <h1 class="bookings-title">Cari Ruangan</h1>
-            <p class="bookings-sub">Pilih ketersediaan, kapasitas, dan fasilitas untuk menyaring ruangan yang tepat sesuai kebutuhan perusahaan Anda.</p>
-        </div>
-    </div>
+    <!-- UI-06 REVISI FINAL: Judul 'Cari Ruangan' dan deskripsi telah DIHAPUS. Halaman langsung mulai dengan kartu pencarian. -->
 
     <!-- Search & Filter Card -->
     <div class="search-filter-card">
@@ -29,13 +23,20 @@
         </div>
         
         <div class="filter-3col-row">
+            <!-- UI-22: Filter Tanggal Cepat 'Semua Tanggal' -->
             <div class="filter-col">
                 <label class="filter-group-label">TANGGAL</label>
-                <div class="filter-input-wrap">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                    <input type="text" class="filter-input" placeholder="25/10/2023" />
-                </div>
+                <button type="button" class="filter-pill-date-btn" @onclick="OpenDatePicker">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <span>@(_selectedBookingDate.HasValue ? _selectedBookingDate.Value.ToString("dd MMM yyyy", new System.Globalization.CultureInfo("id-ID")) : "Semua Tanggal")</span>
+                </button>
             </div>
+            
             <div class="filter-col">
                 <label class="filter-group-label">WAKTU & DURASI</label>
                 <div class="filter-input-wrap double-wrap">
@@ -48,6 +49,7 @@
                     </select>
                 </div>
             </div>
+            
             <div class="filter-col">
                 <label class="filter-group-label">PESERTA</label>
                 <div class="filter-input-wrap">
@@ -58,7 +60,7 @@
         </div>
     </div>
 
-    <!-- 3-Column Grid -->
+    <!-- 3-Column Grid (UI-18, UI-21, UI-23) -->
     <div class="rooms-grid-3col">
         @if (LoadingState.IsLoading)
         {
@@ -74,7 +76,9 @@
                 <div class="room-catalog-card @(room.Status == "booked" ? "card-booked" : "")" 
                      @onclick="() => ViewDetail(room)">
                     <div class="room-card-photo-box">
-                        <img src="@room.PhotoUrl" alt="@room.Name" class="room-card-photo" loading="lazy" />
+                        <img src="@(string.IsNullOrEmpty(room.PhotoUrl) ? "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80" : room.PhotoUrl)" 
+                             alt="@room.Name" class="room-card-photo" loading="lazy" 
+                             onerror="this.src='https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80'" />
                         <div class="room-status-badge @GetStatusBadgeClass(room.Status)">
                             <div class="status-dot"></div>
                             @GetStatusText(room.Status)
@@ -92,7 +96,10 @@
                         <div class="room-card-amenities">
                             @foreach (var am in room.Amenities.Take(3))
                             {
-                                <span class="amenity-chip">@am</span>
+                                <span class="amenity-chip">
+                                    <FacilityIcon Name="@am" Size="12" />
+                                    <span>@am</span>
+                                </span>
                             }
                         </div>
                     </div>
@@ -106,6 +113,16 @@
         }
     </div>
 </div>
+
+<!-- Modal Date Picker (UI-22, BUG-05 single instance) -->
+@if (_isBookingDatePickerOpen)
+{
+    <DatePickerModal 
+        Visible="true"
+        SelectedDate="_selectedBookingDate"
+        OnDateSelected="HandleBookingDateSelected"
+        OnCancel="() => _isBookingDatePickerOpen = false" />
+}
 
 @if (_isRoomDetailVisible && _selectedRoomForDetail != null)
 {
@@ -131,23 +148,6 @@
         display: flex;
         flex-direction: column;
         gap: 24px;
-    }
-
-    .bookings-title {
-        font-size: var(--fs-h1, 32px);
-        line-height: var(--lh-h1, 40px);
-        font-weight: var(--fw-bold, 700);
-        color: var(--color-navy, #0F172A);
-        margin: 0 0 8px 0;
-        letter-spacing: -0.02em;
-    }
-    body.dark-mode .bookings-title { color: var(--color-white, #FFFFFF); }
-
-    .bookings-sub {
-        font-size: var(--fs-body, 16px);
-        line-height: var(--lh-body, 24px);
-        color: var(--color-neutral-600, #6E6E73);
-        margin: 0;
     }
 
     /* Search & Filter Card */
@@ -211,6 +211,42 @@
     }
     body.dark-mode .bookings-search-input, body.dark-mode .filter-input { color: var(--color-white, #FFFFFF); }
 
+    /* UI-22: Pill Button Date Filter */
+    .filter-pill-date-btn {
+        width: 100%;
+        height: 44px;
+        padding: 0 16px;
+        background: var(--color-neutral-100, #F5F5F7);
+        border: 1px solid var(--color-neutral-200, #E8E8ED);
+        border-radius: var(--radius-full, 999px);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: var(--fs-sm, 14px);
+        font-weight: var(--fw-semibold, 600);
+        color: var(--color-navy, #0F172A);
+        cursor: pointer;
+        transition: var(--motion-fast);
+    }
+    .filter-pill-date-btn svg {
+        color: var(--color-neutral-600, #6E6E73);
+        flex-shrink: 0;
+    }
+    .filter-pill-date-btn:hover {
+        background: var(--color-white, #FFFFFF);
+        border-color: var(--color-primary, #F5A623);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    body.dark-mode .filter-pill-date-btn {
+        background: rgba(255,255,255,0.05);
+        border-color: rgba(255,255,255,0.1);
+        color: var(--color-white, #FFFFFF);
+    }
+    body.dark-mode .filter-pill-date-btn:hover {
+        background: rgba(255,255,255,0.08);
+        border-color: var(--color-primary, #F5A623);
+    }
+
     .filter-3col-row {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -267,7 +303,7 @@
 
     .room-card-photo-box {
         position: relative;
-        height: 160px;
+        height: 170px;
         background: var(--color-neutral-100, #F5F5F7);
     }
     .room-card-photo {
@@ -348,10 +384,13 @@
     .amenity-chip {
         font-size: 11px;
         font-weight: var(--fw-medium, 500);
-        padding: 2px 8px;
+        padding: 3px 8px;
         border-radius: var(--radius-sm, 8px);
         background: var(--color-neutral-100, #F5F5F7);
         color: var(--color-neutral-600, #6E6E73);
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
     }
     body.dark-mode .amenity-chip { background: rgba(255,255,255,0.08); }
 
@@ -380,6 +419,9 @@
 @code {
     private string _searchQuery = "";
     private int _filterCapacity = 0;
+    private DateTime? _selectedBookingDate;
+    private bool _isBookingDatePickerOpen = false;
+
     private List<RoomItem> _allRooms = new();
     private IEnumerable<RoomItem> _filteredRooms = Array.Empty<RoomItem>();
 
@@ -405,60 +447,64 @@
     private async Task LoadDataAsync(System.Threading.CancellationToken token)
     {
         LoadingState.SetLoading(true);
-        // Simulasi fetch data async
-        await Task.Delay(400, token);
-                _allRooms = new List<RoomItem>
-        {
-            new("1", "Alpha Boardroom", 12, "Lantai 3", "available", new List<string>{"Proyektor","Papan Tulis"}, "https://images.unsplash.com/photo-1497215842964-222b430dc094?auto=format&fit=crop&w=400&q=80", "Ruang meeting direksi dengan pemandangan kota."),
-            new("2", "Beta Meeting", 8, "Lantai 2", "booked", new List<string>{"TV LED"}, "https://images.unsplash.com/photo-1431540015160-0295aaa24f7f?auto=format&fit=crop&w=400&q=80", "Ruang meeting standar."),
-            new("3", "Gamma Discussion", 4, "Lantai 2", "unavailable", new List<string>{"Papan Tulis"}, "https://images.unsplash.com/photo-1497366754888-5a456d4b3447?auto=format&fit=crop&w=400&q=80", "Cocok untuk diskusi kelompok kecil."),
-            new("4", "Delta Studio", 20, "Lantai 1", "available", new List<string>{"Audio System"}, "https://images.unsplash.com/photo-1462826303086-329426d1aef5?auto=format&fit=crop&w=400&q=80", "Ruangan kedap suara.")
-        };
+        await Task.Delay(300, token);
         
-        // Cannot modify init-only, we rely on default data or reflection (omitting for dummy UI)
+        // UI-21: Minimal 8-10 variasi ruangan representatif dengan data nyata & parameter constructor benar:
+        // RoomItem(Id, Name, Capacity, Description, Status, Amenities, Floor, PhotoUrl)
+        _allRooms = new List<RoomItem>
+        {
+            new("1", "Alpha Boardroom", 12, "Ruang rapat eksekutif premium dengan sistem video conference 4K dan pencahayaan alami.", "available", new List<string>{"Proyektor", "Papan Tulis", "Konferensi Video", "AC", "WiFi"}, "3", "https://images.unsplash.com/photo-1497215842964-222b430dc094?auto=format&fit=crop&w=800&q=80"),
+            new("2", "Beta Meeting Room", 8, "Ruang pertemuan tim terstruktur untuk diskusi proyek harian dan koordinasi kerja.", "booked", new List<string>{"TV LED", "AC", "WiFi"}, "2", "https://images.unsplash.com/photo-1431540015160-0295aaa24f7f?auto=format&fit=crop&w=800&q=80"),
+            new("3", "Gamma Discussion", 4, "Ruang huddle privat untuk brainstorming intensif dan diskusi kelompok kecil.", "unavailable", new List<string>{"Papan Tulis", "AC", "WiFi"}, "2", "https://images.unsplash.com/photo-1497366754888-5a456d4b3447?auto=format&fit=crop&w=800&q=80"),
+            new("4", "Delta Studio", 20, "Studio kedap suara dengan sistem audio profesional, ideal untuk lokakarya dan presentasi akbar.", "available", new List<string>{"Audio System", "Proyektor", "AC", "WiFi"}, "1", "https://images.unsplash.com/photo-1462826303086-329426d1aef5?auto=format&fit=crop&w=800&q=80"),
+            new("5", "Executive Suite", 16, "Suite rapat mewah di lantai atas dengan panorama kota Jakarta dan fasilitas lounge eksklusif.", "available", new List<string>{"Konferensi Video", "TV LED", "AC", "WiFi", "Aksesibilitas"}, "5", "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80"),
+            new("6", "Innovation Lab", 15, "Laboratorium kreatif dengan meja modular fleksibel untuk perancangan produk dan hackathon tim.", "booked", new List<string>{"Papan Tulis", "Proyektor", "WiFi", "AC"}, "3", "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=800&q=80"),
+            new("7", "Focus Room Alpha", 2, "Ruang kerja tenang kedap suara untuk panggilan konferensi penting dan wawancara daring satu lawan satu.", "available", new List<string>{"AC", "WiFi", "Aksesibilitas"}, "3", "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=800&q=80"),
+            new("8", "Conference Hall Utama", 50, "Aula konvensi luas berkapasitas besar dengan panggung utama untuk rapat akbar dan town hall perusahaan.", "available", new List<string>{"Audio System", "Proyektor", "Konferensi Video", "AC", "Aksesibilitas", "WiFi"}, "1", "https://images.unsplash.com/photo-1517502884422-41eaead166d4?auto=format&fit=crop&w=800&q=80"),
+            new("9", "Training Room B", 30, "Ruang pelatihan interaktif dilengkapi meja berderet dan layar ganda untuk sesi edukasi karyawan.", "booked", new List<string>{"Proyektor", "Papan Tulis", "Audio System", "AC", "WiFi"}, "2", "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=800&q=80"),
+            new("10", "Creative Pod C", 6, "Pod santai berdesain modern dan berenergi positif untuk sesi curah ide visual tim perancang.", "available", new List<string>{"TV LED", "Papan Tulis", "WiFi", "AC"}, "4", "https://images.unsplash.com/photo-1527192491265-7e15c55b1ed2?auto=format&fit=crop&w=800&q=80")
+        };
         
         ApplyFilter();
         LoadingState.SetLoading(false);
     }
 
-    private void SafeStateHasChanged()
-    {
-        if (_disposed) return;
-        InvokeAsync(StateHasChanged);
-    }
-
-    private System.Timers.Timer? _debounceTimer;
-
     private void OnSearchInput(ChangeEventArgs e)
     {
         _searchQuery = e.Value?.ToString() ?? "";
-        if (_debounceTimer == null)
-        {
-            _debounceTimer = new System.Timers.Timer(350);
-            _debounceTimer.AutoReset = false;
-            _debounceTimer.Elapsed += (s, args) =>
-            {
-                if (_disposed) return;
-                InvokeAsync(() => { ApplyFilter(); StateHasChanged(); });
-            };
-        }
-        _debounceTimer.Stop();
-        _debounceTimer.Start();
+        ApplyFilter();
+    }
+
+    private void OpenDatePicker()
+    {
+        _isBookingDatePickerOpen = true;
+    }
+
+    private void HandleBookingDateSelected(DateTime? date)
+    {
+        _selectedBookingDate = date;
+        _isBookingDatePickerOpen = false;
+        ApplyFilter();
     }
 
     private void ApplyFilter()
     {
         var q = _allRooms.AsEnumerable();
+
         if (!string.IsNullOrWhiteSpace(_searchQuery))
         {
             q = q.Where(r => r.Name.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase) ||
-                             r.Floor.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase));
+                             r.Floor.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                             r.Description.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase));
         }
+
         if (_filterCapacity > 0)
         {
             q = q.Where(r => r.Capacity >= _filterCapacity);
         }
+
         _filteredRooms = q.ToList();
+        StateHasChanged();
     }
 
     private void ViewDetail(RoomItem room)
@@ -475,7 +521,7 @@
 
     private void ProceedToBook(RoomItem room)
     {
-        _isRoomDetailVisible = false;
+        CloseDetail();
         _selectedRoomForBooking = room;
         _isConfirmBookingVisible = true;
     }
@@ -485,25 +531,37 @@
         _isConfirmBookingVisible = false;
         _selectedRoomForBooking = null;
     }
-    
-    private string GetStatusBadgeClass(string status) => status switch {
-        "available" => "badge-available",
-        "booked" => "badge-booked",
-        _ => "badge-unavailable"
-    };
-    
-    private string GetStatusText(string status) => status switch {
+
+    // UI-18: 3 Varian Badge Status
+    private string GetStatusText(string status) => status switch
+    {
         "available" => "Tersedia",
         "booked" => "Dipesan (2j lagi)",
-        _ => "Tidak Tersedia"
+        "unavailable" => "Tidak Tersedia",
+        _ => "Tersedia"
     };
+
+    private string GetStatusBadgeClass(string status) => status switch
+    {
+        "available" => "badge-available",
+        "booked" => "badge-booked",
+        "unavailable" => "badge-unavailable",
+        _ => "badge-available"
+    };
+
+    private void SafeStateHasChanged()
+    {
+        if (_disposed) return;
+        try {
+            InvokeAsync(StateHasChanged);
+        } catch {}
+    }
 
     public void Dispose()
     {
         _disposed = true;
+        LoadingState.OnChange -= SafeStateHasChanged;
         _cts?.Cancel();
         _cts?.Dispose();
-        _debounceTimer?.Dispose();
-        LoadingState.OnChange -= SafeStateHasChanged;
     }
 }

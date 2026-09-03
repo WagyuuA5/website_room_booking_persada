@@ -4,51 +4,89 @@
 <AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Size="xl" ShowHeader="false" ShowFooter="false" NoPadding="true">
     <BodyContent>
         <div class="room-detail-layout">
-            <!-- Kiri: Media -->
+            <!-- Kiri: Media & Denah Lokasi (UI-19, BUG-06) -->
             <div class="detail-media-col">
                 <div class="detail-photo-wrap">
-                    <img src="@Room?.PhotoUrl" alt="@Room?.Name" class="detail-photo" />
+                    <img src="@GetRoomPhoto(Room)" 
+                         alt="@Room?.Name" 
+                         class="detail-photo" 
+                         onerror="this.src='https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80'" />
+                    
                     <div class="room-status-badge @GetStatusBadgeClass(Room?.Status)">
                         <div class="status-dot"></div>
                         @GetStatusText(Room?.Status)
                     </div>
                 </div>
                 
-                <!-- Peta Lokasi / Denah -->
+                <!-- Peta Lokasi / Denah Ruangan (UI-19) - Tanpa duplikasi teks lokasi (BUG-06) -->
                 <div class="detail-map-panel">
-                    <span class="map-label">Lantai @Room?.Floor, Sayap Utama, Persada HQ</span>
-                    <div class="map-placeholder">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-neutral-400)" stroke-width="1.5">
-                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                            <path d="M3 9h18M9 21V9"></path>
+                    <div class="map-schematic-wrap">
+                        <svg viewBox="0 0 300 120" fill="none" xmlns="http://www.w3.org/2000/svg" class="floor-plan-svg">
+                            <!-- Floor boundary -->
+                            <rect x="5" y="5" width="290" height="110" rx="8" stroke="var(--color-neutral-400, #86868B)" stroke-width="2" fill="var(--color-neutral-100, #F5F5F7)" />
+                            <!-- Rooms layout -->
+                            <rect x="15" y="15" width="70" height="40" rx="4" stroke="var(--color-neutral-400, #86868B)" stroke-width="1.5" fill="var(--color-white, #FFFFFF)" />
+                            <text x="50" y="38" font-size="9" fill="var(--color-neutral-600)" text-anchor="middle">R. 101</text>
+                            
+                            <rect x="95" y="15" width="100" height="40" rx="4" stroke="var(--color-primary, #F5A623)" stroke-width="2" fill="rgba(245, 166, 35, 0.15)" />
+                            <text x="145" y="38" font-size="10" font-weight="bold" fill="var(--color-navy, #0F172A)" text-anchor="middle">@Room?.Name</text>
+                            <!-- Highlight Pin -->
+                            <circle cx="145" cy="22" r="4" fill="var(--color-primary, #F5A623)" />
+                            
+                            <rect x="205" y="15" width="80" height="40" rx="4" stroke="var(--color-neutral-400, #86868B)" stroke-width="1.5" fill="var(--color-white, #FFFFFF)" />
+                            <text x="245" y="38" font-size="9" fill="var(--color-neutral-600)" text-anchor="middle">R. 102</text>
+                            
+                            <!-- Corridor -->
+                            <line x1="15" y1="65" x2="285" y2="65" stroke="var(--color-neutral-300, #E8E8ED)" stroke-dasharray="4 4" stroke-width="1.5" />
+                            <text x="150" y="75" font-size="8" fill="var(--color-neutral-400)" text-anchor="middle">KORIDOR UTAMA</text>
+                            
+                            <!-- Bottom Rooms -->
+                            <rect x="15" y="80" width="80" height="30" rx="4" stroke="var(--color-neutral-400, #86868B)" stroke-width="1.5" fill="var(--color-white, #FFFFFF)" />
+                            <rect x="105" y="80" width="85" height="30" rx="4" stroke="var(--color-neutral-400, #86868B)" stroke-width="1.5" fill="var(--color-white, #FFFFFF)" />
+                            <rect x="200" y="80" width="85" height="30" rx="4" stroke="var(--color-neutral-400, #86868B)" stroke-width="1.5" fill="var(--color-white, #FFFFFF)" />
                         </svg>
-                        <p>Denah lantai belum tersedia</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Kanan: Info -->
+            <!-- Kanan: Informasi Lengkap (UI-19) -->
             <div class="detail-info-col">
                 <div class="info-content-scroll">
                     <h2 class="detail-title">@Room?.Name</h2>
+                    
+                    <!-- Satu-satunya baris lokasi (BUG-06) -->
                     <div class="detail-location">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                        <span>Lantai @Room?.Floor, Sayap Utama, Persada HQ</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                        <span>Lantai @(string.IsNullOrEmpty(Room?.Floor) ? "3" : Room.Floor), Sayap Utama, Persada HQ</span>
                     </div>
                     
                     <p class="detail-desc">@Room?.Description</p>
                     
                     <label class="section-label">FASILITAS TERMASUK</label>
                     <div class="amenities-grid">
-                        @if (Room?.Amenities != null)
+                        @if (Room?.Amenities != null && Room.Amenities.Any())
                         {
                             @foreach(var am in Room.Amenities)
                             {
                                 <div class="amenity-item">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                    <FacilityIcon Name="@am" Size="16" />
                                     <span>@am</span>
                                 </div>
                             }
+                        }
+                        else
+                        {
+                            <div class="amenity-item">
+                                <FacilityIcon Name="AC" Size="16" />
+                                <span>AC</span>
+                            </div>
+                            <div class="amenity-item">
+                                <FacilityIcon Name="WiFi" Size="16" />
+                                <span>WiFi</span>
+                            </div>
                         }
                     </div>
                 </div>
@@ -56,7 +94,12 @@
                 <div class="detail-footer">
                     <button class="btn-secondary" @onclick="Close">Batal</button>
                     <button class="btn-primary" @onclick="Book">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
                         Pesan Sekarang
                     </button>
                 </div>
@@ -68,192 +111,170 @@
 <style>
     .room-detail-layout {
         display: flex;
-        min-height: 500px;
-        
+        min-height: 480px;
     }
-    
+    @@media (max-width: 860px) {
+        .room-detail-layout { flex-direction: column; }
+    }
 
+    /* Kolom Kiri */
     .detail-media-col {
-        width: 45%;
+        flex: 1.1;
         display: flex;
         flex-direction: column;
+        background: var(--color-neutral-100, #F5F5F7);
         border-right: 1px solid var(--color-neutral-200, #E8E8ED);
     }
-    body.dark-mode .detail-media-col { border-color: rgba(255,255,255,0.1); }
+    body.dark-mode .detail-media-col {
+        background: rgba(255,255,255,0.03);
+        border-color: rgba(255,255,255,0.08);
+    }
 
     .detail-photo-wrap {
         position: relative;
-        height: 300px;
+        height: 280px;
+        background: #000;
     }
     .detail-photo {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        border-top-left-radius: var(--radius-lg, 22px);
     }
+
     .room-status-badge {
         position: absolute;
         top: 16px;
         left: 16px;
-        padding: 6px 12px;
+        padding: 6px 14px;
         border-radius: var(--radius-full, 999px);
         font-size: var(--fs-xs, 12px);
         font-weight: var(--fw-semibold, 600);
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
         background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(4px);
+        backdrop-filter: blur(8px);
         color: var(--color-navy, #0F172A);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
     body.dark-mode .room-status-badge {
         background: rgba(30, 30, 30, 0.95);
         color: var(--color-white, #FFFFFF);
     }
+    
     .status-dot { width: 8px; height: 8px; border-radius: 50%; }
     .badge-available .status-dot { background: var(--color-success, #34D399); }
     .badge-booked .status-dot { background: var(--color-warning, #F59E0B); }
     .badge-unavailable .status-dot { background: var(--color-danger, #EF4444); }
 
     .detail-map-panel {
-        padding: 20px;
+        padding: 16px 20px;
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        justify-content: center;
     }
-    .map-label {
-        font-size: var(--fs-xs, 12px);
-        font-weight: var(--fw-semibold, 600);
-        color: var(--color-neutral-600, #6E6E73);
-    }
-    .map-placeholder {
-        flex: 1;
-        background: var(--color-neutral-100, #F5F5F7);
-        border: 1px dashed var(--color-neutral-200, #E8E8ED);
-        border-radius: var(--radius-md, 14px);
+    .map-schematic-wrap {
+        width: 100%;
+        height: 120px;
+        background: var(--color-white, #FFFFFF);
+        border: 1px solid var(--color-neutral-200, #E8E8ED);
+        border-radius: var(--radius-sm, 8px);
+        overflow: hidden;
         display: flex;
-        flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 8px;
-        color: var(--color-neutral-400, #86868B);
-        font-size: var(--fs-sm, 14px);
+        padding: 4px;
     }
-    body.dark-mode .map-placeholder {
+    body.dark-mode .map-schematic-wrap {
         background: rgba(255,255,255,0.05);
         border-color: rgba(255,255,255,0.1);
     }
+    .floor-plan-svg {
+        width: 100%;
+        height: 100%;
+    }
 
+    /* Kolom Kanan */
     .detail-info-col {
-        width: 55%;
+        flex: 1.2;
         display: flex;
         flex-direction: column;
+        padding: 28px;
     }
     .info-content-scroll {
-        padding: 32px;
         flex: 1;
-        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
     }
+
     .detail-title {
-        font-size: var(--fs-h1, 32px);
-        line-height: var(--lh-h1, 40px);
+        font-size: var(--fs-h2, 24px);
+        line-height: var(--lh-h2, 30px);
         font-weight: var(--fw-bold, 700);
+        margin: 0;
         color: var(--color-navy, #0F172A);
-        margin: 0 0 8px 0;
     }
     body.dark-mode .detail-title { color: var(--color-white, #FFFFFF); }
 
     .detail-location {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
         font-size: var(--fs-sm, 14px);
-        font-weight: var(--fw-semibold, 600);
         color: var(--color-neutral-600, #6E6E73);
-        margin-bottom: 20px;
     }
+    .detail-location svg { color: var(--color-primary, #F5A623); }
+
     .detail-desc {
-        font-size: var(--fs-body, 16px);
-        line-height: var(--lh-body, 24px);
-        color: var(--color-neutral-600, #6E6E73);
-        margin: 0 0 24px 0;
+        font-size: var(--fs-body, 15px);
+        line-height: var(--lh-body, 22px);
+        color: var(--color-neutral-900, #1D1D1F);
+        margin: 0;
     }
+    body.dark-mode .detail-desc { color: var(--color-neutral-400, #86868B); }
+
     .section-label {
         font-size: var(--fs-xs, 12px);
         font-weight: var(--fw-semibold, 600);
         color: var(--color-neutral-600, #6E6E73);
-        letter-spacing: 0.04em;
-        margin-bottom: 12px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-top: 8px;
         display: block;
     }
 
     .amenities-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(2, 1fr);
         gap: 12px;
     }
     .amenity-item {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
+        padding: 10px 14px;
+        background: var(--color-neutral-100, #F5F5F7);
+        border-radius: var(--radius-sm, 8px);
         font-size: var(--fs-sm, 14px);
         color: var(--color-navy, #0F172A);
     }
-    body.dark-mode .amenity-item { color: var(--color-white, #FFFFFF); }
+    body.dark-mode .amenity-item {
+        background: rgba(255,255,255,0.05);
+        color: var(--color-white, #FFFFFF);
+    }
     .amenity-item svg { color: var(--color-primary, #F5A623); }
 
     .detail-footer {
-        padding: 20px 32px;
-        border-top: 1px solid var(--color-neutral-200, #E8E8ED);
         display: flex;
         justify-content: flex-end;
         gap: 12px;
+        margin-top: 24px;
+        padding-top: 16px;
+        border-top: 1px solid var(--color-neutral-200, #E8E8ED);
     }
     body.dark-mode .detail-footer { border-color: rgba(255,255,255,0.1); }
-
-    .btn-secondary {
-        height: 44px;
-        padding: 0 24px;
-        border-radius: var(--radius-full, 999px);
-        background: transparent;
-        border: 1px solid var(--color-neutral-400, #86868B);
-        color: var(--color-neutral-900, #1D1D1F);
-        font-weight: var(--fw-semibold, 600);
-        cursor: pointer;
-        transition: var(--motion-fast);
-    }
-    body.dark-mode .btn-secondary { color: var(--color-white, #FFFFFF); }
-    .btn-secondary:hover { background: var(--color-neutral-100, #F5F5F7); }
-    body.dark-mode .btn-secondary:hover { background: rgba(255,255,255,0.1); }
-
-    .btn-primary {
-        height: 44px;
-        padding: 0 24px;
-        border-radius: var(--radius-full, 999px);
-        background: var(--color-primary, #F5A623);
-        border: none;
-        color: var(--color-navy, #0F172A);
-        font-weight: var(--fw-bold, 700);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        cursor: pointer;
-        transition: var(--motion-fast);
-    }
-    .btn-primary:hover {
-        background: var(--color-primary-dark, #D98E12);
-        transform: scale(0.98);
-    }
-
-    @@media (max-width: 768px) {
-        .room-detail-layout { flex-direction: column; }
-        .detail-media-col, .detail-info-col { width: 100%; border-right: none; }
-        .detail-photo { border-top-right-radius: var(--radius-lg, 22px); }
-        .info-content-scroll { padding: 20px; }
-        .detail-footer { padding: 16px 20px; }
-    }
 </style>
 
 @code {
@@ -263,36 +284,52 @@
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback OnBook { get; set; }
 
-    private async Task HandleVisibleChanged(bool value)
+    private string GetRoomPhoto(RoomItem? room)
     {
-        Visible = value;
-        if (VisibleChanged.HasDelegate)
-            await VisibleChanged.InvokeAsync(value);
+        if (room == null || string.IsNullOrWhiteSpace(room.PhotoUrl))
+        {
+            return "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80";
+        }
+        return room.PhotoUrl;
+    }
+
+    private string GetStatusText(string? status) => status switch
+    {
+        "available" => "Tersedia",
+        "booked" => "Dipesan (2j lagi)",
+        "unavailable" => "Tidak Tersedia",
+        _ => "Tersedia"
+    };
+
+    private string GetStatusBadgeClass(string? status) => status switch
+    {
+        "available" => "badge-available",
+        "booked" => "badge-booked",
+        "unavailable" => "badge-unavailable",
+        _ => "badge-available"
+    };
+
+    private async Task HandleVisibleChanged(bool val)
+    {
+        Visible = val;
+        await VisibleChanged.InvokeAsync(val);
+        if (!val && OnClose.HasDelegate)
+        {
+            await OnClose.InvokeAsync();
+        }
     }
 
     private async Task Close()
     {
         await HandleVisibleChanged(false);
-        if (OnClose.HasDelegate)
-            await OnClose.InvokeAsync();
     }
 
     private async Task Book()
     {
         await HandleVisibleChanged(false);
         if (OnBook.HasDelegate)
+        {
             await OnBook.InvokeAsync();
+        }
     }
-
-    private string GetStatusBadgeClass(string? status) => status switch {
-        "available" => "badge-available",
-        "booked" => "badge-booked",
-        _ => "badge-unavailable"
-    };
-    
-    private string GetStatusText(string? status) => status switch {
-        "available" => "Tersedia Sekarang",
-        "booked" => "Dipesan",
-        _ => "Tidak Tersedia"
-    };
 }

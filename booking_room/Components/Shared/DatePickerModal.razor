@@ -1,15 +1,17 @@
 @namespace booking_room.Components.Shared
 @using System.Globalization
 
-<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" LayoutMode="list" Size="sm" ShowCloseButton="false" OnClose="OnCancel">
+<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" LayoutMode="list" Size="sm" ShowHeader="false" ShowCloseButton="false" OnClose="HandleCancel">
     <BodyContent>
         <div class="date-picker-container">
+            <h3 class="date-picker-title">Pilih Tanggal</h3>
+
             <div class="date-picker-header">
-                <button class="nav-btn" @onclick="PrevMonth">
+                <button type="button" class="nav-btn" @onclick="PrevMonth" aria-label="Bulan Sebelumnya">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
                 </button>
                 <div class="current-month">@_currentMonth.ToString("MMMM yyyy", _culture)</div>
-                <button class="nav-btn" @onclick="NextMonth">
+                <button type="button" class="nav-btn" @onclick="NextMonth" aria-label="Bulan Berikutnya">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </button>
             </div>
@@ -25,7 +27,7 @@
 
                 @foreach (var day in GetDaysInMonth())
                 {
-                    <button class="day-btn @(day.IsOtherMonth ? "other-month" : "") @(day.Date == DateTime.Today ? "today" : "") @(day.Date == _tempSelectedDate ? "selected" : "")" 
+                    <button type="button" class="day-btn @(day.IsOtherMonth ? "other-month" : "") @(day.Date.Date == DateTime.Today ? "today" : "") @(day.Date.Date == _tempSelectedDate?.Date ? "selected" : "")" 
                             @onclick="() => SelectDate(day.Date)">
                         @day.Date.Day
                     </button>
@@ -34,57 +36,77 @@
         </div>
     </BodyContent>
     <FooterContent>
-        <div style="display: flex; gap: 8px; justify-content: flex-end; width: 100%;">
-            <button class="btn-text-danger" @onclick="HandleCancel">Batal</button>
-            <button class="btn-primary-app" @onclick="ConfirmSelection">Pilih Tanggal</button>
+        <div class="date-picker-footer">
+            <button type="button" class="btn-text-cancel" @onclick="HandleCancel">Batal</button>
+            <button type="button" class="btn-picker-confirm" @onclick="ConfirmSelection">@ConfirmText</button>
         </div>
     </FooterContent>
 </AppModal>
 
 <style>
     .date-picker-container {
-        padding: 8px;
+        padding: 8px 4px;
     }
+    .date-picker-title {
+        font-size: var(--fs-h3, 20px);
+        line-height: var(--lh-h3, 26px);
+        font-weight: var(--fw-bold, 700);
+        color: var(--color-navy, #0F172A);
+        margin: 0 0 16px 0;
+    }
+    body.dark-mode .date-picker-title { color: var(--color-white, #FFFFFF); }
+
     .date-picker-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 20px;
+        margin-bottom: 16px;
     }
     .current-month {
-        font-weight: 700;
-        font-size: 1rem;
-        color: var(--color-brand-navy, #0F1F3D);
+        font-weight: var(--fw-bold, 700);
+        font-size: var(--fs-base, 16px);
+        color: var(--color-navy, #0F172A);
         text-transform: capitalize;
     }
+    body.dark-mode .current-month { color: var(--color-white, #FFFFFF); }
+
     .nav-btn {
-        width: 32px;
-        height: 32px;
+        width: 34px;
+        height: 34px;
         border-radius: 50%;
-        border: none;
+        border: 1px solid var(--color-neutral-200, #E8E8ED);
         background: transparent;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        color: #6B7280;
-        transition: all 0.2s;
+        color: var(--color-neutral-600, #6E6E73);
+        transition: var(--motion-fast);
     }
     .nav-btn:hover {
-        background: #F3F4F6;
-        color: #111827;
+        background: var(--color-neutral-100, #F5F5F7);
+        color: var(--color-navy, #0F172A);
     }
+    body.dark-mode .nav-btn {
+        border-color: rgba(255,255,255,0.1);
+        color: var(--color-neutral-400, #86868B);
+    }
+    body.dark-mode .nav-btn:hover {
+        background: rgba(255,255,255,0.1);
+        color: var(--color-white, #FFFFFF);
+    }
+
     .calendar-grid {
         display: grid;
         grid-template-columns: repeat(7, 1fr);
-        gap: 8px;
+        gap: 6px;
         text-align: center;
     }
     .weekday {
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: #9CA3AF;
-        margin-bottom: 8px;
+        font-size: var(--fs-xs, 12px);
+        font-weight: var(--fw-bold, 700);
+        color: var(--color-neutral-400, #86868B);
+        padding: 6px 0;
     }
     .day-btn {
         width: 36px;
@@ -93,41 +115,76 @@
         border-radius: 50%;
         border: none;
         background: transparent;
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: #374151;
+        font-size: var(--fs-sm, 14px);
+        font-weight: var(--fw-semibold, 600);
+        color: var(--color-navy, #0F172A);
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: all 0.2s;
+        transition: var(--motion-fast);
     }
+    body.dark-mode .day-btn { color: var(--color-white, #FFFFFF); }
+
     .day-btn:hover:not(.selected) {
-        background: #F3F4F6;
+        background: var(--color-neutral-100, #F5F5F7);
     }
+    body.dark-mode .day-btn:hover:not(.selected) {
+        background: rgba(255,255,255,0.1);
+    }
+
     .day-btn.other-month {
-        color: #D1D5DB;
-        font-weight: 400;
+        color: var(--color-neutral-400, #86868B);
+        opacity: 0.5;
     }
     .day-btn.today {
-        border: 1px solid var(--color-brand-navy, #0F1F3D);
+        border: 1px solid var(--color-primary, #F5A623);
     }
     .day-btn.selected {
-        background: var(--color-brand-navy, #0F1F3D);
-        color: #FFFFFF;
-        border-color: var(--color-brand-navy, #0F1F3D);
+        background: var(--color-navy, #0F172A) !important;
+        color: var(--color-white, #FFFFFF) !important;
     }
-    .btn-text-danger {
+    body.dark-mode .day-btn.selected {
+        background: var(--color-primary, #F5A623) !important;
+        color: var(--color-navy, #0F172A) !important;
+    }
+
+    .date-picker-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+    .btn-text-cancel {
         background: transparent;
         border: none;
-        color: var(--color-danger-text, #DC2626);
-        font-weight: 600;
-        font-size: 0.875rem;
-        padding: 8px 16px;
+        color: var(--color-danger, #EF4444);
+        font-size: var(--fs-sm, 14px);
+        font-weight: var(--fw-semibold, 600);
         cursor: pointer;
+        padding: 8px 12px;
     }
-    .btn-text-danger:hover {
+    .btn-text-cancel:hover {
         text-decoration: underline;
+    }
+
+    .btn-picker-confirm {
+        background: var(--color-navy, #0F172A);
+        color: var(--color-white, #FFFFFF);
+        border: none;
+        border-radius: var(--radius-full, 999px);
+        padding: 8px 20px;
+        font-size: var(--fs-sm, 14px);
+        font-weight: var(--fw-semibold, 600);
+        cursor: pointer;
+        transition: var(--motion-fast);
+    }
+    .btn-picker-confirm:hover {
+        opacity: 0.9;
+    }
+    body.dark-mode .btn-picker-confirm {
+        background: var(--color-primary, #F5A623);
+        color: var(--color-navy, #0F172A);
     }
 </style>
 
@@ -137,6 +194,7 @@
     [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
     [Parameter] public EventCallback<DateTime?> OnDateSelected { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public string ConfirmText { get; set; } = "Pilih Tanggal";
 
     private DateTime _currentMonth = DateTime.Today;
     private DateTime? _tempSelectedDate;
@@ -144,7 +202,7 @@
 
     protected override void OnInitialized()
     {
-        _tempSelectedDate = SelectedDate;
+        _tempSelectedDate = SelectedDate ?? DateTime.Today;
         if (SelectedDate.HasValue)
         {
             _currentMonth = new DateTime(SelectedDate.Value.Year, SelectedDate.Value.Month, 1);
@@ -206,10 +264,8 @@
         var firstDayOfMonth = new DateTime(_currentMonth.Year, _currentMonth.Month, 1);
         var daysInMonth = DateTime.DaysInMonth(_currentMonth.Year, _currentMonth.Month);
         
-        // Find the day of week (Sunday = 0, Monday = 1, etc.)
         int startDayOfWeek = (int)firstDayOfMonth.DayOfWeek;
         
-        // Add previous month's trailing days
         var prevMonth = firstDayOfMonth.AddMonths(-1);
         var daysInPrevMonth = DateTime.DaysInMonth(prevMonth.Year, prevMonth.Month);
         for (int i = startDayOfWeek - 1; i >= 0; i--)
@@ -221,7 +277,6 @@
             });
         }
         
-        // Add current month's days
         for (int i = 1; i <= daysInMonth; i++)
         {
             days.Add(new CalendarDay 
@@ -231,10 +286,9 @@
             });
         }
         
-        // Add next month's leading days to complete the grid (usually 42 cells total)
         int remainingCells = 42 - days.Count;
-        if (remainingCells >= 7 && days.Count == 35) remainingCells = 0; // if it fits perfectly in 5 rows
-        if (remainingCells >= 7) remainingCells -= 7; // trim an empty bottom row if possible
+        if (remainingCells >= 7 && days.Count == 35) remainingCells = 0;
+        if (remainingCells >= 7) remainingCells -= 7;
 
         var nextMonth = firstDayOfMonth.AddMonths(1);
         for (int i = 1; i <= remainingCells; i++)

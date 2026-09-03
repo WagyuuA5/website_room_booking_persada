@@ -1,7 +1,10 @@
 @page "/settings"
+@page "/pengaturan"
 @using booking_room.Components.Shared
+@inject IJSRuntime JS
+@implements IDisposable
 
-<PageTitle>Pengaturan — Persada Booking Ruangan</PageTitle>
+<PageTitle>Pengaturan — Persada</PageTitle>
 
 <div class="content-fade-in settings-page-wrapper">
     <div class="settings-header">
@@ -10,11 +13,11 @@
     </div>
 
     <div class="settings-layout">
-        <!-- Sidebar Navigation -->
+        <!-- Sidebar Navigation (DS-06: disederhanakan untuk User) -->
         <div class="settings-sidebar">
-            <button class="settings-nav-item @(activeTab == "preferences" ? "active" : "")" @onclick='() => activeTab = "preferences"'>Preferensi Tampilan</button>
-            <button class="settings-nav-item @(activeTab == "security" ? "active" : "")" @onclick='() => activeTab = "security"'>Keamanan Akun</button>
-            <button class="settings-nav-item @(activeTab == "integrations" ? "active" : "")" @onclick='() => activeTab = "integrations"'>Integrasi Personal</button>
+            <button type="button" class="settings-nav-item @(activeTab == "preferences" ? "active" : "")" @onclick='() => activeTab = "preferences"'>Preferensi Tampilan</button>
+            <button type="button" class="settings-nav-item @(activeTab == "security" ? "active" : "")" @onclick='() => activeTab = "security"'>Keamanan Akun</button>
+            <button type="button" class="settings-nav-item @(activeTab == "integrations" ? "active" : "")" @onclick='() => activeTab = "integrations"'>Integrasi Personal</button>
         </div>
 
         <!-- Main Content Panel -->
@@ -27,30 +30,31 @@
                         <div class="setting-row">
                             <div>
                                 <h4>Mode Gelap (Dark Mode)</h4>
-                                <p>Gunakan tampilan gelap untuk mengurangi ketegangan mata.</p>
+                                <p>Gunakan tampilan gelap untuk kenyamanan mata dan kontras optimal.</p>
                             </div>
-                            <button class="btn-toggle @(_isDarkMode ? "active" : "")" @onclick="ToggleDarkMode">
+                            <button type="button" class="btn-toggle @(_isDarkMode ? "active" : "")" @onclick="ToggleDarkMode" aria-label="Ganti Tema">
                                 <div class="toggle-knob"></div>
                             </button>
                         </div>
                     </div>
                 </div>
+                
                 <div class="settings-section" style="margin-top: 24px;">
                     <h2>Bahasa & Regional</h2>
                     <div class="settings-card">
                         <div class="setting-row">
                             <div>
                                 <h4>Bahasa Aplikasi</h4>
-                                <p>Sistem ini hanya mendukung Bahasa Indonesia (baku).</p>
+                                <p>Sistem ini menggunakan Bahasa Indonesia baku.</p>
                             </div>
                             <span class="badge-locked">ID (Indonesia)</span>
                         </div>
                         <div class="setting-row">
                             <div>
                                 <h4>Format Tanggal & Waktu</h4>
-                                <p>Sistem menggunakan format 24-jam (mis. 12 Mei 2024, 09:00 - 11:30).</p>
+                                <p>Format 24-jam Indonesia (mis. 12 Mei 2024, 09:00 - 11:30).</p>
                             </div>
-                            <span class="badge-locked">WIB / 24-jam</span>
+                            <span class="badge-locked">WIB / 24 Jam</span>
                         </div>
                     </div>
                 </div>
@@ -63,9 +67,9 @@
                         <div class="setting-row">
                             <div>
                                 <h4>Ubah Kata Sandi</h4>
-                                <p>Perbarui kata sandi Anda secara berkala.</p>
+                                <p>Perbarui kata sandi Anda secara berkala demi keamanan akun.</p>
                             </div>
-                            <button class="btn-secondary" @onclick="() => isChangePasswordModalOpen = true">Ubah</button>
+                            <button type="button" class="btn-secondary" @onclick="() => isChangePasswordModalOpen = true">Ubah</button>
                         </div>
                     </div>
                 </div>
@@ -78,9 +82,9 @@
                         <div class="setting-row">
                             <div>
                                 <h4>Tautkan Kalender (Outlook / Google)</h4>
-                                <p>Sinkronisasi jadwal rapat Anda dengan kalender eksternal.</p>
+                                <p>Sinkronisasi jadwal rapat Anda dengan kalender eksternal secara otomatis.</p>
                             </div>
-                            <button class="btn-secondary">Hubungkan</button>
+                            <button type="button" class="btn-secondary">Hubungkan</button>
                         </div>
                     </div>
                 </div>
@@ -102,24 +106,34 @@
     }
     .settings-header h1 {
         font-size: var(--fs-h1, 32px);
+        line-height: var(--lh-h1, 40px);
         font-weight: var(--fw-bold, 700);
         margin: 0 0 8px 0;
+        color: var(--color-navy, #0F172A);
     }
+    body.dark-mode .settings-header h1 { color: var(--color-white, #FFFFFF); }
+    
     .settings-header p {
-        color: var(--color-neutral-600);
+        color: var(--color-neutral-600, #6E6E73);
+        font-size: var(--fs-body, 15px);
         margin: 0;
     }
-    
+
     .settings-layout {
         display: flex;
         gap: 32px;
     }
-    
+    @@media (max-width: 768px) {
+        .settings-layout { flex-direction: column; }
+        .settings-sidebar { width: 100% !important; flex-direction: row !important; overflow-x: auto; }
+    }
+
     .settings-sidebar {
         width: 240px;
         display: flex;
         flex-direction: column;
         gap: 8px;
+        flex-shrink: 0;
     }
     .settings-nav-item {
         padding: 12px 16px;
@@ -127,88 +141,116 @@
         background: transparent;
         border: none;
         border-radius: var(--radius-sm, 8px);
+        font-size: var(--fs-sm, 14px);
         font-weight: var(--fw-semibold, 600);
-        color: var(--color-neutral-600);
+        color: var(--color-neutral-600, #6E6E73);
         cursor: pointer;
+        transition: var(--motion-fast);
+    }
+    .settings-nav-item:hover {
+        background: var(--color-neutral-100, #F5F5F7);
+        color: var(--color-navy, #0F172A);
     }
     .settings-nav-item.active {
-        background: var(--color-neutral-200);
-        color: var(--color-navy);
+        background: var(--color-navy, #0F172A);
+        color: var(--color-white, #FFFFFF);
+    }
+    body.dark-mode .settings-nav-item:hover {
+        background: rgba(255,255,255,0.05);
+        color: var(--color-white, #FFFFFF);
     }
     body.dark-mode .settings-nav-item.active {
-        background: rgba(255,255,255,0.1);
-        color: var(--color-white);
+        background: var(--color-primary, #F5A623);
+        color: var(--color-navy, #0F172A);
     }
-    
+
     .settings-main-panel {
         flex: 1;
     }
-    
+
     .settings-section h2 {
         font-size: var(--fs-h3, 20px);
+        line-height: var(--lh-h3, 26px);
         font-weight: var(--fw-bold, 700);
         margin: 0 0 16px 0;
+        color: var(--color-navy, #0F172A);
     }
-    
+    body.dark-mode .settings-section h2 { color: var(--color-white, #FFFFFF); }
+
     .settings-card {
-        background: var(--color-white);
-        border: 1px solid var(--color-neutral-200);
+        background: var(--color-white, #FFFFFF);
+        border: 1px solid var(--color-neutral-200, #E8E8ED);
         border-radius: var(--radius-md, 14px);
         overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.02);
     }
     body.dark-mode .settings-card {
-        background: var(--color-neutral-900);
+        background: var(--color-neutral-900, #1D1D1F);
         border-color: rgba(255,255,255,0.1);
     }
-    
+
     .setting-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
         padding: 16px 20px;
-        border-bottom: 1px solid var(--color-neutral-200);
+        border-bottom: 1px solid var(--color-neutral-200, #E8E8ED);
     }
-    body.dark-mode .setting-row { border-color: rgba(255,255,255,0.1); }
+    body.dark-mode .setting-row { border-color: rgba(255,255,255,0.08); }
     .setting-row:last-child { border-bottom: none; }
+
+    .setting-row h4 {
+        margin: 0 0 4px 0;
+        font-size: var(--fs-base, 15px);
+        font-weight: var(--fw-semibold, 600);
+        color: var(--color-navy, #0F172A);
+    }
+    body.dark-mode .setting-row h4 { color: var(--color-white, #FFFFFF); }
     
-    .setting-row h4 { margin: 0 0 4px 0; font-weight: var(--fw-semibold, 600); }
-    .setting-row p { margin: 0; font-size: 12px; color: var(--color-neutral-600); }
-    
+    .setting-row p {
+        margin: 0;
+        font-size: var(--fs-xs, 12px);
+        color: var(--color-neutral-600, #6E6E73);
+    }
+
     .btn-toggle {
-        width: 44px;
-        height: 24px;
-        border-radius: 12px;
-        background: var(--color-neutral-400);
+        width: 48px;
+        height: 26px;
+        border-radius: var(--radius-full, 999px);
+        background: var(--color-neutral-400, #86868B);
         border: none;
         position: relative;
         cursor: pointer;
-        transition: background 0.3s;
+        transition: var(--motion-fast);
+        padding: 0;
     }
-    .btn-toggle.active { background: var(--color-primary); }
+    .btn-toggle.active { background: var(--color-primary, #F5A623); }
     .toggle-knob {
         width: 20px;
         height: 20px;
-        background: var(--color-white);
+        background: var(--color-white, #FFFFFF);
         border-radius: 50%;
         position: absolute;
-        top: 2px;
-        left: 2px;
-        transition: transform 0.3s;
+        top: 3px;
+        left: 3px;
+        transition: transform 200ms ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
     .btn-toggle.active .toggle-knob {
-        transform: translateX(20px);
+        transform: translateX(22px);
     }
 
     .badge-locked {
-        padding: 6px 12px;
-        background: var(--color-neutral-100);
-        color: var(--color-neutral-600);
-        border-radius: var(--radius-full);
-        font-size: 12px;
-        font-weight: 600;
+        padding: 6px 14px;
+        background: var(--color-neutral-100, #F5F5F7);
+        color: var(--color-neutral-600, #6E6E73);
+        border-radius: var(--radius-full, 999px);
+        font-size: var(--fs-xs, 12px);
+        font-weight: var(--fw-semibold, 600);
     }
     body.dark-mode .badge-locked {
         background: rgba(255,255,255,0.05);
+        color: var(--color-neutral-400, #86868B);
     }
 </style>
 
@@ -216,10 +258,43 @@
     private string activeTab = "preferences";
     private bool _isDarkMode = false;
     private bool isChangePasswordModalOpen = false;
+    private bool _disposed;
 
-    private void ToggleDarkMode()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                var theme = await JS.InvokeAsync<string>("localStorage.getItem", "theme");
+                _isDarkMode = theme == "dark";
+                if (!_disposed) StateHasChanged();
+            }
+            catch { }
+        }
+    }
+
+    private async Task ToggleDarkMode()
     {
         _isDarkMode = !_isDarkMode;
-        // Logic to toggle dark mode class on body is handled globally or via JS interop in a real app
+        try
+        {
+            if (_isDarkMode)
+            {
+                await JS.InvokeVoidAsync("document.body.classList.add", "dark-mode");
+                await JS.InvokeVoidAsync("localStorage.setItem", "theme", "dark");
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("document.body.classList.remove", "dark-mode");
+                await JS.InvokeVoidAsync("localStorage.setItem", "theme", "light");
+            }
+        }
+        catch { }
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
     }
 }

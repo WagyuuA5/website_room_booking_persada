@@ -88,6 +88,9 @@
             <p style="color: #6B7280; margin: 0; font-size: 0.875rem;">Riwayat pemesanan ruangan Anda akan muncul di sini.</p>
         </div>
     }
+
+    <!-- DS-02: Grafik Tren Pemesanan Saya -->
+    <UserTrendChart />
 </div>
 
 @if (_isDatePickerOpen)
@@ -291,7 +294,6 @@
     }
 </style>
 
-<DatePickerPopup Visible="_isDatePickerOpen" VisibleChanged="v => _isDatePickerOpen = v" />
 <HistoryBookingDetailModal Visible="@(_selectedBooking != null)" VisibleChanged="v => { if(!v) _selectedBooking = null; }" Booking="_selectedBooking" />
 
 

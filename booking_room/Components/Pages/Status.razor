@@ -822,7 +822,7 @@
         }
         
         if (!_disposed) {
-            try { InvokeAsync(StateHasChanged); } catch {}
+            try { await InvokeAsync(StateHasChanged); } catch {}
         }
     }
     

@@ -10,13 +10,14 @@
 
 .navbar-brand-logo {
     display: block;
-    max-width: 140px;
-    height: auto;
+    max-height: 32px;
+    width: auto;
+    object-fit: contain;
 }
 
 .navbar-brand-logo svg {
-    width: 100%;
-    height: auto;
+    max-height: 32px;
+    width: auto;
     display: block;
 }
 
@@ -76,4 +77,27 @@
         align-items: center;
         justify-content: center;
     }
+}
+
+.btn-sidebar-new-booking {
+    width: 100%;
+    height: 42px;
+    border-radius: var(--radius-full, 999px);
+    background: var(--color-primary, #F5A623);
+    color: var(--color-navy, #0F172A);
+    font-size: var(--fs-sm, 14px);
+    font-weight: var(--fw-bold, 700);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: var(--motion-fast);
+    box-shadow: 0 4px 12px rgba(245, 166, 35, 0.25);
+}
+.btn-sidebar-new-booking:hover {
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(245, 166, 35, 0.35);
 }
