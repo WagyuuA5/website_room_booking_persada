@@ -264,6 +264,28 @@
     }
 </style>
 
+<AppModal Visible="@(_selectedReq != null)" VisibleChanged="v => { if(!v) _selectedReq = null; }" Title="Detail Permintaan Fasilitas" Size="md">
+    <BodyContent>
+        @if(_selectedRequest != null)
+        {
+            <div style="display: flex; flex-direction: column; gap: 12px; padding-top: 8px;">
+                <div>
+                    <label style="font-size: 12px; color: #6B7280;">Nama Fasilitas</label>
+                    <div style="font-weight: 600;">@_selectedReq.RoomName</div>
+                </div>
+                <div>
+                    <label style="font-size: 12px; color: #6B7280;">Status</label>
+                    <div style="font-weight: 600;">@_selectedReq.Status</div>
+                </div>
+            </div>
+        }
+    </BodyContent>
+    <FooterContent>
+        <button class="btn-secondary" @onclick="() => /* removed */">Tutup</button>
+    </FooterContent>
+</AppModal>
+
+
 <div class="facility-request-view">
     <div class="facility-header">
         <div>
@@ -340,27 +362,27 @@
             <div style="display: flex; flex-direction: column; gap: 16px;">
                 <div>
                     <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #0F1F3D;">Detail Permintaan</h3>
-                    <p style="margin: 4px 0 0 0; color: #6B7280; font-size: 0.875rem;">ID: @_selectedRequest.RequestId</p>
+                    <p style="margin: 4px 0 0 0; color: #6B7280; font-size: 0.875rem;">ID: @_selectedReq.RequestId</p>
                 </div>
                 
                 <div style="display: grid; grid-template-columns: 1fr; gap: 12px; background: #F8FAFC; padding: 16px; border-radius: 12px; border: 1px solid #E2E8F0;">
                     <div>
                         <span style="display: block; font-size: 0.75rem; font-weight: 700; color: #9CA3AF; margin-bottom: 2px;">FASILITAS</span>
-                        <span style="font-size: 0.875rem; font-weight: 700; color: #1F2937;">@_selectedRequest.Facility</span>
+                        <span style="font-size: 0.875rem; font-weight: 700; color: #1F2937;">@_selectedReq.Facility</span>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                         <div>
                             <span style="display: block; font-size: 0.75rem; font-weight: 700; color: #9CA3AF; margin-bottom: 2px;">RUANGAN</span>
-                            <span style="font-size: 0.875rem; font-weight: 600; color: #4B5563;">@_selectedRequest.RoomName</span>
+                            <span style="font-size: 0.875rem; font-weight: 600; color: #4B5563;">@_selectedReq.RoomName</span>
                         </div>
                         <div>
                             <span style="display: block; font-size: 0.75rem; font-weight: 700; color: #9CA3AF; margin-bottom: 2px;">STATUS</span>
-                            <span style="font-size: 0.875rem; font-weight: 700; color: #1F2937;">@_selectedRequest.Status</span>
+                            <span style="font-size: 0.875rem; font-weight: 700; color: #1F2937;">@_selectedReq.Status</span>
                         </div>
                     </div>
                     <div>
                         <span style="display: block; font-size: 0.75rem; font-weight: 700; color: #9CA3AF; margin-bottom: 2px;">TANGGAL & WAKTU</span>
-                        <span style="font-size: 0.875rem; font-weight: 600; color: #4B5563;">@_selectedRequest.Date • @_selectedRequest.TimeSlot</span>
+                        <span style="font-size: 0.875rem; font-weight: 600; color: #4B5563;">@_selectedReq.Date • @_selectedReq.TimeSlot</span>
                     </div>
                     <div>
                         <span style="display: block; font-size: 0.75rem; font-weight: 700; color: #9CA3AF; margin-bottom: 2px;">PEMOHON</span>
@@ -376,6 +398,9 @@
 }
 
 @code {
+    private FacilityRequest? _selectedReq;
+    private void SelectReq(FacilityRequest req) => _selectedReq = req;
+
     private bool _showRequestDetail = false;
     private FacilityRequest? _selectedRequest;
 

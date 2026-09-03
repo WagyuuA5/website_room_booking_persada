@@ -1,91 +1,21 @@
 @namespace booking_room.Components.Shared
-@using booking_room.Components.Models
-@using booking_room.Services
-@inject NavigationManager Navigation
-@inject IModalService ModalService
-
-<AppModal Visible="@Visible" Title="Menunggu Persetujuan" Size="md" ShowCloseButton="true" OnClose="OnClose">
+<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Title="Menunggu Persetujuan" Size="md">
     <BodyContent>
-        <div class="pending-approvals-list">
-            @foreach (var item in PendingItems)
-            {
-                <div class="pending-approval-item">
-                    <div class="pending-approval-icon icon-blue">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M19 2H5C3.9 2 3 2.9 3 4V20C3 21.1 3.9 22 5 22H19C20.1 22 21 21.1 21 20V4C21 2.9 20.1 2 19 2ZM15 20H9V12H15V20Z" fill="currentColor" stroke="none"/>
-                        </svg>
-                    </div>
-                    <div class="pending-approval-content">
-                        <div class="pending-approval-room">@item.RoomName</div>
-                        <div class="pending-approval-meta">
-                            <span>@item.Date • @item.TimeSlot</span>
-                        </div>
-                        <div class="pending-approval-purpose">@item.Purpose</div>
-                    </div>
-                </div>
-            }
+        <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="padding:16px; border:1px solid var(--color-warning); border-radius:var(--radius-sm); background:#FFFBEB;">
+                <h4 style="margin:0 0 4px 0; color:var(--color-warning);">Auditorium Utama</h4>
+                <p style="margin:0; font-size:12px; color:var(--color-neutral-600);">25 Okt 2026 • 09:00 - 12:00</p>
+            </div>
         </div>
     </BodyContent>
+    <FooterContent>
+        <button class="btn-secondary" @onclick="Close" style="padding:8px 16px; background:transparent; border:1px solid var(--color-neutral-400); border-radius:var(--radius-full); cursor:pointer;">Tutup</button>
+    </FooterContent>
 </AppModal>
-
-<style>
-    .pending-approvals-list {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-    .pending-approval-item {
-        display: flex;
-        align-items: flex-start;
-        gap: 12px;
-        padding: 12px;
-        background: #F8FAFC;
-        border: 1px solid #E2E8F0;
-        border-radius: 12px;
-    }
-    body.dark-mode .pending-approval-item {
-        background: rgba(15, 23, 42, 0.4);
-        border-color: rgba(255, 255, 255, 0.08);
-    }
-    .pending-approval-icon {
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
-        background: #EFF6FF;
-        color: #1F5D9A;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-    body.dark-mode .pending-approval-icon {
-        background: rgba(31, 93, 154, 0.3);
-        color: #93C5FD;
-    }
-    .pending-approval-content { flex: 1; min-width: 0; }
-    .pending-approval-room {
-        font-size: 0.875rem;
-        font-weight: 700;
-        color: var(--persada-navy-900, #0F1F3D);
-    }
-    body.dark-mode .pending-approval-room { color: #F8FAFC; }
-    .pending-approval-meta {
-        font-size: 0.72rem;
-        color: #6B7280;
-        margin: 2px 0;
-    }
-    .pending-approval-purpose {
-        font-size: 0.75rem;
-        color: #4B5563;
-    }
-    body.dark-mode .pending-approval-purpose { color: #CBD5E1; }
-</style>
 
 @code {
     [Parameter] public bool Visible { get; set; }
-    [Parameter] public EventCallback OnClose { get; set; }
-
-    private List<BookingItem> PendingItems = BookingDataStore.AllBookings.Where(b => b.Status == "pending").ToList();
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    private async Task HandleVisibleChanged(bool value) { Visible = value; await VisibleChanged.InvokeAsync(value); }
+    private async Task Close() { await HandleVisibleChanged(false); }
 }
-
-

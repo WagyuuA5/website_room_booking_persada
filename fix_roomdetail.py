@@ -1,4 +1,7 @@
-@namespace booking_room.Components.Shared
+﻿import os
+
+path = 'booking_room/Components/Shared/RoomDetailsModal.razor'
+new_content = """@namespace booking_room.Components.Shared
 @using booking_room.Components.Models
 
 <AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Size="xl" ShowHeader="false" ShowFooter="false" NoPadding="true">
@@ -296,3 +299,7 @@
         _ => "Tidak Tersedia"
     };
 }
+"""
+with open(path, 'w', encoding='utf-8') as f:
+    f.write(new_content)
+print("RoomDetailsModal.razor updated.")

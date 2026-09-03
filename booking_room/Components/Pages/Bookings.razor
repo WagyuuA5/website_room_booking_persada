@@ -11,89 +11,106 @@
     <!-- Header -->
     <div class="bookings-header-row">
         <div>
-            <h1 class="bookings-title">Katalog & Reservasi Ruangan</h1>
-            <p class="bookings-sub">Pilih ruangan yang sesuai dengan kebutuhan rapat, workshop, atau kolaborasi tim Anda.</p>
+            <h1 class="bookings-title">Cari Ruangan</h1>
+            <p class="bookings-sub">Pilih ketersediaan, kapasitas, dan fasilitas untuk menyaring ruangan yang tepat sesuai kebutuhan perusahaan Anda.</p>
         </div>
     </div>
 
-    <!-- Search and Capacity Filters -->
-    <div class="bookings-filter-bar">
+    <!-- Search & Filter Card -->
+    <div class="search-filter-card">
+        <label class="filter-group-label">CARI RUANGAN</label>
         <div class="search-input-wrap">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
-            <input type="text" class="bookings-search-input" placeholder="Cari ruangan berdasarkan nama, lantai, atau fasilitas..."
+            <input type="text" class="bookings-search-input" placeholder="Cari berdasarkan nama ruangan, gedung, atau lantai..."
                    value="@_searchQuery" @oninput="OnSearchInput" />
         </div>
-        <div class="capacity-filter-wrap">
-            <select class="capacity-select" @bind="_filterCapacity" @bind:after="ApplyFilter">
-                <option value="0">Semua Kapasitas</option>
-                <option value="4">Min. 4 Orang</option>
-                <option value="8">Min. 8 Orang</option>
-                <option value="15">Min. 15 Orang</option>
-                <option value="30">Min. 30 Orang</option>
-            </select>
+        
+        <div class="filter-3col-row">
+            <div class="filter-col">
+                <label class="filter-group-label">TANGGAL</label>
+                <div class="filter-input-wrap">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <input type="text" class="filter-input" placeholder="25/10/2023" />
+                </div>
+            </div>
+            <div class="filter-col">
+                <label class="filter-group-label">WAKTU & DURASI</label>
+                <div class="filter-input-wrap double-wrap">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    <input type="text" class="filter-input time-input" placeholder="09:00" />
+                    <select class="filter-input duration-select">
+                        <option>1j</option>
+                        <option>2j</option>
+                        <option>3j</option>
+                    </select>
+                </div>
+            </div>
+            <div class="filter-col">
+                <label class="filter-group-label">PESERTA</label>
+                <div class="filter-input-wrap">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    <input type="number" min="0" class="filter-input" placeholder="0" @bind="_filterCapacity" @bind:after="ApplyFilter" />
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- CASE 2: Rooms Horizontal Carousel Grid with Scroll-Snap & Fade Edge -->
-    <div class="rooms-carousel-section">
-        <div class="rooms-carousel-header">
-            <h3 class="section-heading">Ruangan Unggulan</h3>
-            <span class="carousel-hint">Geser horizontal untuk melihat ruangan lain &rarr;</span>
-        </div>
-
-        <div class="rooms-carousel-wrapper">
-            <div class="rooms-horizontal-track">
-                @foreach (var room in _filteredRooms)
-                {
-                    <div class="room-catalog-card @(room.Status == "available" ? "card-available" : "card-disabled")" 
-                         @onclick="() => ViewDetail(room)">
-                        <div class="room-card-photo-box">
-                            <img src="@room.PhotoUrl" alt="@room.Name" class="room-card-photo" loading="lazy" />
-                            <div class="room-status-badge @(room.Status == "available" ? "badge-available" : "badge-booked")">
-                                @(room.Status == "available" ? "Tersedia" : "Dipesan")
-                            </div>
+    <!-- 3-Column Grid -->
+    <div class="rooms-grid-3col">
+        @if (LoadingState.IsLoading)
+        {
+            @for (int i = 0; i < 6; i++)
+            {
+                <SkeletonCard />
+            }
+        }
+        else
+        {
+            @foreach (var room in _filteredRooms)
+            {
+                <div class="room-catalog-card @(room.Status == "booked" ? "card-booked" : "")" 
+                     @onclick="() => ViewDetail(room)">
+                    <div class="room-card-photo-box">
+                        <img src="@room.PhotoUrl" alt="@room.Name" class="room-card-photo" loading="lazy" />
+                        <div class="room-status-badge @GetStatusBadgeClass(room.Status)">
+                            <div class="status-dot"></div>
+                            @GetStatusText(room.Status)
                         </div>
-                        <div class="room-card-body">
+                    </div>
+                    <div class="room-card-body">
+                        <div class="room-card-title-row">
                             <h4 class="room-card-title">@room.Name</h4>
-                            <div class="room-card-meta">
-                                <span>👥 Kapasitas @room.Capacity Orang</span>
-                                <span>•</span>
-                                <span>📍 @room.Floor</span>
-                            </div>
-                            <p class="room-card-desc">@room.Description</p>
-                            <div class="room-card-amenities">
-                                @foreach (var am in room.Amenities.Take(3))
-                                {
-                                    <span class="amenity-chip">@am</span>
-                                }
+                            <div class="room-capacity-meta">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                                <span>@room.Capacity</span>
                             </div>
                         </div>
-                        <div class="room-card-footer">
-                            <button class="btn-card-detail" @onclick="() => ViewDetail(room)" @onclick:stopPropagation="true">
-                                Detail & Denah
-                            </button>
-                            @if (room.Status == "available")
+                        <p class="room-card-desc">@room.Description</p>
+                        <div class="room-card-amenities">
+                            @foreach (var am in room.Amenities.Take(3))
                             {
-                                <button class="btn-card-book" @onclick="() => ProceedToBook(room)" @onclick:stopPropagation="true">
-                                    Pesan
-                                </button>
+                                <span class="amenity-chip">@am</span>
                             }
                         </div>
                     </div>
-                }
-            </div>
-            <div class="carousel-fade-edge"></div>
-        </div>
+                    <div class="room-card-footer">
+                        <button class="btn-text-link" @onclick="() => ViewDetail(room)" @onclick:stopPropagation="true">
+                            LIHAT DETAIL
+                        </button>
+                    </div>
+                </div>
+            }
+        }
     </div>
 </div>
 
-<!-- Modals -->
 @if (_isRoomDetailVisible && _selectedRoomForDetail != null)
 {
     <RoomDetailsModal Visible="_isRoomDetailVisible" 
+                      VisibleChanged="v => _isRoomDetailVisible = v"
                       Room="_selectedRoomForDetail" 
                       OnClose="CloseDetail" 
                       OnBook="() => ProceedToBook(_selectedRoomForDetail)" />
@@ -113,146 +130,145 @@
         padding: 24px;
         display: flex;
         flex-direction: column;
-        gap: 20px;
+        gap: 24px;
     }
 
     .bookings-title {
-        font-size: 1.75rem;
-        font-weight: 800;
-        color: var(--persada-navy-900, #0F1F3D);
-        margin: 0 0 4px 0;
+        font-size: var(--fs-h1, 32px);
+        line-height: var(--lh-h1, 40px);
+        font-weight: var(--fw-bold, 700);
+        color: var(--color-navy, #0F172A);
+        margin: 0 0 8px 0;
         letter-spacing: -0.02em;
     }
-    body.dark-mode .bookings-title { color: #F8FAFC; }
+    body.dark-mode .bookings-title { color: var(--color-white, #FFFFFF); }
+
     .bookings-sub {
-        font-size: 0.875rem;
-        color: var(--persada-text-secondary, #6B7280);
+        font-size: var(--fs-body, 16px);
+        line-height: var(--lh-body, 24px);
+        color: var(--color-neutral-600, #6E6E73);
         margin: 0;
     }
 
-    .bookings-filter-bar {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-    }
-    .search-input-wrap {
-        position: relative;
-        flex: 1;
-        max-width: 420px;
-        height: 42px;
-        display: flex;
-        align-items: center;
-    }
-    .search-input-wrap svg {
-        position: absolute;
-        left: 14px;
-        color: #9CA3AF;
-        pointer-events: none;
-    }
-    .bookings-search-input {
-        width: 100%;
-        height: 42px;
-        padding: 0 14px 0 40px;
-        border: 1.5px solid var(--color-brand-gray-border, #E5E7EB);
-        border-radius: 12px;
-        font-size: 0.875rem;
-        background: var(--surface-card, #FFFFFF);
-        color: var(--persada-text-primary, #111827);
-        outline: none;
-    }
-    body.dark-mode .bookings-search-input {
-        background: #1C1C1E;
-        border-color: rgba(255, 255, 255, 0.1);
-        color: #F8FAFC;
-    }
-    .capacity-select {
-        height: 42px;
-        padding: 0 32px 0 14px;
-        border: 1.5px solid var(--color-brand-gray-border, #E5E7EB);
-        border-radius: 12px;
-        font-size: 0.875rem;
-        font-weight: 600;
-        background: var(--surface-card, #FFFFFF);
-        color: var(--persada-text-primary, #111827);
-        outline: none;
-    }
-    body.dark-mode .capacity-select {
-        background: #1C1C1E;
-        border-color: rgba(255, 255, 255, 0.1);
-        color: #F8FAFC;
-    }
-
-    /* CASE 2: Horizontal Carousel Track */
-    .rooms-carousel-section {
+    /* Search & Filter Card */
+    .search-filter-card {
+        background: var(--color-white, #FFFFFF);
+        border: 1px solid var(--color-neutral-200, #E8E8ED);
+        border-radius: var(--radius-md, 14px);
+        padding: 20px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.04);
         display: flex;
         flex-direction: column;
-        gap: 12px;
-        margin-top: 8px;
-    }
-    .rooms-carousel-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .section-heading {
-        font-size: 1.125rem;
-        font-weight: 700;
-        color: var(--persada-navy-900, #0F1F3D);
-        margin: 0;
-    }
-    body.dark-mode .section-heading { color: #F8FAFC; }
-    .carousel-hint {
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: #1F5D9A;
-    }
-    body.dark-mode .carousel-hint { color: #60A5FA; }
-
-    .rooms-carousel-wrapper {
-        position: relative;
-        width: 100%;
-    }
-    .rooms-horizontal-track {
-        display: flex;
         gap: 16px;
-        overflow-x: auto;
-        scroll-snap-type: x mandatory;
-        padding-bottom: 8px;
-        scrollbar-width: none;
     }
-    .rooms-horizontal-track::-webkit-scrollbar {
-        display: none;
+    body.dark-mode .search-filter-card {
+        background: var(--color-neutral-900, #1D1D1F);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .filter-group-label {
+        font-size: var(--fs-xs, 12px);
+        font-weight: var(--fw-semibold, 600);
+        color: var(--color-neutral-600, #6E6E73);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .search-input-wrap, .filter-input-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+        background: var(--color-neutral-100, #F5F5F7);
+        border-radius: var(--radius-sm, 8px);
+        border: 1px solid transparent;
+        transition: var(--motion-fast);
+    }
+    body.dark-mode .search-input-wrap, body.dark-mode .filter-input-wrap {
+        background: rgba(255,255,255,0.05);
+    }
+    .search-input-wrap:focus-within, .filter-input-wrap:focus-within {
+        border-color: var(--color-primary, #F5A623);
+    }
+
+    .search-input-wrap svg, .filter-input-wrap svg {
+        position: absolute;
+        left: 12px;
+        color: var(--color-neutral-400, #86868B);
+        pointer-events: none;
+    }
+
+    .bookings-search-input, .filter-input {
+        width: 100%;
+        height: 44px;
+        padding: 0 14px 0 38px;
+        background: transparent;
+        border: none;
+        outline: none;
+        font-size: var(--fs-sm, 14px);
+        color: var(--color-navy, #0F172A);
+    }
+    body.dark-mode .bookings-search-input, body.dark-mode .filter-input { color: var(--color-white, #FFFFFF); }
+
+    .filter-3col-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+    }
+    
+    .double-wrap {
+        display: flex;
+    }
+    .time-input {
+        flex: 1;
+    }
+    .duration-select {
+        width: 60px;
+        padding-left: 8px;
+        border-left: 1px solid var(--color-neutral-200, #E8E8ED);
+        cursor: pointer;
+    }
+    body.dark-mode .duration-select { border-color: rgba(255,255,255,0.1); }
+
+    /* Grid */
+    .rooms-grid-3col {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+    @@media (max-width: 992px) {
+        .rooms-grid-3col { grid-template-columns: repeat(2, 1fr); }
+    }
+    @@media (max-width: 768px) {
+        .filter-3col-row { grid-template-columns: 1fr; }
+        .rooms-grid-3col { grid-template-columns: 1fr; }
     }
 
     .room-catalog-card {
-        flex: 0 0 auto;
-        width: 260px;
-        min-height: 380px;
-        scroll-snap-align: start;
-        background: var(--surface-card, #FFFFFF);
-        border: 1.5px solid var(--color-brand-gray-border, #E5E7EB);
-        border-radius: 16px;
+        background: var(--color-white, #FFFFFF);
+        border: 1px solid var(--color-neutral-200, #E8E8ED);
+        border-radius: var(--radius-md, 14px);
         overflow: hidden;
         display: flex;
         flex-direction: column;
+        transition: var(--motion-fast);
         cursor: pointer;
-        transition: all 0.2s ease;
     }
     body.dark-mode .room-catalog-card {
-        background: #1C1C1E;
+        background: var(--color-neutral-900, #1D1D1F);
         border-color: rgba(255, 255, 255, 0.1);
     }
     .room-catalog-card:hover {
-        border-color: #CBD5E1;
-        box-shadow: 0 8px 24px rgba(15, 31, 61, 0.08);
         transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        border-color: var(--color-neutral-400, #86868B);
     }
 
     .room-card-photo-box {
         position: relative;
-        width: 100%;
-        height: 140px;
-        overflow: hidden;
+        height: 160px;
+        background: var(--color-neutral-100, #F5F5F7);
     }
     .room-card-photo {
         width: 100%;
@@ -261,197 +277,188 @@
     }
     .room-status-badge {
         position: absolute;
-        top: 10px;
-        right: 10px;
-        font-size: 0.6875rem;
-        font-weight: 700;
-        padding: 2px 8px;
-        border-radius: 999px;
+        top: 12px;
+        left: 12px;
+        padding: 4px 10px;
+        border-radius: var(--radius-full, 999px);
+        font-size: var(--fs-xs, 12px);
+        font-weight: var(--fw-semibold, 600);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(4px);
+        color: var(--color-navy, #0F172A);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    .badge-available { background: #DCFCE7; color: #15803D; }
-    .badge-booked { background: #FEF3C7; color: #D97706; }
+    body.dark-mode .room-status-badge {
+        background: rgba(30, 30, 30, 0.95);
+        color: var(--color-white, #FFFFFF);
+    }
+    
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .badge-available .status-dot { background: var(--color-success, #34D399); }
+    .badge-booked .status-dot { background: var(--color-warning, #F59E0B); }
+    .badge-unavailable .status-dot { background: var(--color-danger, #EF4444); }
 
     .room-card-body {
-        padding: 14px;
+        padding: 16px;
         flex: 1;
+    }
+    .room-card-title-row {
         display: flex;
-        flex-direction: column;
-        gap: 6px;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 6px;
     }
     .room-card-title {
-        font-size: 0.9375rem;
-        font-weight: 700;
-        color: var(--persada-navy-900, #0F1F3D);
+        font-size: var(--fs-h4, 18px);
+        line-height: var(--lh-h4, 24px);
+        font-weight: var(--fw-bold, 700);
         margin: 0;
+        color: var(--color-navy, #0F172A);
     }
-    body.dark-mode .room-card-title { color: #F8FAFC; }
-    .room-card-meta {
-        font-size: 0.72rem;
-        color: var(--persada-text-secondary, #6B7280);
+    body.dark-mode .room-card-title { color: var(--color-white, #FFFFFF); }
+    
+    .room-capacity-meta {
         display: flex;
-        gap: 6px;
+        align-items: center;
+        gap: 4px;
+        font-size: var(--fs-sm, 14px);
+        font-weight: var(--fw-semibold, 600);
+        color: var(--color-neutral-600, #6E6E73);
     }
+
     .room-card-desc {
-        font-size: 0.75rem;
-        color: var(--persada-text-secondary, #64748B);
-        margin: 0;
-        line-height: 1.35;
+        font-size: var(--fs-sm, 14px);
+        line-height: var(--lh-sm, 20px);
+        color: var(--color-neutral-600, #6E6E73);
+        margin: 0 0 12px 0;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
     }
+
     .room-card-amenities {
         display: flex;
-        gap: 4px;
         flex-wrap: wrap;
-        margin-top: auto;
+        gap: 6px;
     }
     .amenity-chip {
-        font-size: 0.625rem;
-        background: #F1F5F9;
-        color: #475569;
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-weight: 600;
+        font-size: 11px;
+        font-weight: var(--fw-medium, 500);
+        padding: 2px 8px;
+        border-radius: var(--radius-sm, 8px);
+        background: var(--color-neutral-100, #F5F5F7);
+        color: var(--color-neutral-600, #6E6E73);
     }
-    body.dark-mode .amenity-chip {
-        background: rgba(255, 255, 255, 0.08);
-        color: #CBD5E1;
-    }
+    body.dark-mode .amenity-chip { background: rgba(255,255,255,0.08); }
 
     .room-card-footer {
-        padding: 10px 14px 14px;
+        padding: 12px 16px;
+        border-top: 1px solid var(--color-neutral-200, #E8E8ED);
         display: flex;
-        gap: 8px;
-        border-top: 1px solid var(--divider-subtle, #F1F5F9);
+        justify-content: flex-end;
     }
-    body.dark-mode .room-card-footer { border-color: rgba(255, 255, 255, 0.08); }
-    .btn-card-detail {
-        flex: 1;
-        height: 34px;
-        border-radius: 999px;
-        background: transparent;
-        border: 1px solid #E2E8F0;
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: var(--persada-navy-900, #0F1F3D);
-        cursor: pointer;
-    }
-    body.dark-mode .btn-card-detail {
-        border-color: rgba(255, 255, 255, 0.15);
-        color: #F8FAFC;
-    }
-    .btn-card-book {
-        flex: 1;
-        height: 34px;
-        border-radius: 999px;
-        background: #1F5D9A;
+    body.dark-mode .room-card-footer { border-color: rgba(255,255,255,0.1); }
+    
+    .btn-text-link {
+        background: none;
         border: none;
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: #FFFFFF;
+        font-size: var(--fs-xs, 12px);
+        font-weight: var(--fw-bold, 700);
+        color: var(--color-info, #3B82F6);
         cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 0;
     }
-    .btn-card-book:hover { background: #164879; }
-
-    .carousel-fade-edge {
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 8px;
-        width: 32px;
-        background: linear-gradient(to right, transparent, var(--surface-card, #FFFFFF));
-        pointer-events: none;
-        border-radius: 0 16px 16px 0;
-    }
-    body.dark-mode .carousel-fade-edge {
-        background: linear-gradient(to right, transparent, #0F172A);
-    }
+    .btn-text-link:hover { text-decoration: underline; }
 </style>
 
 @code {
-    private string _searchQuery = string.Empty;
-    private int? _filterCapacity = 0;
+    private string _searchQuery = "";
+    private int _filterCapacity = 0;
+    private List<RoomItem> _allRooms = new();
+    private IEnumerable<RoomItem> _filteredRooms = Array.Empty<RoomItem>();
+
     private bool _isRoomDetailVisible = false;
-    private bool _isConfirmBookingVisible = false;
     private RoomItem? _selectedRoomForDetail;
+
+    private bool _isConfirmBookingVisible = false;
     private RoomItem? _selectedRoomForBooking;
+    
     private bool _disposed;
+    private System.Threading.CancellationTokenSource? _cts;
 
-    private readonly List<RoomItem> _allRooms = new()
+    protected override async Task OnInitializedAsync()
     {
-        new("1", "Executive Boardroom A", 12, "Ruang rapat unggulan yang dirancang untuk pertemuan eksekutif tingkat tinggi. Dilengkapi konferensi video 4K dan audio terintegrasi.", "available", new() { "AC", "Proyektor", "Konferensi Video", "Papan Tulis" }, "Lantai 3", "https://images.unsplash.com/photo-1517502884422-41eaead166d4?w=400&q=80"),
-        new("2", "Training Room B", 30, "Ruang pelatihan kapasitas besar dengan konfigurasi fleksibel dan layar ganda.", "available", new() { "AC", "Proyektor", "Papan Tulis", "Sistem Audio" }, "Lantai 2", "https://images.unsplash.com/photo-1572025442646-866d16c84a54?w=400&q=80"),
-        new("3", "Huddle Space C", 6, "Ruang kolaborasi kecil yang nyaman untuk diskusi tim cepat.", "available", new() { "AC", "Papan Tulis" }, "Lantai 1", "https://images.unsplash.com/photo-1556761175-5973dc0f32b7?w=400&q=80"),
-        new("4", "Studio Webinar", 15, "Ruang siaran langsung dan rekaman dengan pencahayaan profesional.", "booked", new() { "AC", "Konferensi Video", "Proyektor" }, "Lantai 4", "https://images.unsplash.com/photo-1600508774634-4e11d34730e2?w=400&q=80"),
-        new("5", "Focus Room Alpha", 4, "Ruang sunyi untuk kerja konsentrasi tinggi atau sesi 1-on-1.", "available", new() { "AC" }, "Lantai 1", "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=80"),
-        new("6", "Meeting Room Prime", 8, "Ruang rapat standar dengan peralatan presentasi lengkap.", "available", new() { "AC", "Proyektor", "Aksesibilitas" }, "Lantai 2", "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400&q=80")
-    };
-
-    private List<RoomItem> _filteredRooms = new();
-    private System.Timers.Timer? _debounceTimer;
-
-    protected override void OnInitialized()
-    {
-        _filteredRooms = _allRooms.ToList();
+        _cts = new System.Threading.CancellationTokenSource();
         LoadingState.OnChange += SafeStateHasChanged;
         
-        _debounceTimer = new System.Timers.Timer(350);
-        _debounceTimer.AutoReset = false;
-        _debounceTimer.Elapsed += (sender, args) =>
+        try {
+            await LoadDataAsync(_cts.Token);
+        } catch (TaskCanceledException) {}
+    }
+    
+    private async Task LoadDataAsync(System.Threading.CancellationToken token)
+    {
+        LoadingState.SetLoading(true);
+        // Simulasi fetch data async
+        await Task.Delay(400, token);
+                _allRooms = new List<RoomItem>
         {
-            if (_disposed) return;
-            try
-            {
-                InvokeAsync(() =>
-                {
-                    if (!_disposed)
-                    {
-                        ApplyFilter();
-                        StateHasChanged();
-                    }
-                });
-            }
-            catch (ObjectDisposedException) { }
-            catch (InvalidOperationException) { }
+            new("1", "Alpha Boardroom", 12, "Lantai 3", "available", new List<string>{"Proyektor","Papan Tulis"}, "https://images.unsplash.com/photo-1497215842964-222b430dc094?auto=format&fit=crop&w=400&q=80", "Ruang meeting direksi dengan pemandangan kota."),
+            new("2", "Beta Meeting", 8, "Lantai 2", "booked", new List<string>{"TV LED"}, "https://images.unsplash.com/photo-1431540015160-0295aaa24f7f?auto=format&fit=crop&w=400&q=80", "Ruang meeting standar."),
+            new("3", "Gamma Discussion", 4, "Lantai 2", "unavailable", new List<string>{"Papan Tulis"}, "https://images.unsplash.com/photo-1497366754888-5a456d4b3447?auto=format&fit=crop&w=400&q=80", "Cocok untuk diskusi kelompok kecil."),
+            new("4", "Delta Studio", 20, "Lantai 1", "available", new List<string>{"Audio System"}, "https://images.unsplash.com/photo-1462826303086-329426d1aef5?auto=format&fit=crop&w=400&q=80", "Ruangan kedap suara.")
         };
+        
+        // Cannot modify init-only, we rely on default data or reflection (omitting for dummy UI)
+        
+        ApplyFilter();
+        LoadingState.SetLoading(false);
     }
 
     private void SafeStateHasChanged()
     {
         if (_disposed) return;
-        try
-        {
-            InvokeAsync(StateHasChanged);
-        }
-        catch (ObjectDisposedException) { }
-        catch (InvalidOperationException) { }
+        InvokeAsync(StateHasChanged);
     }
+
+    private System.Timers.Timer? _debounceTimer;
 
     private void OnSearchInput(ChangeEventArgs e)
     {
-        _searchQuery = e.Value?.ToString() ?? string.Empty;
-        _debounceTimer?.Stop();
-        _debounceTimer?.Start();
+        _searchQuery = e.Value?.ToString() ?? "";
+        if (_debounceTimer == null)
+        {
+            _debounceTimer = new System.Timers.Timer(350);
+            _debounceTimer.AutoReset = false;
+            _debounceTimer.Elapsed += (s, args) =>
+            {
+                if (_disposed) return;
+                InvokeAsync(() => { ApplyFilter(); StateHasChanged(); });
+            };
+        }
+        _debounceTimer.Stop();
+        _debounceTimer.Start();
     }
 
     private void ApplyFilter()
     {
-        _filteredRooms = _allRooms.Where(room =>
+        var q = _allRooms.AsEnumerable();
+        if (!string.IsNullOrWhiteSpace(_searchQuery))
         {
-            if (!string.IsNullOrWhiteSpace(_searchQuery))
-            {
-                var q = _searchQuery.ToLower();
-                if (!room.Name.ToLower().Contains(q) && !room.Floor.ToLower().Contains(q))
-                    return false;
-            }
-
-            if (_filterCapacity.HasValue && _filterCapacity > 0 && room.Capacity < _filterCapacity.Value)
-                return false;
-
-            return true;
-        }).ToList();
+            q = q.Where(r => r.Name.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                             r.Floor.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase));
+        }
+        if (_filterCapacity > 0)
+        {
+            q = q.Where(r => r.Capacity >= _filterCapacity);
+        }
+        _filteredRooms = q.ToList();
     }
 
     private void ViewDetail(RoomItem room)
@@ -468,7 +475,7 @@
 
     private void ProceedToBook(RoomItem room)
     {
-        CloseDetail();
+        _isRoomDetailVisible = false;
         _selectedRoomForBooking = room;
         _isConfirmBookingVisible = true;
     }
@@ -478,11 +485,25 @@
         _isConfirmBookingVisible = false;
         _selectedRoomForBooking = null;
     }
+    
+    private string GetStatusBadgeClass(string status) => status switch {
+        "available" => "badge-available",
+        "booked" => "badge-booked",
+        _ => "badge-unavailable"
+    };
+    
+    private string GetStatusText(string status) => status switch {
+        "available" => "Tersedia",
+        "booked" => "Dipesan (2j lagi)",
+        _ => "Tidak Tersedia"
+    };
 
     public void Dispose()
     {
         _disposed = true;
-        LoadingState.OnChange -= SafeStateHasChanged;
+        _cts?.Cancel();
+        _cts?.Dispose();
         _debounceTimer?.Dispose();
+        LoadingState.OnChange -= SafeStateHasChanged;
     }
 }

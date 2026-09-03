@@ -5,6 +5,7 @@
 @using booking_room.Services
 @inject IToastService ToastService
 @inject NavigationManager Navigation
+@implements IDisposable
 
 <PageTitle>Status Pemesanan — Persada Ruangan</PageTitle>
 
@@ -788,6 +789,9 @@
 </style>
 
 @code {
+    private bool _disposed;
+    private System.Threading.CancellationTokenSource? _cts;
+    
     private string _searchQuery = "";
     private string activeFilter = "Semua Status";
     private readonly string[] _statusFilterOptions = new[] { "Semua Status", "Menunggu Persetujuan", "Disetujui", "Ditolak", "Dibatalkan", "Selesai" };
@@ -798,20 +802,31 @@
     private List<BookingItem> _allBookings = new();
     private BookingItem? selectedBooking;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        LoadData();
+        _cts = new System.Threading.CancellationTokenSource();
+        try {
+            await LoadDataAsync(_cts.Token);
+        } catch (TaskCanceledException) {}
     }
 
-    private void LoadData()
+    private async Task LoadDataAsync(System.Threading.CancellationToken token)
     {
+        // Add fake delay to simulate async api
+        await Task.Delay(200, token);
         _allBookings = BookingDataStore.AllBookings.ToList();
 
         if (selectedBooking == null && _allBookings.Count > 0)
         {
             selectedBooking = _allBookings[0];
         }
+        
+        if (!_disposed) {
+            try { InvokeAsync(StateHasChanged); } catch {}
+        }
     }
+    
+    private void LoadData() { } // Fallback for RefreshData if it calls LoadData() synchronously, wait, let's also update RefreshData
 
     private IEnumerable<BookingItem> FilteredBookings
     {
@@ -853,10 +868,17 @@
         if (first != null) selectedBooking = first;
     }
 
-    private void RefreshData()
+    private async Task RefreshData()
     {
-        LoadData();
-        ToastService.Success("Data Diperbarui", "Status pemesanan berhasil disinkronkan.");
+        if (_cts != null) {
+            _cts.Cancel();
+            _cts.Dispose();
+        }
+        _cts = new System.Threading.CancellationTokenSource();
+        try {
+            await LoadDataAsync(_cts.Token);
+            ToastService.Success("Data Diperbarui", "Status pemesanan berhasil disinkronkan.");
+        } catch (TaskCanceledException) {}
     }
 
     private void OpenCancelModal() => isCancelModalOpen = true;
@@ -884,6 +906,15 @@
         isModifyModalOpen = false;
         ToastService.Success("Perubahan Disimpan", "Detail reservasi berhasil diperbarui.");
     }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        if (_cts != null)
+        {
+            _cts.Cancel();
+            _cts.Dispose();
+            _cts = null;
+        }
+    }
 }
-
-

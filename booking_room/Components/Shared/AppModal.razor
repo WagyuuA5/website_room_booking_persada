@@ -33,8 +33,23 @@
                     }
                     else
                     {
-                        <div class="modal-default-header">
-                            <h3 id="modal-title-heading" class="modal-heading-text">@Title</h3>
+                        <div class="modal-default-header" style="display: flex; align-items: center; gap: 12px;">
+                            @if (IconContent != null)
+                            {
+                                <div class="modal-header-icon">
+                                    @IconContent
+                                </div>
+                            }
+                            <div>
+                                @if (!string.IsNullOrEmpty(Title))
+                                {
+                                    <h3 id="modal-title-heading" class="modal-heading-text" style="margin: 0; font-size: 1.25rem; font-weight: 700;">@Title</h3>
+                                }
+                                @if (!string.IsNullOrEmpty(Subtitle))
+                                {
+                                    <p class="modal-subtitle-text" style="margin: 4px 0 0 0; font-size: 0.875rem; color: var(--color-neutral-600, #6B7280);">@Subtitle</p>
+                                }
+                            </div>
                         </div>
                     }
                 </div>
@@ -69,9 +84,9 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background-color: rgba(15, 23, 42, 0.65);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
+        background: rgba(15, 23, 42, 0.45);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
         padding: 16px;
         overflow-y: auto;
     }
@@ -196,7 +211,9 @@
     [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
     [Parameter] public string Size { get; set; } = "md";
     [Parameter] public string LayoutMode { get; set; } = "standard";
-    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string? Title { get; set; } = string.Empty;
+    [Parameter] public string? Subtitle { get; set; }
+    [Parameter] public Microsoft.AspNetCore.Components.RenderFragment? IconContent { get; set; }
     [Parameter] public bool ShowHeader { get; set; } = true;
     [Parameter] public bool ShowFooter { get; set; } = true;
     [Parameter] public bool ShowCloseButton { get; set; } = true;

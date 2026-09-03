@@ -53,7 +53,7 @@
         <div class="history-list">
             @foreach (var item in FilteredBookings)
             {
-                <div class="history-card" @onclick="() => OpenDetail(item)">
+                <div class="history-card" style="cursor: pointer;" @onclick="() => OpenDetail(item)">
                     <img src="@item.PhotoUrl" alt="@item.RoomName" class="history-thumb" onerror="this.src='/images/placeholder.jpg'" />
                     <div class="history-info">
                         <div class="history-room-name">@item.RoomName</div>
@@ -290,6 +290,10 @@
         }
     }
 </style>
+
+<DatePickerPopup Visible="_isDatePickerOpen" VisibleChanged="v => _isDatePickerOpen = v" />
+<HistoryBookingDetailModal Visible="@(_selectedBooking != null)" VisibleChanged="v => { if(!v) _selectedBooking = null; }" Booking="_selectedBooking" />
+
 
 @code {
     private DateTime? _selectedDate;

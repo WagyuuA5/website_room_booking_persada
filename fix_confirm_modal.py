@@ -1,4 +1,7 @@
-@namespace booking_room.Components.Shared
+﻿import os
+
+path = 'booking_room/Components/Shared/ConfirmBookingModal.razor'
+new_content = """@namespace booking_room.Components.Shared
 @using booking_room.Components.Models
 
 <AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Title="Konfirmasi Pemesanan" Size="lg">
@@ -107,3 +110,7 @@
     private async Task Back() { await HandleVisibleChanged(false); if (OnBack.HasDelegate) await OnBack.InvokeAsync(); }
     private async Task Confirm() { await HandleVisibleChanged(false); if (OnConfirm.HasDelegate) await OnConfirm.InvokeAsync(); }
 }
+"""
+with open(path, 'w', encoding='utf-8') as f:
+    f.write(new_content)
+print("ConfirmBookingModal.razor updated.")

@@ -1,74 +1,24 @@
 @namespace booking_room.Components.Shared
-
-<div class="skeleton-block @GetShapeClass() @Class" style="@GetStyle()"></div>
+<div class="skeleton-block" style="width: @Width; height: @Height; border-radius: @Radius;"></div>
 
 <style>
     .skeleton-block {
-        display: inline-block;
-        background: linear-gradient(90deg, #E5E7EB 0%, #F3F4F6 50%, #E5E7EB 100%);
+        background: linear-gradient(90deg, var(--color-neutral-100, #F5F5F7) 25%, var(--color-neutral-200, #E8E8ED) 50%, var(--color-neutral-100, #F5F5F7) 75%);
         background-size: 200% 100%;
-        animation: skeletonShimmer 1.4s ease-in-out infinite;
-        border-radius: var(--skeleton-radius, 8px);
-        box-sizing: border-box;
+        animation: shimmer 1.5s infinite;
     }
-
-    .skeleton-block.shape-circle {
-        border-radius: 50% !important;
-    }
-
-    .skeleton-block.shape-text {
-        border-radius: 4px;
-        margin-bottom: 6px;
-    }
-
-    .skeleton-block.shape-card {
-        border-radius: var(--persada-border-radius-card, 16px);
-    }
-
     body.dark-mode .skeleton-block {
-        background: linear-gradient(90deg, #1E293B 0%, #334155 50%, #1E293B 100%);
+        background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
         background-size: 200% 100%;
     }
-
-    @@keyframes skeletonShimmer {
-        0% {
-            background-position: 200% 0;
-        }
-        100% {
-            background-position: -200% 0;
-        }
+    @@keyframes shimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
     }
 </style>
 
 @code {
     [Parameter] public string Width { get; set; } = "100%";
-    [Parameter] public string Height { get; set; } = "16px";
-    [Parameter] public string Shape { get; set; } = "rect"; // rect, circle, text, card
-    [Parameter] public string? Radius { get; set; }
-    [Parameter] public string? Class { get; set; }
-    [Parameter] public string? Style { get; set; }
-
-    private string GetShapeClass() => Shape.ToLowerInvariant() switch
-    {
-        "circle" => "shape-circle",
-        "text" => "shape-text",
-        "card" => "shape-card",
-        _ => ""
-    };
-
-    private string GetStyle()
-    {
-        var sb = new System.Text.StringBuilder();
-        sb.Append($"width: {Width}; height: {Height};");
-        if (!string.IsNullOrEmpty(Radius))
-        {
-            sb.Append($" --skeleton-radius: {Radius}; border-radius: {Radius};");
-        }
-        if (!string.IsNullOrEmpty(Style))
-        {
-            sb.Append($" {Style}");
-        }
-        return sb.ToString();
-    }
+    [Parameter] public string Height { get; set; } = "20px";
+    [Parameter] public string Radius { get; set; } = "8px";
 }
-

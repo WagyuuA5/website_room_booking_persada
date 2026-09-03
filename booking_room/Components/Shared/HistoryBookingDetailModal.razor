@@ -1,179 +1,19 @@
 @namespace booking_room.Components.Shared
-@using booking_room.Components.Models
-
-<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" LayoutMode="list" Size="md" ShowCloseButton="false" OnClose="OnClose">
+<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Title="Detail Riwayat" Size="md">
     <BodyContent>
-        <div class="history-detail-modal">
-            <!-- Full width image at the top -->
-            <div class="history-detail-image-container">
-                <img src="@Booking.PhotoUrl" alt="@Booking.RoomName" class="history-detail-image" onerror="this.src='/images/placeholder.jpg'" />
-            </div>
-
-            <div class="history-detail-content">
-                <div class="history-detail-header">
-                    <div>
-                        <h2 class="history-detail-title">@Booking.RoomName</h2>
-                        <p class="history-detail-location">@Booking.Floor</p>
-                    </div>
-                    <div class="history-detail-status">
-                        <StatusBadge Status="@Booking.Status" />
-                    </div>
-                </div>
-
-                <div class="history-detail-info-boxes">
-                    <div class="history-info-box">
-                        <div class="info-box-icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                        </div>
-                        <div class="info-box-content">
-                            <div class="info-box-label">TANGGAL</div>
-                            <div class="info-box-val">@Booking.Date</div>
-                        </div>
-                    </div>
-                    
-                    <div class="history-info-box">
-                        <div class="info-box-icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                        </div>
-                        <div class="info-box-content">
-                            <div class="info-box-label">WAKTU</div>
-                            <div class="info-box-val">@Booking.TimeSlot</div>
-                        </div>
-                    </div>
-
-                    <div class="history-info-box">
-                        <div class="info-box-icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                        </div>
-                        <div class="info-box-content">
-                            <div class="info-box-label">PESERTA</div>
-                            <div class="info-box-val">@Booking.Attendees Peserta</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+            <p>Informasi lengkap mengenai pemesanan sebelumnya.</p>
         </div>
     </BodyContent>
     <FooterContent>
-        <button class="btn-secondary-app" style="width: 100%;" @onclick="HandleClose">Tutup</button>
+        <button class="btn-secondary" @onclick="Close" style="padding:8px 16px; background:transparent; border:1px solid var(--color-neutral-400); border-radius:var(--radius-full); cursor:pointer;">Tutup</button>
     </FooterContent>
 </AppModal>
 
-<style>
-    .history-detail-modal {
-        display: flex;
-        flex-direction: column;
-        margin: -24px; /* Pull out to edges since AppModal usually has padding */
-    }
-    
-    .history-detail-image-container {
-        width: 100%;
-        height: 200px;
-        position: relative;
-    }
-    
-    .history-detail-image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border-top-left-radius: var(--radius-card, 16px);
-        border-top-right-radius: var(--radius-card, 16px);
-    }
-
-    .history-detail-content {
-        padding: 24px;
-        display: flex;
-        flex-direction: column;
-        gap: 24px;
-    }
-
-    .history-detail-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 16px;
-    }
-
-    .history-detail-title {
-        margin: 0 0 4px 0;
-        font-size: 1.25rem;
-        font-weight: 800;
-        color: var(--color-brand-navy, #0F1F3D);
-    }
-
-    .history-detail-location {
-        margin: 0;
-        font-size: 0.875rem;
-        color: var(--color-brand-text-muted, #6B7280);
-    }
-
-    .history-detail-info-boxes {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    .history-info-box {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        background: #F0F9FF;
-        border-radius: 12px;
-        padding: 16px;
-    }
-
-    .info-box-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: #FFFFFF;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #9CA3AF;
-        flex-shrink: 0;
-    }
-
-    .info-box-content {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-
-    .info-box-label {
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: #6B7280;
-        letter-spacing: 0.05em;
-    }
-
-    .info-box-val {
-        font-size: 0.9375rem;
-        font-weight: 700;
-        color: #111827;
-    }
-</style>
-
 @code {
     [Parameter] public bool Visible { get; set; }
-    [Parameter] public BookingItem Booking { get; set; } = default!;
     [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
-    [Parameter] public EventCallback OnClose { get; set; }
-
-    private async Task HandleVisibleChanged(bool val)
-    {
-        Visible = val;
-        await VisibleChanged.InvokeAsync(val);
-        if (!val)
-        {
-            await OnClose.InvokeAsync();
-        }
-    }
-
-    private async Task HandleClose()
-    {
-        Visible = false;
-        await VisibleChanged.InvokeAsync(false);
-        await OnClose.InvokeAsync();
-    }
+    [Parameter] public dynamic? Booking { get; set; }
+    private async Task HandleVisibleChanged(bool value) { Visible = value; await VisibleChanged.InvokeAsync(value); }
+    private async Task Close() { await HandleVisibleChanged(false); }
 }

@@ -1,4 +1,7 @@
-@namespace booking_room.Components.Shared
+﻿import os
+
+path = 'booking_room/Components/Shared/UserTrendChart.razor'
+new_content = """@namespace booking_room.Components.Shared
 @inject IJSRuntime JSRuntime
 
 <div class="chart-container">
@@ -40,7 +43,7 @@
         margin: 0;
     }
 
-    @@keyframes slideUpFade {
+    @keyframes slideUpFade {
         from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
     }
@@ -59,3 +62,8 @@
         }
     }
 }
+"""
+with open(path, 'w', encoding='utf-8') as f:
+    f.write(new_content)
+
+print("UserTrendChart.razor created.")

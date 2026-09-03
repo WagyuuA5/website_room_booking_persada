@@ -1,4 +1,11 @@
-@page "/settings"
+﻿import os
+
+path = 'booking_room/Components/Pages/SettingsPage.razor'
+with open(path, 'r', encoding='utf-8') as f:
+    content = f.read()
+
+# Make sure dark mode toggles and localization settings are there.
+new_content = """@page "/settings"
 @using booking_room.Components.Shared
 
 <PageTitle>Pengaturan — Persada Booking Ruangan</PageTitle>
@@ -223,3 +230,7 @@
         // Logic to toggle dark mode class on body is handled globally or via JS interop in a real app
     }
 }
+"""
+with open(path, 'w', encoding='utf-8') as f:
+    f.write(new_content)
+print("SettingsPage.razor updated.")
