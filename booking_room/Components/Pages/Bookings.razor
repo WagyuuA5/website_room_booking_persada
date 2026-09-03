@@ -1,424 +1,464 @@
 @page "/bookings"
-@page "/pemesanan"
-@using booking_room.Components.Models
 @using booking_room.Components.Shared
+@using System.Globalization
 @inject booking_room.Services.LoadingStateService LoadingState
+@inject booking_room.Services.IToastService ToastService
 @implements IDisposable
 
-<PageTitle>Pemesanan Ruangan — Persada</PageTitle>
+<PageTitle>Pemesanan Ruangan</PageTitle>
 
-<div class="content-fade-in bookings-page-wrapper">
-    <!-- UI-06 REVISI FINAL: Judul 'Cari Ruangan' dan deskripsi telah DIHAPUS. Halaman langsung mulai dengan kartu pencarian. -->
-
-    <!-- Search & Filter Card -->
-    <div class="search-filter-card">
-        <label class="filter-group-label">CARI RUANGAN</label>
-        <div class="search-input-wrap">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<div class="bookings-page">
+    <!-- SEARCH ROOMS CARD -->
+    <div class="search-card">
+        <label class="search-label">SEARCH ROOMS</label>
+        <div class="search-input-wrapper">
+            <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
-            <input type="text" class="bookings-search-input" placeholder="Cari berdasarkan nama ruangan, gedung, atau lantai..."
-                   value="@_searchQuery" @oninput="OnSearchInput" />
+            <input type="text" class="search-input" placeholder="Search by room name, building, or floor..." @bind="_searchQuery" @bind:event="oninput" @onkeyup="ApplyFilter" />
         </div>
-        
-        <div class="filter-3col-row">
-            <!-- UI-22: Filter Tanggal Cepat 'Semua Tanggal' -->
-            <div class="filter-col">
-                <label class="filter-group-label">TANGGAL</label>
-                <button type="button" class="filter-pill-date-btn" @onclick="OpenDatePicker">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+
+        <div class="search-filters">
+            <div class="filter-group date-group">
+                <label class="search-label">DATE</label>
+                <div class="input-with-icon" @onclick="OpenDatePicker">
+                    <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                         <line x1="16" y1="2" x2="16" y2="6"></line>
                         <line x1="8" y1="2" x2="8" y2="6"></line>
                         <line x1="3" y1="10" x2="21" y2="10"></line>
                     </svg>
-                    <span>@(_selectedBookingDate.HasValue ? _selectedBookingDate.Value.ToString("dd MMM yyyy", new System.Globalization.CultureInfo("id-ID")) : "Semua Tanggal")</span>
-                </button>
-            </div>
-            
-            <div class="filter-col">
-                <label class="filter-group-label">WAKTU & DURASI</label>
-                <div class="filter-input-wrap double-wrap">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                    <input type="text" class="filter-input time-input" placeholder="09:00" />
-                    <select class="filter-input duration-select">
-                        <option>1j</option>
-                        <option>2j</option>
-                        <option>3j</option>
-                    </select>
+                    <input type="text" class="filter-input cursor-pointer" readonly value="@(_selectedBookingDate?.ToString("MM/dd/yyyy") ?? "10/25/2023")" />
                 </div>
             </div>
-            
-            <div class="filter-col">
-                <label class="filter-group-label">PESERTA</label>
-                <div class="filter-input-wrap">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                    <input type="number" min="0" class="filter-input" placeholder="0" @bind="_filterCapacity" @bind:after="ApplyFilter" />
+
+            <div class="filter-group time-duration-group">
+                <label class="search-label">TIME & DURATION</label>
+                <div class="time-duration-inputs">
+                    <div class="input-with-icon time-input">
+                        <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        <input type="text" class="filter-input" value="09:00 AM" />
+                    </div>
+                    <div class="duration-select-wrapper">
+                        <select class="duration-select">
+                            <option>1h</option>
+                            <option>2h</option>
+                            <option>3h</option>
+                        </select>
+                        <svg class="dropdown-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-group attendees-group">
+                <label class="search-label">ATTENDEES</label>
+                <div class="input-with-icon">
+                    <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <input type="number" min="0" class="filter-input" placeholder="0" @bind="_filterCapacity" @bind:event="oninput" @onkeyup="ApplyFilter" />
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 3-Column Grid (UI-18, UI-21, UI-23) -->
-    <div class="rooms-grid-3col">
-        @if (LoadingState.IsLoading)
+    <!-- ROOM CARDS GRID -->
+    <div class="rooms-grid">
+        @foreach (var room in _filteredRooms)
         {
-            @for (int i = 0; i < 6; i++)
-            {
-                <SkeletonCard />
-            }
-        }
-        else
-        {
-            @foreach (var room in _filteredRooms)
-            {
-                <div class="room-catalog-card @(room.Status == "booked" ? "card-booked" : "")" 
-                     @onclick="() => ViewDetail(room)">
-                    <div class="room-card-photo-box">
-                        <img src="@(string.IsNullOrEmpty(room.PhotoUrl) ? "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80" : room.PhotoUrl)" 
-                             alt="@room.Name" class="room-card-photo" loading="lazy" 
-                             onerror="this.src='https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80'" />
-                        <div class="room-status-badge @GetStatusBadgeClass(room.Status)">
-                            <div class="status-dot"></div>
-                            @GetStatusText(room.Status)
-                        </div>
-                    </div>
-                    <div class="room-card-body">
-                        <div class="room-card-title-row">
-                            <h4 class="room-card-title">@room.Name</h4>
-                            <div class="room-capacity-meta">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                                <span>@room.Capacity</span>
-                            </div>
-                        </div>
-                        <p class="room-card-desc">@room.Description</p>
-                        <div class="room-card-amenities">
-                            @foreach (var am in room.Amenities.Take(3))
-                            {
-                                <span class="amenity-chip">
-                                    <FacilityIcon Name="@am" Size="12" />
-                                    <span>@am</span>
-                                </span>
-                            }
-                        </div>
-                    </div>
-                    <div class="room-card-footer">
-                        <button class="btn-text-link" @onclick="() => ViewDetail(room)" @onclick:stopPropagation="true">
-                            LIHAT DETAIL
-                        </button>
+            <div class="room-card">
+                <div class="room-image-wrapper">
+                    <img src="@room.PhotoUrl" alt="@room.Name" />
+                    <div class="status-badge">
+                        <div class="status-dot @(GetStatusDotClass(room.Status))"></div>
+                        @GetStatusText(room.Status)
                     </div>
                 </div>
-            }
+                <div class="room-content">
+                    <div class="room-title-row">
+                        <h3>@room.Name</h3>
+                        <div class="capacity-badge">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                            @room.Capacity
+                        </div>
+                    </div>
+                    <p class="room-desc">@room.Description</p>
+                    <div class="amenities-row">
+                        @foreach (var am in room.Amenities.Take(3))
+                        {
+                            <span class="amenity-pill">
+                                <FacilityIcon Name="@am" Width="12" Height="12" />
+                                @am
+                            </span>
+                        }
+                    </div>
+                    <div class="room-footer">
+                        <button class="view-details-btn" @onclick="() => ViewDetail(room)">VIEW DETAILS</button>
+                    </div>
+                </div>
+            </div>
         }
     </div>
 </div>
 
-<!-- Modal Date Picker (UI-22, BUG-05 single instance) -->
-@if (_isBookingDatePickerOpen)
-{
-    <DatePickerModal 
-        Visible="true"
-        SelectedDate="_selectedBookingDate"
-        OnDateSelected="HandleBookingDateSelected"
-        OnCancel="() => _isBookingDatePickerOpen = false" />
-}
-
-@if (_isRoomDetailVisible && _selectedRoomForDetail != null)
-{
-    <RoomDetailsModal Visible="_isRoomDetailVisible" 
-                      VisibleChanged="v => _isRoomDetailVisible = v"
-                      Room="_selectedRoomForDetail" 
-                      OnClose="CloseDetail" 
-                      OnBook="() => ProceedToBook(_selectedRoomForDetail)" />
-}
-
-@if (_isConfirmBookingVisible && _selectedRoomForBooking != null)
-{
-    <ConfirmBookingModal Room="_selectedRoomForBooking" 
-                         OnBack="CloseConfirm" 
-                         OnConfirm="CloseConfirm" />
-}
+<DatePickerModal @bind-Visible="_isBookingDatePickerOpen" OnDateSelected="HandleBookingDateSelected" />
+<RoomDetailsModal @bind-Visible="_isRoomDetailVisible" Room="_selectedRoomForDetail" OnBookClicked="ProceedToBook" />
+<ConfirmBookingModal @bind-Visible="_isConfirmBookingVisible" Room="_selectedRoomForBooking" />
 
 <style>
-    .bookings-page-wrapper {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 24px;
-        display: flex;
-        flex-direction: column;
-        gap: 24px;
+    .bookings-page {
+        padding: 30px 40px;
+        background: #F8FAFC;
+        min-height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
-
-    /* Search & Filter Card */
-    .search-filter-card {
-        background: var(--color-white, #FFFFFF);
-        border: 1px solid var(--color-neutral-200, #E8E8ED);
-        border-radius: var(--radius-md, 14px);
-        padding: 20px;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.04);
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-    }
-    body.dark-mode .search-filter-card {
+    body.dark-mode .bookings-page {
         background: var(--color-neutral-900, #1D1D1F);
-        border-color: rgba(255, 255, 255, 0.1);
     }
 
-    .filter-group-label {
-        font-size: var(--fs-xs, 12px);
-        font-weight: var(--fw-semibold, 600);
-        color: var(--color-neutral-600, #6E6E73);
-        letter-spacing: 0.04em;
+    /* SEARCH CARD */
+    .search-card {
+        background: #FFFFFF;
+        border-radius: 12px;
+        padding: 24px 32px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        margin-bottom: 32px;
+    }
+    body.dark-mode .search-card {
+        background: #252529;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .search-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #6B7280;
+        letter-spacing: 0.5px;
         text-transform: uppercase;
-        margin-bottom: 6px;
+        margin-bottom: 8px;
         display: block;
     }
+    body.dark-mode .search-label { color: #9CA3AF; }
 
-    .search-input-wrap, .filter-input-wrap {
+    .search-input-wrapper {
+        display: flex;
+        align-items: center;
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        padding: 0 16px;
+        height: 48px;
+        margin-bottom: 24px;
+        background: #FFFFFF;
+        transition: border-color 0.2s;
+    }
+    .search-input-wrapper:focus-within { border-color: #3B82F6; }
+    body.dark-mode .search-input-wrapper { 
+        background: #1D1D1F; 
+        border-color: #374151; 
+    }
+
+    .search-icon {
+        color: #9CA3AF;
+        margin-right: 12px;
+        flex-shrink: 0;
+    }
+
+    .search-input {
+        border: none;
+        outline: none;
+        width: 100%;
+        font-size: 15px;
+        color: #111827;
+        background: transparent;
+    }
+    body.dark-mode .search-input { color: #F9FAFB; }
+
+    .search-filters {
+        display: flex;
+        gap: 24px;
+        align-items: flex-end;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+    }
+    .date-group { flex: 1.2; }
+    .time-duration-group { flex: 2; }
+    .attendees-group { flex: 1.2; }
+
+    .input-with-icon {
+        display: flex;
+        align-items: center;
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        padding: 0 16px;
+        height: 48px;
+        background: #FFFFFF;
+        transition: border-color 0.2s;
+    }
+    .input-with-icon:focus-within { border-color: #3B82F6; }
+    .cursor-pointer { cursor: pointer; }
+    body.dark-mode .input-with-icon { 
+        background: #1D1D1F; 
+        border-color: #374151; 
+    }
+
+    .input-icon {
+        color: #6B7280;
+        margin-right: 12px;
+        flex-shrink: 0;
+    }
+
+    .filter-input {
+        border: none;
+        outline: none;
+        width: 100%;
+        font-size: 14px;
+        font-weight: 500;
+        color: #374151;
+        background: transparent;
+    }
+    body.dark-mode .filter-input { color: #F9FAFB; }
+
+    .time-duration-inputs {
+        display: flex;
+        gap: 12px;
+    }
+    .time-input {
+        flex: 1.5;
+    }
+
+    .duration-select-wrapper {
+        flex: 1;
         position: relative;
         display: flex;
         align-items: center;
-        background: var(--color-neutral-100, #F5F5F7);
-        border-radius: var(--radius-sm, 8px);
-        border: 1px solid transparent;
-        transition: var(--motion-fast);
     }
-    body.dark-mode .search-input-wrap, body.dark-mode .filter-input-wrap {
-        background: rgba(255,255,255,0.05);
+    .duration-select {
+        width: 100%;
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        padding: 0 36px 0 16px;
+        height: 48px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #374151;
+        background: #FFFFFF;
+        appearance: none;
+        cursor: pointer;
+        outline: none;
     }
-    .search-input-wrap:focus-within, .filter-input-wrap:focus-within {
-        border-color: var(--color-primary, #F5A623);
+    body.dark-mode .duration-select { 
+        background: #1D1D1F; 
+        border-color: #374151; 
+        color: #F9FAFB;
     }
-
-    .search-input-wrap svg, .filter-input-wrap svg {
+    
+    .dropdown-icon {
         position: absolute;
-        left: 12px;
-        color: var(--color-neutral-400, #86868B);
+        right: 12px;
+        color: #6B7280;
         pointer-events: none;
     }
 
-    .bookings-search-input, .filter-input {
-        width: 100%;
-        height: 44px;
-        padding: 0 14px 0 38px;
-        background: transparent;
-        border: none;
-        outline: none;
-        font-size: var(--fs-sm, 14px);
-        color: var(--color-navy, #0F172A);
-    }
-    body.dark-mode .bookings-search-input, body.dark-mode .filter-input { color: var(--color-white, #FFFFFF); }
-
-    /* UI-22: Pill Button Date Filter */
-    .filter-pill-date-btn {
-        width: 100%;
-        height: 44px;
-        padding: 0 16px;
-        background: var(--color-neutral-100, #F5F5F7);
-        border: 1px solid var(--color-neutral-200, #E8E8ED);
-        border-radius: var(--radius-full, 999px);
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: var(--fs-sm, 14px);
-        font-weight: var(--fw-semibold, 600);
-        color: var(--color-navy, #0F172A);
-        cursor: pointer;
-        transition: var(--motion-fast);
-    }
-    .filter-pill-date-btn svg {
-        color: var(--color-neutral-600, #6E6E73);
-        flex-shrink: 0;
-    }
-    .filter-pill-date-btn:hover {
-        background: var(--color-white, #FFFFFF);
-        border-color: var(--color-primary, #F5A623);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    }
-    body.dark-mode .filter-pill-date-btn {
-        background: rgba(255,255,255,0.05);
-        border-color: rgba(255,255,255,0.1);
-        color: var(--color-white, #FFFFFF);
-    }
-    body.dark-mode .filter-pill-date-btn:hover {
-        background: rgba(255,255,255,0.08);
-        border-color: var(--color-primary, #F5A623);
-    }
-
-    .filter-3col-row {
+    /* ROOM CARDS GRID */
+    .rooms-grid {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-    }
-    
-    .double-wrap {
-        display: flex;
-    }
-    .time-input {
-        flex: 1;
-    }
-    .duration-select {
-        width: 60px;
-        padding-left: 8px;
-        border-left: 1px solid var(--color-neutral-200, #E8E8ED);
-        cursor: pointer;
-    }
-    body.dark-mode .duration-select { border-color: rgba(255,255,255,0.1); }
-
-    /* Grid */
-    .rooms-grid-3col {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 20px;
-    }
-    @@media (max-width: 992px) {
-        .rooms-grid-3col { grid-template-columns: repeat(2, 1fr); }
-    }
-    @@media (max-width: 768px) {
-        .filter-3col-row { grid-template-columns: 1fr; }
-        .rooms-grid-3col { grid-template-columns: 1fr; }
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 24px;
     }
 
-    .room-catalog-card {
-        background: var(--color-white, #FFFFFF);
-        border: 1px solid var(--color-neutral-200, #E8E8ED);
-        border-radius: var(--radius-md, 14px);
+    .room-card {
+        background: #FFFFFF;
+        border-radius: 12px;
         overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         display: flex;
         flex-direction: column;
-        transition: var(--motion-fast);
-        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
     }
-    body.dark-mode .room-catalog-card {
-        background: var(--color-neutral-900, #1D1D1F);
-        border-color: rgba(255, 255, 255, 0.1);
-    }
-    .room-catalog-card:hover {
-        transform: translateY(-2px);
+    .room-card:hover {
+        transform: translateY(-4px);
         box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-        border-color: var(--color-neutral-400, #86868B);
+    }
+    body.dark-mode .room-card {
+        background: #252529;
+        border: 1px solid rgba(255,255,255,0.05);
     }
 
-    .room-card-photo-box {
+    .room-image-wrapper {
         position: relative;
-        height: 170px;
-        background: var(--color-neutral-100, #F5F5F7);
+        width: 100%;
+        height: 200px;
     }
-    .room-card-photo {
+    .room-image-wrapper img {
         width: 100%;
         height: 100%;
         object-fit: cover;
     }
-    .room-status-badge {
+
+    .status-badge {
         position: absolute;
-        top: 12px;
-        left: 12px;
-        padding: 4px 10px;
-        border-radius: var(--radius-full, 999px);
-        font-size: var(--fs-xs, 12px);
-        font-weight: var(--fw-semibold, 600);
+        top: 16px;
+        right: 16px;
+        background: #FFFFFF;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 12px;
+        color: #111827;
         display: flex;
         align-items: center;
         gap: 6px;
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(4px);
-        color: var(--color-navy, #0F172A);
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    body.dark-mode .room-status-badge {
-        background: rgba(30, 30, 30, 0.95);
-        color: var(--color-white, #FFFFFF);
+    body.dark-mode .status-badge {
+        background: #1D1D1F;
+        color: #F9FAFB;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.5);
     }
-    
-    .status-dot { width: 8px; height: 8px; border-radius: 50%; }
-    .badge-available .status-dot { background: var(--color-success, #34D399); }
-    .badge-booked .status-dot { background: var(--color-warning, #F59E0B); }
-    .badge-unavailable .status-dot { background: var(--color-danger, #EF4444); }
 
-    .room-card-body {
-        padding: 16px;
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+    .dot-available { background-color: #10B981; }
+    .dot-booked { background-color: #F59E0B; }
+    .dot-unavailable { background-color: #EF4444; }
+
+    .room-content {
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
         flex: 1;
     }
-    .room-card-title-row {
+
+    .room-title-row {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        margin-bottom: 6px;
+        margin-bottom: 8px;
+        gap: 12px;
     }
-    .room-card-title {
-        font-size: var(--fs-h4, 18px);
-        line-height: var(--lh-h4, 24px);
-        font-weight: var(--fw-bold, 700);
+    .room-title-row h3 {
+        font-size: 18px;
+        font-weight: 700;
+        color: #111827;
         margin: 0;
-        color: var(--color-navy, #0F172A);
+        line-height: 1.3;
     }
-    body.dark-mode .room-card-title { color: var(--color-white, #FFFFFF); }
-    
-    .room-capacity-meta {
+    body.dark-mode .room-title-row h3 { color: #F9FAFB; }
+
+    .capacity-badge {
+        background: #F3F4F6;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #4B5563;
         display: flex;
         align-items: center;
         gap: 4px;
-        font-size: var(--fs-sm, 14px);
-        font-weight: var(--fw-semibold, 600);
-        color: var(--color-neutral-600, #6E6E73);
+        flex-shrink: 0;
+    }
+    body.dark-mode .capacity-badge {
+        background: #374151;
+        color: #D1D5DB;
     }
 
-    .room-card-desc {
-        font-size: var(--fs-sm, 14px);
-        line-height: var(--lh-sm, 20px);
-        color: var(--color-neutral-600, #6E6E73);
-        margin: 0 0 12px 0;
+    .room-desc {
+        font-size: 13px;
+        color: #6B7280;
+        line-height: 1.5;
+        margin: 0 0 16px 0;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
     }
+    body.dark-mode .room-desc { color: #9CA3AF; }
 
-    .room-card-amenities {
+    .amenities-row {
         display: flex;
+        gap: 8px;
         flex-wrap: wrap;
-        gap: 6px;
+        margin-bottom: 20px;
     }
-    .amenity-chip {
+    .amenity-pill {
+        background: #F9FAFB;
+        border: 1px solid #F3F4F6;
+        padding: 4px 10px;
+        border-radius: 6px;
         font-size: 11px;
-        font-weight: var(--fw-medium, 500);
-        padding: 3px 8px;
-        border-radius: var(--radius-sm, 8px);
-        background: var(--color-neutral-100, #F5F5F7);
-        color: var(--color-neutral-600, #6E6E73);
+        font-weight: 600;
+        color: #4B5563;
         display: inline-flex;
         align-items: center;
-        gap: 4px;
+        gap: 6px;
     }
-    body.dark-mode .amenity-chip { background: rgba(255,255,255,0.08); }
+    body.dark-mode .amenity-pill {
+        background: #1D1D1F;
+        border-color: #374151;
+        color: #D1D5DB;
+    }
 
-    .room-card-footer {
-        padding: 12px 16px;
-        border-top: 1px solid var(--color-neutral-200, #E8E8ED);
+    .room-footer {
+        margin-top: auto;
+        border-top: 1px solid #F3F4F6;
+        padding-top: 16px;
         display: flex;
         justify-content: flex-end;
     }
-    body.dark-mode .room-card-footer { border-color: rgba(255,255,255,0.1); }
-    
-    .btn-text-link {
+    body.dark-mode .room-footer { border-color: rgba(255,255,255,0.05); }
+
+    .view-details-btn {
         background: none;
         border: none;
-        font-size: var(--fs-xs, 12px);
-        font-weight: var(--fw-bold, 700);
-        color: var(--color-info, #3B82F6);
+        font-size: 12px;
+        font-weight: 700;
+        color: #1E3A8A;
         cursor: pointer;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.5px;
         padding: 0;
     }
-    .btn-text-link:hover { text-decoration: underline; }
+    .view-details-btn:hover {
+        color: #2563EB;
+        text-decoration: underline;
+    }
+    body.dark-mode .view-details-btn { color: #60A5FA; }
+    body.dark-mode .view-details-btn:hover { color: #93C5FD; }
+
+    /* Responsive */
+    @@media (max-width: 900px) {
+        .search-filters {
+            flex-direction: column;
+            gap: 16px;
+            align-items: stretch;
+        }
+        .filter-group { flex: none; }
+    }
 </style>
 
 @code {
     private string _searchQuery = "";
-    private int _filterCapacity = 0;
+    private int? _filterCapacity = null;
     private DateTime? _selectedBookingDate;
     private bool _isBookingDatePickerOpen = false;
 
@@ -449,20 +489,16 @@
         LoadingState.SetLoading(true);
         await Task.Delay(300, token);
         
-        // UI-21: Minimal 8-10 variasi ruangan representatif dengan data nyata & parameter constructor benar:
-        // RoomItem(Id, Name, Capacity, Description, Status, Amenities, Floor, PhotoUrl)
         _allRooms = new List<RoomItem>
         {
-            new("1", "Alpha Boardroom", 12, "Ruang rapat eksekutif premium dengan sistem video conference 4K dan pencahayaan alami.", "available", new List<string>{"Proyektor", "Papan Tulis", "Konferensi Video", "AC", "WiFi"}, "3", "https://images.unsplash.com/photo-1497215842964-222b430dc094?auto=format&fit=crop&w=800&q=80"),
-            new("2", "Beta Meeting Room", 8, "Ruang pertemuan tim terstruktur untuk diskusi proyek harian dan koordinasi kerja.", "booked", new List<string>{"TV LED", "AC", "WiFi"}, "2", "https://images.unsplash.com/photo-1431540015160-0295aaa24f7f?auto=format&fit=crop&w=800&q=80"),
-            new("3", "Gamma Discussion", 4, "Ruang huddle privat untuk brainstorming intensif dan diskusi kelompok kecil.", "unavailable", new List<string>{"Papan Tulis", "AC", "WiFi"}, "2", "https://images.unsplash.com/photo-1497366754888-5a456d4b3447?auto=format&fit=crop&w=800&q=80"),
+            new("1", "Executive Boardroom A", 12, "Premium boardroom equipped with 4K video conferencing and high-speed fiber internet for important meetings.", "available", new List<string>{"Projector", "AC", "Video Conf"}, "3", "https://images.unsplash.com/photo-1497215842964-222b430dc094?auto=format&fit=crop&w=800&q=80"),
+            new("2", "Collaborative Space B", 6, "Agile workspace with modular seating and extensive whiteboard areas for design thinking and brainstorming.", "booked", new List<string>{"Whiteboard", "AC"}, "2", "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=800&q=80"),
+            new("3", "Presentation Hall", 50, "Large capacity hall suitable for departmental meetings or client presentations with advanced acoustic treatments.", "unavailable", new List<string>{"Projector", "AC", "Audio System"}, "1", "https://images.unsplash.com/photo-1517502884422-41eaead166d4?auto=format&fit=crop&w=800&q=80"),
+            
             new("4", "Delta Studio", 20, "Studio kedap suara dengan sistem audio profesional, ideal untuk lokakarya dan presentasi akbar.", "available", new List<string>{"Audio System", "Proyektor", "AC", "WiFi"}, "1", "https://images.unsplash.com/photo-1462826303086-329426d1aef5?auto=format&fit=crop&w=800&q=80"),
             new("5", "Executive Suite", 16, "Suite rapat mewah di lantai atas dengan panorama kota Jakarta dan fasilitas lounge eksklusif.", "available", new List<string>{"Konferensi Video", "TV LED", "AC", "WiFi", "Aksesibilitas"}, "5", "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80"),
-            new("6", "Innovation Lab", 15, "Laboratorium kreatif dengan meja modular fleksibel untuk perancangan produk dan hackathon tim.", "booked", new List<string>{"Papan Tulis", "Proyektor", "WiFi", "AC"}, "3", "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=800&q=80"),
-            new("7", "Focus Room Alpha", 2, "Ruang kerja tenang kedap suara untuk panggilan konferensi penting dan wawancara daring satu lawan satu.", "available", new List<string>{"AC", "WiFi", "Aksesibilitas"}, "3", "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=800&q=80"),
-            new("8", "Conference Hall Utama", 50, "Aula konvensi luas berkapasitas besar dengan panggung utama untuk rapat akbar dan town hall perusahaan.", "available", new List<string>{"Audio System", "Proyektor", "Konferensi Video", "AC", "Aksesibilitas", "WiFi"}, "1", "https://images.unsplash.com/photo-1517502884422-41eaead166d4?auto=format&fit=crop&w=800&q=80"),
-            new("9", "Training Room B", 30, "Ruang pelatihan interaktif dilengkapi meja berderet dan layar ganda untuk sesi edukasi karyawan.", "booked", new List<string>{"Proyektor", "Papan Tulis", "Audio System", "AC", "WiFi"}, "2", "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=800&q=80"),
-            new("10", "Creative Pod C", 6, "Pod santai berdesain modern dan berenergi positif untuk sesi curah ide visual tim perancang.", "available", new List<string>{"TV LED", "Papan Tulis", "WiFi", "AC"}, "4", "https://images.unsplash.com/photo-1527192491265-7e15c55b1ed2?auto=format&fit=crop&w=800&q=80")
+            new("6", "Focus Room Alpha", 2, "Ruang kerja tenang kedap suara untuk panggilan konferensi penting dan wawancara daring satu lawan satu.", "available", new List<string>{"AC", "WiFi", "Aksesibilitas"}, "3", "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=800&q=80"),
+            new("7", "Training Room B", 30, "Ruang pelatihan interaktif dilengkapi meja berderet dan layar ganda untuk sesi edukasi karyawan.", "booked", new List<string>{"Proyektor", "Papan Tulis", "Audio System", "AC", "WiFi"}, "2", "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=800&q=80")
         };
         
         ApplyFilter();
@@ -498,9 +534,9 @@
                              r.Description.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase));
         }
 
-        if (_filterCapacity > 0)
+        if (_filterCapacity.HasValue && _filterCapacity > 0)
         {
-            q = q.Where(r => r.Capacity >= _filterCapacity);
+            q = q.Where(r => r.Capacity >= _filterCapacity.Value);
         }
 
         _filteredRooms = q.ToList();
@@ -526,27 +562,20 @@
         _isConfirmBookingVisible = true;
     }
 
-    private void CloseConfirm()
-    {
-        _isConfirmBookingVisible = false;
-        _selectedRoomForBooking = null;
-    }
-
-    // UI-18: 3 Varian Badge Status
     private string GetStatusText(string status) => status switch
     {
-        "available" => "Tersedia",
-        "booked" => "Dipesan (2j lagi)",
-        "unavailable" => "Tidak Tersedia",
-        _ => "Tersedia"
+        "available" => "Available",
+        "booked" => "Booked (Next 2h)",
+        "unavailable" => "not available",
+        _ => "Available"
     };
 
-    private string GetStatusBadgeClass(string status) => status switch
+    private string GetStatusDotClass(string status) => status switch
     {
-        "available" => "badge-available",
-        "booked" => "badge-booked",
-        "unavailable" => "badge-unavailable",
-        _ => "badge-available"
+        "available" => "dot-available",
+        "booked" => "dot-booked",
+        "unavailable" => "dot-unavailable",
+        _ => "dot-available"
     };
 
     private void SafeStateHasChanged()
