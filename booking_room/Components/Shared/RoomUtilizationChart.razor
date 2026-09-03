@@ -1,0 +1,94 @@
+@namespace booking_room.Components.Shared
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<div class="utilization-card">
+    <div class="utilization-header">
+        <div class="utilization-title-col">
+            <h3>Analitik Utilisasi Ruangan</h3>
+            <span class="sub">5 Ruangan Paling Sering Dipesan</span>
+        </div>
+        <div class="utilization-tabs">
+            <button class="@(Period == "Minggu" ? "active" : "")" @onclick='() => ChangePeriod("Minggu")'>Minggu</button>
+            <button class="@(Period == "Bulan" ? "active" : "")" @onclick='() => ChangePeriod("Bulan")'>Bulan</button>
+            <button class="@(Period == "Tahun" ? "active" : "")" @onclick='() => ChangePeriod("Tahun")'>Tahun</button>
+        </div>
+    </div>
+
+    @if (_isLoading)
+    {
+        <div class="skeleton-chart" style="height: 250px; border-radius: var(--radius-md);"></div>
+    }
+    else
+    {
+        <div class="chart-container @(_animateIn ? "animate-chart-in" : "")">
+            @foreach (var item in Data)
+            {
+                <div class="chart-row" @onclick="() => OpenDetail(item)">
+                    <span class="chart-label">@item.Name</span>
+                    <div class="chart-bar-wrap">
+                        <div class="chart-bar" style="width: @(item.Percentage)%; transition-delay: @(item.Index * 80)ms;">
+                            <span class="chart-value">@item.Hours jam</span>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private string Period = "Bulan";
+    private bool _isLoading = false;
+    private bool _animateIn = false;
+    private List<ChartItem> Data = new();
+
+    public class ChartItem {
+        public int Index { get; set; }
+        public string Name { get; set; } = "";
+        public int Hours { get; set; }
+        public double Percentage { get; set; }
+    }
+
+    protected override void OnInitialized()
+    {
+        LoadData(Period);
+        _animateIn = true;
+    }
+
+    private async Task ChangePeriod(string newPeriod)
+    {
+        if (Period == newPeriod) return;
+        Period = newPeriod;
+        _isLoading = true;
+        await Task.Delay(300); // Simulate network
+        LoadData(Period);
+        _isLoading = false;
+        _animateIn = false;
+        StateHasChanged();
+        await Task.Delay(50);
+        _animateIn = true;
+    }
+
+    private void LoadData(string period)
+    {
+        int multiplier = period == "Minggu" ? 1 : period == "Bulan" ? 4 : 48;
+        Data = new List<ChartItem>
+        {
+            new() { Index=0, Name="Boardroom A", Hours = 20 * multiplier, Percentage = 85 },
+            new() { Index=1, Name="Meeting Room 1", Hours = 15 * multiplier, Percentage = 65 },
+            new() { Index=2, Name="Training Center", Hours = 10 * multiplier, Percentage = 45 },
+            new() { Index=3, Name="Huddle Space C", Hours = 8 * multiplier, Percentage = 35 },
+            new() { Index=4, Name="Focus Room B", Hours = 5 * multiplier, Percentage = 20 }
+        };
+    }
+
+    private void OpenDetail(ChartItem item)
+    {
+        // Open modal detail for item
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+    }
+}

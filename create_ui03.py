@@ -1,4 +1,7 @@
-@namespace booking_room.Components.Shared
+﻿import os
+
+path = 'booking_room/Components/Shared/ScheduleDetailModal.razor'
+markup = """@namespace booking_room.Components.Shared
 
 <AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Size="md" ShowHeader="false" ShowFooter="false" NoPadding="true">
     <BodyContent>
@@ -54,3 +57,65 @@
         await HandleVisibleChanged(false);
     }
 }
+"""
+with open(path, 'w', encoding='utf-8') as f: f.write(markup)
+
+css = """
+/* UI-03: Schedule Detail Modal */
+.schedule-detail-header {
+    position: relative;
+    height: 180px;
+}
+.schedule-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--radius-lg, 22px) var(--radius-lg, 22px) 0 0;
+}
+.schedule-overlay {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+}
+.badge-status-green {
+    background: var(--color-success);
+    color: var(--color-white);
+    padding: 6px 12px;
+    border-radius: var(--radius-full);
+    font-size: var(--fs-xs, 12px);
+    font-weight: var(--fw-bold, 700);
+}
+.schedule-title {
+    margin: 0 0 20px 0;
+    font-size: var(--fs-h2, 24px);
+    font-weight: var(--fw-bold, 700);
+    color: var(--color-navy);
+}
+body.dark-mode .schedule-title { color: var(--color-white); }
+.schedule-meta-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.meta-item .meta-label {
+    font-size: var(--fs-xs, 12px);
+    font-weight: var(--fw-semibold, 600);
+    color: var(--color-neutral-600);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.meta-item .meta-val {
+    font-size: var(--fs-base, 16px);
+    color: var(--color-neutral-900);
+}
+body.dark-mode .meta-item .meta-val { color: var(--color-white); }
+"""
+path = 'booking_room/wwwroot/app.css'
+with open(path, 'a', encoding='utf-8') as f: f.write(css)
+
+print("Created ScheduleDetailModal")

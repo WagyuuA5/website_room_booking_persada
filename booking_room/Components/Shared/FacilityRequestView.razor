@@ -264,26 +264,7 @@
     }
 </style>
 
-<AppModal Visible="@(_selectedReq != null)" VisibleChanged="v => { if(!v) _selectedReq = null; }" Title="Detail Permintaan Fasilitas" Size="md">
-    <BodyContent>
-        @if(_selectedRequest != null)
-        {
-            <div style="display: flex; flex-direction: column; gap: 12px; padding-top: 8px;">
-                <div>
-                    <label style="font-size: 12px; color: #6B7280;">Nama Fasilitas</label>
-                    <div style="font-weight: 600;">@_selectedReq.RoomName</div>
-                </div>
-                <div>
-                    <label style="font-size: 12px; color: #6B7280;">Status</label>
-                    <div style="font-weight: 600;">@_selectedReq.Status</div>
-                </div>
-            </div>
-        }
-    </BodyContent>
-    <FooterContent>
-        <button class="btn-secondary" @onclick="() => /* removed */">Tutup</button>
-    </FooterContent>
-</AppModal>
+
 
 
 <div class="facility-request-view">
@@ -481,6 +462,8 @@
             }
         };
     }
+
+    private void CloseDetail() { _selectedReq = null; }
 
     private void OpenNewRequest()
     {

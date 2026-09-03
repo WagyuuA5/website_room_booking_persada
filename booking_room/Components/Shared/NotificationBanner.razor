@@ -16,7 +16,7 @@
                 <strong>Tindakan Diperlukan</strong>
                 <p>Konfirmasi kehadiran dalam <strong>@RemainingTimeFormatted</strong> atau slot akan otomatis dilepas.</p>
             </div>
-            <button class="banner-btn-checkin" @onclick="CheckInNow">Konfirmasi Kehadiran Sekarang →</button>
+            <button class="banner-btn-checkin" @onclick="CheckInNow">Check-in Sekarang →</button>
         }
         else
         {
@@ -29,7 +29,7 @@
             <span class="banner-bullet">•</span>
             <span class="banner-text">Akan datang: Alpha Room pukul 09:00 (15 menit lagi)</span>
             <button class="banner-link" @onclick="Dismiss">Nanti</button>
-            <button class="banner-btn-checkin" @onclick="CheckInNow">Konfirmasi Kehadiran Sekarang</button>
+            <button class="banner-btn-checkin" @onclick="CheckInNow">Check-in Sekarang</button>
         }
     </div>
     @if (BannerType == booking_room.Services.NotificationState.BannerType.ActionRequired && countdownPercentage > 0)

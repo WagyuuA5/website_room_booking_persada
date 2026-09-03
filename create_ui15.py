@@ -1,4 +1,7 @@
-@namespace booking_room.Components.Shared
+﻿import os
+
+path = 'booking_room/Components/Shared/RequestMoreTimeModal.razor'
+markup = """@namespace booking_room.Components.Shared
 @using booking_room.Components.Models
 @inject booking_room.Services.ToastService Toast
 
@@ -63,3 +66,6 @@
         await Close();
     }
 }
+"""
+with open(path, 'w', encoding='utf-8') as f: f.write(markup)
+print("Created RequestMoreTimeModal")

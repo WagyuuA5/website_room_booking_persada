@@ -1,4 +1,7 @@
-@namespace booking_room.Components.Shared
+﻿import os
+
+path = 'booking_room/Components/Shared/InvitationModal.razor'
+markup = """@namespace booking_room.Components.Shared
 @using booking_room.Components.Models
 @inject booking_room.Services.ToastService Toast
 
@@ -66,3 +69,6 @@
         await HandleVisibleChanged(false);
     }
 }
+"""
+with open(path, 'w', encoding='utf-8') as f: f.write(markup)
+print("Created InvitationModal")

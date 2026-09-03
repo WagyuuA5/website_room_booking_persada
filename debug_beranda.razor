@@ -58,53 +58,65 @@ else
                         <line x1="16" y1="17" x2="8" y2="17"></line>
                         <polyline points="10 9 9 9 8 9"></polyline>
                     </svg>
-                    <span>Status Saya</span>
+                    <span>Status Reservasi</span>
                 </button>
             </div>
         </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px;">
+            <div class="stat-highlight-card card-tersedia-berikutnya" @onclick="() => _isAvailableRoomsOpen = true" style="cursor:pointer; background: var(--color-white); border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); padding: 20px;">
+                <h4 style="margin:0 0 8px 0; color: var(--color-navy); font-weight:700;">Tersedia Berikutnya</h4>
+                <p style="margin:0; font-size:14px; color: var(--color-neutral-600);">Lihat ruangan yang bisa langsung dipesan sekarang.</p>
+            </div>
+            <div class="stat-highlight-card card-menunggu-persetujuan" @onclick="() => _isPendingOpen = true" style="cursor:pointer; background: var(--color-white); border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); padding: 20px;">
+                <h4 style="margin:0 0 8px 0; color: var(--color-warning); font-weight:700;">Menunggu Persetujuan</h4>
+                <p style="margin:0; font-size:14px; color: var(--color-neutral-600);">2 reservasi Anda sedang menunggu konfirmasi admin.</p>
+            </div>
+        </div>
 
-        <div class="summary-cards-row">
-            <!-- DASH-01: Ruangan Tersedia -->
-            <div class="summary-card" @onclick="() => _isAvailableRoomsOpen = true">
-                <div class="card-icon-wrap bg-green-light">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+
+        <div class="stats-overview-grid">
+            <div class="stat-card">
+                <div class="stat-icon-wrap navy">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                 </div>
-                <div class="card-text-col">
-                    <span class="card-label">RUANGAN TERSEDIA</span>
-                    <div class="card-value-row">
-                        <span class="value-large">8</span>
-                        <span class="value-total">/ 20</span>
-                    </div>
+                <div class="stat-info">
+                    <span class="stat-label">Total Ruangan</span>
+                    <h3 class="stat-value">20</h3>
+                    <span class="stat-hint positive">14 Tersedia Hari Ini</span>
                 </div>
             </div>
 
-            <!-- UI-08: Menunggu Persetujuan -->
-            <div class="summary-card interactive" @onclick="() => _isPendingOpen = true">
-                <div class="card-icon-wrap bg-amber-light">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><circle cx="12" cy="14" r="3"></circle></svg>
+            <div class="stat-card">
+                <div class="stat-icon-wrap gold">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                 </div>
-                <div class="card-text-col">
-                    <span class="card-label">MENUNGGU PERSETUJUAN</span>
-                    <span class="value-large">3</span>
-                    <span class="card-desc">Permintaan pemesanan menunggu tindakan</span>
+                <div class="stat-info">
+                    <span class="stat-label">Pemesanan Aktif</span>
+                    <h3 class="stat-value">3</h3>
+                    <span class="stat-hint">1 Perlu Konfirmasi</span>
                 </div>
-                <svg class="chevron-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </div>
 
-            <!-- UI-07: Tersedia Berikutnya -->
-            <div class="summary-card dark-accent" @onclick="() => _isAvailableRoomsOpen = true">
-                <div class="card-top-row">
-                    <div class="card-icon-wrap bg-green-accent">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-                    </div>
-                    <span class="pill-badge green-pill">TERSEDIA DALAM 45 MENIT</span>
+            <div class="stat-card">
+                <div class="stat-icon-wrap green">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                 </div>
-                <div class="card-text-col mt-2">
-                    <span class="card-label">Tersedia Berikutnya</span>
-                    <span class="value-large text-white">Delta Boardroom</span>
-                    <span class="card-desc text-gray">Kapasitas: 20</span>
+                <div class="stat-info">
+                    <span class="stat-label">Tingkat Utilisasi</span>
+                    <h3 class="stat-value">62%</h3>
+                    <span class="stat-hint positive">↑ 8% minggu ini</span>
                 </div>
-                <button class="btn-primary btn-sm mt-3" style="width: 100%; border-radius: 999px;">Pesan Instan</button>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon-wrap purple">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Rekan Terhubung</span>
+                    <h3 class="stat-value">48</h3>
+                    <span class="stat-hint">Divisi IT & Eksekutif</span>
+                </div>
             </div>
         </div>
 
@@ -536,8 +548,6 @@ else
 <!-- UI-09 Modal Tersedia -->
 <AvailableRoomsModal Visible="_isAvailableRoomsOpen" VisibleChanged="v => _isAvailableRoomsOpen = v" />
 <!-- UI-10 Modal Menunggu Persetujuan -->
-<ScheduleDetailModal Visible="_isScheduleDetailOpen" VisibleChanged="v => _isScheduleDetailOpen = v" />
-<CheckInSuccessModal Visible="_isCheckInSuccessOpen" VisibleChanged="v => _isCheckInSuccessOpen = v" />
 <PendingApprovalsModal Visible="_isPendingOpen" VisibleChanged="v => _isPendingOpen = v" />
 
 
@@ -577,23 +587,14 @@ else
         NotificationState.DismissBanner();
     }
 
-            private bool _isCheckInSuccessOpen;
-    private bool _isScheduleDetailOpen;
-
-        private async Task HandleCheckInClick()
+    private async Task HandleCheckInClick()
     {
-        var parameters = new Dictionary<string, object>
+        await ModalService.ShowAsync<CheckInCountdownCard>(new Dictionary<string, object>
         {
             { "RoomName", "Executive Boardroom A" },
             { "TimeSlot", "09:00 - 11:00" },
             { "Location", "Lantai 3, Sayap Utara" },
-            { "Capacity", 15 },
-            { "OnConfirm", EventCallback.Factory.Create(this, async () => {
-                await ModalService.CloseTopAsync(ModalResult.Ok());
-                _isCheckInSuccessOpen = true;
-                StateHasChanged();
-            })}
-        };
-        await ModalService.ShowAsync<CheckInCountdownCard>(parameters);
+            { "Capacity", 15 }
+        });
     }
 }
