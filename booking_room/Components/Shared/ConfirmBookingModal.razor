@@ -36,70 +36,69 @@
 
             <!-- SECTION 2: Pilih Ruangan (Carousel) -->
             <div class="form-section">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <label style="margin-bottom: 0;">RUANGAN TERPILIH</label>
-                    <div class="carousel-nav">
-                        <button class="nav-arrow" @onclick="ScrollLeft">
-                            <img src="icons/icon_arrow_left.svg" width="16" height="16" alt="" />
-                        </button>
-                        <button class="nav-arrow" @onclick="ScrollRight">
-                            <img src="icons/icon_arrow_right.svg" width="16" height="16" alt="" />
-                        </button>
-                    </div>
-                </div>
+                <label style="margin-bottom: 8px;">RUANGAN TERPILIH</label>
                 
-                <div class="room-carousel" id="roomCarousel">
-                    @if (AvailableRooms != null && AvailableRooms.Any())
-                    {
-                        foreach (var r in AvailableRooms)
+                <div class="carousel-container">
+                    <button class="carousel-nav left" @onclick="ScrollLeft">
+                        <InlineSvg Src="icons/icon_arrow_left.svg" Style="width: 20px; height: 20px;" />
+                    </button>
+                    <button class="carousel-nav right" @onclick="ScrollRight">
+                        <InlineSvg Src="icons/icon_arrow_right.svg" Style="width: 20px; height: 20px;" />
+                    </button>
+                    
+                    <div class="room-carousel" id="roomCarousel">
+                        @if (AvailableRooms != null && AvailableRooms.Any())
                         {
-                            bool isActive = Room != null && r.Id == Room.Id;
-                            <div class="carousel-card @(isActive ? "active" : "")" @onclick="() => SelectRoom(r)">
+                            foreach (var r in AvailableRooms)
+                            {
+                                bool isActive = Room != null && r.Id == Room.Id;
+                                <div class="carousel-card @(isActive ? "active" : "")" @onclick="() => SelectRoom(r)">
+                                    <div class="carousel-img-wrap">
+                                        <img src="@(string.IsNullOrEmpty(r.PhotoUrl) ? "/images/default-room.jpg" : r.PhotoUrl)" alt="@r.Name" />
+                                        <div class="carousel-status">
+                                            <StatusIsland Status="@ParseRoomStatus(r.Status)" EnableCountdown="false" Class="island-small" />
+                                        </div>
+                                    </div>
+                                    <div class="carousel-info">
+                                        <div class="c-title">@r.Name</div>
+                                        <div class="c-desc">@r.Description</div>
+                                        <div class="c-meta">Kapasitas @r.Capacity org &bull; Lantai @r.Floor</div>
+                                        <div class="c-amenities">
+                                            @foreach(var am in r.Amenities.Take(3))
+                                            {
+                                                var ai = RoomAmenity.Create(am);
+                                                <InlineSvg Src="@ai.IconSvgPath" Style="width: 14px; height: 14px;" />
+                                            }
+                                            @if(r.Amenities.Count > 3) {
+                                                <span class="c-am-more">+@(r.Amenities.Count - 3)</span>
+                                            }
+                                        </div>
+                                        @if(isActive)
+                                        {
+                                            <button class="btn-ganti">TERPILIH</button>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else if (Room != null)
+                        {
+                            <div class="carousel-card active">
                                 <div class="carousel-img-wrap">
-                                    <img src="@(string.IsNullOrEmpty(r.PhotoUrl) ? "/images/default-room.jpg" : r.PhotoUrl)" alt="@r.Name" />
+                                    <img src="@(string.IsNullOrEmpty(Room.PhotoUrl) ? "/images/default-room.jpg" : Room.PhotoUrl)" alt="@Room.Name" />
                                     <div class="carousel-status">
-                                        <StatusIsland Status="@ParseRoomStatus(r.Status)" EnableCountdown="false" Class="island-small" />
+                                        <StatusIsland Status="@ParseRoomStatus(Room.Status)" EnableCountdown="false" Class="island-small" />
                                     </div>
                                 </div>
                                 <div class="carousel-info">
-                                    <div class="c-title">@r.Name</div>
-                                    <div class="c-desc">@r.Description</div>
-                                    <div class="c-meta">Kapasitas @r.Capacity org &bull; Lantai @r.Floor</div>
-                                    <div class="c-amenities">
-                                        @foreach(var am in r.Amenities.Take(3))
-                                        {
-                                            var ai = RoomAmenity.Create(am);
-                                            <img src="@ai.IconSvgPath" width="14" height="14" alt="" />
-                                        }
-                                        @if(r.Amenities.Count > 3) {
-                                            <span class="c-am-more">+@(r.Amenities.Count - 3)</span>
-                                        }
-                                    </div>
-                                    @if(isActive)
-                                    {
-                                        <button class="btn-ganti">GANTI RUANGAN</button>
-                                    }
+                                    <div class="c-title">@Room.Name</div>
+                                    <div class="c-desc">@Room.Description</div>
+                                    <div class="c-meta">Kapasitas @Room.Capacity org &bull; Lantai @Room.Floor</div>
+                                    <button class="btn-ganti">TERPILIH</button>
                                 </div>
                             </div>
                         }
-                    }
-                    else if (Room != null)
-                    {
-                        <div class="carousel-card active">
-                            <div class="carousel-img-wrap">
-                                <img src="@(string.IsNullOrEmpty(Room.PhotoUrl) ? "/images/default-room.jpg" : Room.PhotoUrl)" alt="@Room.Name" />
-                                <div class="carousel-status">
-                                    <StatusIsland Status="@ParseRoomStatus(Room.Status)" EnableCountdown="false" Class="island-small" />
-                                </div>
-                            </div>
-                            <div class="carousel-info">
-                                <div class="c-title">@Room.Name</div>
-                                <div class="c-desc">@Room.Description</div>
-                                <div class="c-meta">Kapasitas @Room.Capacity org &bull; Lantai @Room.Floor</div>
-                                <button class="btn-ganti">GANTI RUANGAN</button>
-                            </div>
-                        </div>
-                    }
+                    </div>
                 </div>
             </div>
 
@@ -125,7 +124,7 @@
             <div class="form-section recurring-section">
                 <div class="recurring-header">
                     <div class="recurring-title-wrap">
-                        <img src="icons/Icon_book_1.svg" width="20" height="20" alt="" />
+                        <InlineSvg Src="icons/Icon_book_1.svg" Style="width:20px; height:20px; fill:currentColor;" />
                         <span>Jadikan Berulang (Recurring Booking)</span>
                     </div>
                     <div class="toggle-switch">
@@ -195,7 +194,7 @@
                                             {
                                                 <div class="s-conflict">
                                                     <div class="s-error-msg">
-                                                        <img src="icons/icon_alert_danger.svg" width="14" height="14" alt="" />
+                                                        <InlineSvg Src="icons/icon_alert_danger.svg" Style="width:14px; height:14px; stroke:currentColor;" />
                                                         <span>Ruangan tidak tersedia pada waktu ini</span>
                                                     </div>
                                                     <div class="s-actions">
@@ -208,7 +207,7 @@
                                             {
                                                 <div class="s-success">
                                                     <span class="badge-success">
-                                                        <img src="icons/icon_check_circle.svg" width="12" height="12" alt="" />
+                                                        <InlineSvg Src="icons/icon_check_circle.svg" Style="width:12px; height:12px; stroke:currentColor;" />
                                                         TERSEDIA
                                                     </span>
                                                 </div>
@@ -227,10 +226,10 @@
             <div class="form-section">
                 <label>UNDANG PESERTA</label>
                 <div class="modern-search-bar">
-                    <img src="icons/icon_search.svg" width="18" height="18" class="search-icon" alt="" />
+                    <InlineSvg Src="icons/icon_search.svg" Style="width:18px; height:18px; stroke:currentColor;" class="search-icon" />
                     <input type="text" class="form-input search-input" placeholder="Cari nama kolega..." @bind="_newParticipant" />
                     <button class="btn-add-circle" @onclick="AddParticipant">
-                        <img src="icons/icon_plus.svg" width="20" height="20" alt="" />
+                        <InlineSvg Src="icons/icon_plus.svg" Style="width:20px; height:20px; stroke:currentColor;" />
                     </button>
                 </div>
                 
@@ -243,7 +242,7 @@
                 
                 <div class="capacity-indicator">
                     <div class="capacity-text">
-                        <img src="icons/icon_group.svg" width="16" height="16" alt="" />
+                        <InlineSvg Src="icons/icon_group.svg" Style="width:16px; height:16px; fill:currentColor;" />
                         @participantCount dari @capacity Kapasitas Ruangan
                     </div>
                     <div class="progress-bar-bg">
@@ -258,7 +257,7 @@
                             <div class="pill-avatar" style="background-color: @GetAvatarColor(p)">@p.Substring(0,1).ToUpper()</div>
                             <span class="pill-name">@p</span>
                             <button class="pill-remove" @onclick="@(() => RemoveParticipant(p))">
-                                <img src="icons/icon_close.svg" width="14" height="14" alt="" />
+                                <InlineSvg Src="icons/icon_close.svg" Style="width:14px; height:14px; stroke:currentColor;" />
                             </button>
                         </div>
                     }
@@ -455,6 +454,91 @@
         font-size: 0.75rem;
         font-weight: 700;
         padding: 2px 8px;
+    }
+
+    /* Carousel */
+    .carousel-container {
+        position: relative;
+        margin: 0 -8px; /* Offset the padding to allow cards to bleed slightly */
+    }
+
+    .carousel-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid #e2e8f0;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--color-primary, #F59E0B);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        transition: all 0.2s ease;
+    }
+    .carousel-nav:hover {
+        background: #ffffff;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+        transform: translateY(-50%) scale(1.05);
+    }
+    .carousel-nav:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+    .carousel-nav.left { left: 0; }
+    .carousel-nav.right { right: 0; }
+    
+    .room-carousel {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: 280px;
+        gap: 16px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        padding: 12px 24px; /* padding so cards don't clip box-shadow on ends */
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE/Edge */
+    }
+    .room-carousel::-webkit-scrollbar { 
+        display: none; /* Chrome/Safari */
+    }
+    
+    .carousel-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+        scroll-snap-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        opacity: 0.7;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+    }
+    .carousel-card:hover { opacity: 0.9; }
+    .carousel-card.active {
+        opacity: 1;
+        border: 2px solid var(--color-primary, #F59E0B);
+        transform: scale(1.02);
+        box-shadow: 0 8px 24px rgba(245, 158, 11, 0.15);
+    }
+    
+    .carousel-img-wrap {
+        width: 100%;
+        aspect-ratio: 16/9;
+        position: relative;
+    }
+    .carousel-img-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
     .carousel-status {
         position: absolute;
         top: 8px; left: 8px;
@@ -463,24 +547,30 @@
     .carousel-info {
         padding: 12px;
         position: relative;
+        flex-grow: 1;
     }
-    .c-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .c-desc { font-size: 0.75rem; color: #64748b; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .c-meta { font-size: 0.7rem; color: #64748b; margin-bottom: 8px; }
-    .c-amenities { display: flex; gap: 4px; align-items: center; color: #64748b; }
+    .c-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #0f172a; }
+    .c-desc { font-size: 0.75rem; color: #64748b; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .c-meta { font-size: 0.75rem; color: #64748b; margin-bottom: 12px; font-weight: 500; }
+    .c-amenities { display: flex; gap: 8px; align-items: center; color: #64748b; }
     .c-am-more { font-size: 0.7rem; font-weight: 600; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; }
     
     .btn-ganti {
         position: absolute;
-        top: 12px; right: 12px;
-        background: #fffbeb;
-        color: #b45309;
-        border: none;
-        padding: 4px 8px;
-        font-size: 0.65rem;
+        bottom: 12px; right: 12px;
+        background: transparent;
+        color: var(--color-primary, #F59E0B);
+        border: 1px solid var(--color-primary, #F59E0B);
+        padding: 4px 10px;
+        font-size: 0.7rem;
         font-weight: 700;
         border-radius: 100px;
         cursor: pointer;
+        transition: all 0.2s;
+    }
+    .btn-ganti:hover {
+        background: var(--color-primary, #F59E0B);
+        color: #ffffff;
     }
 
     .time-inputs {
