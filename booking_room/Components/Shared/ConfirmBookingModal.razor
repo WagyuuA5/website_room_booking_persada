@@ -54,7 +54,7 @@
                             <div class="room-info">
                                 <div class="room-title">@Room.Name</div>
                                 <div class="room-meta">Kapasitas @Room.Capacity org &bull; Lantai @Room.Floor</div>
-                                <div class="room-status"><span class="status-badge @Room.Status.ToLower()">@Room.Status</span></div>
+                                <div class="room-status"><span class="status-badge @Room.Status.ToLower()">@GetStatusBadgeText(Room.Status)</span></div>
                             </div>
                         }
                         else
@@ -829,6 +829,14 @@
 
     private HashSet<int> _skippedDates = new HashSet<int>();
 
+    private string GetStatusBadgeText(string? status) => status?.ToLower() switch
+    {
+        "available" => "TERSEDIA",
+        "booked" => "DIPESAN",
+        "unavailable" => "TIDAK TERSEDIA",
+        _ => status?.ToUpper() ?? "TERSEDIA"
+    };
+
     protected override void OnInitialized()
     {
         // Default select current day for weekly
@@ -845,12 +853,20 @@
 
     private async Task Back()
     {
-        await OnBack.InvokeAsync();
+        await HandleVisibleChanged(false);
+        if (OnBack.HasDelegate)
+        {
+            await OnBack.InvokeAsync();
+        }
     }
 
     private async Task Confirm()
     {
-        await OnConfirm.InvokeAsync();
+        await HandleVisibleChanged(false);
+        if (OnConfirm.HasDelegate)
+        {
+            await OnConfirm.InvokeAsync();
+        }
     }
 
     private void SetPattern(string pattern)

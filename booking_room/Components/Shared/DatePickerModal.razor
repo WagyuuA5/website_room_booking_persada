@@ -1,4 +1,4 @@
-﻿@namespace booking_room.Components.Shared
+@namespace booking_room.Components.Shared
 @using System.Globalization
 
 <AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" LayoutMode="list" Size="sm" ShowHeader="true" Title="Pilih Tanggal" Subtitle="Kapan rapat Anda berlangsung?" ShowCloseButton="false" OnClose="HandleCancel">
@@ -209,6 +209,19 @@
     private CultureInfo _culture = new CultureInfo("id-ID");
 
     protected override void OnInitialized()
+    {
+        UpdateSelectedDate();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (Visible)
+        {
+            UpdateSelectedDate();
+        }
+    }
+
+    private void UpdateSelectedDate()
     {
         _tempSelectedDate = SelectedDate ?? DateTime.Today;
         if (SelectedDate.HasValue)

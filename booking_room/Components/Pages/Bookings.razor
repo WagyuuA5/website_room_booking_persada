@@ -1,5 +1,7 @@
-@page "/bookings"
+﻿@page "/bookings"
 @using booking_room.Components.Shared
+@using booking_room.Components.Models
+@using booking_room.Resources
 @using System.Globalization
 @inject booking_room.Services.LoadingStateService LoadingState
 @inject booking_room.Services.IToastService ToastService
@@ -10,44 +12,54 @@
 <div class="bookings-page">
     <!-- SEARCH ROOMS CARD -->
     <div class="search-card">
-        <label class="search-label">SEARCH ROOMS</label>
+        <label class="search-label">@RoomSearch.SearchRoomsTitle</label>
         <div class="search-input-wrapper">
             <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
-            <input type="text" class="search-input" placeholder="Search by room name, building, or floor..." @bind="_searchQuery" @bind:event="oninput" @onkeyup="ApplyFilter" />
+            <input type="text" class="search-input" placeholder="@RoomSearch.SearchPlaceholder" @bind="_searchQuery" @bind:event="oninput" @onkeyup="ApplyFilter" aria-label="Cari Ruangan" />
         </div>
 
         <div class="search-filters">
+            <!-- FIELD TANGGAL -->
             <div class="filter-group date-group">
-                <label class="search-label">DATE</label>
-                <div class="input-with-icon" @onclick="OpenDatePicker">
-                    <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <label class="search-label">@RoomSearch.DateLabel</label>
+                <div class="input-with-icon cursor-pointer clickable-field" @onclick="OpenDatePicker" role="button" tabindex="0" title="Klik untuk pilih tanggal">
+                    <svg class="input-icon interactive-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                         <line x1="16" y1="2" x2="16" y2="6"></line>
                         <line x1="8" y1="2" x2="8" y2="6"></line>
                         <line x1="3" y1="10" x2="21" y2="10"></line>
                     </svg>
-                    <input type="text" class="filter-input cursor-pointer" readonly value="@(_selectedBookingDate?.ToString("MM/dd/yyyy") ?? "10/25/2023")" />
+                    <input type="text" class="filter-input cursor-pointer" readonly value="@GetFormattedDateString()" />
+                    <svg class="dropdown-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
                 </div>
             </div>
 
+            <!-- FIELD WAKTU & DURASI -->
             <div class="filter-group time-duration-group">
-                <label class="search-label">TIME & DURATION</label>
+                <label class="search-label">@RoomSearch.TimeAndDurationLabel</label>
                 <div class="time-duration-inputs">
-                    <div class="input-with-icon time-input">
-                        <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <div class="input-with-icon time-input cursor-pointer clickable-field" @onclick="OpenTimePicker" role="button" tabindex="0" title="Klik untuk pilih waktu">
+                        <svg class="input-icon interactive-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="10"></circle>
                             <polyline points="12 6 12 12 16 14"></polyline>
                         </svg>
-                        <input type="text" class="filter-input" value="09:00 AM" />
+                        <input type="text" class="filter-input cursor-pointer" readonly value="@_selectedBookingTime" />
+                        <svg class="dropdown-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
                     </div>
                     <div class="duration-select-wrapper">
-                        <select class="duration-select">
-                            <option>1h</option>
-                            <option>2h</option>
-                            <option>3h</option>
+                        <select class="duration-select" @bind="_selectedDuration" aria-label="Durasi Pemesanan">
+                            <option value="1">1 Jam</option>
+                            <option value="2">2 Jam</option>
+                            <option value="3">3 Jam</option>
+                            <option value="4">4 Jam</option>
+                            <option value="8">Seharian (8 Jam)</option>
                         </select>
                         <svg class="dropdown-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="6 9 12 15 18 9"></polyline>
@@ -56,8 +68,9 @@
                 </div>
             </div>
 
+            <!-- FIELD PESERTA -->
             <div class="filter-group attendees-group">
-                <label class="search-label">ATTENDEES</label>
+                <label class="search-label">@RoomSearch.AttendeesLabel</label>
                 <div class="input-with-icon">
                     <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -65,7 +78,7 @@
                         <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
                         <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                     </svg>
-                    <input type="number" min="0" class="filter-input" placeholder="0" @bind="_filterCapacity" @bind:event="oninput" @onkeyup="ApplyFilter" />
+                    <input type="number" min="0" class="filter-input" placeholder="0 Orang" @bind="_filterCapacity" @bind:event="oninput" @onkeyup="ApplyFilter" aria-label="Jumlah Peserta" />
                 </div>
             </div>
         </div>
@@ -86,28 +99,33 @@
                 <div class="room-content">
                     <div class="room-title-row">
                         <h3>@room.Name</h3>
-                        <div class="capacity-badge">
+                        <div class="capacity-badge" title="Kapasitas Ruangan">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                                 <circle cx="9" cy="7" r="4"></circle>
                                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
                                 <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                             </svg>
-                            @room.Capacity
+                            @room.Capacity Orang
                         </div>
                     </div>
                     <p class="room-desc">@room.Description</p>
                     <div class="amenities-row">
-                        @foreach (var am in room.Amenities.Take(3))
+                        @foreach (var am in room.Amenities.Take(4))
                         {
                             <span class="amenity-pill">
-                                <FacilityIcon Name="@am" Size="12" />
-                                @am
+                                <FacilityIcon Name="@am" Size="13" />
+                                <span>@LocalizeAmenity(am)</span>
                             </span>
                         }
                     </div>
                     <div class="room-footer">
-                        <button class="view-details-btn" @onclick="() => ViewDetail(room)">VIEW DETAILS</button>
+                        <button type="button" class="view-details-btn" @onclick="() => ViewDetail(room)">
+                            @RoomSearch.ViewDetails
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 4px;">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -115,13 +133,15 @@
     </div>
 </div>
 
-<DatePickerModal @bind-Visible="_isBookingDatePickerOpen" OnDateSelected="HandleBookingDateSelected" />
+<!-- MODAL DIALOGS -->
+<DatePickerModal @bind-Visible="_isBookingDatePickerOpen" SelectedDate="_selectedBookingDate" OnDateSelected="HandleBookingDateSelected" />
+<TimePickerModal @bind-Visible="_isBookingTimePickerOpen" SelectedTime="_selectedBookingTime" OnTimeSelected="HandleBookingTimeSelected" />
 <RoomDetailsModal @bind-Visible="_isRoomDetailVisible" Room="_selectedRoomForDetail" OnBook="() => ProceedToBook(_selectedRoomForDetail)" />
 <ConfirmBookingModal @bind-Visible="_isConfirmBookingVisible" Room="_selectedRoomForBooking" />
 
 <style>
     .bookings-page {
-        padding: 30px 40px;
+        padding: 32px 40px;
         background: #F8FAFC;
         min-height: 100vh;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -133,46 +153,58 @@
     /* SEARCH CARD */
     .search-card {
         background: #FFFFFF;
-        border-radius: 12px;
-        padding: 24px 32px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        border-radius: 16px;
+        padding: 28px 32px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
         margin-bottom: 32px;
+        border: 1px solid #F1F5F9;
     }
     body.dark-mode .search-card {
         background: #252529;
-        border: 1px solid rgba(255,255,255,0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     }
 
     .search-label {
-        font-size: 11px;
+        font-size: 12px;
         font-weight: 700;
-        color: #6B7280;
-        letter-spacing: 0.5px;
+        color: #64748B;
+        letter-spacing: 0.6px;
         text-transform: uppercase;
         margin-bottom: 8px;
         display: block;
     }
-    body.dark-mode .search-label { color: #9CA3AF; }
+    body.dark-mode .search-label { color: #94A3B8; }
 
     .search-input-wrapper {
         display: flex;
         align-items: center;
-        border: 1px solid #E5E7EB;
-        border-radius: 8px;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 10px;
         padding: 0 16px;
-        height: 48px;
+        height: 50px;
         margin-bottom: 24px;
         background: #FFFFFF;
-        transition: border-color 0.2s;
+        transition: all 0.2s ease;
     }
-    .search-input-wrapper:focus-within { border-color: #3B82F6; }
+    .search-input-wrapper:hover {
+        border-color: #CBD5E1;
+    }
+    .search-input-wrapper:focus-within {
+        border-color: #F59E0B;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+    }
     body.dark-mode .search-input-wrapper { 
         background: #1D1D1F; 
         border-color: #374151; 
     }
+    body.dark-mode .search-input-wrapper:focus-within {
+        border-color: #F59E0B;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+    }
 
     .search-icon {
-        color: #9CA3AF;
+        color: #94A3B8;
         margin-right: 12px;
         flex-shrink: 0;
     }
@@ -182,14 +214,18 @@
         outline: none;
         width: 100%;
         font-size: 15px;
-        color: #111827;
+        font-weight: 500;
+        color: #0F172A;
         background: transparent;
+    }
+    .search-input::placeholder {
+        color: #94A3B8;
     }
     body.dark-mode .search-input { color: #F9FAFB; }
 
     .search-filters {
         display: flex;
-        gap: 24px;
+        gap: 20px;
         align-items: flex-end;
     }
 
@@ -197,30 +233,61 @@
         display: flex;
         flex-direction: column;
     }
-    .date-group { flex: 1.2; }
+    .date-group { flex: 1.3; }
     .time-duration-group { flex: 2; }
-    .attendees-group { flex: 1.2; }
+    .attendees-group { flex: 1.1; }
 
     .input-with-icon {
         display: flex;
         align-items: center;
-        border: 1px solid #E5E7EB;
-        border-radius: 8px;
-        padding: 0 16px;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 10px;
+        padding: 0 14px;
         height: 48px;
         background: #FFFFFF;
-        transition: border-color 0.2s;
+        transition: all 0.2s ease;
     }
-    .input-with-icon:focus-within { border-color: #3B82F6; }
+    .input-with-icon:hover {
+        border-color: #CBD5E1;
+    }
+    .input-with-icon:focus-within {
+        border-color: #F59E0B;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+    }
+    .clickable-field {
+        cursor: pointer;
+        user-select: none;
+    }
+    .clickable-field:hover {
+        border-color: #F59E0B;
+        background: #FFFBEB;
+    }
+    body.dark-mode .clickable-field:hover {
+        background: rgba(245, 158, 11, 0.08);
+        border-color: #F59E0B;
+    }
     .cursor-pointer { cursor: pointer; }
     body.dark-mode .input-with-icon { 
         background: #1D1D1F; 
         border-color: #374151; 
     }
+    body.dark-mode .input-with-icon:focus-within {
+        border-color: #F59E0B;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+    }
 
     .input-icon {
-        color: #6B7280;
-        margin-right: 12px;
+        color: #64748B;
+        margin-right: 10px;
+        flex-shrink: 0;
+        transition: color 0.2s;
+    }
+    .clickable-field:hover .interactive-icon {
+        color: #F59E0B;
+    }
+    .dropdown-arrow-icon {
+        color: #94A3B8;
+        margin-left: 6px;
         flex-shrink: 0;
     }
 
@@ -229,9 +296,13 @@
         outline: none;
         width: 100%;
         font-size: 14px;
-        font-weight: 500;
-        color: #374151;
+        font-weight: 600;
+        color: #0F172A;
         background: transparent;
+    }
+    .filter-input::placeholder {
+        color: #94A3B8;
+        font-weight: 400;
     }
     body.dark-mode .filter-input { color: #F9FAFB; }
 
@@ -240,7 +311,7 @@
         gap: 12px;
     }
     .time-input {
-        flex: 1.5;
+        flex: 1.3;
     }
 
     .duration-select-wrapper {
@@ -251,28 +322,40 @@
     }
     .duration-select {
         width: 100%;
-        border: 1px solid #E5E7EB;
-        border-radius: 8px;
-        padding: 0 36px 0 16px;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 10px;
+        padding: 0 34px 0 14px;
         height: 48px;
         font-size: 14px;
-        font-weight: 500;
-        color: #374151;
+        font-weight: 600;
+        color: #0F172A;
         background: #FFFFFF;
         appearance: none;
         cursor: pointer;
         outline: none;
+        transition: all 0.2s ease;
+    }
+    .duration-select:hover {
+        border-color: #CBD5E1;
+    }
+    .duration-select:focus {
+        border-color: #F59E0B;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
     }
     body.dark-mode .duration-select { 
         background: #1D1D1F; 
         border-color: #374151; 
         color: #F9FAFB;
     }
+    body.dark-mode .duration-select:focus {
+        border-color: #F59E0B;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+    }
     
     .dropdown-icon {
         position: absolute;
         right: 12px;
-        color: #6B7280;
+        color: #64748B;
         pointer-events: none;
     }
 
@@ -285,52 +368,66 @@
 
     .room-card {
         background: #FFFFFF;
-        border-radius: 12px;
+        border-radius: 16px;
         overflow: hidden;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+        border: 1px solid #F1F5F9;
         display: flex;
         flex-direction: column;
-        transition: transform 0.2s, box-shadow 0.2s;
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .room-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+        border-color: #E2E8F0;
     }
     body.dark-mode .room-card {
         background: #252529;
-        border: 1px solid rgba(255,255,255,0.05);
+        border-color: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+    body.dark-mode .room-card:hover {
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
+        border-color: rgba(255, 255, 255, 0.15);
     }
 
     .room-image-wrapper {
         position: relative;
         width: 100%;
         height: 200px;
+        overflow: hidden;
     }
     .room-image-wrapper img {
         width: 100%;
         height: 100%;
         object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    .room-card:hover .room-image-wrapper img {
+        transform: scale(1.03);
     }
 
     .status-badge {
         position: absolute;
-        top: 16px;
-        right: 16px;
-        background: #FFFFFF;
+        top: 14px;
+        right: 14px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(8px);
         padding: 6px 12px;
-        border-radius: 20px;
+        border-radius: 999px;
         font-weight: 700;
-        font-size: 12px;
-        color: #111827;
+        font-size: 11px;
+        letter-spacing: 0.3px;
+        color: #0F172A;
         display: flex;
         align-items: center;
         gap: 6px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
     body.dark-mode .status-badge {
-        background: #1D1D1F;
+        background: rgba(29, 29, 31, 0.92);
         color: #F9FAFB;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     }
 
     .status-dot {
@@ -338,12 +435,21 @@
         height: 8px;
         border-radius: 50%;
     }
-    .dot-available { background-color: #10B981; }
-    .dot-booked { background-color: #F59E0B; }
-    .dot-unavailable { background-color: #EF4444; }
+    .dot-available { 
+        background-color: #10B981; 
+        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+    }
+    .dot-booked { 
+        background-color: #F59E0B; 
+        box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+    }
+    .dot-unavailable { 
+        background-color: #EF4444; 
+        box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+    }
 
     .room-content {
-        padding: 24px;
+        padding: 22px 24px;
         display: flex;
         flex-direction: column;
         flex: 1;
@@ -357,34 +463,35 @@
         gap: 12px;
     }
     .room-title-row h3 {
-        font-size: 18px;
+        font-size: 17px;
         font-weight: 700;
-        color: #111827;
+        color: #0F172A;
         margin: 0;
-        line-height: 1.3;
+        line-height: 1.35;
     }
     body.dark-mode .room-title-row h3 { color: #F9FAFB; }
 
     .capacity-badge {
-        background: #F3F4F6;
+        background: #F1F5F9;
         padding: 4px 8px;
         border-radius: 6px;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
-        color: #4B5563;
+        color: #475569;
         display: flex;
         align-items: center;
         gap: 4px;
         flex-shrink: 0;
+        white-space: nowrap;
     }
     body.dark-mode .capacity-badge {
-        background: #374151;
-        color: #D1D5DB;
+        background: #334155;
+        color: #E2E8F0;
     }
 
     .room-desc {
         font-size: 13px;
-        color: #6B7280;
+        color: #64748B;
         line-height: 1.5;
         margin: 0 0 16px 0;
         display: -webkit-box;
@@ -392,7 +499,7 @@
         -webkit-box-orient: vertical;
         overflow: hidden;
     }
-    body.dark-mode .room-desc { color: #9CA3AF; }
+    body.dark-mode .room-desc { color: #94A3B8; }
 
     .amenities-row {
         display: flex;
@@ -401,66 +508,88 @@
         margin-bottom: 20px;
     }
     .amenity-pill {
-        background: #F9FAFB;
-        border: 1px solid #F3F4F6;
-        padding: 4px 10px;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        padding: 5px 10px;
         border-radius: 6px;
         font-size: 11px;
         font-weight: 600;
-        color: #4B5563;
+        color: #475569;
         display: inline-flex;
         align-items: center;
         gap: 6px;
+        transition: all 0.15s;
+    }
+    .amenity-pill:hover {
+        background: #F1F5F9;
+        border-color: #CBD5E1;
     }
     body.dark-mode .amenity-pill {
         background: #1D1D1F;
         border-color: #374151;
         color: #D1D5DB;
     }
+    body.dark-mode .amenity-pill:hover {
+        background: #2D2D31;
+    }
 
     .room-footer {
         margin-top: auto;
-        border-top: 1px solid #F3F4F6;
-        padding-top: 16px;
+        border-top: 1px solid #F1F5F9;
+        padding-top: 14px;
         display: flex;
         justify-content: flex-end;
     }
-    body.dark-mode .room-footer { border-color: rgba(255,255,255,0.05); }
+    body.dark-mode .room-footer { border-color: rgba(255, 255, 255, 0.08); }
 
     .view-details-btn {
         background: none;
         border: none;
         font-size: 12px;
         font-weight: 700;
-        color: #1E3A8A;
+        color: #0F172A;
         cursor: pointer;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        padding: 0;
+        padding: 6px 10px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        transition: all 0.2s;
     }
     .view-details-btn:hover {
-        color: #2563EB;
-        text-decoration: underline;
+        color: #F59E0B;
+        background: #FEF3C7;
     }
-    body.dark-mode .view-details-btn { color: #60A5FA; }
-    body.dark-mode .view-details-btn:hover { color: #93C5FD; }
+    body.dark-mode .view-details-btn { color: #F59E0B; }
+    body.dark-mode .view-details-btn:hover { background: rgba(245, 158, 11, 0.15); }
 
     /* Responsive */
     @@media (max-width: 900px) {
+        .bookings-page {
+            padding: 20px 16px;
+        }
         .search-filters {
             flex-direction: column;
             gap: 16px;
             align-items: stretch;
         }
-        .filter-group { flex: none; }
+        .filter-group { flex: none; width: 100%; }
+        .rooms-grid {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
 
 @code {
     private string _searchQuery = "";
     private int? _filterCapacity = null;
-    private DateTime? _selectedBookingDate;
+    private DateTime? _selectedBookingDate = DateTime.Today;
+    private string _selectedBookingTime = "09:00";
+    private string _selectedDuration = "1";
+
     private bool _isBookingDatePickerOpen = false;
+    private bool _isBookingTimePickerOpen = false;
 
     private List<RoomItem> _allRooms = new();
     private IEnumerable<RoomItem> _filteredRooms = Array.Empty<RoomItem>();
@@ -473,6 +602,8 @@
     
     private bool _disposed;
     private System.Threading.CancellationTokenSource? _cts;
+
+    private readonly CultureInfo _idCulture = new CultureInfo("id-ID");
 
     protected override async Task OnInitializedAsync()
     {
@@ -487,18 +618,17 @@
     private async Task LoadDataAsync(System.Threading.CancellationToken token)
     {
         LoadingState.SetLoading(true);
-        await Task.Delay(300, token);
+        await Task.Delay(250, token);
         
         _allRooms = new List<RoomItem>
         {
-            new("1", "Executive Boardroom A", 12, "Premium boardroom equipped with 4K video conferencing and high-speed fiber internet for important meetings.", "available", new List<string>{"Projector", "AC", "Video Conf"}, "3", "https://images.unsplash.com/photo-1497215842964-222b430dc094?auto=format&fit=crop&w=800&q=80"),
-            new("2", "Collaborative Space B", 6, "Agile workspace with modular seating and extensive whiteboard areas for design thinking and brainstorming.", "booked", new List<string>{"Whiteboard", "AC"}, "2", "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=800&q=80"),
-            new("3", "Presentation Hall", 50, "Large capacity hall suitable for departmental meetings or client presentations with advanced acoustic treatments.", "unavailable", new List<string>{"Projector", "AC", "Audio System"}, "1", "https://images.unsplash.com/photo-1517502884422-41eaead166d4?auto=format&fit=crop&w=800&q=80"),
-            
-            new("4", "Delta Studio", 20, "Studio kedap suara dengan sistem audio profesional, ideal untuk lokakarya dan presentasi akbar.", "available", new List<string>{"Audio System", "Proyektor", "AC", "WiFi"}, "1", "https://images.unsplash.com/photo-1462826303086-329426d1aef5?auto=format&fit=crop&w=800&q=80"),
+            new("1", "Executive Boardroom A", 12, "Ruang rapat eksekutif premium dengan fasilitas konferensi video 4K dan internet serat optik kecepatan tinggi untuk pertemuan penting.", "available", new List<string>{"Proyektor", "AC", "Konferensi Video"}, "3", "https://images.unsplash.com/photo-1497215842964-222b430dc094?auto=format&fit=crop&w=800&q=80"),
+            new("2", "Collaborative Space B", 6, "Ruang kerja kolaboratif dengan tempat duduk modular dan papan tulis luas untuk sesi perancangan ide dan diskusi tim.", "booked", new List<string>{"Papan Tulis", "AC", "WiFi"}, "2", "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=800&q=80"),
+            new("3", "Presentation Hall", 50, "Aula berkapasitas besar cocok untuk rapat divisi akbar atau presentasi klien dengan sistem peredam akustik modern.", "unavailable", new List<string>{"Proyektor", "AC", "Sistem Audio"}, "1", "https://images.unsplash.com/photo-1517502884422-41eaead166d4?auto=format&fit=crop&w=800&q=80"),
+            new("4", "Delta Studio", 20, "Studio kedap suara dengan sistem audio profesional, ideal untuk lokakarya, podcast, dan siaran langsung persada.", "available", new List<string>{"Sistem Audio", "Proyektor", "AC", "WiFi"}, "1", "https://images.unsplash.com/photo-1462826303086-329426d1aef5?auto=format&fit=crop&w=800&q=80"),
             new("5", "Executive Suite", 16, "Suite rapat mewah di lantai atas dengan panorama kota Jakarta dan fasilitas lounge eksklusif.", "available", new List<string>{"Konferensi Video", "TV LED", "AC", "WiFi", "Aksesibilitas"}, "5", "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80"),
             new("6", "Focus Room Alpha", 2, "Ruang kerja tenang kedap suara untuk panggilan konferensi penting dan wawancara daring satu lawan satu.", "available", new List<string>{"AC", "WiFi", "Aksesibilitas"}, "3", "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=800&q=80"),
-            new("7", "Training Room B", 30, "Ruang pelatihan interaktif dilengkapi meja berderet dan layar ganda untuk sesi edukasi karyawan.", "booked", new List<string>{"Proyektor", "Papan Tulis", "Audio System", "AC", "WiFi"}, "2", "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=800&q=80")
+            new("7", "Training Room B", 30, "Ruang pelatihan interaktif dilengkapi meja berderet dan layar ganda untuk sesi edukasi karyawan.", "booked", new List<string>{"Proyektor", "Papan Tulis", "Sistem Audio", "AC", "WiFi"}, "2", "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=800&q=80")
         };
         
         ApplyFilter();
@@ -514,6 +644,13 @@
     private void OpenDatePicker()
     {
         _isBookingDatePickerOpen = true;
+        _isBookingTimePickerOpen = false;
+    }
+
+    private void OpenTimePicker()
+    {
+        _isBookingTimePickerOpen = true;
+        _isBookingDatePickerOpen = false;
     }
 
     private void HandleBookingDateSelected(DateTime? date)
@@ -521,6 +658,21 @@
         _selectedBookingDate = date;
         _isBookingDatePickerOpen = false;
         ApplyFilter();
+    }
+
+    private void HandleBookingTimeSelected(string timeStr)
+    {
+        _selectedBookingTime = timeStr;
+        _isBookingTimePickerOpen = false;
+    }
+
+    private string GetFormattedDateString()
+    {
+        if (_selectedBookingDate.HasValue)
+        {
+            return _selectedBookingDate.Value.ToString("dd MMMM yyyy", _idCulture);
+        }
+        return DateTime.Today.ToString("dd MMMM yyyy", _idCulture);
     }
 
     private void ApplyFilter()
@@ -563,20 +715,30 @@
         _isConfirmBookingVisible = true;
     }
 
-    private string GetStatusText(string status) => status switch
+    private string GetStatusText(string status) => status?.ToLowerInvariant() switch
     {
-        "available" => "Available",
-        "booked" => "Booked (Next 2h)",
-        "unavailable" => "not available",
-        _ => "Available"
+        "available" => RoomSearch.Available,
+        "booked" => RoomSearch.Booked,
+        "unavailable" => RoomSearch.Unavailable,
+        _ => RoomSearch.Available
     };
 
-    private string GetStatusDotClass(string status) => status switch
+    private string GetStatusDotClass(string status) => status?.ToLowerInvariant() switch
     {
         "available" => "dot-available",
         "booked" => "dot-booked",
         "unavailable" => "dot-unavailable",
         _ => "dot-available"
+    };
+
+    private string LocalizeAmenity(string amenity) => amenity?.Trim().ToLowerInvariant() switch
+    {
+        "projector" => "Proyektor",
+        "video conf" => "Konferensi Video",
+        "video conference" => "Konferensi Video",
+        "whiteboard" => "Papan Tulis",
+        "audio system" => "Sistem Audio",
+        _ => amenity ?? ""
     };
 
     private void SafeStateHasChanged()
