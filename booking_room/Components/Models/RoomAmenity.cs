@@ -1,4 +1,4 @@
-﻿namespace booking_room.Components.Models;
+namespace booking_room.Components.Models;
 
 public class RoomAmenity
 {
@@ -13,23 +13,18 @@ public class RoomAmenity
         IconSvgPath = iconSvgPath;
     }
 
-    public static RoomAmenity Create(string name)
+    public static RoomAmenity Create(string name) => name?.ToLowerInvariant() switch
     {
-        var norm = name?.Trim().ToLowerInvariant() ?? "";
-        var icon = norm switch
-        {
-            "proyektor" or "projector" or "layar" => "assets/icons/projector.svg",
-            "konferensi video" or "video conf" or "video conference" or "kamera video" => "assets/icons/video-conference.svg",
-            "papan tulis" or "whiteboard" => "assets/icons/whiteboard.svg",
-            "sistem audio" or "audio system" or "speaker" => "assets/icons/audio-system.svg",
-            "ac" or "pendingin ruangan" => "assets/icons/ac.svg",
-            "wifi" or "wifi kecepatan tinggi" => "assets/icons/wifi.svg",
-            "tv led" or "tv" or "monitor" => "assets/icons/tv.svg",
-            "aksesibilitas" or "kursi roda" => "assets/icons/accessibility.svg",
-            _ => "assets/icons/check.svg"
-        };
-        return new RoomAmenity(name ?? "", icon);
-    }
+        "proyektor" or "projector" => new RoomAmenity(name ?? "", "icons/icon_projector.svg"),
+        "ac" => new RoomAmenity(name ?? "", "icons/icon_ac.svg"),
+        "wifi" => new RoomAmenity(name ?? "", "icons/icon_wifi.svg"),
+        "konferensi video" or "video conference" or "video conf" => new RoomAmenity(name ?? "", "icons/icon_video_conf.svg"),
+        "papan tulis" or "whiteboard" => new RoomAmenity(name ?? "", "icons/icon_whiteboard.svg"),
+        "sistem audio" or "audio system" => new RoomAmenity(name ?? "", "icons/icon_audio.svg"),
+        "aksesibilitas" or "accessibility" => new RoomAmenity(name ?? "", "icons/icon_accessibility.svg"),
+        "tv" or "tv led" => new RoomAmenity(name ?? "", "icons/icon_tv.svg"),
+        _ => new RoomAmenity(name ?? "", "icons/icon_check_circle.svg")
+    };
 }
 
 public class Room
