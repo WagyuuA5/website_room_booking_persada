@@ -42,20 +42,12 @@
                     </div>
                 </div>
 
-                <!-- Section 2: Pilih Ruangan (Landscape Card with Horizontal Scroll) -->
+                <!-- Section 2: Pilih Ruangan (Horizontal Landscape Scroll with Drag) -->
                 <div class="form-section">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                        <label class="field-label" style="margin-bottom: 0;">Pilih Ruangan</label>
-                        <span style="font-size: 11px; color: #94A3B8;">Geser untuk memilih ruangan lain &rarr;</span>
-                    </div>
-
-                    <div class="room-carousel-track" id="facilityRoomCarousel">
-                        @foreach (var r in _rooms)
-                        {
-                            bool isActive = _selectedRoom != null && r.Id == _selectedRoom.Id;
-                            <LandscapeRoomCard Room="r" IsActive="isActive" OnSelect="SelectRoom" />
-                        }
-                    </div>
+                    <PilihRuanganHorizontalScroll Rooms="_rooms" 
+                                                  SelectedRoom="_selectedRoom" 
+                                                  OnRoomSelected="SelectRoom" 
+                                                  CarouselId="facilityRoomCarousel" />
                 </div>
 
                 <!-- Section 3: Tanggal & Waktu Booking -->

@@ -34,30 +34,13 @@
                 </div>
             </div>
 
-            <!-- SECTION 2: Pilih Ruangan (Native Smooth Carousel with Mouse Drag) -->
+            <!-- SECTION 2: Pilih Ruangan (Horizontal Landscape Scroll with Drag) -->
             <div class="form-section">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                    <label class="field-label" style="margin-bottom: 0;">Pilih Ruangan</label>
-                    <span style="font-size: 11px; color: #94A3B8;">Geser untuk melihat ruangan lain &rarr;</span>
-                </div>
-                
-                <div class="room-carousel-track" id="roomSelectionCarousel">
-                    @if (_isLoadingModal)
-                    {
-                        @for (int i = 0; i < 4; i++)
-                        {
-                            <LandscapeRoomCardSkeleton />
-                        }
-                    }
-                    else
-                    {
-                        @foreach (var r in GetDisplayRooms())
-                        {
-                            bool isActive = Room != null && r.Id == Room.Id;
-                            <LandscapeRoomCard Room="r" IsActive="isActive" OnSelect="SelectRoom" />
-                        }
-                    }
-                </div>
+                <PilihRuanganHorizontalScroll Rooms="GetDisplayRooms()" 
+                                              SelectedRoom="Room" 
+                                              OnRoomSelected="SelectRoom" 
+                                              IsLoading="_isLoadingModal" 
+                                              CarouselId="confirmBookingRoomCarousel" />
             </div>
 
             <!-- SECTION 3: Tanggal & Waktu (Mulai - Selesai) -->
