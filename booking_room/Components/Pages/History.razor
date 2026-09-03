@@ -74,7 +74,6 @@
                     </div>
                     <div class="history-status-wrap">
                         <StatusBadge Status="@item.Status" />
-                        <svg class="chevron-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                     </div>
                 </div>
             }
@@ -253,14 +252,8 @@
     .history-status-wrap {
         display: flex;
         align-items: center;
-        gap: 16px;
-    }
-    .chevron-icon {
-        color: #9CA3AF;
-        transition: color 0.2s;
-    }
-    .history-card:hover .chevron-icon {
-        color: var(--color-brand-navy, #0F1F3D);
+        justify-content: flex-end;
+        flex-shrink: 0;
     }
     .empty-state {
         padding: 64px 20px;

@@ -3,7 +3,7 @@
 
 @if (Visible)
 {
-    <div class="modal-backdrop-overlay animate-fade-in" @onclick="HandleOverlayClick">
+    <div class="modal-backdrop-overlay animate-fade-in" style="@(ZIndex.HasValue ? $"z-index: {ZIndex.Value};" : "")" @onclick="HandleOverlayClick">
         <div class="modal-surface-container size-@Size animate-scale-up @Class" @onclick:stopPropagation="true">
             
             @if (ShowHeader)
@@ -62,6 +62,7 @@
     [Parameter] public bool Visible { get; set; } = false;
     [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
     [Parameter] public string Size { get; set; } = "md";
+    [Parameter] public int? ZIndex { get; set; }
     [Parameter] public string LayoutMode { get; set; } = "standard";
     [Parameter] public string? Title { get; set; } = string.Empty;
     [Parameter] public string? Subtitle { get; set; }

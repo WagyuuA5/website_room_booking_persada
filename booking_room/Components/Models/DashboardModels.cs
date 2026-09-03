@@ -7,6 +7,12 @@ public record AnalyticsData(string Period, List<RoomUtilization> Rooms);
 public record ChartDataset(string Label, double[] Data, string BorderColor);
 public record ChartData(string[] Labels, ChartDataset[] Datasets);
 
+public enum DetailRuanganMode
+{
+    Booking,
+    ViewOnly
+}
+
 public record RoomDetail(string RoomName, string Floor, int Capacity, string Status, string StatusClass, string Facilities);
 public record PendingApprovalItem(string RoomName, string RequestedBy, string Date, string TimeSlot, string Purpose, string Priority);
 public record RoomItem(string Id, string Name, int Capacity, string Description, string Status, List<string> Amenities, string Floor, string PhotoUrl = "");

@@ -1,7 +1,7 @@
 @namespace booking_room.Components.Shared
 @using booking_room.Components.Models
 
-<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Size="xl" ShowHeader="false" ShowFooter="false" NoPadding="true">
+<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Size="xl" ShowHeader="false" ShowFooter="false" NoPadding="true" ZIndex="@(ZIndex ?? (IsViewOnly ? 100050 : (int?)null))">
     @if (Room != null)
     {
         <div class="room-details-container">
@@ -121,12 +121,15 @@
                     </div>
                 </div>
 
-                <div class="room-details-footer">
-                    <button type="button" class="btn-cancel" @onclick="Close">Tutup</button>
-                    <button type="button" class="btn-book" @onclick="Book">
-                        <InlineSvg Src="icons/Icon_book_1.svg" Class="icon-sm" Style="fill:currentColor; color:#FFFFFF;" />
-                        <span>Pesan Sekarang</span>
-                    </button>
+                <div class="room-details-footer @(IsViewOnly ? "view-only" : "")">
+                    <button type="button" class="btn-cancel @(IsViewOnly ? "btn-cancel-viewonly" : "")" @onclick="Close">Tutup</button>
+                    @if (!IsViewOnly)
+                    {
+                        <button type="button" class="btn-book" @onclick="Book">
+                            <InlineSvg Src="icons/Icon_book_1.svg" Class="icon-sm" Style="fill:currentColor; color:#FFFFFF;" />
+                            <span>Pesan Sekarang</span>
+                        </button>
+                    }
                 </div>
             </div>
         </div>
@@ -499,14 +502,22 @@
             height: 200px;
         }
     }
+    .btn-cancel.btn-cancel-viewonly {
+        min-width: 130px;
+    }
 </style>
 
 @code {
     [Parameter] public bool Visible { get; set; }
     [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
     [Parameter] public RoomItem? Room { get; set; }
+    [Parameter] public DetailRuanganMode Mode { get; set; } = DetailRuanganMode.Booking;
+    [Parameter] public bool ViewOnly { get; set; }
+    [Parameter] public int? ZIndex { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback OnBook { get; set; }
+
+    private bool IsViewOnly => ViewOnly || Mode == DetailRuanganMode.ViewOnly;
 
     private string GetRoomPhoto(RoomItem room)
     {
