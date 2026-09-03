@@ -24,6 +24,7 @@ public class NotificationItem
 
     public NotificationActionType ActionType { get; set; } = NotificationActionType.None;
     public string? RoutePath { get; set; }
+    public string? ReferenceId { get; set; }
     public string? ModalComponentKey { get; set; }
     public Dictionary<string, object>? ActionParameters { get; set; }
 }

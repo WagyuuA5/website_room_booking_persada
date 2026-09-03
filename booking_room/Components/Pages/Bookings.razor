@@ -251,7 +251,7 @@
     else if (_activeTab == "fasilitas")
     {
         <div class="fade-in-content">
-            <FacilityRequestsView />
+            <FacilityRequestsView HighlightRoomName="@HighlightRoom" HighlightId="@HighlightId" />
         </div>
     }
 </div>
@@ -766,6 +766,12 @@
 @code {
     [SupplyParameterFromQuery(Name = "tab")]
     public string? TabParam { get; set; }
+
+    [SupplyParameterFromQuery(Name = "highlightRoom")]
+    public string? HighlightRoom { get; set; }
+
+    [SupplyParameterFromQuery(Name = "highlight")]
+    public string? HighlightId { get; set; }
 
     private string _activeTab = "ruangan";
     private bool _isTabSwitching = false;

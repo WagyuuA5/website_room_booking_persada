@@ -220,15 +220,18 @@
     .form-input:focus { border-color: #F59E0B; }
     body.dark-mode .form-input { background: #1E293B; border-color: #334155; color: #F8FAFC; }
 
-    .input-with-icon-left { position: relative; }
+    .input-with-icon-left { position: relative; display: flex; align-items: center; }
     .input-icon-left {
         position: absolute;
-        left: 10px;
+        left: 14px;
         top: 50%;
         transform: translateY(-50%);
         pointer-events: none;
+        color: #94A3B8;
+        width: 16px;
+        height: 16px;
     }
-    .form-input-with-icon { padding-left: 32px; }
+    .form-input-with-icon { padding-left: 42px !important; }
 
     .time-range-row {
         display: flex;
@@ -263,8 +266,9 @@
     /* Facility search row */
     .facility-search-row {
         display: flex;
-        gap: 8px;
-        align-items: stretch;
+        gap: 10px;
+        align-items: center;
+        width: 100%;
     }
 
     .search-input-wrapper {
@@ -272,6 +276,7 @@
         position: relative;
         display: flex;
         align-items: center;
+        height: 42px;
     }
 
     .search-icon-svg {
@@ -281,12 +286,20 @@
         transform: translateY(-50%);
         color: #94A3B8;
         pointer-events: none;
+        width: 18px;
+        height: 18px;
+        z-index: 1;
     }
 
     .facility-search-input {
-        padding-left: 42px !important;
-        height: 38px;
+        padding-left: 44px !important;
+        height: 42px;
+        border-radius: 10px;
+        border: 1.5px solid #E2E8F0;
+        font-size: 13.5px;
         box-sizing: border-box;
+        width: 100%;
+        line-height: normal;
     }
 
     .btn-add-facility {
@@ -294,14 +307,14 @@
         align-items: center;
         justify-content: center;
         gap: 6px;
-        height: 38px;
-        padding: 0 16px;
+        height: 42px;
+        padding: 0 18px;
         background: #F59E0B;
         color: #0F172A;
         font-weight: 700;
-        font-size: 13px;
+        font-size: 13.5px;
         border: none;
-        border-radius: 8px;
+        border-radius: 10px;
         cursor: pointer;
         transition: all 0.15s;
         white-space: nowrap;

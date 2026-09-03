@@ -1,7 +1,9 @@
 @namespace booking_room.Components.Shared
 @using booking_room.Services
 @using booking_room.Components.Models
+@using Microsoft.JSInterop
 @inject IFacilityRequestService FacilityService
+@inject IJSRuntime JSRuntime
 @implements IDisposable
 
 <div class="facility-view-container">
@@ -62,7 +64,9 @@
             {
                 var photo = RoomDataProvider.GetRoomPhoto(item.RoomPhotoUrl, item.RoomId);
 
-                <div class="facility-request-card" @onclick="() => OpenDetailModal(item)">
+                <div id="@($"facility-card-{item.Id}")" 
+                     class="facility-request-card @(_activeHighlightId == item.Id ? "highlight-pulse" : "")" 
+                     @onclick="() => OpenDetailModal(item)">
                     <!-- Card Photo Header / Thumb -->
                     <div class="request-card-photo-wrapper">
                         <img src="@photo" alt="@item.RoomName" class="request-card-photo" loading="lazy" />
@@ -466,6 +470,43 @@
             await LoadDataAsync(showSkeleton: false);
             StateHasChanged();
         });
+    }
+
+    [Parameter] public string? HighlightId { get; set; }
+    [Parameter] public string? HighlightRoomName { get; set; }
+
+    private string? _activeHighlightId;
+
+    protected override void OnParametersSet()
+    {
+        if (!string.IsNullOrEmpty(HighlightId))
+        {
+            _activeHighlightId = HighlightId;
+            _activeTab = "All";
+            ApplyFilter();
+        }
+        else if (!string.IsNullOrEmpty(HighlightRoomName))
+        {
+            var match = AllRequests.FirstOrDefault(r => r.RoomName.Contains(HighlightRoomName, StringComparison.OrdinalIgnoreCase));
+            if (match != null)
+            {
+                _activeHighlightId = match.Id;
+                _activeTab = "All";
+                ApplyFilter();
+            }
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!string.IsNullOrEmpty(_activeHighlightId))
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("eval", $"document.getElementById('facility-card-{_activeHighlightId}')?.scrollIntoView({{ behavior: 'smooth', block: 'center' }})");
+            }
+            catch {}
+        }
     }
 
     public void Dispose()

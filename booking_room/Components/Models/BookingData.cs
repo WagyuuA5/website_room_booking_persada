@@ -5,7 +5,7 @@ public record BookingItem(
     string RequestId,
     string RoomName,
     string Floor,
-    string Status, // "pending", "approved", "rejected", "completed"
+    string Status, // "pending", "approved", "rejected", "canceled", "completed"
     string Date,
     string TimeSlot,
     string Duration,
@@ -14,7 +14,8 @@ public record BookingItem(
     string RequestedBy,
     string RequestedByTitle,
     string Purpose,
-    string PhotoUrl
+    string PhotoUrl,
+    string? RejectionReason = null
 );
 
 public record UserProfileData(

@@ -1,0 +1,396 @@
+@namespace booking_room.Components.Shared
+@using booking_room.Components.Models
+
+<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Size="sm" Title="Detail Identitas Peserta" Subtitle="Informasi kontak dan peran peserta" ShowFooter="true" OnClose="Close">
+    <IconContent>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+    </IconContent>
+    <BodyContent>
+        <div class="participant-modal-body">
+            <!-- Header Avatar Card -->
+            <div class="participant-profile-card">
+                <div class="participant-avatar-wrap">
+                    @if (!string.IsNullOrEmpty(CurrentInfo.AvatarUrl))
+                    {
+                        <img src="@CurrentInfo.AvatarUrl" class="participant-avatar-img" alt="@CurrentInfo.Name" />
+                    }
+                    else
+                    {
+                        <div class="participant-avatar-initials">@CurrentInfo.Initials</div>
+                    }
+                    @if (CurrentInfo.IsExternal)
+                    {
+                        <span class="badge-external-tag" title="Peserta / Vendor Eksternal">Eksternal</span>
+                    }
+                </div>
+
+                <div class="participant-header-text">
+                    <h3 class="participant-name">@CurrentInfo.Name</h3>
+                    <p class="participant-role">@CurrentInfo.Role</p>
+                    <span class="participant-affiliation">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                        </svg>
+                        <span>@CurrentInfo.Affiliation</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Detail Information List -->
+            <div class="participant-info-grid">
+                <!-- Kontak: Telepon -->
+                <div class="participant-info-card">
+                    <div class="info-card-label">NOMOR TELEPON / WHATSAPP</div>
+                    <div class="info-card-value">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                        <span>@CurrentInfo.Phone</span>
+                    </div>
+                </div>
+
+                <!-- Kontak: Email -->
+                <div class="participant-info-card">
+                    <div class="info-card-label">EMAIL</div>
+                    <div class="info-card-value">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                        <span>@CurrentInfo.Email</span>
+                    </div>
+                </div>
+
+                <!-- Durasi / Estimasi Pengerjaan (Khusus Teknisi / Vendor) -->
+                @if (!string.IsNullOrEmpty(CurrentInfo.SetupDuration))
+                {
+                    <div class="participant-info-card setup-duration-card">
+                        <div class="info-card-label">ESTIMASI & JADWAL SETUP</div>
+                        <div class="info-card-value text-amber">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            <span>@CurrentInfo.SetupDuration</span>
+                        </div>
+                    </div>
+                }
+
+                <!-- Catatan / Tugas Spesifik -->
+                @if (!string.IsNullOrEmpty(CurrentInfo.Notes))
+                {
+                    <div class="participant-info-card full-span">
+                        <div class="info-card-label">CATATAN TUGAS / PERAN</div>
+                        <p class="participant-notes-text">@CurrentInfo.Notes</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </BodyContent>
+
+    <FooterContent>
+        <div class="participant-modal-footer">
+            <button type="button" class="btn-secondary-app" @onclick="Close">
+                Tutup
+            </button>
+        </div>
+    </FooterContent>
+</AppModal>
+
+<style>
+    .participant-modal-body {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .participant-profile-card {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px;
+        background: #F8FAFC;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 14px;
+    }
+    body.dark-mode .participant-profile-card {
+        background: rgba(15, 23, 42, 0.5);
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .participant-avatar-wrap {
+        position: relative;
+        width: 60px;
+        height: 60px;
+        flex-shrink: 0;
+    }
+    .participant-avatar-img {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    .participant-avatar-initials {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: #1F5D9A;
+        color: #FFFFFF;
+        font-size: 1.35rem;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .badge-external-tag {
+        position: absolute;
+        bottom: -4px;
+        right: -4px;
+        font-size: 9px;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 999px;
+        background: #F59E0B;
+        color: #0F172A;
+        border: 1.5px solid #FFFFFF;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    .participant-header-text {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        overflow: hidden;
+    }
+    .participant-name {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--persada-navy-900, #0F1F3D);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    body.dark-mode .participant-name { color: #F8FAFC; }
+    .participant-role {
+        margin: 0;
+        font-size: 0.8125rem;
+        color: #64748B;
+        font-weight: 600;
+    }
+    .participant-affiliation {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.75rem;
+        color: #1F5D9A;
+        font-weight: 600;
+        margin-top: 3px;
+    }
+    body.dark-mode .participant-affiliation { color: #60A5FA; }
+
+    .participant-info-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .participant-info-card {
+        padding: 10px 14px;
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    body.dark-mode .participant-info-card {
+        background: #1E293B;
+        border-color: #334155;
+    }
+
+    .setup-duration-card {
+        background: #FFFBEB;
+        border-color: #FDE68A;
+    }
+    body.dark-mode .setup-duration-card {
+        background: rgba(245, 158, 11, 0.1);
+        border-color: rgba(245, 158, 11, 0.25);
+    }
+
+    .info-card-label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    body.dark-mode .info-card-label { color: #94A3B8; }
+
+    .info-card-value {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.84rem;
+        font-weight: 600;
+        color: #0F172A;
+    }
+    body.dark-mode .info-card-value { color: #F8FAFC; }
+    .info-card-value.text-amber {
+        color: #B45309;
+    }
+    body.dark-mode .info-card-value.text-amber {
+        color: #FBBF24;
+    }
+
+    .participant-notes-text {
+        margin: 0;
+        font-size: 0.8125rem;
+        color: #334155;
+        line-height: 1.45;
+    }
+    body.dark-mode .participant-notes-text { color: #CBD5E1; }
+
+    .participant-modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        width: 100%;
+    }
+</style>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public string? ParticipantName { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    public record ParticipantDetailData(
+        string Name,
+        string Role,
+        string Affiliation,
+        string Phone,
+        string Email,
+        string? SetupDuration,
+        string? Notes,
+        string? AvatarUrl,
+        string Initials,
+        bool IsExternal
+    );
+
+    private ParticipantDetailData CurrentInfo => GetParticipantData(ParticipantName);
+
+    private async Task HandleVisibleChanged(bool val)
+    {
+        Visible = val;
+        if (VisibleChanged.HasDelegate)
+        {
+            await VisibleChanged.InvokeAsync(val);
+        }
+    }
+
+    private async Task Close()
+    {
+        await HandleVisibleChanged(false);
+        if (OnClose.HasDelegate)
+        {
+            await OnClose.InvokeAsync();
+        }
+    }
+
+    private ParticipantDetailData GetParticipantData(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return new ParticipantDetailData(
+                "Peserta Rapat",
+                "Anggota Tim",
+                "PT Personel Alih Daya Tbk",
+                "+62 812-0000-0000",
+                "peserta@persada.co.id",
+                null,
+                null,
+                null,
+                "PR",
+                false
+            );
+        }
+
+        var lower = name.ToLower();
+
+        if (lower.Contains("teknisi") || lower.Contains("audio") || lower.Contains("vendor"))
+        {
+            return new ParticipantDetailData(
+                name,
+                "Teknisi Audio & AV Specialist",
+                "PT Audio Prima Solusi (Vendor Resmi)",
+                "+62 812-8899-7744",
+                "support.av@primasolusi.co.id",
+                "30 Menit sebelum rapat dimulai (Pukul 08:30 WIB)",
+                "Bertanggung jawab atas persiapan mikrofon nirkabel, pengujian mixer audio, serta pendampingan teknis selama pertemuan berlangsung.",
+                "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
+                "TV",
+                true
+            );
+        }
+
+        if (lower.Contains("budi"))
+        {
+            return new ParticipantDetailData(
+                name,
+                "Lead Software Engineer",
+                "Divisi Teknologi Informasi • Persada HQ",
+                "+62 813-4567-8901",
+                "budi.santoso@persada.co.id",
+                null,
+                "Pewawancara teknis utama sesi evaluasi kompetensi Frontend Engineer.",
+                "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80",
+                "BS",
+                false
+            );
+        }
+
+        if (lower.Contains("siti"))
+        {
+            return new ParticipantDetailData(
+                name,
+                "HR & Talent Acquisition Specialist",
+                "Divisi Sumber Daya Manusia • Persada HQ",
+                "+62 811-2345-6789",
+                "siti.rahayu@persada.co.id",
+                null,
+                "Fasilitator wawancara dan administrasi rekrutmen kandidat.",
+                "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80",
+                "SR",
+                false
+            );
+        }
+
+        if (lower.Contains("ahmad"))
+        {
+            return new ParticipantDetailData(
+                name,
+                "Training & People Development Manager",
+                "Divisi SDM • Persada HQ",
+                "+62 812-3344-5566",
+                "ahmad.fauzi@persada.co.id",
+                null,
+                "Penyelenggara orientasi dan pelatihan tim.",
+                "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&auto=format&fit=crop&q=80",
+                "AF",
+                false
+            );
+        }
+
+        // Generic participant
+        var initials = name.Length >= 2 ? name.Substring(0, 2).ToUpper() : "P";
+        return new ParticipantDetailData(
+            name,
+            "Anggota Tim / Peserta",
+            "PT Personel Alih Daya Tbk",
+            "+62 812-3456-7890",
+            $"{name.ToLower().Replace(" ", ".")}@persada.co.id",
+            null,
+            null,
+            null,
+            initials,
+            false
+        );
+    }
+}

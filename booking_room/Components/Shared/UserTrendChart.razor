@@ -6,17 +6,54 @@
 <div class="user-trend-card">
     <div class="user-trend-header">
         <div>
-            <h3 class="trend-title">Tren Pemesanan Saya</h3>
-            <p class="trend-subtitle">Jumlah pemesanan ruangan 6 bulan terakhir</p>
+            <h3 class="trend-title">Tren Pemesanan Ruangan Saya</h3>
+            <p class="trend-subtitle">Statistik frekuensi dan utilisasi reservasi ruangan kerja Anda</p>
         </div>
-        <button type="button" class="btn-export-pill" @onclick="ExportData">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="7 10 12 15 17 10"></polyline>
-                <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            <span>Ekspor</span>
-        </button>
+        <div class="trend-header-actions">
+            <div class="trend-period-tabs">
+                <button type="button" class="trend-tab-btn @(_selectedPeriod == "6m" ? "active" : "")" @onclick='() => SetPeriod("6m")'>6 Bulan</button>
+                <button type="button" class="trend-tab-btn @(_selectedPeriod == "1y" ? "active" : "")" @onclick='() => SetPeriod("1y")'>Tahun Ini</button>
+            </div>
+            <button type="button" class="btn-export-pill" @onclick="ExportData">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span>Ekspor Data</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- KPI Summary Pills -->
+    <div class="trend-kpi-grid">
+        <div class="trend-kpi-item">
+            <span class="trend-kpi-label">TOTAL PEMESANAN</span>
+            <div class="trend-kpi-value-row">
+                <span class="trend-kpi-num">@TotalBookings Sesi</span>
+                <span class="trend-kpi-badge positive">+14% YoY</span>
+            </div>
+        </div>
+        <div class="trend-kpi-item">
+            <span class="trend-kpi-label">RATA-RATA BULANAN</span>
+            <div class="trend-kpi-value-row">
+                <span class="trend-kpi-num">@AverageBookings Sesi/Bln</span>
+                <span class="trend-kpi-badge neutral">Stabil</span>
+            </div>
+        </div>
+        <div class="trend-kpi-item">
+            <span class="trend-kpi-label">RUANGAN FAVORIT</span>
+            <div class="trend-kpi-value-row">
+                <span class="trend-kpi-num-text">Focus Room Alpha</span>
+            </div>
+        </div>
+        <div class="trend-kpi-item">
+            <span class="trend-kpi-label">STATUS TINGKAT KEHADIRAN</span>
+            <div class="trend-kpi-value-row">
+                <span class="trend-kpi-num">96.4%</span>
+                <span class="trend-kpi-badge positive">Tepat Waktu</span>
+            </div>
+        </div>
     </div>
 
     <div class="user-trend-chart-box" style="min-height: 250px;">
@@ -52,7 +89,9 @@
     .user-trend-header {
         display: flex;
         justify-content: space-between;
-        align-items: flex-start;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
         margin-bottom: 20px;
     }
     .trend-title {
@@ -67,6 +106,43 @@
         font-size: var(--fs-sm, 14px);
         color: var(--color-neutral-600, #6E6E73);
         margin: 0;
+    }
+
+    .trend-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .trend-period-tabs {
+        display: flex;
+        background: #F1F5F9;
+        border-radius: 999px;
+        padding: 3px;
+        gap: 2px;
+    }
+    body.dark-mode .trend-period-tabs { background: #1E293B; }
+
+    .trend-tab-btn {
+        border: none;
+        background: transparent;
+        padding: 5px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748B;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .trend-tab-btn.active {
+        background: #FFFFFF;
+        color: #0F172A;
+        font-weight: 700;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+    body.dark-mode .trend-tab-btn.active {
+        background: #334155;
+        color: #F8FAFC;
     }
 
     .btn-export-pill {
@@ -92,6 +168,68 @@
         border-color: rgba(147, 197, 253, 0.3);
     }
 
+    /* KPI Summary Pills */
+    .trend-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 14px;
+        margin-bottom: 24px;
+    }
+    .trend-kpi-item {
+        background: #F8FAFC;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 12px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    body.dark-mode .trend-kpi-item {
+        background: rgba(15, 23, 42, 0.4);
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+    .trend-kpi-label {
+        font-size: 10.5px;
+        font-weight: 700;
+        color: #64748B;
+        letter-spacing: 0.04em;
+    }
+    body.dark-mode .trend-kpi-label { color: #94A3B8; }
+    .trend-kpi-value-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .trend-kpi-num {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #0F172A;
+    }
+    body.dark-mode .trend-kpi-num { color: #F8FAFC; }
+    .trend-kpi-num-text {
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: #1F5D9A;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    body.dark-mode .trend-kpi-num-text { color: #60A5FA; }
+    .trend-kpi-badge {
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 999px;
+    }
+    .trend-kpi-badge.positive {
+        background: #DCFCE7;
+        color: #166534;
+    }
+    .trend-kpi-badge.neutral {
+        background: #E2E8F0;
+        color: #475569;
+    }
+
     .user-trend-chart-box {
         position: relative;
         width: 100%;
@@ -102,18 +240,47 @@
     private record TrendPoint(int X, string Month, int Value);
     private List<TrendPoint> _chartPoints = new();
     private ApexChartOptions<TrendPoint> options = new();
+    private string _selectedPeriod = "6m";
+
+    private int TotalBookings => _chartPoints.Sum(p => p.Value);
+    private double AverageBookings => _chartPoints.Any() ? Math.Round((double)TotalBookings / _chartPoints.Count, 1) : 0;
 
     protected override void OnInitialized()
     {
-        _chartPoints = new List<TrendPoint>
+        SetPeriod("6m");
+    }
+
+    private void SetPeriod(string period)
+    {
+        _selectedPeriod = period;
+        if (period == "1y")
         {
-            new TrendPoint(1, "Mei", 4),
-            new TrendPoint(2, "Jun", 8),
-            new TrendPoint(3, "Jul", 5),
-            new TrendPoint(4, "Ags", 12),
-            new TrendPoint(5, "Sep", 9),
-            new TrendPoint(6, "Okt", 15)
-        };
+            _chartPoints = new List<TrendPoint>
+            {
+                new TrendPoint(1, "Jan", 6),
+                new TrendPoint(2, "Feb", 5),
+                new TrendPoint(3, "Mar", 9),
+                new TrendPoint(4, "Apr", 7),
+                new TrendPoint(5, "Mei", 4),
+                new TrendPoint(6, "Jun", 8),
+                new TrendPoint(7, "Jul", 5),
+                new TrendPoint(8, "Ags", 12),
+                new TrendPoint(9, "Sep", 9),
+                new TrendPoint(10, "Okt", 15)
+            };
+        }
+        else
+        {
+            _chartPoints = new List<TrendPoint>
+            {
+                new TrendPoint(1, "Mei", 4),
+                new TrendPoint(2, "Jun", 8),
+                new TrendPoint(3, "Jul", 5),
+                new TrendPoint(4, "Ags", 12),
+                new TrendPoint(5, "Sep", 9),
+                new TrendPoint(6, "Okt", 15)
+            };
+        }
 
         options = new ApexChartOptions<TrendPoint>
         {

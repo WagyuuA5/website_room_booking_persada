@@ -82,28 +82,32 @@
                     </div>
                 </div>
 
-                <!-- Room Specifications -->
+                <!-- Room Specifications (CASE 7: Large Banner) -->
                 <div class="room-spec-card">
-                    <div class="room-spec-header">
-                        <img src="@RoomDataProvider.GetRoomPhoto(room?.PhotoUrl, EventItem.RoomId)" alt="@EventItem.RoomName" class="room-spec-img" />
-                        <div class="room-spec-title-col">
-                            <h4 class="room-spec-name">@EventItem.RoomName</h4>
-                            <div class="room-spec-sub">Lantai @(room?.Floor ?? "1"), Gedung Persada HQ • Kapasitas: @(room?.Capacity ?? 10) Orang</div>
-                            <p class="room-spec-desc">@(room?.Description ?? "Ruang pertemuan modern dengan fasilitas lengkap.")</p>
-                        </div>
+                    <div class="room-spec-banner-hero">
+                        <img src="@RoomDataProvider.GetRoomPhoto(room?.PhotoUrl, EventItem.RoomId)" alt="@EventItem.RoomName" class="room-spec-banner-img" />
+                        <span class="room-spec-capacity-badge">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            <span>Kapasitas @(room?.Capacity ?? 10) Orang</span>
+                        </span>
                     </div>
-                    <div class="room-spec-amenities-row">
-                        @if (room?.Amenities != null && room.Amenities.Any())
-                        {
-                            @foreach (var am in room.Amenities)
+                    <div class="room-spec-info-body">
+                        <h4 class="room-spec-name">@EventItem.RoomName</h4>
+                        <div class="room-spec-sub">Lantai @(room?.Floor ?? "1"), Gedung Persada HQ</div>
+                        <p class="room-spec-desc">@(room?.Description ?? "Ruang pertemuan modern dengan fasilitas lengkap.")</p>
+                        <div class="room-spec-amenities-row">
+                            @if (room?.Amenities != null && room.Amenities.Any())
                             {
-                                <span class="spec-amenity-chip">@am</span>
+                                @foreach (var am in room.Amenities)
+                                {
+                                    <span class="spec-amenity-chip">@am</span>
+                                }
                             }
-                        }
+                        </div>
                     </div>
                 </div>
 
-                <!-- Peserta yang Diundang -->
+                <!-- Peserta yang Diundang (CASE 1: Clickable chips) -->
                 <div class="detail-section">
                     <h4 class="info-section-title">PESERTA YANG DIUNDANG (@(EventItem.Attendees.Count))</h4>
                     @if (EventItem.Attendees.Any())
@@ -111,9 +115,10 @@
                         <div class="attendees-list">
                             @foreach (var attendee in EventItem.Attendees)
                             {
-                                <div class="attendee-chip">
+                                <div class="attendee-chip clickable" @onclick="() => OpenParticipantDetail(attendee)" title="Klik untuk melihat profil identitas @attendee">
                                     <div class="attendee-avatar">@(attendee.Length >= 2 ? attendee.Substring(0, 2).ToUpper() : "P")</div>
                                     <span>@attendee</span>
+                                    <svg class="chip-info-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                                 </div>
                             }
                         </div>
@@ -124,7 +129,7 @@
                     }
                 </div>
 
-                <!-- Permintaan Fasilitas Tambahan -->
+                <!-- Permintaan Fasilitas Tambahan (CASE 2: Direct routing with highlight) -->
                 @if (!string.IsNullOrEmpty(EventItem.AdditionalFacilities))
                 {
                     <div class="facility-notice-box">
@@ -163,6 +168,9 @@
             </div>
         </FooterContent>
     </AppModal>
+
+    <!-- CASE 1: Participant Identity Detail Popup -->
+    <ParticipantDetailModal @bind-Visible="_isParticipantModalOpen" ParticipantName="@_selectedParticipantName" />
 }
 
 <style>
@@ -263,48 +271,77 @@
 
     .room-spec-card {
         background: #FFFFFF;
-        border: 1px solid #E2E8F0;
-        border-radius: 12px;
-        padding: 12px;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 14px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
     }
     body.dark-mode .room-spec-card { background: #1E293B; border-color: #334155; }
 
-    .room-spec-header {
-        display: flex;
-        gap: 12px;
-        align-items: center;
+    .room-spec-banner-hero {
+        position: relative;
+        width: 100%;
+        height: 180px;
+        overflow: hidden;
+        background: #0F172A;
     }
 
-    .room-spec-img {
-        width: 75px;
-        height: 60px;
-        border-radius: 8px;
+    .room-spec-banner-img {
+        width: 100%;
+        height: 100%;
         object-fit: cover;
-        flex-shrink: 0;
+        object-position: center;
+        display: block;
+        transition: transform 0.3s ease;
+    }
+    .room-spec-card:hover .room-spec-banner-img {
+        transform: scale(1.02);
     }
 
-    .room-spec-title-col { flex: 1; min-width: 0; }
-    .room-spec-name { font-size: 14px; font-weight: 700; margin: 0; color: #0F172A; }
+    .room-spec-capacity-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 12px;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.75);
+        color: #FFFFFF;
+        font-size: 11px;
+        font-weight: 700;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .room-spec-info-body {
+        padding: 14px 16px 16px;
+    }
+
+    .room-spec-name { font-size: 16px; font-weight: 800; margin: 0; color: #0F172A; }
     body.dark-mode .room-spec-name { color: #F8FAFC; }
-    .room-spec-sub { font-size: 11.5px; color: #64748B; margin-top: 2px; }
-    .room-spec-desc { font-size: 11.5px; color: #64748B; margin: 4px 0 0 0; line-height: 1.35; }
+    .room-spec-sub { font-size: 12px; color: #64748B; font-weight: 600; margin-top: 3px; }
+    .room-spec-desc { font-size: 12px; color: #64748B; margin: 6px 0 0 0; line-height: 1.45; }
+    body.dark-mode .room-spec-desc { color: #94A3B8; }
 
     .room-spec-amenities-row {
         display: flex;
         gap: 6px;
         flex-wrap: wrap;
-        margin-top: 10px;
-        padding-top: 8px;
+        margin-top: 12px;
+        padding-top: 10px;
         border-top: 1px dashed #E2E8F0;
     }
     body.dark-mode .room-spec-amenities-row { border-color: #334155; }
 
     .spec-amenity-chip {
-        font-size: 10.5px;
+        font-size: 11px;
         font-weight: 600;
-        padding: 2px 8px;
+        padding: 3px 10px;
         background: #F1F5F9;
-        color: #475569;
+        color: #334155;
         border-radius: 6px;
     }
     body.dark-mode .spec-amenity-chip { background: #334155; color: #CBD5E1; }
@@ -322,17 +359,42 @@
     }
 
     .attendee-chip {
-        display: flex;
+        display: inline-flex;
         align-items: center;
         gap: 6px;
-        padding: 4px 10px;
+        padding: 5px 12px;
         background: #F8FAFC;
         border: 1px solid #E2E8F0;
         border-radius: 999px;
         font-size: 12px;
+        font-weight: 600;
         color: #334155;
+        transition: all 0.15s ease;
     }
     body.dark-mode .attendee-chip { background: #1E293B; border-color: #334155; color: #E2E8F0; }
+
+    .attendee-chip.clickable {
+        cursor: pointer;
+    }
+    .attendee-chip.clickable:hover {
+        background: #FEF3C7;
+        border-color: #F59E0B;
+        color: #92400E;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(245, 158, 11, 0.2);
+    }
+    body.dark-mode .attendee-chip.clickable:hover {
+        background: rgba(245, 158, 11, 0.15);
+        border-color: #F59E0B;
+        color: #FDE68A;
+    }
+    .chip-info-icon {
+        color: #94A3B8;
+        transition: color 0.15s;
+    }
+    .attendee-chip:hover .chip-info-icon {
+        color: #D97706;
+    }
 
     .attendee-avatar {
         width: 20px;
@@ -465,6 +527,15 @@
     [Parameter] public EventCallback<CalendarEventItem> OnCancelBooking { get; set; }
     [Parameter] public EventCallback<CalendarEventItem> OnModifyBooking { get; set; }
 
+    private bool _isParticipantModalOpen = false;
+    private string? _selectedParticipantName;
+
+    private void OpenParticipantDetail(string name)
+    {
+        _selectedParticipantName = name;
+        _isParticipantModalOpen = true;
+    }
+
     private async Task HandleVisibleChanged(bool val)
     {
         Visible = val;
@@ -479,7 +550,8 @@
     private async Task NavigateToFacilities()
     {
         await Close();
-        Navigation.NavigateTo("/fasilitas");
+        var roomName = Uri.EscapeDataString(EventItem?.RoomName ?? "");
+        Navigation.NavigateTo($"/pemesanan?tab=fasilitas&highlightRoom={roomName}");
     }
 
     private async Task HandleCancel()
