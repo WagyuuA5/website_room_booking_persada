@@ -1,102 +1,801 @@
-﻿@namespace booking_room.Components.Shared
+@namespace booking_room.Components.Shared
 @using booking_room.Components.Models
 
-<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Title="Konfirmasi Pemesanan" Subtitle="Periksa kembali detail pesanan" Size="lg">
+<AppModal Visible="Visible" VisibleChanged="HandleVisibleChanged" Size="lg" Title="Konfirmasi Pemesanan" Subtitle="Jadwalkan ruangan atau sumber daya baru" ShowFooter="true">
     <IconContent>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="9 11 12 14 22 4"></polyline>
-            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+            <path d="M9 16l2 2 4-4"></path>
         </svg>
     </IconContent>
-    <BodyContent>
-        <div class="confirm-booking-layout">
+    <ChildContent>
+        <div class="confirm-modal-body">
+            
+            <!-- SECTION 1: Data Pemesan -->
             <div class="form-section">
-                <label class="form-label">RUANGAN TERPILIH</label>
-                <div class="room-selector-card">
-                    <img src="@Room?.PhotoUrl" alt="@Room?.Name" class="mini-thumb" />
-                    <div>
-                        <h4 style="margin:0 0 4px 0;">@Room?.Name</h4>
-                        <p style="margin:0; font-size:12px; color:var(--color-neutral-600);">Kapasitas @Room?.Capacity org â€¢ @Room?.Floor</p>
+                <div class="grid-2-col">
+                    <div class="form-group">
+                        <label>NAMA PEMESAN</label>
+                        <input type="text" class="form-input" @bind="_bookerName" />
                     </div>
-                    <button class="btn-text-link" style="margin-left:auto;">GANTI RUANGAN</button>
-                </div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                <div class="form-section">
-                    <label class="form-label">JADWAL</label>
-                    <input type="date" class="form-input" />
-                </div>
-                <div class="form-section">
-                    <label class="form-label">WAKTU</label>
-                    <div style="display:flex; gap:8px;">
-                        <input type="time" class="form-input" style="flex:1;" />
-                        <span style="align-self:center;">-</span>
-                        <input type="time" class="form-input" style="flex:1;" />
+                    <div class="form-group">
+                        <label>DIVISI</label>
+                        <select class="form-input" @bind="_division">
+                            <option value="Teknologi Informasi">Teknologi Informasi</option>
+                            <option value="Keuangan">Keuangan</option>
+                            <option value="SDM">SDM</option>
+                            <option value="Operasional">Operasional</option>
+                            <option value="Marketing">Marketing</option>
+                        </select>
                     </div>
                 </div>
             </div>
-            
-            <div class="conflict-alert" style="display:none;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                <span>Jadwal bentrok dengan "Meeting BOD" (10:00 - 11:30)</span>
+
+            <!-- SECTION 2: Pilih Ruangan -->
+            <div class="form-section">
+                <label>RUANGAN TERPILIH</label>
+                <div class="selected-room-card">
+                    <div class="room-card-content">
+                        @if (Room != null)
+                        {
+                            <div class="room-thumbnail">
+                                @if (string.IsNullOrEmpty(Room.PhotoUrl))
+                                {
+                                    <div class="room-thumbnail-placeholder">@Room.Name.Substring(0,1)</div>
+                                }
+                                else
+                                {
+                                    <img src="@Room.PhotoUrl" alt="@Room.Name" />
+                                }
+                            </div>
+                            <div class="room-info">
+                                <div class="room-title">@Room.Name</div>
+                                <div class="room-meta">Kapasitas @Room.Capacity org &bull; Lantai @Room.Floor</div>
+                                <div class="room-status"><span class="status-badge @Room.Status.ToLower()">@Room.Status</span></div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="room-thumbnail">
+                                <div class="room-thumbnail-placeholder">?</div>
+                            </div>
+                            <div class="room-info">
+                                <div class="room-title">Belum ada ruangan yang dipilih</div>
+                            </div>
+                        }
+                    </div>
+                    <div class="room-card-action">
+                        <button class="btn-text" @onclick="Back">GANTI RUANGAN</button>
+                    </div>
+                </div>
             </div>
 
+            <!-- SECTION 3: Jadwal -->
             <div class="form-section">
-                <label class="form-label">KAPASITAS PESERTA</label>
-                <input type="number" class="form-input" @bind="_participants" @bind:event="oninput" style="margin-bottom:8px;" />
-                <div class="progress-bar-bg">
-                    <div class="progress-bar-fill @(CapacityPercentage > 100 ? "danger" : "normal")" style="width: @(Math.Min(CapacityPercentage, 100))%"></div>
+                <div class="grid-2-col">
+                    <div class="form-group">
+                        <label>TANGGAL</label>
+                        <input type="date" class="form-input" @bind="_selectedDate" />
+                    </div>
+                    <div class="form-group">
+                        <label>WAKTU (MULAI - SELESAI)</label>
+                        <div class="time-inputs">
+                            <input type="time" class="form-input" @bind="_startTime" />
+                            <span class="time-separator">-</span>
+                            <input type="time" class="form-input" @bind="_endTime" />
+                        </div>
+                    </div>
                 </div>
-                <p style="margin:4px 0 0 0; font-size:12px; color:var(--color-neutral-600);">@_participants / @(Room?.Capacity ?? 0) Peserta</p>
             </div>
-            
-            <div class="form-section" style="display:flex; align-items:center; gap:12px;">
-                <input type="checkbox" id="externalGuests" />
-                <label for="externalGuests" style="font-size:14px; margin:0; cursor:pointer;">Undang Tamu Eksternal (Di luar Persada)</label>
+
+            <!-- SECTION 4: Jadikan Berulang (Recurring Booking) -->
+            <div class="form-section recurring-section">
+                <div class="recurring-header">
+                    <div class="recurring-title-wrap">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                            <path d="M17 14l-4-4-4 4"></path>
+                            <path d="M17 14H7v5"></path>
+                        </svg>
+                        <span>Jadikan Berulang (Recurring Booking)</span>
+                    </div>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="recurringToggle" @bind="_isRecurring" />
+                        <label for="recurringToggle" class="toggle-label"></label>
+                    </div>
+                </div>
+                
+                <div class="recurring-panel @(_isRecurring ? "expanded" : "collapsed")">
+                    <div class="recurring-panel-inner">
+                        
+                        <div class="form-group">
+                            <label>POLA PERULANGAN</label>
+                            <div class="tabs-group">
+                                <button class="tab-btn @(_recurPattern == "daily" ? "active" : "")" @onclick="@(() => SetPattern("daily"))">Harian</button>
+                                <button class="tab-btn @(_recurPattern == "weekly" ? "active" : "")" @onclick="@(() => SetPattern("weekly"))">Mingguan</button>
+                                <button class="tab-btn @(_recurPattern == "monthly" ? "active" : "")" @onclick="@(() => SetPattern("monthly"))">Bulanan</button>
+                            </div>
+                        </div>
+
+                        @if (_recurPattern == "weekly")
+                        {
+                            <div class="form-group">
+                                <div class="day-selector">
+                                    @for (int i = 0; i < 7; i++)
+                                    {
+                                        var idx = i;
+                                        <button class="day-circle @(_selectedDays[idx] ? "selected" : "")" @onclick="@(() => ToggleDay(idx))">
+                                            @DayInitials[idx]
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <div class="grid-2-col">
+                            <div class="form-group">
+                                <label>BERAKHIR SETELAH</label>
+                                <div class="input-with-suffix">
+                                    <input type="number" class="form-input" min="1" max="30" @bind="_recurEndCount" />
+                                    <span class="suffix">Kali</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>ATAU TANGGAL</label>
+                                <input type="date" class="form-input" @bind="_recurEndDate" />
+                            </div>
+                        </div>
+
+                        <div class="preview-schedule">
+                            <label>PREVIEW JADWAL</label>
+                            <div class="schedule-list">
+                                @{
+                                    var dates = GenerateRecurringDates();
+                                    for (int i = 0; i < dates.Count; i++)
+                                    {
+                                        var idx = i;
+                                        var date = dates[idx];
+                                        if (_skippedDates.Contains(idx))
+                                            continue;
+
+                                        bool isConflict = (idx == 1 || idx == 4); // mock data: 2nd and 5th entries show conflict
+
+                                        <div class="schedule-row @(isConflict ? "conflict" : "")">
+                                            <div class="schedule-date">@date.ToString("dd MMM yyyy, dddd")</div>
+                                            @if (isConflict)
+                                            {
+                                                <div class="schedule-conflict-info">
+                                                    <span class="conflict-text">Ruangan tidak tersedia pada waktu ini</span>
+                                                    <div class="conflict-actions">
+                                                        <button class="btn-text-sm" @onclick="@(() => SkipDate(idx))">Lewati</button>
+                                                        <button class="btn-outline-pill">Ganti Ruangan</button>
+                                                    </div>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="schedule-status">
+                                                    <span class="pill-green">TERSEDIA</span>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
             </div>
-            
+
+            <!-- SECTION 5: Undang Peserta -->
             <div class="form-section">
-                <label class="form-label">CATATAN TAMBAHAN</label>
-                <textarea class="form-input" rows="3" placeholder="Tuliskan jika butuh tambahan kursi atau konsumsi..."></textarea>
+                <label>UNDANG PESERTA</label>
+                <div class="input-with-button">
+                    <input type="text" class="form-input" placeholder="Cari nama kolega..." @bind="_newParticipant" />
+                    <button class="btn-add" @onclick="AddParticipant">Tambah</button>
+                </div>
+                
+                @{
+                    int capacity = Room?.Capacity ?? 0;
+                    int participantCount = _participants.Count + 1; // +1 for booker
+                    double fillPercent = capacity > 0 ? ((double)participantCount / capacity) * 100 : 0;
+                    bool overCapacity = participantCount > capacity;
+                }
+                
+                <div class="capacity-indicator">
+                    <div class="capacity-text">@participantCount dari @capacity Kapasitas Ruangan</div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill @(overCapacity ? "danger" : "")" style="width: @(Math.Min(fillPercent, 100))%;"></div>
+                    </div>
+                </div>
+
+                <div class="chip-list">
+                    @foreach (var p in _participants)
+                    {
+                        <div class="chip">
+                            @p
+                            <button class="chip-remove" @onclick="@(() => RemoveParticipant(p))">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                            </button>
+                        </div>
+                    }
+                </div>
             </div>
+
+            <!-- SECTION 6: Undang Tamu Eksternal -->
+            <div class="form-section">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="extGuest" @bind="_isExternalGuest" />
+                    <label for="extGuest">Undang Tamu Eksternal (Di luar Persada)</label>
+                </div>
+                @if (_isExternalGuest)
+                {
+                    <div class="form-group mt-2">
+                        <input type="email" class="form-input" placeholder="Email tamu eksternal..." @bind="_externalEmail" />
+                    </div>
+                }
+            </div>
+
+            <!-- SECTION 7: Catatan -->
+            <div class="form-section">
+                <label>CATATAN / PERMINTAAN KHUSUS</label>
+                <textarea class="form-input" rows="3" @bind="_notes"></textarea>
+            </div>
+            
         </div>
-    </BodyContent>
+    </ChildContent>
     <FooterContent>
-        <button class="btn-secondary" @onclick="Back">Batal</button>
-        <button class="btn-primary" @onclick="Confirm">Konfirmasi Pemesanan</button>
+        <button class="btn-cancel" @onclick="Back">Batal</button>
+        <button class="btn-confirm" @onclick="Confirm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            Konfirmasi Pemesanan
+        </button>
     </FooterContent>
 </AppModal>
 
 <style>
-    .confirm-booking-layout { display: flex; flex-direction: column; gap: 20px; }
-    .form-section { display: flex; flex-direction: column; gap: 6px; }
-    .form-label { font-size: 12px; font-weight: 600; color: var(--color-neutral-600); }
+    /* Variables */
+    :root {
+        --color-primary: #F59E0B;
+        --color-primary-light: #FEF3C7;
+        --color-primary-dark: #92400E;
+        --color-navy: #0F172A;
+        --color-neutral-100: #F1F5F9;
+        --color-neutral-200: #E2E8F0;
+        --color-neutral-300: #CBD5E1;
+        --color-neutral-600: #475569;
+        --color-neutral-800: #1E293B;
+        --color-white: #FFFFFF;
+        --color-danger-bg: #FEF2F2;
+        --color-danger-text: #DC2626;
+        --color-success-bg: #DCFCE7;
+        --color-success-text: #166534;
+        
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 24px;
+        --radius-full: 999px;
+    }
+
+    body.dark-mode {
+        --color-navy: #E2E8F0;
+        --color-neutral-100: #1E293B;
+        --color-neutral-200: #334155;
+        --color-neutral-300: #475569;
+        --color-neutral-600: #94A3B8;
+        --color-neutral-800: #F1F5F9;
+        --color-white: #0F172A;
+        --color-danger-bg: #450A0A;
+        --color-danger-text: #F87171;
+        --color-success-bg: #052E16;
+        --color-success-text: #4ADE80;
+    }
+
+    .confirm-modal-body {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        padding: 16px 0;
+    }
+
+    .form-section {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    label {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--color-neutral-600);
+        margin-bottom: 4px;
+    }
+
     .form-input {
-        padding: 10px 12px;
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid var(--color-neutral-300);
+        border-radius: var(--radius-sm);
+        background-color: var(--color-white);
+        color: var(--color-neutral-800);
+        font-family: inherit;
+        font-size: 1rem;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+    .form-input:focus {
+        border-color: var(--color-primary);
+    }
+
+    .grid-2-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    @@media (max-width: 640px) {
+        .grid-2-col {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Selected Room Card */
+    .selected-room-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        border: 3px solid var(--color-primary);
+        border-radius: var(--radius-md);
+        background-color: var(--color-white);
+    }
+
+    .room-card-content {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .room-thumbnail {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+        background-color: var(--color-neutral-200);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .room-thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .room-thumbnail-placeholder {
+        font-weight: 700;
+        color: var(--color-neutral-600);
+        font-size: 1.2rem;
+    }
+
+    .room-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .room-title {
+        font-weight: 700;
+        color: var(--color-neutral-800);
+        font-size: 1.1rem;
+    }
+
+    .room-meta {
+        font-size: 0.85rem;
+        color: var(--color-neutral-600);
+    }
+
+    .room-status {
+        margin-top: 2px;
+    }
+
+    .status-badge {
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: var(--radius-full);
+    }
+    
+    .status-badge.tersedia {
+        background-color: var(--color-success-bg);
+        color: var(--color-success-text);
+    }
+
+    .btn-text {
+        background: none;
+        border: none;
+        color: var(--color-primary);
+        font-weight: 700;
+        cursor: pointer;
+        padding: 8px;
+        font-size: 0.9rem;
+    }
+    .btn-text:hover {
+        text-decoration: underline;
+    }
+
+    /* Time Inputs */
+    .time-inputs {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .time-separator {
+        font-weight: 700;
+        color: var(--color-neutral-600);
+    }
+
+    /* Recurring Section */
+    .recurring-section {
+        background-color: var(--color-neutral-100);
+        border-radius: var(--radius-md);
+        padding: 16px;
+    }
+
+    .recurring-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .recurring-title-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        color: var(--color-navy);
+        font-size: 1.1rem;
+    }
+
+    /* Toggle Switch */
+    .toggle-switch {
+        position: relative;
+        width: 44px;
+        height: 24px;
+    }
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .toggle-label {
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: var(--color-neutral-300);
+        border-radius: 24px;
+        transition: .3s;
+    }
+    .toggle-label:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        border-radius: 50%;
+        transition: .3s;
+    }
+    .toggle-switch input:checked + .toggle-label {
+        background-color: var(--color-primary);
+    }
+    .toggle-switch input:checked + .toggle-label:before {
+        transform: translateX(20px);
+    }
+
+    /* Expandable Panel */
+    .recurring-panel {
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease-out, opacity 0.4s ease-out;
+    }
+    .recurring-panel.expanded {
+        max-height: 1500px;
+        opacity: 1;
+    }
+    .recurring-panel-inner {
+        padding-top: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    /* Tabs */
+    .tabs-group {
+        display: flex;
+        gap: 8px;
+    }
+    .tab-btn {
+        padding: 8px 16px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--color-neutral-200);
+        background-color: transparent;
+        color: var(--color-neutral-600);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .tab-btn.active {
+        background-color: var(--color-primary-light);
+        border: 1.5px solid var(--color-primary);
+        color: var(--color-primary-dark);
+        font-weight: 700;
+    }
+
+    /* Day Selector */
+    .day-selector {
+        display: flex;
+        gap: 8px;
+    }
+    .day-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 1px solid var(--color-neutral-300);
+        background: transparent;
+        color: var(--color-neutral-600);
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .day-circle.selected {
+        background-color: var(--color-primary);
+        border-color: var(--color-primary);
+        color: white;
+    }
+
+    .input-with-suffix {
+        display: flex;
+        align-items: center;
+        background-color: var(--color-white);
+        border: 1px solid var(--color-neutral-300);
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+    }
+    .input-with-suffix input {
+        border: none;
+        border-radius: 0;
+    }
+    .suffix {
+        padding: 0 16px;
+        color: var(--color-neutral-600);
+        font-weight: 600;
+        background-color: var(--color-neutral-100);
+        border-left: 1px solid var(--color-neutral-300);
+        height: 100%;
+        display: flex;
+        align-items: center;
+    }
+
+    /* Preview Schedule */
+    .preview-schedule {
+        margin-top: 8px;
+    }
+    .schedule-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 8px;
+    }
+    .schedule-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background-color: var(--color-white);
         border: 1px solid var(--color-neutral-200);
         border-radius: var(--radius-sm);
-        background: transparent;
-        color: var(--color-navy);
-        font-size: 14px;
-        width: 100%;
-        box-sizing: border-box;
     }
-    body.dark-mode .form-input { color: var(--color-white); border-color: rgba(255,255,255,0.1); }
-    .room-selector-card {
+    .schedule-row.conflict {
+        background-color: var(--color-danger-bg);
+        border-color: rgba(220, 38, 38, 0.2);
+    }
+    .schedule-date {
+        font-weight: 600;
+        color: var(--color-neutral-800);
+    }
+    .schedule-conflict-info {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    .conflict-text {
+        color: var(--color-danger-text);
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    .conflict-actions {
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 12px;
-        border: 1px solid var(--color-neutral-200);
-        border-radius: var(--radius-sm);
     }
-    body.dark-mode .room-selector-card { border-color: rgba(255,255,255,0.1); }
-    .mini-thumb { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; }
-    .progress-bar-bg { height: 6px; background: var(--color-neutral-200); border-radius: 3px; overflow: hidden; }
-    .progress-bar-fill { height: 100%; transition: width 0.3s; }
-    .progress-bar-fill.normal { background: var(--color-primary); }
-    .progress-bar-fill.danger { background: var(--color-danger); }
+    .btn-text-sm {
+        background: none;
+        border: none;
+        color: var(--color-neutral-600);
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 0.85rem;
+        text-decoration: underline;
+    }
+    .btn-outline-pill {
+        background: transparent;
+        border: 1px solid var(--color-primary);
+        color: var(--color-primary);
+        padding: 4px 12px;
+        border-radius: var(--radius-full);
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+    }
+    .pill-green {
+        background-color: var(--color-success-bg);
+        color: var(--color-success-text);
+        padding: 4px 12px;
+        border-radius: var(--radius-full);
+        font-weight: 700;
+        font-size: 0.75rem;
+    }
+
+    /* Undang Peserta */
+    .input-with-button {
+        display: flex;
+        gap: 8px;
+    }
+    .btn-add {
+        background-color: var(--color-navy);
+        color: white;
+        border: none;
+        padding: 0 16px;
+        border-radius: var(--radius-sm);
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .capacity-indicator {
+        margin: 8px 0;
+    }
+    .capacity-text {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--color-neutral-600);
+        margin-bottom: 4px;
+        text-align: right;
+    }
+    .progress-bar-bg {
+        width: 100%;
+        height: 6px;
+        background-color: var(--color-neutral-200);
+        border-radius: var(--radius-full);
+        overflow: hidden;
+    }
+    .progress-bar-fill {
+        height: 100%;
+        background-color: var(--color-primary);
+        transition: width 0.3s;
+    }
+    .progress-bar-fill.danger {
+        background-color: var(--color-danger-text);
+    }
+
+    .chip-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .chip {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background-color: var(--color-neutral-100);
+        border: 1px solid var(--color-neutral-200);
+        padding: 4px 12px;
+        border-radius: var(--radius-full);
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--color-navy);
+    }
+    .chip-remove {
+        background: var(--color-neutral-300);
+        border: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: white;
+        padding: 0;
+    }
+    .chip-remove:hover {
+        background: var(--color-danger-text);
+    }
+
+    /* Checkbox Group */
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .checkbox-group input {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--color-primary);
+    }
+    .checkbox-group label {
+        margin-bottom: 0;
+        font-size: 0.95rem;
+    }
+
+    .mt-2 {
+        margin-top: 8px;
+    }
+
+    /* Footer Buttons */
+    .btn-cancel {
+        background: transparent;
+        border: 1px solid var(--color-neutral-300);
+        color: var(--color-neutral-600);
+        padding: 10px 24px;
+        border-radius: var(--radius-full);
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 1rem;
+    }
+    .btn-confirm {
+        background: var(--color-primary);
+        border: none;
+        color: white;
+        padding: 10px 24px;
+        border-radius: var(--radius-full);
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+    }
+
+    @@media (max-width: 768px) {
+        .schedule-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .schedule-conflict-info {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+    }
 </style>
 
 @code {
@@ -105,12 +804,119 @@
     [Parameter] public RoomItem? Room { get; set; }
     [Parameter] public EventCallback OnBack { get; set; }
     [Parameter] public EventCallback OnConfirm { get; set; }
+
+    private string _bookerName = "Anggoro Ravi";
+    private string _division = "Teknologi Informasi";
     
-    private int _participants = 4;
-    private int CapacityPercentage => Room?.Capacity > 0 ? (int)((_participants / (double)Room.Capacity) * 100) : 0;
+    private DateTime _selectedDate = DateTime.Today;
+    private DateTime _startTime = DateTime.Today.AddHours(9);
+    private DateTime _endTime = DateTime.Today.AddHours(10);
+    
+    private bool _isRecurring = false;
+    private string _recurPattern = "daily"; // daily, weekly, monthly
+    private bool[] _selectedDays = new bool[7];
+    private string[] DayInitials = { "S", "S", "R", "K", "J", "S", "M" };
+    private int _recurEndCount = 4;
+    private DateTime _recurEndDate = DateTime.Today.AddMonths(1);
+    
+    private List<string> _participants = new List<string> { "Budi Santoso", "Siti Rahayu" };
+    private string _newParticipant = "";
+    
+    private bool _isExternalGuest = false;
+    private string _externalEmail = "";
+    
+    private string _notes = "";
 
-    private async Task HandleVisibleChanged(bool value) { Visible = value; await VisibleChanged.InvokeAsync(value); }
-    private async Task Back() { await HandleVisibleChanged(false); if (OnBack.HasDelegate) await OnBack.InvokeAsync(); }
-    private async Task Confirm() { await HandleVisibleChanged(false); if (OnConfirm.HasDelegate) await OnConfirm.InvokeAsync(); }
+    private HashSet<int> _skippedDates = new HashSet<int>();
+
+    protected override void OnInitialized()
+    {
+        // Default select current day for weekly
+        int dayIndex = (int)_selectedDate.DayOfWeek - 1;
+        if (dayIndex < 0) dayIndex = 6; // Sunday
+        _selectedDays[dayIndex] = true;
+    }
+
+    private async Task HandleVisibleChanged(bool value)
+    {
+        Visible = value;
+        await VisibleChanged.InvokeAsync(value);
+    }
+
+    private async Task Back()
+    {
+        await OnBack.InvokeAsync();
+    }
+
+    private async Task Confirm()
+    {
+        await OnConfirm.InvokeAsync();
+    }
+
+    private void SetPattern(string pattern)
+    {
+        _recurPattern = pattern;
+    }
+
+    private void ToggleDay(int index)
+    {
+        _selectedDays[index] = !_selectedDays[index];
+    }
+
+    private void SkipDate(int index)
+    {
+        _skippedDates.Add(index);
+    }
+
+    private void AddParticipant()
+    {
+        if (!string.IsNullOrWhiteSpace(_newParticipant) && !_participants.Contains(_newParticipant.Trim()))
+        {
+            _participants.Add(_newParticipant.Trim());
+            _newParticipant = "";
+        }
+    }
+
+    private void RemoveParticipant(string name)
+    {
+        _participants.Remove(name);
+    }
+
+    private List<DateTime> GenerateRecurringDates()
+    {
+        var dates = new List<DateTime>();
+        var currentDate = _selectedDate;
+        int count = 0;
+
+        // Simple mock generator for preview purposes
+        while (count < _recurEndCount && currentDate <= _recurEndDate && dates.Count < 30) // cap to 30 for safety
+        {
+            if (_recurPattern == "daily")
+            {
+                dates.Add(currentDate);
+                currentDate = currentDate.AddDays(1);
+                count++;
+            }
+            else if (_recurPattern == "weekly")
+            {
+                int dayIdx = (int)currentDate.DayOfWeek - 1;
+                if (dayIdx < 0) dayIdx = 6;
+                
+                if (_selectedDays[dayIdx])
+                {
+                    dates.Add(currentDate);
+                    count++;
+                }
+                currentDate = currentDate.AddDays(1);
+            }
+            else if (_recurPattern == "monthly")
+            {
+                dates.Add(currentDate);
+                currentDate = currentDate.AddMonths(1);
+                count++;
+            }
+        }
+
+        return dates;
+    }
 }
-

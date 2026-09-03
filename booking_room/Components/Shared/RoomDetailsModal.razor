@@ -1,81 +1,77 @@
-﻿@namespace booking_room.Components.Shared
+@namespace booking_room.Components.Shared
 @using booking_room.Components.Models
 
-<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Size="xl" ShowHeader="true" ShowFooter="false" NoPadding="true" Title="@Room?.Name" Subtitle="@(Room?.Capacity.ToString() + " Orang")">
-    <IconContent>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 21h18"></path>
-            <path d="M5 21V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v14"></path>
-        </svg>
-    </IconContent>
-    <BodyContent>
-        <div class="room-detail-layout">
-            <!-- Kiri: Media & Denah Lokasi (UI-19, BUG-06) -->
-            <div class="detail-media-col">
-                <div class="detail-photo-wrap">
-                    <img src="@GetRoomPhoto(Room)" 
-                         alt="@Room?.Name" 
-                         class="detail-photo" 
-                         onerror="this.src='https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80'" />
-                    
-                    <div class="room-status-badge @GetStatusBadgeClass(Room?.Status)">
-                        <div class="status-dot"></div>
-                        @GetStatusText(Room?.Status)
+<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Size="xl" ShowHeader="false" ShowFooter="false" NoPadding="true">
+    @if (Room != null)
+    {
+        <div class="room-details-container">
+            <!-- Left Column -->
+            <div class="room-details-left">
+                <div class="photo-wrapper">
+                    <img src="@GetRoomPhoto(Room)" alt="@Room.Name" class="room-photo" />
+                    <div class="status-badge @GetStatusBadgeClass(Room.Status)">
+                        @GetStatusText(Room.Status)
                     </div>
                 </div>
                 
-                <!-- Peta Lokasi / Denah Ruangan (UI-19) - Tanpa duplikasi teks lokasi (BUG-06) -->
-                <div class="detail-map-panel">
-                    <div class="map-schematic-wrap">
-                        <svg viewBox="0 0 300 120" fill="none" xmlns="http://www.w3.org/2000/svg" class="floor-plan-svg">
-                            <!-- Floor boundary -->
-                            <rect x="5" y="5" width="290" height="110" rx="8" stroke="var(--color-neutral-400, #86868B)" stroke-width="2" fill="var(--color-neutral-100, #F5F5F7)" />
-                            <!-- Rooms layout -->
-                            <rect x="15" y="15" width="70" height="40" rx="4" stroke="var(--color-neutral-400, #86868B)" stroke-width="1.5" fill="var(--color-white, #FFFFFF)" />
-                            <text x="50" y="38" font-size="9" fill="var(--color-neutral-600)" text-anchor="middle">R. 101</text>
+                <div class="floor-plan-panel">
+                    <div class="floor-plan-label">Lantai @Room.Floor, Sayap Utama</div>
+                    <div class="floor-plan-map">
+                        <svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+                            <!-- Basic Room Map -->
+                            <rect x="0" y="0" width="300" height="150" class="map-bg" rx="8" />
                             
-                            <rect x="95" y="15" width="100" height="40" rx="4" stroke="var(--color-primary, #F5A623)" stroke-width="2" fill="rgba(245, 166, 35, 0.15)" />
-                            <text x="145" y="38" font-size="10" font-weight="bold" fill="var(--color-navy, #0F172A)" text-anchor="middle">@Room?.Name</text>
-                            <!-- Highlight Pin -->
-                            <circle cx="145" cy="22" r="4" fill="var(--color-primary, #F5A623)" />
+                            <!-- Neighbor Rooms -->
+                            <rect x="20" y="20" width="70" height="50" class="map-room" rx="4" />
+                            <text x="55" y="45" font-size="10" font-weight="600" class="map-text" text-anchor="middle">R.101</text>
                             
-                            <rect x="205" y="15" width="80" height="40" rx="4" stroke="var(--color-neutral-400, #86868B)" stroke-width="1.5" fill="var(--color-white, #FFFFFF)" />
-                            <text x="245" y="38" font-size="9" fill="var(--color-neutral-600)" text-anchor="middle">R. 102</text>
+                            <!-- Highlighted Room -->
+                            <rect x="100" y="20" width="100" height="50" class="map-room-active" rx="4" />
+                            <text x="150" y="45" font-size="12" font-weight="700" class="map-text-active" text-anchor="middle">@Room.Name</text>
+                            
+                            <!-- Pin for Highlighted Room -->
+                            <path d="M150 10 C145.58 10 142 13.58 142 18 C142 24 150 32 150 32 C150 32 158 24 158 18 C158 13.58 154.42 10 150 10 Z" fill="var(--color-primary, #F59E0B)"/>
+                            <circle cx="150" cy="18" r="3" fill="#ffffff" />
+                            
+                            <!-- Neighbor Rooms -->
+                            <rect x="210" y="20" width="70" height="50" class="map-room" rx="4" />
+                            <text x="245" y="45" font-size="10" font-weight="600" class="map-text" text-anchor="middle">R.102</text>
                             
                             <!-- Corridor -->
-                            <line x1="15" y1="65" x2="285" y2="65" stroke="var(--color-neutral-300, #E8E8ED)" stroke-dasharray="4 4" stroke-width="1.5" />
-                            <text x="150" y="75" font-size="8" fill="var(--color-neutral-400)" text-anchor="middle">KORIDOR UTAMA</text>
-                            
-                            <!-- Bottom Rooms -->
-                            <rect x="15" y="80" width="80" height="30" rx="4" stroke="var(--color-neutral-400, #86868B)" stroke-width="1.5" fill="var(--color-white, #FFFFFF)" />
-                            <rect x="105" y="80" width="85" height="30" rx="4" stroke="var(--color-neutral-400, #86868B)" stroke-width="1.5" fill="var(--color-white, #FFFFFF)" />
-                            <rect x="200" y="80" width="85" height="30" rx="4" stroke="var(--color-neutral-400, #86868B)" stroke-width="1.5" fill="var(--color-white, #FFFFFF)" />
+                            <rect x="20" y="80" width="260" height="50" fill="transparent" />
+                            <text x="150" y="110" font-size="12" font-weight="600" class="map-text" letter-spacing="2" text-anchor="middle">KORIDOR UTAMA</text>
                         </svg>
                     </div>
                 </div>
             </div>
 
-            <!-- Kanan: Informasi Lengkap (UI-19) -->
-            <div class="detail-info-col">
-                <div class="info-content-scroll">
-                    <h2 class="detail-title">@Room?.Name</h2>
-                    
-                    <!-- Satu-satunya baris lokasi (BUG-06) -->
-                    <div class="detail-location">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <!-- Right Column -->
+            <div class="room-details-right">
+                <div class="room-info-header">
+                    <h2 class="room-title">@Room.Name</h2>
+                    <div class="room-location">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="location-icon">
                             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                             <circle cx="12" cy="10" r="3"></circle>
                         </svg>
-                        <span>Lantai @(string.IsNullOrEmpty(Room?.Floor) ? "3" : Room.Floor), Sayap Utama, Persada HQ</span>
+                        <span>Lantai @Room.Floor, Sayap Utama, Persada HQ</span>
                     </div>
-                    
-                    <p class="detail-desc">@Room?.Description</p>
-                    
-                    <label class="section-label">FASILITAS TERMASUK</label>
+                </div>
+
+                <div class="room-description">
+                    <p>@Room.Description</p>
+                    <p class="capacity-info">Kapasitas: @Room.Capacity orang</p>
+                </div>
+
+                <div class="amenities-section">
+                    <h3 class="amenities-label">FASILITAS TERMASUK</h3>
                     <div class="amenities-grid">
-                        @if (Room?.Amenities != null && Room.Amenities.Any())
-                        {
-                            @foreach(var am in Room.Amenities)
+                        @{
+                            var amenitiesList = Room.Amenities != null && Room.Amenities.Any() 
+                                ? Room.Amenities 
+                                : new List<string> { "AC", "WiFi" };
+                                
+                            foreach (var am in amenitiesList)
                             {
                                 <div class="amenity-item">
                                     <FacilityIcon Name="@am" Size="16" />
@@ -83,204 +79,322 @@
                                 </div>
                             }
                         }
-                        else
-                        {
-                            <div class="amenity-item">
-                                <FacilityIcon Name="AC" Size="16" />
-                                <span>AC</span>
-                            </div>
-                            <div class="amenity-item">
-                                <FacilityIcon Name="WiFi" Size="16" />
-                                <span>WiFi</span>
-                            </div>
-                        }
                     </div>
                 </div>
-                
-                <div class="detail-footer">
-                    <button class="btn-secondary" @onclick="Close">Batal</button>
-                    <button class="btn-primary" @onclick="Book">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+
+                <div class="room-details-footer">
+                    <button type="button" class="btn-cancel" @onclick="Close">Batal</button>
+                    <button type="button" class="btn-book" @onclick="Book">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="btn-icon">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                             <line x1="16" y1="2" x2="16" y2="6"></line>
                             <line x1="8" y1="2" x2="8" y2="6"></line>
                             <line x1="3" y1="10" x2="21" y2="10"></line>
+                            <path d="m9 16 2 2 4-4"></path>
                         </svg>
                         Pesan Sekarang
                     </button>
                 </div>
             </div>
         </div>
-    </BodyContent>
+    }
 </AppModal>
 
 <style>
-    .room-detail-layout {
+    .room-details-container {
         display: flex;
-        min-height: 480px;
-    }
-    @@media (max-width: 860px) {
-        .room-detail-layout { flex-direction: column; }
+        flex-direction: row;
+        width: 100%;
+        min-height: 500px;
+        background-color: var(--color-bg, #ffffff);
+        border-radius: var(--radius-lg, 24px);
+        overflow: hidden;
     }
 
-    /* Kolom Kiri */
-    .detail-media-col {
+    .room-details-left {
         flex: 1.1;
         display: flex;
         flex-direction: column;
-        background: var(--color-neutral-100, #F5F5F7);
-        border-right: 1px solid var(--color-neutral-200, #E8E8ED);
-    }
-    body.dark-mode .detail-media-col {
-        background: rgba(255,255,255,0.03);
-        border-color: rgba(255,255,255,0.08);
+        background-color: var(--color-surface, #f8fafc);
+        border-right: 1px solid var(--color-border, #e2e8f0);
     }
 
-    .detail-photo-wrap {
+    .photo-wrapper {
         position: relative;
-        height: 280px;
-        background: #000;
+        width: 100%;
+        height: 300px;
+        border-radius: var(--radius-lg, 24px) 0 0 0;
+        overflow: hidden;
     }
-    .detail-photo {
+
+    .room-photo {
         width: 100%;
         height: 100%;
         object-fit: cover;
     }
 
-    .room-status-badge {
+    .status-badge {
         position: absolute;
         top: 16px;
         left: 16px;
-        padding: 6px 14px;
+        padding: 6px 12px;
         border-radius: var(--radius-full, 999px);
-        font-size: var(--fs-xs, 12px);
-        font-weight: var(--fw-semibold, 600);
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .status-tersedia {
+        background-color: var(--color-success, #10b981);
+        color: white;
+    }
+
+    .status-dipesan {
+        background-color: var(--color-warning, #f59e0b);
+        color: white;
+    }
+
+    .status-tidak-tersedia {
+        background-color: var(--color-danger, #ef4444);
+        color: white;
+    }
+
+    .floor-plan-panel {
+        padding: 24px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .floor-plan-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--color-text-muted, #64748b);
+        margin-bottom: 12px;
+    }
+
+    .floor-plan-map {
+        background-color: var(--color-bg, #ffffff);
+        border: 1px solid var(--color-border, #e2e8f0);
+        border-radius: var(--radius-sm, 8px);
+        padding: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         display: flex;
         align-items: center;
-        gap: 8px;
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(8px);
-        color: var(--color-navy, #0F172A);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    body.dark-mode .room-status-badge {
-        background: rgba(30, 30, 30, 0.95);
-        color: var(--color-white, #FFFFFF);
+        justify-content: center;
+        min-height: 160px;
     }
     
-    .status-dot { width: 8px; height: 8px; border-radius: 50%; }
-    .badge-available .status-dot { background: var(--color-success, #34D399); }
-    .badge-booked .status-dot { background: var(--color-warning, #F59E0B); }
-    .badge-unavailable .status-dot { background: var(--color-danger, #EF4444); }
+    .map-bg { fill: #f8fafc; }
+    .map-room { fill: #e2e8f0; }
+    .map-text { fill: #64748b; }
+    .map-room-active { fill: #fef3c7; stroke: var(--color-primary, #F59E0B); stroke-width: 2px; }
+    .map-text-active { fill: #b45309; }
 
-    .detail-map-panel {
-        padding: 16px 20px;
-        flex: 1;
+    .room-details-right {
+        flex: 1.2;
+        padding: 32px;
         display: flex;
         flex-direction: column;
-        justify-content: center;
     }
-    .map-schematic-wrap {
-        width: 100%;
-        height: 120px;
-        background: var(--color-white, #FFFFFF);
-        border: 1px solid var(--color-neutral-200, #E8E8ED);
-        border-radius: var(--radius-sm, 8px);
-        overflow: hidden;
+
+    .room-info-header {
+        margin-bottom: 24px;
+    }
+
+    .room-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--color-navy, #0F172A);
+        margin: 0 0 8px 0;
+    }
+
+    .room-location {
         display: flex;
         align-items: center;
-        justify-content: center;
-        padding: 4px;
-    }
-    body.dark-mode .map-schematic-wrap {
-        background: rgba(255,255,255,0.05);
-        border-color: rgba(255,255,255,0.1);
-    }
-    .floor-plan-svg {
-        width: 100%;
-        height: 100%;
+        gap: 6px;
+        color: var(--color-text-muted, #64748b);
+        font-size: 0.875rem;
+        font-weight: 500;
     }
 
-    /* Kolom Kanan */
-    .detail-info-col {
-        flex: 1.2;
-        display: flex;
-        flex-direction: column;
-        padding: 28px;
-    }
-    .info-content-scroll {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
+    .location-icon {
+        color: var(--color-primary, #F59E0B);
     }
 
-    .detail-title {
-        font-size: var(--fs-h2, 24px);
-        line-height: var(--lh-h2, 30px);
-        font-weight: var(--fw-bold, 700);
-        margin: 0;
+    .room-description {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: var(--color-text, #334155);
+        margin-bottom: 32px;
+    }
+
+    .capacity-info {
+        margin-top: 12px;
+        font-weight: 600;
         color: var(--color-navy, #0F172A);
     }
-    body.dark-mode .detail-title { color: var(--color-white, #FFFFFF); }
 
-    .detail-location {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: var(--fs-sm, 14px);
-        color: var(--color-neutral-600, #6E6E73);
+    .amenities-section {
+        flex: 1;
+        margin-bottom: 24px;
     }
-    .detail-location svg { color: var(--color-primary, #F5A623); }
 
-    .detail-desc {
-        font-size: var(--fs-body, 15px);
-        line-height: var(--lh-body, 22px);
-        color: var(--color-neutral-900, #1D1D1F);
-        margin: 0;
-    }
-    body.dark-mode .detail-desc { color: var(--color-neutral-400, #86868B); }
-
-    .section-label {
-        font-size: var(--fs-xs, 12px);
-        font-weight: var(--fw-semibold, 600);
-        color: var(--color-neutral-600, #6E6E73);
-        letter-spacing: 0.05em;
+    .amenities-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--color-text-muted, #64748b);
         text-transform: uppercase;
-        margin-top: 8px;
-        display: block;
+        letter-spacing: 1px;
+        margin: 0 0 16px 0;
     }
 
     .amenities-grid {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
     }
+
     .amenity-item {
         display: flex;
         align-items: center;
-        gap: 10px;
-        padding: 10px 14px;
-        background: var(--color-neutral-100, #F5F5F7);
-        border-radius: var(--radius-sm, 8px);
-        font-size: var(--fs-sm, 14px);
-        color: var(--color-navy, #0F172A);
+        gap: 12px;
+        font-size: 0.875rem;
+        color: var(--color-text, #334155);
+        font-weight: 500;
     }
-    body.dark-mode .amenity-item {
-        background: rgba(255,255,255,0.05);
-        color: var(--color-white, #FFFFFF);
-    }
-    .amenity-item svg { color: var(--color-primary, #F5A623); }
 
-    .detail-footer {
+    .room-details-footer {
         display: flex;
         justify-content: flex-end;
-        gap: 12px;
-        margin-top: 24px;
-        padding-top: 16px;
-        border-top: 1px solid var(--color-neutral-200, #E8E8ED);
+        align-items: center;
+        gap: 16px;
+        margin-top: auto;
+        padding-top: 24px;
+        border-top: 1px solid var(--color-border, #e2e8f0);
     }
-    body.dark-mode .detail-footer { border-color: rgba(255,255,255,0.1); }
+
+    .btn-cancel {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 44px;
+        padding: 0 24px;
+        border-radius: var(--radius-full, 999px);
+        border: 1.5px solid var(--color-neutral-300, #cbd5e1);
+        background-color: transparent;
+        color: var(--color-navy, #0F172A);
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-cancel:hover {
+        background-color: var(--color-surface, #f8fafc);
+    }
+
+    .btn-book {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        height: 44px;
+        padding: 0 24px;
+        border-radius: var(--radius-full, 999px);
+        border: none;
+        background-color: var(--color-primary, #F59E0B);
+        color: #0F172A;
+        font-weight: 700;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: transform 0.1s ease, box-shadow 0.2s ease;
+        box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.3);
+    }
+
+    .btn-book:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 8px -1px rgba(245, 158, 11, 0.4);
+    }
+
+    /* Dark Mode Support */
+    body.dark-mode .room-details-container {
+        background-color: var(--color-bg-dark, #1e293b);
+    }
+    
+    body.dark-mode .room-details-left {
+        background-color: var(--color-surface-dark, #0f172a);
+        border-color: var(--color-border-dark, #334155);
+    }
+
+    body.dark-mode .floor-plan-map {
+        background-color: var(--color-bg-dark, #1e293b);
+        border-color: var(--color-border-dark, #334155);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    }
+
+    body.dark-mode .room-title {
+        color: var(--color-text-dark, #f8fafc);
+    }
+
+    body.dark-mode .room-location,
+    body.dark-mode .floor-plan-label,
+    body.dark-mode .amenities-label {
+        color: var(--color-text-muted-dark, #94a3b8);
+    }
+
+    body.dark-mode .room-description,
+    body.dark-mode .amenity-item {
+        color: var(--color-text-dark, #f8fafc);
+    }
+    
+    body.dark-mode .capacity-info {
+        color: var(--color-text-dark, #f8fafc);
+    }
+
+    body.dark-mode .room-details-footer {
+        border-color: var(--color-border-dark, #334155);
+    }
+
+    body.dark-mode .btn-cancel {
+        border-color: var(--color-border-dark, #475569);
+        color: var(--color-text-dark, #f8fafc);
+    }
+
+    body.dark-mode .btn-cancel:hover {
+        background-color: var(--color-surface-dark, #334155);
+    }
+    
+    /* Dark Mode SVG Map */
+    body.dark-mode .map-bg { fill: #0f172a; }
+    body.dark-mode .map-room { fill: #1e293b; }
+    body.dark-mode .map-text { fill: #94a3b8; }
+    body.dark-mode .map-room-active { fill: #452e04; }
+    body.dark-mode .map-text-active { fill: #fcd34d; }
+
+    /* Responsive */
+    @@media (max-width: 860px) {
+        .room-details-container {
+            flex-direction: column;
+        }
+
+        .room-details-left {
+            border-right: none;
+            border-bottom: 1px solid var(--color-border, #e2e8f0);
+        }
+        
+        body.dark-mode .room-details-left {
+            border-bottom-color: var(--color-border-dark, #334155);
+        }
+
+        .photo-wrapper {
+            border-radius: var(--radius-lg, 24px) var(--radius-lg, 24px) 0 0;
+            height: 200px;
+        }
+    }
 </style>
 
 @code {
@@ -290,44 +404,49 @@
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback OnBook { get; set; }
 
-    private string GetRoomPhoto(RoomItem? room)
+    private string GetRoomPhoto(RoomItem room)
     {
-        if (room == null || string.IsNullOrWhiteSpace(room.PhotoUrl))
-        {
-            return "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80";
-        }
-        return room.PhotoUrl;
+        return string.IsNullOrEmpty(room.PhotoUrl) ? $"/images/default-room.jpg" : room.PhotoUrl;
     }
 
-    private string GetStatusText(string? status) => status switch
+    private string GetStatusText(string status)
     {
-        "available" => "Tersedia",
-        "booked" => "Dipesan (2j lagi)",
-        "unavailable" => "Tidak Tersedia",
-        _ => "Tersedia"
-    };
-
-    private string GetStatusBadgeClass(string? status) => status switch
-    {
-        "available" => "badge-available",
-        "booked" => "badge-booked",
-        "unavailable" => "badge-unavailable",
-        _ => "badge-available"
-    };
-
-    private async Task HandleVisibleChanged(bool val)
-    {
-        Visible = val;
-        await VisibleChanged.InvokeAsync(val);
-        if (!val && OnClose.HasDelegate)
+        return status?.ToLower() switch
         {
-            await OnClose.InvokeAsync();
+            "available" => "Tersedia Sekarang",
+            "booked" => "Dipesan (2j lagi)",
+            "unavailable" => "Tidak Tersedia",
+            _ => status ?? "Tidak Diketahui"
+        };
+    }
+
+    private string GetStatusBadgeClass(string status)
+    {
+        return status?.ToLower() switch
+        {
+            "available" => "status-tersedia",
+            "booked" => "status-dipesan",
+            "unavailable" => "status-tidak-tersedia",
+            _ => "status-tidak-tersedia"
+        };
+    }
+
+    private async Task HandleVisibleChanged(bool value)
+    {
+        Visible = value;
+        if (VisibleChanged.HasDelegate)
+        {
+            await VisibleChanged.InvokeAsync(value);
         }
     }
 
     private async Task Close()
     {
         await HandleVisibleChanged(false);
+        if (OnClose.HasDelegate)
+        {
+            await OnClose.InvokeAsync();
+        }
     }
 
     private async Task Book()
@@ -339,4 +458,3 @@
         }
     }
 }
-
