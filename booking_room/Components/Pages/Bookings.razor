@@ -131,15 +131,15 @@
     <div class="booking-tabs-bar">
         <div class="booking-segmented-control">
             <button type="button" class="booking-tab-btn @(_activeTab == "ruangan" ? "active" : "")" @onclick='() => SwitchTab("ruangan")'>
-                <InlineSvg Src="/icons/icon_room.svg" Class="tab-icon" Style="width: 18px; height: 18px; stroke: currentColor; fill: none;" />
+                <InlineSvg Src="/icons/icon_room.svg" Class="tab-icon" Style="width: 20px; height: 20px; stroke: currentColor; fill: none;" />
                 <span>Pemesanan Ruangan</span>
             </button>
             <button type="button" class="booking-tab-btn @(_activeTab == "kalender" ? "active" : "")" @onclick='() => SwitchTab("kalender")'>
-                <InlineSvg Src="/icons/icon_calendar_grid.svg" Class="tab-icon" Style="width: 18px; height: 18px; stroke: currentColor; fill: none;" />
+                <InlineSvg Src="/icons/icon_calendar_grid.svg" Class="tab-icon" Style="width: 20px; height: 20px; stroke: currentColor; fill: none;" />
                 <span>Kalender Pemesanan</span>
             </button>
             <button type="button" class="booking-tab-btn @(_activeTab == "fasilitas" ? "active" : "")" @onclick='() => SwitchTab("fasilitas")'>
-                <InlineSvg Src="/icons/icon_facility.svg" Class="tab-icon" Style="width: 18px; height: 18px; stroke: currentColor; fill: none;" />
+                <InlineSvg Src="/icons/icon_facility.svg" Class="tab-icon" Style="width: 20px; height: 20px; stroke: currentColor; fill: none;" />
                 <span>Permintaan Fasilitas</span>
             </button>
         </div>
@@ -682,16 +682,20 @@
     .booking-tabs-bar {
         display: flex;
         align-items: center;
-        margin: 0 0 24px 0;
+        justify-content: center;
+        margin: 8px 0 32px 0;
+        width: 100%;
     }
     .booking-segmented-control {
         display: inline-flex;
         background: #F1F5F9;
-        padding: 4px;
+        padding: 6px;
         border-radius: 999px;
-        border: 1px solid #E2E8F0;
-        gap: 4px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        border: 1.5px solid #E2E8F0;
+        gap: 6px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+        max-width: 100%;
+        overflow-x: auto;
     }
     body.dark-mode .booking-segmented-control {
         background: #1E293B;
@@ -700,40 +704,46 @@
     .booking-tab-btn {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        padding: 8px 18px;
+        gap: 10px;
+        padding: 10px 24px;
+        min-height: 44px;
         border-radius: 999px;
         border: none;
         background: transparent;
-        font-size: 13px;
-        font-weight: 600;
+        font-size: 14.5px;
+        font-weight: 500;
         color: #64748B;
         cursor: pointer;
-        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
         white-space: nowrap;
+        box-sizing: border-box;
     }
     body.dark-mode .booking-tab-btn {
         color: #94A3B8;
     }
     .booking-tab-btn:hover {
         color: #0F172A;
+        background: rgba(255, 255, 255, 0.5);
     }
     body.dark-mode .booking-tab-btn:hover {
         color: #F8FAFC;
+        background: rgba(255, 255, 255, 0.05);
     }
     .booking-tab-btn.active {
         background: #FFFFFF;
         color: #0F1F3D;
         font-weight: 700;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        box-shadow: 0 4px 14px rgba(15, 31, 61, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
     }
     body.dark-mode .booking-tab-btn.active {
         background: #0F172A;
         color: #F8FAFC;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
     }
     .tab-icon {
         flex-shrink: 0;
+        width: 20px;
+        height: 20px;
     }
 
     /* Responsive */

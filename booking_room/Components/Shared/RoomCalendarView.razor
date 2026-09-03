@@ -65,10 +65,15 @@
                 <label class="control-label">Kapasitas Minimum</label>
                 <select class="control-select" @bind="_selectedCapacity" @bind:after="ApplyFilters">
                     <option value="0">Kapasitas Berapa Saja</option>
-                    <option value="4">4+ Orang</option>
-                    <option value="8">8+ Orang</option>
-                    <option value="16">16+ Orang</option>
-                    <option value="30">30+ Orang</option>
+                    <option value="2">2 Orang</option>
+                    <option value="4">4 Orang</option>
+                    <option value="6">6 Orang</option>
+                    <option value="8">8 Orang</option>
+                    <option value="12">12 Orang</option>
+                    <option value="16">16 Orang</option>
+                    <option value="20">20 Orang</option>
+                    <option value="30">30 Orang</option>
+                    <option value="50">50 Orang</option>
                 </select>
             </div>
         </div>
@@ -490,17 +495,32 @@
     .grid-day-header:last-child { border-right: none; }
     .grid-day-header.highlight-today { background: rgba(31, 93, 154, 0.05); }
 
-    .day-name { font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase; }
-    .day-number { font-size: 14px; font-weight: 800; color: #0F172A; margin-top: 2px; }
+    .day-name {
+        font-size: 11px;
+        font-weight: 600;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .day-number {
+        font-size: 14px;
+        font-weight: 700;
+        color: #0F172A;
+        margin-top: 2px;
+        width: 28px;
+        height: 28px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        box-sizing: border-box;
+    }
     body.dark-mode .day-number { color: #F8FAFC; }
     .day-number.today-badge {
-        display: inline-block;
         background: #F59E0B;
         color: #0F172A;
-        width: 24px;
-        height: 24px;
-        line-height: 24px;
-        border-radius: 50%;
+        font-size: 14px;
+        font-weight: 700;
     }
 
     .grid-room-row {
@@ -643,12 +663,15 @@
     }
 
     .list-cards-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        display: flex;
+        flex-wrap: wrap;
         gap: 12px;
     }
 
     .list-event-card {
+        flex: 1 1 340px;
+        min-width: 280px;
+        max-width: 100%;
         display: flex;
         gap: 12px;
         background: #F8FAFC;
@@ -657,6 +680,7 @@
         padding: 10px;
         cursor: pointer;
         transition: all 0.15s;
+        box-sizing: border-box;
     }
     .list-event-card:hover {
         transform: translateY(-2px);

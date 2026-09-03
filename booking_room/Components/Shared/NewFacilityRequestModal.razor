@@ -87,7 +87,8 @@
                                    @onkeydown="HandleSearchKeyDown" />
                         </div>
                         <button type="button" class="btn-add-facility" @onclick="AddCustomFacility">
-                            + Tambah
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            <span>Tambah</span>
                         </button>
                     </div>
 
@@ -168,8 +169,6 @@
 
 <style>
     .new-facility-modal-body {
-        max-height: 72vh;
-        overflow-y: auto;
         padding: 4px 6px;
         display: flex;
         flex-direction: column;
@@ -260,16 +259,19 @@
     .facility-search-row {
         display: flex;
         gap: 8px;
+        align-items: stretch;
     }
 
     .search-input-wrapper {
         flex: 1;
         position: relative;
+        display: flex;
+        align-items: center;
     }
 
     .search-icon-svg {
         position: absolute;
-        left: 10px;
+        left: 12px;
         top: 50%;
         transform: translateY(-50%);
         color: #94A3B8;
@@ -277,20 +279,28 @@
     }
 
     .facility-search-input {
-        padding-left: 34px;
+        padding-left: 36px;
+        height: 38px;
+        box-sizing: border-box;
     }
 
     .btn-add-facility {
-        padding: 8px 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        height: 38px;
+        padding: 0 16px;
         background: #F59E0B;
         color: #0F172A;
         font-weight: 700;
-        font-size: 12.5px;
+        font-size: 13px;
         border: none;
         border-radius: 8px;
         cursor: pointer;
         transition: all 0.15s;
         white-space: nowrap;
+        box-sizing: border-box;
     }
     .btn-add-facility:hover { background: #D97706; color: #FFFFFF; }
 

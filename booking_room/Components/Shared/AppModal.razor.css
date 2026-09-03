@@ -1,28 +1,36 @@
 .modal-backdrop-overlay {
     position: fixed;
-    inset: 0;
-    z-index: 1050;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 99999;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(15, 23, 42, 0.45);
+    background: rgba(15, 23, 42, 0.65);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    padding: 16px;
+    padding: 24px;
+    box-sizing: border-box;
     overflow-y: auto;
 }
 
 .modal-surface-container {
     position: relative;
     width: 100%;
+    margin: auto;
     background-color: var(--surface-card, #FFFFFF);
     border: 1px solid var(--color-brand-gray-border, #E5E7EB);
-    border-radius: var(--radius-lg, 24px); /* DS-11: Large radius */
-    box-shadow: 0 20px 40px -8px rgba(15, 31, 61, 0.15), 0 0 1px rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius-lg, 20px);
+    box-shadow: 0 25px 50px -12px rgba(15, 31, 61, 0.35), 0 0 1px rgba(0, 0, 0, 0.15);
     display: flex;
     flex-direction: column;
     max-height: calc(100vh - 48px);
     overflow: hidden;
+    box-sizing: border-box;
 }
 
 :global(body.dark-mode) .modal-surface-container {
@@ -31,32 +39,46 @@
     color: #F8FAFC;
 }
 
-.modal-surface-container.size-sm { max-width: 420px; }
-.modal-surface-container.size-md { max-width: 580px; }
-.modal-surface-container.size-lg { max-width: 840px; }
-.modal-surface-container.size-xl { max-width: 1040px; }
+.modal-surface-container.size-sm { max-width: 440px; }
+.modal-surface-container.size-md { max-width: 640px; }
+.modal-surface-container.size-lg { max-width: 800px; }
+.modal-surface-container.size-xl { max-width: 980px; }
+
+@media (max-width: 640px) {
+    .modal-backdrop-overlay {
+        padding: 12px;
+    }
+    .modal-surface-container {
+        max-height: calc(100vh - 24px);
+        border-radius: 16px;
+    }
+}
 
 .modal-header-zone {
-    padding: 24px 32px;
+    padding: 20px 28px;
     border-bottom: 1px solid var(--divider-subtle, #F1F5F9);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: transparent;
+    background: var(--surface-card, #FFFFFF);
+    flex-shrink: 0;
+    z-index: 5;
 }
 :global(body.dark-mode) .modal-header-zone {
+    background: var(--surface-card-dark, #1C1C1E);
     border-color: rgba(255, 255, 255, 0.08);
 }
 
 .modal-header-icon-box {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
     border-radius: 12px;
     background: #EEF2FF;
     color: #4F46E5;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 :global(body.dark-mode) .modal-header-icon-box {
     background: rgba(79, 70, 229, 0.15);
@@ -64,7 +86,7 @@
 }
 
 .modal-heading-text {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     font-weight: 800;
     color: var(--persada-navy-900, #0F1F3D);
     margin: 0;
@@ -75,8 +97,8 @@
 }
 
 .modal-subtitle-text {
-    margin: 4px 0 0 0;
-    font-size: 0.875rem;
+    margin: 3px 0 0 0;
+    font-size: 0.85rem;
     color: var(--color-neutral-600, #6B7280);
     line-height: 1.4;
 }
@@ -85,33 +107,37 @@
 }
 
 .modal-body-zone {
-    padding: 32px;
+    padding: 24px 28px;
     overflow-y: auto;
     flex: 1 1 auto;
     background: transparent;
+    -webkit-overflow-scrolling: touch;
 }
 .modal-body-zone.no-padding {
     padding: 0;
 }
 
 .modal-footer-zone {
-    padding: 20px 32px;
+    padding: 16px 28px;
     border-top: 1px solid var(--divider-subtle, #F1F5F9);
-    background-color: transparent;
+    background: var(--surface-card, #FFFFFF);
     display: flex;
     align-items: center;
     justify-content: flex-end;
     gap: 12px;
+    flex-shrink: 0;
+    z-index: 5;
 }
 :global(body.dark-mode) .modal-footer-zone {
+    background: var(--surface-card-dark, #1C1C1E);
     border-color: rgba(255, 255, 255, 0.08);
 }
 
 .animate-fade-in {
-    animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: modalFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 .animate-scale-up {
-    animation: modalScaleUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: modalScaleUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes modalFadeIn {
@@ -119,6 +145,6 @@
     to { opacity: 1; }
 }
 @keyframes modalScaleUp {
-    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    from { opacity: 0; transform: scale(0.96) translateY(8px); }
     to { opacity: 1; transform: scale(1) translateY(0); }
 }
