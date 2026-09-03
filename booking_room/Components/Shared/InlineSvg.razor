@@ -2,7 +2,7 @@
 
 @if (_svgContent is not null)
 {
-    <span class="@Class" style="@Style" @attributes="AdditionalAttributes">@((MarkupString)_svgContent)</span>
+    <span class="inline-svg-wrap @Class" style="@Style" @attributes="AdditionalAttributes">@((MarkupString)_svgContent)</span>
 }
 
 @code {

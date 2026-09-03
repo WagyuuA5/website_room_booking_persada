@@ -84,52 +84,75 @@
     </div>
 
     <!-- ROOM CARDS GRID -->
-    <div class="rooms-grid">
-        @foreach (var room in _filteredRooms)
-        {
-            <div class="room-card" @onclick="() => ViewDetail(room)" role="button" tabindex="0">
-                <div class="room-image-wrapper">
-                    <img src="@room.PhotoUrl" alt="@room.Name" />
-                    <div class="status-island-container">
-                        <StatusIsland Status="@ParseRoomStatus(room.Status)" RemainingMinutes="@GetRoomRemainingMinutes(room.Id)" />
+    @if (_isLoading)
+    {
+        <div class="rooms-grid">
+            @for (int i = 0; i < 6; i++)
+            {
+                <div class="room-card skeleton-room-card" style="pointer-events: none;">
+                    <div class="skeleton-box" style="width: 100%; height: 180px; border-radius: 12px 12px 0 0;"></div>
+                    <div class="room-content" style="padding: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <div class="skeleton-box" style="width: 55%; height: 20px;"></div>
+                            <div class="skeleton-box" style="width: 25%; height: 20px; border-radius: 6px;"></div>
+                        </div>
+                        <div class="skeleton-box" style="width: 100%; height: 13px; margin-bottom: 6px;"></div>
+                        <div class="skeleton-box" style="width: 75%; height: 13px; margin-bottom: 16px;"></div>
+                        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                            <div class="skeleton-box" style="width: 60px; height: 22px; border-radius: 999px;"></div>
+                            <div class="skeleton-box" style="width: 60px; height: 22px; border-radius: 999px;"></div>
+                            <div class="skeleton-box" style="width: 60px; height: 22px; border-radius: 999px;"></div>
+                        </div>
+                        <div class="skeleton-box" style="width: 90px; height: 28px; border-radius: 999px; margin-left: auto;"></div>
                     </div>
                 </div>
-                <div class="room-content">
-                    <div class="room-title-row">
-                        <h3>@room.Name</h3>
-                        <div class="capacity-badge" title="Kapasitas Ruangan">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="9" cy="7" r="4"></circle>
-                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                            </svg>
-                            @room.Capacity Orang
+            }
+        </div>
+    }
+    else
+    {
+        <div class="rooms-grid">
+            @foreach (var room in _filteredRooms)
+            {
+                <div class="room-card" @onclick="() => ViewDetail(room)" role="button" tabindex="0">
+                    <div class="room-image-wrapper">
+                        <img src="@room.PhotoUrl" alt="@room.Name" />
+                        <div class="status-island-container">
+                            <StatusIsland Status="@ParseRoomStatus(room.Status)" RemainingMinutes="@GetRoomRemainingMinutes(room.Id)" />
                         </div>
                     </div>
-                    <p class="room-desc">@room.Description</p>
-                    <div class="amenities-row">
-                        @foreach (var am in room.Amenities.Take(4))
-                        {
-                            var amenityItem = RoomAmenity.Create(am);
-                            <span class="amenity-pill">
-                                <FacilityIcon Name="@amenityItem.Name" SvgPath="@amenityItem.IconSvgPath" Size="13" />
-                                <span>@LocalizeAmenity(amenityItem.Name)</span>
-                            </span>
-                        }
-                    </div>
-                    <div class="room-footer">
-                        <button type="button" class="view-details-btn" @onclick:stopPropagation="true" @onclick="() => ViewDetail(room)">
-                            LIHAT DETAIL
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 4px;">
-                                <polyline points="9 18 15 12 9 6"></polyline>
-                            </svg>
-                        </button>
+                    <div class="room-content">
+                        <div class="room-title-row">
+                            <h3>@room.Name</h3>
+                            <div class="capacity-badge" title="Kapasitas Ruangan">
+                                <InlineSvg Src="icons/icon_group.svg" Class="icon-xs" Style="stroke: currentColor; fill: none;" />
+                                <span class="capacity-badge-text">@room.Capacity Orang</span>
+                            </div>
+                        </div>
+                        <p class="room-desc">@room.Description</p>
+                        <div class="amenities-row">
+                            @foreach (var am in room.Amenities.Take(4))
+                            {
+                                var amenityItem = RoomAmenity.Create(am);
+                                <span class="amenity-pill">
+                                    <FacilityIcon Name="@amenityItem.Name" SvgPath="@amenityItem.IconSvgPath" Size="13" />
+                                    <span>@LocalizeAmenity(amenityItem.Name)</span>
+                                </span>
+                            }
+                        </div>
+                        <div class="room-footer">
+                            <button type="button" class="view-details-btn" @onclick:stopPropagation="true" @onclick="() => ViewDetail(room)">
+                                LIHAT DETAIL
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 4px;">
+                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        }
-    </div>
+            }
+        </div>
+    }
 </div>
 
 <!-- MODAL DIALOGS -->
@@ -558,6 +581,7 @@
     private bool _isBookingDatePickerOpen = false;
     private bool _isBookingTimePickerOpen = false;
 
+    private bool _isLoading = true;
     private List<RoomItem> _allRooms = new();
     private IEnumerable<RoomItem> _filteredRooms = Array.Empty<RoomItem>();
 
@@ -584,8 +608,9 @@
     
     private async Task LoadDataAsync(System.Threading.CancellationToken token)
     {
+        _isLoading = true;
         LoadingState.SetLoading(true);
-        await Task.Delay(250, token);
+        await Task.Delay(400, token);
         
         _allRooms = new List<RoomItem>
         {
@@ -599,6 +624,7 @@
         };
         
         ApplyFilter();
+        _isLoading = false;
         LoadingState.SetLoading(false);
     }
 

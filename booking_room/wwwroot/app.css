@@ -103,6 +103,54 @@ html, body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+/* ==========================================================================
+   Icon Sizing System & Constraint (Mandatory)
+   ========================================================================== */
+.icon-xs { width: 14px !important; height: 14px !important; min-width: 14px !important; min-height: 14px !important; }
+.icon-sm { width: 16px !important; height: 16px !important; min-width: 16px !important; min-height: 16px !important; }
+.icon-md { width: 20px !important; height: 20px !important; min-width: 20px !important; min-height: 20px !important; }
+.icon-lg { width: 24px !important; height: 24px !important; min-width: 24px !important; min-height: 24px !important; }
+.icon-xl { width: 32px !important; height: 32px !important; min-width: 32px !important; min-height: 32px !important; }
+
+.inline-svg-wrap {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    vertical-align: middle !important;
+    line-height: 0 !important;
+    flex-shrink: 0 !important;
+}
+
+.inline-svg-wrap > svg {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    display: block !important;
+}
+
+/* ==========================================================================
+   Smooth Skeleton Loading System
+   ========================================================================== */
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.skeleton-box {
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite linear;
+    border-radius: 8px;
+    display: block;
+}
+
+body.dark-mode .skeleton-box {
+    background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+    background-size: 200% 100%;
+}
+
+
 body {
     background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
     min-height: 100vh;

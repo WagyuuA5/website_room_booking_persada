@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <Target Name="KillLockedProcess" BeforeTargets="Build">
-    <Exec Command="taskkill /F /IM booking_room.exe" ContinueOnError="true" />
+    <Exec Command="taskkill /F /IM booking_room.exe &gt;nul 2&gt;&amp;1 &amp; exit /b 0" />
   </Target>
 
 </Project>
