@@ -1,7 +1,13 @@
-@namespace booking_room.Components.Shared
+﻿@namespace booking_room.Components.Shared
 @using booking_room.Components.Models
 
-<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Title="Konfirmasi Pemesanan" Size="lg">
+<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Title="Konfirmasi Pemesanan" Subtitle="Periksa kembali detail pesanan" Size="lg">
+    <IconContent>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 11 12 14 22 4"></polyline>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+        </svg>
+    </IconContent>
     <BodyContent>
         <div class="confirm-booking-layout">
             <div class="form-section">
@@ -10,7 +16,7 @@
                     <img src="@Room?.PhotoUrl" alt="@Room?.Name" class="mini-thumb" />
                     <div>
                         <h4 style="margin:0 0 4px 0;">@Room?.Name</h4>
-                        <p style="margin:0; font-size:12px; color:var(--color-neutral-600);">Kapasitas @Room?.Capacity org • @Room?.Floor</p>
+                        <p style="margin:0; font-size:12px; color:var(--color-neutral-600);">Kapasitas @Room?.Capacity org â€¢ @Room?.Floor</p>
                     </div>
                     <button class="btn-text-link" style="margin-left:auto;">GANTI RUANGAN</button>
                 </div>
@@ -107,3 +113,4 @@
     private async Task Back() { await HandleVisibleChanged(false); if (OnBack.HasDelegate) await OnBack.InvokeAsync(); }
     private async Task Confirm() { await HandleVisibleChanged(false); if (OnConfirm.HasDelegate) await OnConfirm.InvokeAsync(); }
 }
+

@@ -1,7 +1,13 @@
-@namespace booking_room.Components.Shared
+﻿@namespace booking_room.Components.Shared
 @using booking_room.Components.Models
 
-<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Size="md" ShowHeader="false" ShowFooter="false" NoPadding="true">
+<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Size="md" ShowHeader="true" Title="Detail Riwayat" Subtitle="Informasi pemesanan ruangan" ShowFooter="false" NoPadding="true">
+    <IconContent>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+    </IconContent>
     <BodyContent>
         <div class="history-detail-modal">
             <!-- 1. Foto ruangan besar memenuhi lebar bagian atas modal tanpa padding (UI-12) -->
@@ -288,3 +294,4 @@
         await HandleVisibleChanged(false);
     }
 }
+

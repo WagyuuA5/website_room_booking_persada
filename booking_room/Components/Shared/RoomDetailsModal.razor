@@ -1,7 +1,13 @@
-@namespace booking_room.Components.Shared
+﻿@namespace booking_room.Components.Shared
 @using booking_room.Components.Models
 
-<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Size="xl" ShowHeader="false" ShowFooter="false" NoPadding="true">
+<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Size="xl" ShowHeader="true" ShowFooter="false" NoPadding="true" Title="@Room?.Name" Subtitle="@(Room?.Capacity.ToString() + " Orang")">
+    <IconContent>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 21h18"></path>
+            <path d="M5 21V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v14"></path>
+        </svg>
+    </IconContent>
     <BodyContent>
         <div class="room-detail-layout">
             <!-- Kiri: Media & Denah Lokasi (UI-19, BUG-06) -->
@@ -333,3 +339,4 @@
         }
     }
 }
+

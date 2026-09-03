@@ -116,7 +116,7 @@
 </div>
 
 <DatePickerModal @bind-Visible="_isBookingDatePickerOpen" OnDateSelected="HandleBookingDateSelected" />
-<RoomDetailsModal @bind-Visible="_isRoomDetailVisible" Room="_selectedRoomForDetail" OnBookClicked="ProceedToBook" />
+<RoomDetailsModal @bind-Visible="_isRoomDetailVisible" Room="_selectedRoomForDetail" OnBook="() => ProceedToBook(_selectedRoomForDetail)" />
 <ConfirmBookingModal @bind-Visible="_isConfirmBookingVisible" Room="_selectedRoomForBooking" />
 
 <style>

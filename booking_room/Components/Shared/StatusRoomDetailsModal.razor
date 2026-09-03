@@ -1,9 +1,15 @@
-@using booking_room.Components.Models
+﻿@using booking_room.Components.Models
 @inject NavigationManager Navigation
 
 @if (Visible && Booking != null)
 {
-    <AppModal Visible="true" Size="lg" ShowCloseButton="false" OnClose="CloseModal">
+    <AppModal Visible="true" Size="lg" Title="Status Pemesanan" Subtitle="Pantau persetujuan dan riwayat status" ShowCloseButton="false" OnClose="CloseModal">
+    <IconContent>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+    </IconContent>
         <BodyContent>
     <div class="srd-modal-content">
         <!-- Header Image Area -->
@@ -274,5 +280,6 @@ display: flex; flex-direction: column;
         return "";
     }
 }
+
 
 
