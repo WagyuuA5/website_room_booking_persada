@@ -1,6 +1,7 @@
 @page "/bookings"
 @using booking_room.Components.Shared
 @using booking_room.Components.Models
+@using booking_room.Services
 @using System.Globalization
 @inject booking_room.Services.LoadingStateService LoadingState
 @inject booking_room.Services.IToastService ToastService
@@ -639,16 +640,7 @@
         LoadingState.SetLoading(true);
         await Task.Delay(400, token);
         
-        _allRooms = new List<RoomItem>
-        {
-            new("1", "Executive Boardroom A", 12, "Ruang rapat eksekutif premium dengan fasilitas konferensi video 4K dan internet serat optik kecepatan tinggi untuk pertemuan penting.", "available", new List<string>{"Proyektor", "AC", "Konferensi Video"}, "3", "https://images.unsplash.com/photo-1497215842964-222b430dc094?auto=format&fit=crop&w=800&q=80"),
-            new("2", "Collaborative Space B", 6, "Ruang kerja kolaboratif dengan tempat duduk modular dan papan tulis luas untuk sesi perancangan ide dan diskusi tim.", "booked", new List<string>{"Papan Tulis", "AC", "WiFi"}, "2", "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=800&q=80"),
-            new("3", "Presentation Hall", 50, "Aula berkapasitas besar cocok untuk rapat divisi akbar atau presentasi klien dengan sistem peredam akustik modern.", "unavailable", new List<string>{"Proyektor", "AC", "Sistem Audio"}, "1", "https://images.unsplash.com/photo-1517502884422-41eaead166d4?auto=format&fit=crop&w=800&q=80"),
-            new("4", "Delta Studio", 20, "Studio kedap suara dengan sistem audio profesional, ideal untuk lokakarya, podcast, dan siaran langsung persada.", "available", new List<string>{"Sistem Audio", "Proyektor", "AC", "WiFi"}, "1", "https://images.unsplash.com/photo-1462826303086-329426d1aef5?auto=format&fit=crop&w=800&q=80"),
-            new("5", "Executive Suite", 16, "Suite rapat mewah di lantai atas dengan panorama kota Jakarta dan fasilitas lounge eksklusif.", "available", new List<string>{"Konferensi Video", "TV LED", "AC", "WiFi", "Aksesibilitas"}, "5", "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80"),
-            new("6", "Focus Room Alpha", 2, "Ruang kerja tenang kedap suara untuk panggilan konferensi penting dan wawancara daring satu lawan satu.", "maintenance", new List<string>{"AC", "WiFi", "Aksesibilitas"}, "3", "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=800&q=80"),
-            new("7", "Training Room B", 30, "Ruang pelatihan interaktif dilengkapi meja berderet dan layar ganda untuk sesi edukasi karyawan.", "booked", new List<string>{"Proyektor", "Papan Tulis", "Sistem Audio", "AC", "WiFi"}, "2", "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=800&q=80")
-        };
+        _allRooms = RoomDataProvider.GetRooms().ToList();
         
         ApplyFilter();
         _isLoading = false;

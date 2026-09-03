@@ -61,6 +61,12 @@ public class ToastService : IToastService
 
     public void Show(string title, string message = "", ToastType type = ToastType.Info, int durationMs = 4000)
     {
+        // Enforce deduplication to prevent identical toasts within 1.5s
+        if (_toasts.Values.Any(t => t.Title == title && t.Message == message && (DateTime.Now - t.CreatedAt).TotalSeconds < 1.5))
+        {
+            return;
+        }
+
         // Enforce maximum active toasts limit (remove oldest if limit exceeded)
         while (_toasts.Count >= MaxActiveToasts)
         {

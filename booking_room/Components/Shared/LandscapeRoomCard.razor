@@ -1,0 +1,220 @@
+@namespace booking_room.Components.Shared
+@using booking_room.Components.Models
+@using booking_room.Services
+
+@{
+    bool isAvailable = Room.Status.Equals("available", StringComparison.OrdinalIgnoreCase) || Room.Status.Equals("tersedia", StringComparison.OrdinalIgnoreCase);
+}
+
+<div class="landscape-room-card @(IsActive ? "active" : "") @(!isAvailable && !IsActive ? "booked" : "")" @onclick="HandleClick">
+    <div class="card-photo-wrapper">
+        <img src="@RoomDataProvider.GetRoomPhoto(Room.PhotoUrl, Room.Id)" alt="@Room.Name" class="card-room-photo" loading="lazy" />
+    </div>
+    <div class="card-details-wrapper">
+        <div class="card-room-title" title="@Room.Name">@Room.Name</div>
+        <div class="card-room-capacity">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span>Kapasitas: @Room.Capacity Orang</span>
+        </div>
+        <div class="card-amenities-row">
+            @if (Room.Amenities != null && Room.Amenities.Any())
+            {
+                @foreach (var am in Room.Amenities.Take(2))
+                {
+                    <span class="amenity-chip">@am</span>
+                }
+            }
+            else
+            {
+                <span class="amenity-chip">AC</span>
+                <span class="amenity-chip">WiFi</span>
+            }
+        </div>
+        <div class="card-status-badge">
+            <span class="status-indicator-dot @(isAvailable ? "available" : "booked")"></span>
+            <span class="status-indicator-label @(isAvailable ? "available" : "booked")">
+                @(isAvailable ? "Tersedia Sekarang" : "Dipesan")
+            </span>
+        </div>
+    </div>
+</div>
+
+<style>
+    .landscape-room-card {
+        min-width: 320px;
+        width: 320px;
+        height: 105px;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: row;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #FFFFFF;
+        border: 1.5px solid #E2E8F0;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        user-select: none;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    body.dark-mode .landscape-room-card {
+        background: #1E293B;
+        border-color: #334155;
+    }
+
+    .landscape-room-card:hover {
+        border-color: #CBD5E1;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transform: translateY(-1px);
+    }
+
+    .landscape-room-card.active {
+        border: 3px solid #F59E0B;
+        background: #FFFDF5;
+        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.22);
+    }
+
+    body.dark-mode .landscape-room-card.active {
+        background: rgba(245, 158, 11, 0.1);
+        border-color: #F59E0B;
+    }
+
+    .landscape-room-card.booked {
+        opacity: 0.75;
+        background: #F8FAFC;
+    }
+
+    body.dark-mode .landscape-room-card.booked {
+        background: rgba(15, 23, 42, 0.6);
+    }
+
+    .card-photo-wrapper {
+        width: 105px;
+        height: 100%;
+        flex-shrink: 0;
+        overflow: hidden;
+        background: #F1F5F9;
+    }
+
+    .card-room-photo {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.3s ease;
+    }
+
+    .landscape-room-card:hover .card-room-photo {
+        transform: scale(1.05);
+    }
+
+    .card-details-wrapper {
+        flex: 1;
+        min-width: 0;
+        padding: 8px 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .card-room-title {
+        font-size: 13.5px;
+        font-weight: 700;
+        color: #0F172A;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.25;
+    }
+
+    body.dark-mode .card-room-title {
+        color: #F8FAFC;
+    }
+
+    .card-room-capacity {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 11px;
+        color: #64748B;
+        margin-top: 2px;
+    }
+
+    body.dark-mode .card-room-capacity {
+        color: #94A3B8;
+    }
+
+    .card-amenities-row {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+
+    .amenity-chip {
+        font-size: 9.5px;
+        font-weight: 600;
+        padding: 1px 6px;
+        background: #F1F5F9;
+        color: #475569;
+        border-radius: 4px;
+    }
+
+    body.dark-mode .amenity-chip {
+        background: #334155;
+        color: #CBD5E1;
+    }
+
+    .card-status-badge {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 2px;
+    }
+
+    .status-indicator-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+    }
+
+    .status-indicator-dot.available {
+        background: #16A34A;
+    }
+
+    .status-indicator-dot.booked {
+        background: #DC2626;
+    }
+
+    .status-indicator-label {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }
+
+    .status-indicator-label.available {
+        color: #16A34A;
+    }
+
+    .status-indicator-label.booked {
+        color: #DC2626;
+    }
+</style>
+
+@code {
+    [Parameter] public RoomItem Room { get; set; } = default!;
+    [Parameter] public bool IsActive { get; set; } = false;
+    [Parameter] public EventCallback<RoomItem> OnSelect { get; set; }
+
+    private async Task HandleClick()
+    {
+        if (OnSelect.HasDelegate)
+        {
+            await OnSelect.InvokeAsync(Room);
+        }
+    }
+}

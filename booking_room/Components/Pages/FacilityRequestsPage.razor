@@ -1,0 +1,561 @@
+@page "/fasilitas"
+@page "/facility-requests"
+@using booking_room.Services
+@using booking_room.Components.Models
+@using booking_room.Components.Shared
+@inject IFacilityRequestService FacilityService
+@implements IDisposable
+
+<div class="facility-page-container fade-in-content">
+    <!-- Top Header -->
+    <div class="facility-page-header">
+        <div>
+            <h1 class="facility-page-title">Permintaan Fasilitas</h1>
+            <p class="facility-page-subtitle">Kelola permintaan layanan dan peralatan tambahan untuk ruangan rapat Anda.</p>
+        </div>
+        <button type="button" class="btn-new-facility-request" @onclick="OpenNewRequestModal">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>+ Permintaan Baru</span>
+        </button>
+    </div>
+
+    <!-- Filter Tabs Bar -->
+    <div class="facility-filter-tabs-bar">
+        <div class="filter-tabs-group">
+            <button type="button" class="facility-tab @(_activeTab == "All" ? "active" : "")" @onclick='() => SetTab("All")'>
+                Semua (@AllRequests.Count)
+            </button>
+            <button type="button" class="facility-tab @(_activeTab == "Sedang Disiapkan" ? "active" : "")" @onclick='() => SetTab("Sedang Disiapkan")'>
+                Sedang Disiapkan (@AllRequests.Count(r => r.Status == "Sedang Disiapkan"))
+            </button>
+            <button type="button" class="facility-tab @(_activeTab == "Menunggu" ? "active" : "")" @onclick='() => SetTab("Menunggu")'>
+                Menunggu (@AllRequests.Count(r => r.Status == "Menunggu"))
+            </button>
+            <button type="button" class="facility-tab @(_activeTab == "Siap" ? "active" : "")" @onclick='() => SetTab("Siap")'>
+                Siap (@AllRequests.Count(r => r.Status == "Siap"))
+            </button>
+        </div>
+    </div>
+
+    @if (_isLoading)
+    {
+        <!-- Skeleton Card Grid -->
+        <div class="facility-cards-grid">
+            @for (int i = 0; i < 3; i++)
+            {
+                <div class="facility-card-skeleton">
+                    <div class="card-skeleton-photo shimmer"></div>
+                    <div class="card-skeleton-body">
+                        <div class="skeleton-line shimmer" style="width: 60%; height: 16px;"></div>
+                        <div class="skeleton-line shimmer" style="width: 80%; height: 12px;"></div>
+                        <div class="skeleton-line shimmer" style="width: 40%; height: 12px;"></div>
+                        <div class="skeleton-line shimmer" style="width: 100%; height: 28px; border-radius: 6px;"></div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else if (!FilteredRequests.Any())
+    {
+        <div class="empty-requests-card">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            <h3 class="empty-title">Tidak Ada Permintaan Fasilitas</h3>
+            <p class="empty-sub">Belum ada permintaan fasilitas pada kategori ini. Anda dapat membuat permintaan baru dengan tombol di atas.</p>
+        </div>
+    }
+    else
+    {
+        <!-- Cards Grid with Room Photo -->
+        <div class="facility-cards-grid">
+            @foreach (var item in FilteredRequests)
+            {
+                var room = RoomDataProvider.GetRoomById(item.RoomId);
+                var photo = RoomDataProvider.GetRoomPhoto(item.RoomPhotoUrl, item.RoomId);
+
+                <div class="facility-request-card" @onclick="() => OpenDetailModal(item)">
+                    <!-- Card Photo Header / Thumb -->
+                    <div class="request-card-photo-wrapper">
+                        <img src="@photo" alt="@item.RoomName" class="request-card-photo" loading="lazy" />
+                        <span class="request-status-badge status-@GetStatusCss(item.Status)">
+                            @item.Status
+                        </span>
+                    </div>
+
+                    <!-- Card Body -->
+                    <div class="request-card-body">
+                        <div class="request-card-title-row">
+                            <h3 class="request-room-name" title="@item.RoomName">@item.RoomName</h3>
+                            <span class="request-id-tag">@item.Id</span>
+                        </div>
+
+                        <div class="request-booking-context">
+                            <div class="booking-context-row">
+                                <span class="context-label">Untuk Booking:</span>
+                                <span class="context-val">@item.BookingDate.ToString("dd MMM yyyy") (@item.BookingTime)</span>
+                            </div>
+                            <div class="booking-context-row">
+                                <span class="context-label">Diminta:</span>
+                                <span class="context-val">@item.RequestedAt.ToString("dd MMM, HH:mm") WIB</span>
+                            </div>
+                        </div>
+
+                        <!-- Facility Items Preview -->
+                        <div class="requested-items-preview">
+                            @foreach (var itm in item.Items.Take(3))
+                            {
+                                <div class="item-preview-pill">
+                                    <span class="item-icon-mini">
+                                        @((MarkupString)FacilityIconMapper.GetSvgIcon(itm.IconType))
+                                    </span>
+                                    <span class="item-text">@itm.Name (@itm.Quantity)</span>
+                                </div>
+                            }
+                            @if (item.Items.Count > 3)
+                            {
+                                <span class="item-more-badge">+@(item.Items.Count - 3) lainnya</span>
+                            }
+                        </div>
+
+                        <!-- Card Footer -->
+                        <div class="request-card-footer">
+                            <div class="request-booker-info">
+                                <span class="booker-name">@item.BookerName</span>
+                                <span class="booker-div">@item.Division</span>
+                            </div>
+                            <button type="button" class="btn-view-request-detail" @onclick:stopPropagation="true" @onclick="() => OpenDetailModal(item)">
+                                Lihat Detail &rarr;
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<!-- Modal Permintaan Fasilitas Baru -->
+<NewFacilityRequestModal @bind-Visible="_isNewModalVisible" OnSubmitted="HandleNewRequestSubmitted" />
+
+<!-- Modal Detail Permintaan Fasilitas -->
+<FacilityRequestDetailModal @bind-Visible="_isDetailModalVisible" RequestItem="_selectedRequest" />
+
+<style>
+    .facility-page-container {
+        padding: 24px;
+        max-width: 1440px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .facility-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .facility-page-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--persada-navy-900, #0F1F3D);
+        margin: 0;
+    }
+    body.dark-mode .facility-page-title { color: #F8FAFC; }
+
+    .facility-page-subtitle {
+        font-size: 13px;
+        color: #64748B;
+        margin: 4px 0 0 0;
+    }
+    body.dark-mode .facility-page-subtitle { color: #94A3B8; }
+
+    .btn-new-facility-request {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: #F59E0B;
+        color: #0F172A;
+        font-size: 13.5px;
+        font-weight: 700;
+        border: none;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+    }
+    .btn-new-facility-request:hover {
+        background: #D97706;
+        color: #FFFFFF;
+        transform: translateY(-1px);
+    }
+
+    /* Tabs Bar */
+    .facility-filter-tabs-bar {
+        display: flex;
+        border-bottom: 1.5px solid #E2E8F0;
+        padding-bottom: 8px;
+    }
+    body.dark-mode .facility-filter-tabs-bar { border-color: #334155; }
+
+    .filter-tabs-group {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .facility-tab {
+        padding: 6px 14px;
+        border-radius: 999px;
+        border: 1px solid transparent;
+        background: transparent;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #64748B;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+    body.dark-mode .facility-tab { color: #94A3B8; }
+    .facility-tab:hover { background: #F1F5F9; color: #0F172A; }
+    body.dark-mode .facility-tab:hover { background: #334155; color: #FFFFFF; }
+
+    .facility-tab.active {
+        background: #F59E0B;
+        color: #0F172A;
+        font-weight: 700;
+    }
+    body.dark-mode .facility-tab.active {
+        background: #F59E0B;
+        color: #0F172A;
+    }
+
+    /* Cards Grid */
+    .facility-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+        gap: 18px;
+    }
+
+    .facility-request-card {
+        background: #FFFFFF;
+        border-radius: 14px;
+        border: 1px solid #E2E8F0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    }
+    .facility-request-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        border-color: #CBD5E1;
+    }
+    body.dark-mode .facility-request-card { background: #1E293B; border-color: #334155; }
+
+    .request-card-photo-wrapper {
+        position: relative;
+        height: 140px;
+        width: 100%;
+        background: #F1F5F9;
+        overflow: hidden;
+    }
+
+    .request-card-photo {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.3s;
+    }
+    .facility-request-card:hover .request-card-photo {
+        transform: scale(1.04);
+    }
+
+    .request-status-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        backdrop-filter: blur(4px);
+    }
+    .status-preparing { background: #FEF3C7; color: #92400E; border: 1px solid #F59E0B; }
+    .status-pending { background: #F1F5F9; color: #334155; border: 1px solid #CBD5E1; }
+    .status-ready { background: #DCFCE7; color: #16A34A; border: 1px solid #4ADE80; }
+
+    .request-card-body {
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        flex: 1;
+    }
+
+    .request-card-title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .request-room-name {
+        font-size: 15px;
+        font-weight: 700;
+        color: #0F172A;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    body.dark-mode .request-room-name { color: #F8FAFC; }
+
+    .request-id-tag {
+        font-size: 11px;
+        font-weight: 700;
+        color: #64748B;
+        background: #F1F5F9;
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+    body.dark-mode .request-id-tag { background: #334155; color: #CBD5E1; }
+
+    .request-booking-context {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        font-size: 11.5px;
+        padding: 6px 10px;
+        background: #F8FAFC;
+        border-radius: 6px;
+    }
+    body.dark-mode .request-booking-context { background: #162032; }
+
+    .booking-context-row {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .context-label { color: #64748B; }
+    .context-val { font-weight: 600; color: #0F172A; }
+    body.dark-mode .context-val { color: #F8FAFC; }
+
+    .requested-items-preview {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-top: 2px;
+    }
+
+    .item-preview-pill {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 8px;
+        background: #FFFDF5;
+        border: 1px solid #FDE68A;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #92400E;
+    }
+    body.dark-mode .item-preview-pill { background: rgba(217, 119, 6, 0.15); border-color: rgba(217, 119, 6, 0.3); color: #FBBF24; }
+
+    .item-icon-mini svg {
+        width: 13px;
+        height: 13px;
+        stroke: currentColor;
+    }
+
+    .item-more-badge {
+        font-size: 10px;
+        font-weight: 700;
+        color: #64748B;
+        align-self: center;
+    }
+
+    .request-card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 10px;
+        border-top: 1px solid #F1F5F9;
+        margin-top: auto;
+    }
+    body.dark-mode .request-card-footer { border-color: #334155; }
+
+    .request-booker-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .booker-name {
+        font-size: 11.5px;
+        font-weight: 700;
+        color: #0F172A;
+    }
+    body.dark-mode .booker-name { color: #F8FAFC; }
+
+    .booker-div {
+        font-size: 10.5px;
+        color: #64748B;
+    }
+
+    .btn-view-request-detail {
+        background: transparent;
+        border: none;
+        color: #1F5D9A;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 6px;
+        transition: all 0.15s;
+    }
+    .btn-view-request-detail:hover {
+        background: #EFF6FF;
+        color: #1D4ED8;
+    }
+    body.dark-mode .btn-view-request-detail { color: #60A5FA; }
+
+    /* Empty Card */
+    .empty-requests-card {
+        padding: 48px 24px;
+        text-align: center;
+        background: #FFFFFF;
+        border-radius: 14px;
+        border: 1px dashed #CBD5E1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+    body.dark-mode .empty-requests-card { background: #1E293B; border-color: #334155; }
+    .empty-title { font-size: 16px; font-weight: 700; color: #0F172A; margin: 0; }
+    body.dark-mode .empty-title { color: #F8FAFC; }
+    .empty-sub { font-size: 13px; color: #64748B; margin: 0; max-width: 420px; }
+
+    /* Skeleton */
+    .facility-card-skeleton {
+        background: #FFFFFF;
+        border-radius: 14px;
+        border: 1px solid #F1F5F9;
+        overflow: hidden;
+        height: 290px;
+        display: flex;
+        flex-direction: column;
+    }
+    body.dark-mode .facility-card-skeleton { background: #1E293B; }
+    .card-skeleton-photo { height: 140px; background: #E2E8F0; }
+    .card-skeleton-body { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+    .shimmer {
+        background: linear-gradient(90deg, #F1F5F9 0%, #E2E8F0 50%, #F1F5F9 100%);
+        background-size: 200% 100%;
+        animation: cardShimmer 2s infinite ease-in-out;
+    }
+    body.dark-mode .shimmer {
+        background: linear-gradient(90deg, #1E293B 0%, #334155 50%, #1E293B 100%);
+        background-size: 200% 100%;
+        animation: cardShimmer 2s infinite ease-in-out;
+    }
+    @@keyframes cardShimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+    }
+</style>
+
+@code {
+    private string _activeTab = "All";
+    private bool _isLoading = false;
+
+    private List<FacilityRequestItem> AllRequests = new();
+    private List<FacilityRequestItem> FilteredRequests = new();
+
+    private bool _isNewModalVisible = false;
+    private bool _isDetailModalVisible = false;
+    private FacilityRequestItem? _selectedRequest;
+
+    protected override async Task OnInitializedAsync()
+    {
+        FacilityService.OnChange += HandleDataChanged;
+        await LoadDataAsync();
+    }
+
+    private void HandleDataChanged()
+    {
+        InvokeAsync(async () =>
+        {
+            await LoadDataAsync(showSkeleton: false);
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        FacilityService.OnChange -= HandleDataChanged;
+    }
+
+    private async Task LoadDataAsync(bool showSkeleton = true)
+    {
+        if (showSkeleton)
+        {
+            _isLoading = true;
+            StateHasChanged();
+            await Task.Delay(300);
+        }
+
+        AllRequests = FacilityService.GetRequests().ToList();
+        ApplyFilter();
+
+        _isLoading = false;
+    }
+
+    private void SetTab(string tab)
+    {
+        _activeTab = tab;
+        ApplyFilter();
+    }
+
+    private void ApplyFilter()
+    {
+        if (_activeTab == "All")
+        {
+            FilteredRequests = AllRequests.ToList();
+        }
+        else
+        {
+            FilteredRequests = AllRequests.Where(r => r.Status == _activeTab).ToList();
+        }
+    }
+
+    private void OpenNewRequestModal()
+    {
+        _isNewModalVisible = true;
+    }
+
+    private void OpenDetailModal(FacilityRequestItem item)
+    {
+        _selectedRequest = item;
+        _isDetailModalVisible = true;
+    }
+
+    private async Task HandleNewRequestSubmitted()
+    {
+        await LoadDataAsync(showSkeleton: false);
+    }
+
+    private string GetStatusCss(string status) => status switch
+    {
+        "Sedang Disiapkan" => "preparing",
+        "Menunggu" => "pending",
+        "Siap" => "ready",
+        _ => "pending"
+    };
+}

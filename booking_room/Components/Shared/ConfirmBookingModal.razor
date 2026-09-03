@@ -46,7 +46,7 @@
                     {
                         @for (int i = 0; i < 4; i++)
                         {
-                            <div class="room-select-card skeleton-box" style="height: 125px; min-width: 220px; border-radius: 12px;"></div>
+                            <LandscapeRoomCardSkeleton />
                         }
                     }
                     else
@@ -54,43 +54,7 @@
                         @foreach (var r in GetDisplayRooms())
                         {
                             bool isActive = Room != null && r.Id == Room.Id;
-                            bool isAvailable = r.Status.Equals("available", StringComparison.OrdinalIgnoreCase) || r.Status.Equals("tersedia", StringComparison.OrdinalIgnoreCase);
-                            <div class="room-select-card @(isActive ? "active" : "") @(!isAvailable && !isActive ? "booked-card" : "")" @onclick="() => SelectRoom(r)">
-                                <div class="card-top-row">
-                                    <div class="card-room-icon">
-                                        @if (r.Name.Contains("Boardroom", StringComparison.OrdinalIgnoreCase) || r.Name.Contains("Meeting", StringComparison.OrdinalIgnoreCase))
-                                        {
-                                            <InlineSvg Src="icons/icon_building.svg" Class="icon-md" Style="stroke:#334155; fill:none;" />
-                                        }
-                                        else if (r.Name.Contains("Studio", StringComparison.OrdinalIgnoreCase) || r.Name.Contains("Creative", StringComparison.OrdinalIgnoreCase))
-                                        {
-                                            <InlineSvg Src="icons/icon_video_conf.svg" Class="icon-md" Style="stroke:#334155; fill:none;" />
-                                        }
-                                        else
-                                        {
-                                            <InlineSvg Src="icons/Icon_status_1.svg" Class="icon-md" Style="stroke:#334155; fill:none;" />
-                                        }
-                                    </div>
-                                    <span class="status-pill @(isAvailable ? "pill-available" : "pill-booked")">
-                                        @(isAvailable ? "TERSEDIA" : "DIPESAN")
-                                    </span>
-                                </div>
-                                <div class="card-room-name">@r.Name</div>
-                                <div class="card-room-cap">Kapasitas: @r.Capacity Orang</div>
-                                <div class="card-room-amenities">
-                                    @if (r.Amenities != null && r.Amenities.Any())
-                                    {
-                                        var firstAmenity = RoomAmenity.Create(r.Amenities.First());
-                                        <InlineSvg Src="@firstAmenity.IconSvgPath" Class="icon-xs" Style="stroke:#64748B; fill:none;" />
-                                        <span class="amenity-text">@string.Join(", ", r.Amenities.Take(3))</span>
-                                    }
-                                    else
-                                    {
-                                        <InlineSvg Src="icons/icon_wifi.svg" Class="icon-xs" Style="stroke:#64748B; fill:none;" />
-                                        <span class="amenity-text">WiFi, AC, Proyektor</span>
-                                    }
-                                </div>
-                            </div>
+                            <LandscapeRoomCard Room="r" IsActive="isActive" OnSelect="SelectRoom" />
                         }
                     }
                 </div>
@@ -404,20 +368,34 @@
     /* Room Carousel - Native Scroll + Mouse Drag */
     .room-carousel-track {
         display: flex;
-        gap: 14px;
+        flex-direction: row;
+        flex-wrap: nowrap !important;
+        gap: 12px;
         overflow-x: auto;
+        overflow-y: hidden;
         scroll-behavior: smooth;
-        scroll-snap-type: x proximity;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
+        scrollbar-width: thin;
+        scrollbar-color: #E2E8F0 transparent;
         padding: 4px 4px 12px 2px;
         cursor: grab;
         user-select: none;
         -webkit-user-select: none;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .room-carousel-track::-webkit-scrollbar {
-        display: none;
+        height: 5px;
+    }
+    .room-carousel-track::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .room-carousel-track::-webkit-scrollbar-thumb {
+        background: #E2E8F0;
+        border-radius: 999px;
+    }
+    .room-carousel-track:hover::-webkit-scrollbar-thumb {
+        background: #CBD5E1;
     }
 
     .room-carousel-track.grabbing {
@@ -1092,25 +1070,18 @@
 
     private IEnumerable<RoomItem> GetDisplayRooms()
     {
-        // 8-10 sample rooms with variety of status, capacity, and amenities for comprehensive testing
-        var sampleRooms = new List<RoomItem>
-        {
-            new("1", "Gamma Lounge", 8, "Ruang santai dengan sofa empuk dan fasilitas kopi.", "booked", new List<string>{"Sofa", "Kopi", "WiFi"}, "1"),
-            new("2", "Beta Studio", 4, "Studio modern untuk podcast dan siaran presentasi.", "available", new List<string>{"Kamera", "Mic", "WiFi"}, "2"),
-            new("3", "Alpha Meeting Room", 12, "Ruang rapat standar dengan fasilitas proyektor dan AC.", "available", new List<string>{"Proyektor", "WiFi", "AC"}, "3"),
-            new("4", "Delta Boardroom", 16, "Ruang dewan direksi dengan TV layar lebar dan proyektor.", "booked", new List<string>{"TV Layar Besar", "Proyektor", "WiFi"}, "4"),
-            new("5", "Epsilon Huddle", 4, "Ruang diskusi cepat untuk tim kecil.", "available", new List<string>{"Whiteboard", "WiFi"}, "2"),
-            new("6", "Zeta Conference Hall", 20, "Aula konferensi dengan tata suara profesional dan AC.", "available", new List<string>{"Sound System", "Proyektor", "AC"}, "1"),
-            new("7", "Eta Discussion Room", 6, "Ruang diskusi tim dengan smart TV dan papan tulis.", "booked", new List<string>{"Whiteboard", "TV", "WiFi"}, "3"),
-            new("8", "Theta Creative Space", 10, "Area kreatif dengan sofa modular dan papan tulis lebar.", "available", new List<string>{"Sofa", "Papan Tulis", "WiFi"}, "2"),
-            new("9", "Executive Boardroom A", 12, "Ruang rapat eksekutif premium dengan konferensi video 4K.", "available", new List<string>{"Konferensi Video", "AC", "WiFi"}, "3"),
-            new("10", "Collaborative Space B", 6, "Ruang kerja kolaboratif berkapasitas 6 orang.", "booked", new List<string>{"Papan Tulis", "AC", "WiFi"}, "2")
-        };
+        var sampleRooms = RoomDataProvider.GetRooms().ToList();
 
         if (Room != null)
         {
-            // Ensure selected room is at top of list if not present
-            if (!sampleRooms.Any(r => r.Id == Room.Id))
+            var idx = sampleRooms.FindIndex(r => r.Id == Room.Id);
+            if (idx > 0)
+            {
+                var current = sampleRooms[idx];
+                sampleRooms.RemoveAt(idx);
+                sampleRooms.Insert(0, current);
+            }
+            else if (idx < 0)
             {
                 sampleRooms.Insert(0, Room);
             }

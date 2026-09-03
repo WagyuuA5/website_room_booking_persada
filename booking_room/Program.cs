@@ -16,6 +16,8 @@ builder.Services.AddScoped<booking_room.Services.DataExportService>();
 builder.Services.AddScoped<booking_room.Services.ModalStateService>();
 builder.Services.AddScoped<booking_room.Services.IModalService, booking_room.Services.ModalService>();
 builder.Services.AddScoped<booking_room.Services.IToastService, booking_room.Services.ToastService>();
+builder.Services.AddSingleton<booking_room.Services.IFacilityRequestService, booking_room.Services.FacilityRequestService>();
+builder.Services.AddSingleton<booking_room.Services.ICalendarBookingService, booking_room.Services.CalendarBookingService>();
 
 var app = builder.Build();
 

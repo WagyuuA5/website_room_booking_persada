@@ -1,0 +1,286 @@
+@namespace booking_room.Components.Shared
+@using booking_room.Services
+@using booking_room.Components.Models
+
+@if (Visible && RequestItem != null)
+{
+    var room = RoomDataProvider.GetRoomById(RequestItem.RoomId);
+
+    <AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Size="md" Title="Detail Permintaan Fasilitas" Subtitle="@($"{RequestItem.Id} • {RequestItem.RoomName}")" ShowFooter="true">
+        <ChildContent>
+            <div class="facility-detail-body">
+                <!-- Large Room Photo & Status Header -->
+                <div class="detail-photo-card">
+                    <img src="@RoomDataProvider.GetRoomPhoto(RequestItem.RoomPhotoUrl, RequestItem.RoomId)" alt="@RequestItem.RoomName" class="detail-hero-photo" />
+                    <div class="photo-overlay-info">
+                        <span class="detail-status-pill status-@GetStatusCssClass(RequestItem.Status)">
+                            @RequestItem.Status
+                        </span>
+                        <div class="photo-room-title">@RequestItem.RoomName</div>
+                        <div class="photo-room-sub">Lantai @(room?.Floor ?? "1") • Kapasitas: @(room?.Capacity ?? 10) Orang</div>
+                    </div>
+                </div>
+
+                <!-- Booking Context Info -->
+                <div class="detail-meta-grid">
+                    <div class="meta-item">
+                        <div class="meta-label">JADWAL RAPAT</div>
+                        <div class="meta-val">@RequestItem.BookingDate.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("id-ID"))</div>
+                        <div class="meta-sub">@RequestItem.BookingTime</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">PEMOHON</div>
+                        <div class="meta-val">@RequestItem.BookerName</div>
+                        <div class="meta-sub">@RequestItem.Division</div>
+                    </div>
+                </div>
+
+                <!-- Requested Items List -->
+                <div class="detail-section">
+                    <div class="section-title-tag">FASILITAS YANG DIMINTA (@RequestItem.Items.Count)</div>
+                    <div class="requested-items-stack">
+                        @foreach (var itm in RequestItem.Items)
+                        {
+                            <div class="detail-facility-row">
+                                <div class="facility-row-icon">
+                                    @((MarkupString)FacilityIconMapper.GetSvgIcon(itm.IconType))
+                                </div>
+                                <div class="facility-row-content">
+                                    <div class="facility-row-top">
+                                        <span class="facility-row-name">@itm.Name</span>
+                                        <span class="facility-row-qty">@itm.Quantity Unit</span>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(itm.Note))
+                                    {
+                                        <div class="facility-row-note">Catatan: @itm.Note</div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- General Notes if any -->
+                @if (!string.IsNullOrEmpty(RequestItem.Notes))
+                {
+                    <div class="detail-section">
+                        <div class="section-title-tag">CATATAN KHUSUS</div>
+                        <div class="notes-quote-box">@RequestItem.Notes</div>
+                    </div>
+                }
+
+                <!-- Timestamps & History -->
+                <div class="detail-timestamps-box">
+                    <div class="timestamp-row">
+                        <span class="timestamp-label">Waktu Permintaan Diajukan:</span>
+                        <span class="timestamp-val">@RequestItem.RequestedAt.ToString("dd MMM yyyy, HH:mm") WIB</span>
+                    </div>
+                    <div class="timestamp-row">
+                        <span class="timestamp-label">Pembaruan Terakhir:</span>
+                        <span class="timestamp-val">@RequestItem.StatusUpdatedAt.ToString("dd MMM yyyy, HH:mm") WIB</span>
+                    </div>
+                </div>
+            </div>
+        </ChildContent>
+
+        <FooterContent>
+            <div class="modal-footer-single">
+                <button type="button" class="btn-modal-close-single" @onclick="Close">Tutup</button>
+            </div>
+        </FooterContent>
+    </AppModal>
+}
+
+<style>
+    .facility-detail-body {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        padding: 4px 0;
+    }
+
+    .detail-photo-card {
+        position: relative;
+        width: 100%;
+        height: 160px;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #0F1F3D;
+    }
+
+    .detail-hero-photo {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.85;
+    }
+
+    .photo-overlay-info {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 16px;
+        background: linear-gradient(0deg, rgba(15, 31, 61, 0.95) 0%, rgba(15, 31, 61, 0) 100%);
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .detail-status-pill {
+        align-self: flex-start;
+        padding: 3px 10px;
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .status-preparing { background: #FEF3C7; color: #92400E; }
+    .status-pending { background: #E2E8F0; color: #334155; }
+    .status-ready { background: #DCFCE7; color: #16A34A; }
+
+    .photo-room-title { font-size: 16px; font-weight: 800; color: #FFFFFF; }
+    .photo-room-sub { font-size: 11.5px; color: #E2E8F0; }
+
+    .detail-meta-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .meta-item {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 10px;
+        padding: 10px 12px;
+    }
+    body.dark-mode .meta-item { background: #1E293B; border-color: #334155; }
+
+    .meta-label { font-size: 10px; font-weight: 700; color: #64748B; letter-spacing: 0.04em; }
+    .meta-val { font-size: 13px; font-weight: 700; color: #0F172A; margin-top: 3px; }
+    body.dark-mode .meta-val { color: #F8FAFC; }
+    .meta-sub { font-size: 11px; color: #64748B; margin-top: 1px; }
+
+    .section-title-tag {
+        font-size: 10.5px;
+        font-weight: 700;
+        color: #64748B;
+        letter-spacing: 0.04em;
+        margin-bottom: 8px;
+    }
+
+    .requested-items-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .detail-facility-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+    }
+    body.dark-mode .detail-facility-row { background: #1E293B; border-color: #334155; }
+
+    .facility-row-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 6px;
+        background: #FEF3C7;
+        color: #D97706;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .facility-row-content { flex: 1; min-width: 0; }
+    .facility-row-top { display: flex; justify-content: space-between; align-items: center; }
+    .facility-row-name { font-size: 13px; font-weight: 700; color: #0F172A; }
+    body.dark-mode .facility-row-name { color: #F8FAFC; }
+    .facility-row-qty {
+        font-size: 11px;
+        font-weight: 700;
+        background: #F1F5F9;
+        color: #334155;
+        padding: 2px 8px;
+        border-radius: 4px;
+    }
+    body.dark-mode .facility-row-qty { background: #334155; color: #CBD5E1; }
+    .facility-row-note { font-size: 11px; color: #64748B; margin-top: 2px; }
+
+    .notes-quote-box {
+        padding: 10px 12px;
+        background: #FAFBFD;
+        border-left: 3px solid #F59E0B;
+        border-radius: 4px;
+        font-size: 12px;
+        color: #475569;
+        line-height: 1.4;
+    }
+    body.dark-mode .notes-quote-box { background: #162032; color: #CBD5E1; }
+
+    .detail-timestamps-box {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 10px 12px;
+        background: #F8FAFC;
+        border-radius: 8px;
+        font-size: 11px;
+    }
+    body.dark-mode .detail-timestamps-box { background: #1E293B; }
+    .timestamp-row { display: flex; justify-content: space-between; }
+    .timestamp-label { color: #64748B; }
+    .timestamp-val { font-weight: 600; color: #0F172A; }
+    body.dark-mode .timestamp-val { color: #F8FAFC; }
+
+    .modal-footer-single {
+        display: flex;
+        justify-content: flex-end;
+        width: 100%;
+    }
+
+    .btn-modal-close-single {
+        padding: 8px 22px;
+        border-radius: 999px;
+        border: 1.5px solid #CBD5E1;
+        background: transparent;
+        color: #475569;
+        font-weight: 700;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+    .btn-modal-close-single:hover { background: #F1F5F9; color: #0F172A; }
+</style>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public FacilityRequestItem? RequestItem { get; set; }
+
+    private async Task HandleVisibleChanged(bool val)
+    {
+        Visible = val;
+        await VisibleChanged.InvokeAsync(val);
+    }
+
+    private async Task Close()
+    {
+        await HandleVisibleChanged(false);
+    }
+
+    private string GetStatusCssClass(string status) => status switch
+    {
+        "Sedang Disiapkan" => "preparing",
+        "Menunggu" => "pending",
+        "Siap" => "ready",
+        _ => "pending"
+    };
+}
