@@ -1,6 +1,8 @@
 @namespace booking_room.Components.Shared
 @using booking_room.Components.Models
+@using booking_room.Services
 @inject IJSRuntime JS
+@inject IToastService ToastService
 
 <AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Size="lg" Title="Konfirmasi Pemesanan" Subtitle="Atur jadwal ruangan atau fasilitas baru" ShowFooter="true">
     <ChildContent>
@@ -294,7 +296,7 @@
     </ChildContent>
     <FooterContent>
         <div class="confirm-footer-btns">
-            <button type="button" class="btn-cancel-modal" @onclick="Back">Batal</button>
+            <button type="button" class="btn-cancel-modal" @onclick="Back">Tutup</button>
             <button type="button" class="btn-confirm-modal" @onclick="Confirm">
                 <span>Konfirmasi Pemesanan</span>
                 <InlineSvg Src="icons/icon_check_circle.svg" Class="icon-sm" Style="color:#FFFFFF; stroke:#FFFFFF;" />
@@ -1212,6 +1214,14 @@
     private async Task Confirm()
     {
         await HandleVisibleChanged(false);
+        string roomName = Room?.Name ?? "Ruangan";
+        string dateStr = _selectedDate.ToString("dd MMMM yyyy", _idCulture);
+        string timeStr = $"{_startTime:HH:mm} - {_endTime:HH:mm} WIB";
+        ToastService.Success(
+            "Pemesanan Berhasil",
+            $"Ruangan {roomName} telah dipesan untuk {dateStr}, {timeStr}.",
+            4500
+        );
         await OnConfirm.InvokeAsync();
     }
 }
