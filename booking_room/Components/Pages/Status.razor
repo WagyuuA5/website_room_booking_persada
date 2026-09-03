@@ -17,18 +17,10 @@
             <p class="status-hero-subtitle">Pantau dan kelola seluruh status permintaan reservasi ruangan Anda.</p>
         </div>
         <div class="status-header-actions">
-            <button type="button" class="status-btn-new-booking" @onclick='() => Navigation.NavigateTo("/pemesanan?tab=ruangan")' title="Buat Pemesanan Ruangan Baru">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                <span>Pesanan Baru</span>
-            </button>
-            <button type="button" class="status-btn-icon-refresh" @onclick="RefreshData" title="Muat Ulang Data">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <button type="button" class="status-btn-icon-refresh" @onclick="RefreshData" title="Perbarui Data" aria-label="Perbarui Data">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
                 </svg>
-                <span>Perbarui Data</span>
             </button>
         </div>
     </div>
@@ -229,102 +221,20 @@
     </div>
 </div>
 
-<!-- Modal Batal Pemesanan (CASE 10: Redesign Modern + Wajib Alasan Pembatalan) -->
-<AppModal Visible="@isCancelModalOpen" ShowCloseButton="false" OnClose="CloseCancelModal" Size="sm" Title="Konfirmasi Pembatalan">
-    <BodyContent>
-        <div class="cancel-modal-content">
-            <div class="cancel-modal-icon-wrap">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="3 6 5 6 21 6"></polyline>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                    <line x1="10" y1="11" x2="10" y2="17"></line>
-                    <line x1="14" y1="11" x2="14" y2="17"></line>
-                </svg>
-            </div>
-            <h3 class="cancel-modal-title">Batalkan Pemesanan Ini?</h3>
-            <p class="cancel-modal-warning">
-                Apakah Anda yakin ingin membatalkan permintaan pemesanan <strong>@(selectedBooking?.RoomName)</strong>?
-                <span class="warning-highlight">Tindakan ini tidak dapat dibatalkan.</span>
-            </p>
+<!-- Reusable Modern Cancel Modal (CASE 1 & CASE 4) -->
+<CancelBookingModal @bind-Visible="isCancelModalOpen" 
+                    RoomName="@selectedBooking?.RoomName" 
+                    RequestId="@selectedBooking?.RequestId" 
+                    OnConfirmCancel="ConfirmCancelWithReason" />
 
-            <div class="cancel-reason-group">
-                <label class="form-label-mini">ALASAN PEMBATALAN <span style="color: #EF4444;">*</span></label>
-                <textarea class="form-control-modal cancel-reason-input" 
-                          rows="3"
-                          placeholder="Contoh: Jadwal rapat berubah, ruangan tidak lagi dibutuhkan, dsb."
-                          @bind="_cancelReason"
-                          @bind:event="oninput"></textarea>
-                @if (string.IsNullOrWhiteSpace(_cancelReason))
-                {
-                    <span class="form-hint-text">Alasan pembatalan wajib diisi sebelum melanjutkan.</span>
-                }
-            </div>
-        </div>
-    </BodyContent>
-    <FooterContent>
-        <div class="modal-footer-actions">
-            <button type="button" class="btn-secondary-app" @onclick="CloseCancelModal">Tutup</button>
-            <button type="button" class="btn-danger-app" disabled="@(string.IsNullOrWhiteSpace(_cancelReason))" @onclick="ConfirmCancel">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                <span>Konfirmasi Batal</span>
-            </button>
-        </div>
-    </FooterContent>
-</AppModal>
+<!-- Reusable Modern Modify Modal (CASE 4) -->
+<ModifyBookingModal @bind-Visible="isModifyModalOpen" 
+                    Booking="selectedBooking" 
+                    OnUpdate="ConfirmModifyWithBooking" />
 
-<!-- Modal Modifikasi Pemesanan (CASE 8 & 9: Standarisasi Design System) -->
-<AppModal Visible="@isModifyModalOpen" ShowCloseButton="false" OnClose="CloseModifyModal" Size="md" Title="Modifikasi Pemesanan">
-    <BodyContent>
-        <div style="display: flex; flex-direction: column; gap: 18px;">
-            <div>
-                <h4 style="margin: 0 0 10px 0; font-size: 0.8125rem; font-weight: 700; color: #6B7280; text-transform: uppercase; letter-spacing: 0.05em;">Detail Pemohon</h4>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                    <div>
-                        <label class="form-label-mini">Nama Pemohon</label>
-                        <input type="text" class="form-control-modal" value="@(selectedBooking?.RequestedBy ?? "Budi Santoso")" disabled />
-                    </div>
-                    <div>
-                        <label class="form-label-mini">Divisi / Departemen</label>
-                        <input type="text" class="form-control-modal" value="@(selectedBooking?.RequestedByTitle ?? "IT / Engineering")" disabled />
-                    </div>
-                </div>
-            </div>
-            <div>
-                <h4 style="margin: 0 0 10px 0; font-size: 0.8125rem; font-weight: 700; color: #6B7280; text-transform: uppercase; letter-spacing: 0.05em;">Jadwal Reservasi</h4>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                    <div>
-                        <label class="form-label-mini">Tanggal</label>
-                        <input type="date" class="form-control-modal" value="2026-10-25" />
-                    </div>
-                    <div>
-                        <label class="form-label-mini">Durasi</label>
-                        <select class="form-control-modal">
-                            <option>1 Jam</option>
-                            <option selected>2 Jam</option>
-                            <option>3 Jam</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <div>
-                <label class="form-label-mini">Catatan Tambahan</label>
-                <textarea class="form-control-modal" style="min-height: 70px; resize: vertical;" placeholder="Tulis catatan jika ada perubahan fasilitas atau peserta..."></textarea>
-            </div>
-        </div>
-    </BodyContent>
-    <FooterContent>
-        <div class="modal-footer-actions">
-            <button type="button" class="btn-secondary-app" @onclick="CloseModifyModal">Tutup</button>
-            <button type="button" class="btn-primary-app" @onclick="ConfirmModify">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                <span>Simpan Pembaruan</span>
-            </button>
-        </div>
-    </FooterContent>
-</AppModal>
-
-<!-- CASE 11: Master Room Details Popup -->
-<RoomDetailsModal @bind-Visible="_isRoomModalOpen" Room="_selectedRoomForModal" />
+<!-- Master Room Details Popup (CASE 2a) -->
+<RoomDetailsModal @bind-Visible="_isRoomModalOpen" 
+                  Room="_selectedRoomForModal" />
 
 <style>
     /* CASE 4: Padding 24px 24px 28px strictly from navbar bottom */
@@ -393,23 +303,23 @@
     }
 
     .status-btn-icon-refresh {
-        display: flex;
+        display: inline-flex;
         align-items: center;
-        gap: 8px;
-        padding: 0 16px;
+        justify-content: center;
+        width: 42px;
         height: 42px;
+        padding: 0;
         background: var(--surface-card, #FFFFFF);
         border: 1.5px solid var(--color-brand-gray-border, #E5E7EB);
-        border-radius: 999px;
-        color: var(--persada-text-primary, #374151);
-        font-weight: 600;
-        font-size: 0.875rem;
+        border-radius: 12px;
+        color: #475569;
         cursor: pointer;
         transition: all 0.2s ease;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     }
     body.dark-mode .status-btn-icon-refresh {
         background: #1C1C1E;
-        border-color: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.12);
         color: #F8FAFC;
     }
     .status-btn-icon-refresh:hover {
@@ -417,6 +327,7 @@
         border-color: #CBD5E1;
         color: var(--persada-navy-900, #0F1F3D);
         transform: translateY(-1px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07);
     }
     
     /* CASE 5: Filters perfectly aligned flex with align-items: center */
@@ -668,8 +579,7 @@
         box-shadow: 0 4px 20px rgba(15, 31, 61, 0.06);
         position: sticky;
         top: 14px;
-        max-height: calc(100vh - 200px);
-        overflow-y: auto;
+        max-height: calc(100vh - 120px);
     }
     body.dark-mode .status-detail-panel {
         background: #1C1C1E;
@@ -679,8 +589,11 @@
     .detail-panel-hero {
         position: relative;
         width: 100%;
-        height: 200px;
+        height: 190px;
+        min-height: 180px;
+        flex-shrink: 0;
         overflow: hidden;
+        background: #F1F5F9;
     }
     
     .detail-hero-img {
@@ -695,7 +608,7 @@
         position: absolute;
         top: 14px;
         right: 14px;
-        z-index: 2;
+        z-index: 5;
     }
     
     .detail-panel-content {
@@ -703,6 +616,8 @@
         display: flex;
         flex-direction: column;
         gap: 16px;
+        overflow-y: auto;
+        flex: 1 1 auto;
     }
     
     .detail-panel-title-row {
@@ -1070,7 +985,6 @@
     private readonly string[] _statusFilterOptions = new[] { "Semua Status", "Menunggu Persetujuan", "Disetujui", "Ditolak", "Dibatalkan", "Selesai" };
 
     private bool isCancelModalOpen = false;
-    private string _cancelReason = "";
     private bool isModifyModalOpen = false;
 
     private bool _isRoomModalOpen = false;
@@ -1139,8 +1053,17 @@
     {
         if (selectedBooking == null) return;
         var room = RoomDataProvider.GetRooms().FirstOrDefault(r => r.Name.Equals(selectedBooking.RoomName, StringComparison.OrdinalIgnoreCase))
-                   ?? RoomDataProvider.GetRooms().FirstOrDefault()
-                   ?? new RoomItem("r-mock", selectedBooking.RoomName, selectedBooking.Capacity > 0 ? selectedBooking.Capacity : 12, "Ruang pertemuan modern dengan fasilitas lengkap dan konektivitas prima.", "Tersedia", new List<string> { "AC", "WiFi Cepat", "Smart TV", "Proyektor" }, "3", selectedBooking.PhotoUrl);
+                   ?? RoomDataProvider.GetRooms().FirstOrDefault(r => r.Name.Contains(selectedBooking.RoomName, StringComparison.OrdinalIgnoreCase) || selectedBooking.RoomName.Contains(r.Name, StringComparison.OrdinalIgnoreCase))
+                   ?? new RoomItem(
+                       selectedBooking.Id,
+                       selectedBooking.RoomName,
+                       selectedBooking.Capacity > 0 ? selectedBooking.Capacity : 12,
+                       "Ruang pertemuan modern dengan fasilitas lengkap dan konektivitas prima untuk menunjang produktivitas rapat.",
+                       "available",
+                       new List<string> { "AC", "WiFi Cepat", "Smart TV", "Proyektor" },
+                       string.IsNullOrEmpty(selectedBooking.Floor) ? "3" : selectedBooking.Floor.Replace("Lantai", "").Trim(),
+                       selectedBooking.PhotoUrl
+                   );
 
         _selectedRoomForModal = room;
         _isRoomModalOpen = true;
@@ -1201,21 +1124,16 @@
 
     private void OpenCancelModal()
     {
-        _cancelReason = "";
         isCancelModalOpen = true;
     }
 
-    private void CloseCancelModal() => isCancelModalOpen = false;
-
-    private void ConfirmCancel()
+    private void ConfirmCancelWithReason(string reason)
     {
-        if (string.IsNullOrWhiteSpace(_cancelReason)) return;
-        isCancelModalOpen = false;
         if (selectedBooking != null)
         {
             var updated = selectedBooking with { 
                 Status = "canceled",
-                RejectionReason = $"Dibatalkan oleh pemesan: {_cancelReason}"
+                RejectionReason = $"Dibatalkan oleh pemesan: {reason}"
             };
             var idx = _allBookings.FindIndex(b => b.Id == selectedBooking.Id);
             if (idx >= 0)
@@ -1223,16 +1141,24 @@
                 _allBookings[idx] = updated;
                 selectedBooking = updated;
             }
+            ToastService.Success("Pemesanan Dibatalkan", $"Permintaan pemesanan ruangan {updated.RoomName} telah dibatalkan.");
         }
-        ToastService.Success("Pemesanan Dibatalkan", "Permintaan reservasi berhasil dibatalkan.");
     }
 
-    private void OpenModifyModal() => isModifyModalOpen = true;
-    private void CloseModifyModal() => isModifyModalOpen = false;
-    private void ConfirmModify()
+    private void OpenModifyModal()
     {
-        isModifyModalOpen = false;
-        ToastService.Success("Perubahan Disimpan", "Detail reservasi berhasil diperbarui.");
+        isModifyModalOpen = true;
+    }
+
+    private void ConfirmModifyWithBooking(BookingItem updated)
+    {
+        var idx = _allBookings.FindIndex(b => b.Id == updated.Id);
+        if (idx >= 0)
+        {
+            _allBookings[idx] = updated;
+            selectedBooking = updated;
+        }
+        ToastService.Success("Pemesanan Diperbarui", $"Modifikasi pemesanan {updated.RoomName} berhasil disimpan.");
     }
 
     public void Dispose()

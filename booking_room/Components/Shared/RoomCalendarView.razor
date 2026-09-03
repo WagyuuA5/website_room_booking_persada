@@ -245,6 +245,17 @@
                           OnCancelBooking="HandleCancelBooking" 
                           OnModifyBooking="HandleModifyBooking" />
 
+<!-- Reusable Modern Cancel Modal (CASE 4) -->
+<CancelBookingModal @bind-Visible="_isCancelModalOpen" 
+                    RoomName="@_eventToCancel?.RoomName" 
+                    RequestId="@_eventToCancel?.Id" 
+                    OnConfirmCancel="ConfirmCancelCalendarBooking" />
+
+<!-- Reusable Modern Modify Modal (CASE 4) -->
+<ModifyBookingModal @bind-Visible="_isModifyModalOpen" 
+                    Booking="_bookingToModify" 
+                    OnUpdate="ConfirmModifyCalendarBooking" />
+
 <style>
     .calendar-view-container {
         display: flex;
@@ -917,16 +928,57 @@
         _isDetailModalVisible = true;
     }
 
-    private async Task HandleCancelBooking(CalendarEventItem ev)
+    private bool _isCancelModalOpen = false;
+    private CalendarEventItem? _eventToCancel;
+
+    private bool _isModifyModalOpen = false;
+    private BookingItem? _bookingToModify;
+
+    private void HandleCancelBooking(CalendarEventItem ev)
     {
-        CalendarService.CancelInstance(ev.Id, ev.SpecificDate);
-        ToastService.Success("Pemesanan Dibatalkan", $"Jadwal pemesanan {ev.RoomName} pada {ev.SpecificDate:dd MMM yyyy} telah dibatalkan.");
-        await LoadWeekDataAsync(showSkeleton: false);
+        _eventToCancel = ev;
+        _isCancelModalOpen = true;
+    }
+
+    private async Task ConfirmCancelCalendarBooking(string reason)
+    {
+        if (_eventToCancel != null)
+        {
+            CalendarService.CancelInstance(_eventToCancel.Id, _eventToCancel.SpecificDate);
+            ToastService.Success("Pemesanan Dibatalkan", $"Jadwal pemesanan {_eventToCancel.RoomName} pada {_eventToCancel.SpecificDate:dd MMM yyyy} telah dibatalkan.");
+            await LoadWeekDataAsync(showSkeleton: false);
+            _eventToCancel = null;
+        }
     }
 
     private void HandleModifyBooking(CalendarEventItem ev)
     {
-        ToastService.Info("Modifikasi Jadwal", "Silakan sesuaikan jadwal atau hubungi admin ruangan.");
+        var diff = ev.EndTime - ev.StartTime;
+        var durationStr = diff.TotalMinutes % 60 == 0 ? $"{(int)diff.TotalHours} Jam" : $"{diff.Hours} Jam {diff.Minutes} Menit";
+        _bookingToModify = new BookingItem(
+            ev.Id,
+            $"REQ-{ev.Id.Substring(0, Math.Min(6, ev.Id.Length))}",
+            ev.RoomName,
+            "Lantai 3, Sayap Utama",
+            "pending",
+            ev.SpecificDate.ToString("dd MMMM yyyy"),
+            $"{ev.StartTime:hh\\:mm} - {ev.EndTime:hh\\:mm}",
+            durationStr,
+            ev.Attendees?.Count ?? 12,
+            20,
+            ev.BookerName,
+            ev.Division,
+            ev.ActivityTitle,
+            RoomDataProvider.GetRoomPhoto(null, ev.RoomId)
+        );
+        _isModifyModalOpen = true;
+    }
+
+    private async Task ConfirmModifyCalendarBooking(BookingItem updated)
+    {
+        ToastService.Success("Pemesanan Diperbarui", $"Jadwal pemesanan {updated.RoomName} berhasil diperbarui.");
+        await LoadWeekDataAsync(showSkeleton: false);
+        _bookingToModify = null;
     }
 
     private string GetStatusLabel(string status) => status switch
