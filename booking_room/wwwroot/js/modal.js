@@ -46,3 +46,54 @@ window.registerEscapeKey = function (dotNetHelper) {
         }
     });
 };
+
+window.initDragScroll = function (elementId) {
+    const slider = document.getElementById(elementId);
+    if (!slider || slider.dataset.dragScrollInit) return;
+    slider.dataset.dragScrollInit = "true";
+
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+    let hasMoved = false;
+
+    slider.addEventListener('mousedown', (e) => {
+        // Only trigger on left mouse click
+        if (e.button !== 0) return;
+        isDown = true;
+        hasMoved = false;
+        slider.classList.add('grabbing');
+        startX = e.pageX - slider.offsetLeft;
+        scrollLeft = slider.scrollLeft;
+    });
+
+    slider.addEventListener('mouseleave', () => {
+        isDown = false;
+        slider.classList.remove('grabbing');
+    });
+
+    slider.addEventListener('mouseup', () => {
+        isDown = false;
+        slider.classList.remove('grabbing');
+    });
+
+    slider.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        const x = e.pageX - slider.offsetLeft;
+        const walk = (x - startX) * 1.5;
+        if (Math.abs(walk) > 4) {
+            hasMoved = true;
+            e.preventDefault();
+        }
+        slider.scrollLeft = scrollLeft - walk;
+    });
+
+    slider.addEventListener('click', (e) => {
+        if (hasMoved) {
+            e.stopPropagation();
+            e.preventDefault();
+            hasMoved = false;
+        }
+    }, true);
+};
+

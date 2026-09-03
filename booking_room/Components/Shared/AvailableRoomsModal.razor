@@ -32,7 +32,7 @@
                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                         <circle cx="9" cy="7" r="4"></circle>
                     </svg>
-                    <span>@(_selectedCapacity == 0 ? "Semua Kapasitas" : $"> {_selectedCapacity} Kursi")</span>
+                    <span>@(_selectedCapacity == 0 ? "Semua Kapasitas" : $"> {_selectedCapacity} Orang")</span>
                 </button>
             </div>
 
@@ -56,7 +56,7 @@
                                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                                         <circle cx="9" cy="7" r="4"></circle>
                                     </svg>
-                                    @room.Capacity Kursi
+                                    Kapasitas: @room.Capacity Orang
                                 </span>
                             </div>
 

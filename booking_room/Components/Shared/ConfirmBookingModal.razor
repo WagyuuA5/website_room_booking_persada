@@ -1,30 +1,30 @@
 @namespace booking_room.Components.Shared
 @using booking_room.Components.Models
+@inject IJSRuntime JS
 
-<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Size="lg" Title="Confirm Booking" Subtitle="Schedule a new resource or room" ShowFooter="true">
+<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Size="lg" Title="Konfirmasi Pemesanan" Subtitle="Atur jadwal ruangan atau fasilitas baru" ShowFooter="true">
     <ChildContent>
         <div class="confirm-modal-body custom-scrollbar">
             
-            <!-- SECTION 1: Data Pemesan (Full Name & Division) -->
+            <!-- SECTION 1: Data Pemesan (Nama Pemesan & Divisi) -->
             <div class="form-section">
                 <div class="grid-2-col">
                     <div class="form-group">
-                        <label class="field-label">Nama Pemesan (Full Name)</label>
+                        <label class="field-label">Nama Pemesan</label>
                         <div class="input-with-icon-left">
                             <InlineSvg Src="icons/icon_avatar_default.svg" Class="icon-sm field-icon" Style="stroke:#94A3B8; fill:none;" />
-                            <input type="text" class="form-input with-icon-input" placeholder="Enter full name" @bind="_bookerName" />
+                            <input type="text" class="form-input with-icon-input" placeholder="Masukkan nama lengkap pemesan" @bind="_bookerName" />
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="field-label">Division</label>
+                        <label class="field-label">Divisi</label>
                         <div class="input-with-icon-left select-wrap">
-                            <InlineSvg Src="icons/Container_1.svg" Class="icon-sm field-icon" Style="stroke:#94A3B8; fill:none;" />
+                            <InlineSvg Src="icons/icon_building.svg" Class="icon-sm field-icon" Style="stroke:#94A3B8; fill:none;" />
                             <select class="form-input with-icon-input" @bind="_division">
-                                <option value="Teknologi Informasi">Teknologi Informasi</option>
-                                <option value="Keuangan">Keuangan</option>
-                                <option value="SDM">SDM</option>
-                                <option value="Operasional">Operasional</option>
-                                <option value="Marketing">Marketing</option>
+                                @foreach (var div in _divisionList)
+                                {
+                                    <option value="@div">@div</option>
+                                }
                             </select>
                             <svg class="select-chevron icon-xs" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
                         </div>
@@ -32,14 +32,17 @@
                 </div>
             </div>
 
-            <!-- SECTION 2: Room Selection (Native Smooth Carousel with Peek) -->
+            <!-- SECTION 2: Pilih Ruangan (Native Smooth Carousel with Mouse Drag) -->
             <div class="form-section">
-                <label class="field-label">Room Selection</label>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <label class="field-label" style="margin-bottom: 0;">Pilih Ruangan</label>
+                    <span style="font-size: 11px; color: #94A3B8;">Geser untuk melihat ruangan lain &rarr;</span>
+                </div>
                 
-                <div class="room-carousel-track">
+                <div class="room-carousel-track" id="roomSelectionCarousel">
                     @if (_isLoadingModal)
                     {
-                        @for (int i = 0; i < 3; i++)
+                        @for (int i = 0; i < 4; i++)
                         {
                             <div class="room-select-card skeleton-box" style="height: 125px; min-width: 220px; border-radius: 12px;"></div>
                         }
@@ -53,11 +56,11 @@
                             <div class="room-select-card @(isActive ? "active" : "") @(!isAvailable && !isActive ? "booked-card" : "")" @onclick="() => SelectRoom(r)">
                                 <div class="card-top-row">
                                     <div class="card-room-icon">
-                                        @if (r.Name.Contains("Boardroom", StringComparison.OrdinalIgnoreCase))
+                                        @if (r.Name.Contains("Boardroom", StringComparison.OrdinalIgnoreCase) || r.Name.Contains("Meeting", StringComparison.OrdinalIgnoreCase))
                                         {
-                                            <InlineSvg Src="icons/Container_1.svg" Class="icon-md" Style="stroke:#334155; fill:none;" />
+                                            <InlineSvg Src="icons/icon_building.svg" Class="icon-md" Style="stroke:#334155; fill:none;" />
                                         }
-                                        else if (r.Name.Contains("Studio", StringComparison.OrdinalIgnoreCase))
+                                        else if (r.Name.Contains("Studio", StringComparison.OrdinalIgnoreCase) || r.Name.Contains("Creative", StringComparison.OrdinalIgnoreCase))
                                         {
                                             <InlineSvg Src="icons/icon_video_conf.svg" Class="icon-md" Style="stroke:#334155; fill:none;" />
                                         }
@@ -67,11 +70,11 @@
                                         }
                                     </div>
                                     <span class="status-pill @(isAvailable ? "pill-available" : "pill-booked")">
-                                        @(isAvailable ? "AVAILABLE" : "BOOKED")
+                                        @(isAvailable ? "TERSEDIA" : "DIPESAN")
                                     </span>
                                 </div>
                                 <div class="card-room-name">@r.Name</div>
-                                <div class="card-room-cap">Cap: @r.Capacity Pax</div>
+                                <div class="card-room-cap">Kapasitas: @r.Capacity Orang</div>
                                 <div class="card-room-amenities">
                                     @if (r.Amenities != null && r.Amenities.Any())
                                     {
@@ -82,7 +85,7 @@
                                     else
                                     {
                                         <InlineSvg Src="icons/icon_wifi.svg" Class="icon-xs" Style="stroke:#64748B; fill:none;" />
-                                        <span class="amenity-text">TV, WiFi, Projector</span>
+                                        <span class="amenity-text">WiFi, AC, Proyektor</span>
                                     }
                                 </div>
                             </div>
@@ -91,17 +94,17 @@
                 </div>
             </div>
 
-            <!-- SECTION 3: Date & Time (Start - End) -->
+            <!-- SECTION 3: Tanggal & Waktu (Mulai - Selesai) -->
             <div class="form-section">
                 <div class="grid-2-col">
                     <div class="form-group">
-                        <label class="field-label">Date</label>
+                        <label class="field-label">Tanggal</label>
                         <div class="input-with-icon-right">
                             <input type="date" class="form-input" @bind="_selectedDate" />
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="field-label">Time (Start - End)</label>
+                        <label class="field-label">Waktu (Mulai - Selesai)</label>
                         <div class="time-range-row">
                             <div class="time-box">
                                 <input type="time" class="form-input" @bind="_startTime" />
@@ -115,12 +118,12 @@
                 </div>
             </div>
 
-            <!-- SECTION 4: Invite Attendees (Undang Peserta) -->
+            <!-- SECTION 4: Undang Peserta -->
             <div class="form-section">
                 <div class="attendees-header-row">
-                    <label class="field-label" style="margin-bottom: 0;">Invite Attendees (Undang Peserta)</label>
+                    <label class="field-label" style="margin-bottom: 0;">Undang Peserta</label>
                     <div class="capacity-progress-box">
-                        <span class="cap-text">@(_participants.Count + 1) of @(Room?.Capacity ?? 12) Room Capacity</span>
+                        <span class="cap-text">@(_participants.Count + 1) dari @(Room?.Capacity ?? 12) Kapasitas Ruangan</span>
                         <div class="progress-track">
                             <div class="progress-fill @((_participants.Count + 1) > (Room?.Capacity ?? 12) ? "danger" : "")" style="width: @Math.Min(100, (((_participants.Count + 1.0) / (Room?.Capacity ?? 12)) * 100))%;"></div>
                         </div>
@@ -128,7 +131,7 @@
                 </div>
                 <div class="input-with-icon-left attendee-input-wrap" style="margin-top: 8px;">
                     <InlineSvg Src="icons/icon_avatar_default.svg" Class="icon-sm field-icon" Style="stroke:#94A3B8; fill:none;" />
-                    <input type="text" class="form-input with-icon-input" placeholder="Invite colleagues..." @bind="_newParticipant" @onkeyup="HandleParticipantKeyUp" />
+                    <input type="text" class="form-input with-icon-input" placeholder="Undang rekan kerja..." @bind="_newParticipant" @onkeyup="HandleParticipantKeyUp" />
                     <button type="button" class="btn-add-attendee" @onclick="AddParticipant" title="Tambah Peserta">
                         <InlineSvg Src="icons/icon_plus.svg" Class="icon-xs" Style="stroke:currentColor; fill:none;" />
                     </button>
@@ -141,7 +144,7 @@
                                 <InlineSvg Src="icons/icon_avatar_default.svg" Class="icon-xs" Style="stroke:#FFFFFF; fill:none;" />
                             </div>
                             <span class="attendee-name">@p</span>
-                            <button type="button" class="attendee-remove" @onclick="() => RemoveParticipant(p)">
+                            <button type="button" class="attendee-remove" @onclick="() => RemoveParticipant(p)" title="Hapus">
                                 <InlineSvg Src="icons/icon_close.svg" Class="icon-xs" Style="stroke:currentColor;" />
                             </button>
                         </div>
@@ -150,16 +153,16 @@
                     {
                         <div class="conflict-chip">
                             <InlineSvg Src="icons/icon_alert_warning.svg" Class="icon-xs" Style="stroke:currentColor;" />
-                            <span>Potential schedule conflict</span>
+                            <span>Potensi jadwal bentrok</span>
                         </div>
                     }
                 </div>
             </div>
 
-            <!-- SECTION 5: Invite external guests -->
+            <!-- SECTION 5: Undang Tamu Eksternal -->
             <div class="form-section">
                 <div class="toggle-row">
-                    <span class="toggle-title">Invite external guests</span>
+                    <span class="toggle-title">Undang tamu eksternal (di luar Persada)</span>
                     <label class="ios-switch">
                         <input type="checkbox" @bind="_isExternalGuest" />
                         <span class="ios-slider"></span>
@@ -168,18 +171,18 @@
                 @if (_isExternalGuest)
                 {
                     <div style="margin-top: 10px;">
-                        <input type="email" class="form-input" placeholder="Guest Email (e.g. guest@company.com)" @bind="_externalEmail" />
+                        <input type="email" class="form-input" placeholder="Email tamu (contoh: tamu@perusahaan.com)" @bind="_externalEmail" />
                     </div>
                 }
             </div>
 
-            <!-- SECTION 6: Notes / Special Requests -->
+            <!-- SECTION 6: Catatan / Permintaan Khusus -->
             <div class="form-section">
                 <label class="field-label with-icon">
                     <InlineSvg Src="icons/Icon_1.svg" Class="icon-xs" Style="stroke:#64748B; fill:none;" />
-                    <span>Notes / Special Requests</span>
+                    <span>Catatan / Permintaan Khusus</span>
                 </label>
-                <textarea class="form-input textarea-notes" placeholder="Equipment needs, catering, etc." @bind="_notes"></textarea>
+                <textarea class="form-input textarea-notes" placeholder="Kebutuhan peralatan, konsumsi, layout meja, dll." @bind="_notes"></textarea>
             </div>
 
             <!-- SECTION 7: Jadikan Berulang (Recurring Booking) -->
@@ -198,11 +201,11 @@
                 @if (_isRecurring)
                 {
                     <div class="recurring-panel-box">
-                        <label class="sub-label">POLA PERULANGAN (PATTERN)</label>
+                        <label class="sub-label">POLA PERULANGAN</label>
                         <div class="pattern-tabs">
-                            <button type="button" class="pattern-btn @(_recurPattern == "daily" ? "active" : "")" @onclick='() => ChangePattern("daily")'>Daily</button>
-                            <button type="button" class="pattern-btn @(_recurPattern == "weekly" ? "active" : "")" @onclick='() => ChangePattern("weekly")'>Weekly</button>
-                            <button type="button" class="pattern-btn @(_recurPattern == "monthly" ? "active" : "")" @onclick='() => ChangePattern("monthly")'>Monthly</button>
+                            <button type="button" class="pattern-btn @(_recurPattern == "daily" ? "active" : "")" @onclick='() => ChangePattern("daily")'>Harian</button>
+                            <button type="button" class="pattern-btn @(_recurPattern == "weekly" ? "active" : "")" @onclick='() => ChangePattern("weekly")'>Mingguan</button>
+                            <button type="button" class="pattern-btn @(_recurPattern == "monthly" ? "active" : "")" @onclick='() => ChangePattern("monthly")'>Bulanan</button>
                         </div>
 
                         @if (_recurPattern == "weekly")
@@ -258,23 +261,23 @@
                                             {
                                                 <div class="conflict-schedule-card">
                                                     <div class="conflict-card-top">
-                                                        <span class="conflict-date">@date.ToString("MMM dd, yyyy")</span>
+                                                        <span class="conflict-date">@date.ToString("dd MMM yyyy", _idCulture)</span>
                                                         <span class="conflict-badge">
                                                             <InlineSvg Src="icons/icon_alert_danger.svg" Class="icon-xs" Style="stroke:currentColor;" />
-                                                            CONFLICT
+                                                            KONFLIK
                                                         </span>
                                                     </div>
-                                                    <div class="conflict-msg">Room unavailable at this time</div>
+                                                    <div class="conflict-msg">Ruangan tidak tersedia pada waktu ini</div>
                                                     <div class="conflict-btn-row">
-                                                        <button type="button" class="btn-conflict-skip" @onclick="() => SkipDate(idx)">Skip</button>
-                                                        <button type="button" class="btn-conflict-change">Change Room</button>
+                                                        <button type="button" class="btn-conflict-skip" @onclick="() => SkipDate(idx)">Lewati</button>
+                                                        <button type="button" class="btn-conflict-change">Ganti Ruangan</button>
                                                     </div>
                                                 </div>
                                             }
                                             else
                                             {
                                                 <div class="normal-schedule-row">
-                                                    <span class="schedule-row-date">@date.ToString("MMM dd, yyyy")</span>
+                                                    <span class="schedule-row-date">@date.ToString("dd MMM yyyy", _idCulture)</span>
                                                     <span class="schedule-row-status">TERSEDIA</span>
                                                 </div>
                                             }
@@ -291,9 +294,9 @@
     </ChildContent>
     <FooterContent>
         <div class="confirm-footer-btns">
-            <button type="button" class="btn-cancel-modal" @onclick="Back">Cancel</button>
+            <button type="button" class="btn-cancel-modal" @onclick="Back">Batal</button>
             <button type="button" class="btn-confirm-modal" @onclick="Confirm">
-                <span>Confirm Booking</span>
+                <span>Konfirmasi Pemesanan</span>
                 <InlineSvg Src="icons/icon_check_circle.svg" Class="icon-sm" Style="color:#FFFFFF; stroke:#FFFFFF;" />
             </button>
         </div>
@@ -368,6 +371,11 @@
         left: 12px;
         pointer-events: none;
         color: #94A3B8;
+        transition: color 0.2s;
+    }
+
+    .input-with-icon-left:focus-within .field-icon {
+        color: #EAB308 !important;
     }
 
     .with-icon-input {
@@ -391,7 +399,7 @@
         pointer-events: none;
     }
 
-    /* Room Carousel */
+    /* Room Carousel - Native Scroll + Mouse Drag */
     .room-carousel-track {
         display: flex;
         gap: 14px;
@@ -401,10 +409,19 @@
         scrollbar-width: none;
         -ms-overflow-style: none;
         padding: 4px 4px 12px 2px;
+        cursor: grab;
+        user-select: none;
+        -webkit-user-select: none;
     }
 
     .room-carousel-track::-webkit-scrollbar {
         display: none;
+    }
+
+    .room-carousel-track.grabbing {
+        cursor: grabbing !important;
+        scroll-behavior: auto !important;
+        scroll-snap-type: none !important;
     }
 
     .room-select-card {
@@ -1011,6 +1028,23 @@
     // Form states
     private string _bookerName = "Anggoro Ravi";
     private string _division = "Teknologi Informasi";
+
+    // TODO: konfirmasi penamaan resmi ke HRD Persada
+    private readonly string[] _divisionList = new[]
+    {
+        "Direksi & Sekretariat Perusahaan",
+        "Keuangan & Administrasi",
+        "Audit Internal",
+        "Sumber Daya Manusia & Rekrutmen",
+        "Operasional – Layanan Keamanan (Security)",
+        "Operasional – Layanan Kebersihan (Cleaning Service)",
+        "Operasional – Contact Center",
+        "Operasional – Layanan Teknis & Maintenance",
+        "Marketing & Pengembangan Bisnis (Commercial)",
+        "Teknologi Informasi",
+        "Legal & General Affairs (GA)",
+        "Training & Konsultasi SDM"
+    };
     
     private DateTime _selectedDate = DateTime.Today;
     private DateTime _startTime = DateTime.Today.AddHours(9);
@@ -1019,8 +1053,8 @@
     private bool _isRecurring = false;
     private string _recurPattern = "daily"; // daily, weekly, monthly
     
-    private bool[] _selectedDays = new bool[7] { false, true, false, true, false, false, false }; // Default Tuesday & Thursday as in screenshot!
-    private string[] DayLetters = { "M", "T", "W", "T", "F", "S", "S" };
+    private bool[] _selectedDays = new bool[7] { false, true, false, true, false, false, false }; // Default Selasa & Kamis
+    private string[] DayLetters = { "S", "S", "R", "K", "J", "S", "M" }; // Senin, Selasa, Rabu, Kamis, Jumat, Sabtu, Minggu
     private int _recurEndCount = 4;
     private DateTime _recurEndDate = DateTime.Today.AddMonths(1);
     
@@ -1030,40 +1064,57 @@
     private string _externalEmail = "";
     private string _notes = "";
     private HashSet<int> _skippedDates = new();
+    private readonly System.Globalization.CultureInfo _idCulture = new System.Globalization.CultureInfo("id-ID");
 
     protected override async Task OnParametersSetAsync()
     {
         if (Visible && !_isLoadingModal)
         {
             _isLoadingModal = true;
-            await Task.Delay(350); // Smooth skeleton feel
+            await Task.Delay(400); // Smooth skeleton feel
             _isLoadingModal = false;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Visible && !_isLoadingModal)
+        {
+            try
+            {
+                await JS.InvokeVoidAsync("initDragScroll", "roomSelectionCarousel");
+            }
+            catch { }
         }
     }
 
     private IEnumerable<RoomItem> GetDisplayRooms()
     {
-        if (AvailableRooms != null && AvailableRooms.Any())
+        // 8-10 sample rooms with variety of status, capacity, and amenities for comprehensive testing
+        var sampleRooms = new List<RoomItem>
         {
-            return AvailableRooms;
-        }
+            new("1", "Gamma Lounge", 8, "Ruang santai dengan sofa empuk dan fasilitas kopi.", "booked", new List<string>{"Sofa", "Kopi", "WiFi"}, "1"),
+            new("2", "Beta Studio", 4, "Studio modern untuk podcast dan siaran presentasi.", "available", new List<string>{"Kamera", "Mic", "WiFi"}, "2"),
+            new("3", "Alpha Meeting Room", 12, "Ruang rapat standar dengan fasilitas proyektor dan AC.", "available", new List<string>{"Proyektor", "WiFi", "AC"}, "3"),
+            new("4", "Delta Boardroom", 16, "Ruang dewan direksi dengan TV layar lebar dan proyektor.", "booked", new List<string>{"TV Layar Besar", "Proyektor", "WiFi"}, "4"),
+            new("5", "Epsilon Huddle", 4, "Ruang diskusi cepat untuk tim kecil.", "available", new List<string>{"Whiteboard", "WiFi"}, "2"),
+            new("6", "Zeta Conference Hall", 20, "Aula konferensi dengan tata suara profesional dan AC.", "available", new List<string>{"Sound System", "Proyektor", "AC"}, "1"),
+            new("7", "Eta Discussion Room", 6, "Ruang diskusi tim dengan smart TV dan papan tulis.", "booked", new List<string>{"Whiteboard", "TV", "WiFi"}, "3"),
+            new("8", "Theta Creative Space", 10, "Area kreatif dengan sofa modular dan papan tulis lebar.", "available", new List<string>{"Sofa", "Papan Tulis", "WiFi"}, "2"),
+            new("9", "Executive Boardroom A", 12, "Ruang rapat eksekutif premium dengan konferensi video 4K.", "available", new List<string>{"Konferensi Video", "AC", "WiFi"}, "3"),
+            new("10", "Collaborative Space B", 6, "Ruang kerja kolaboratif berkapasitas 6 orang.", "booked", new List<string>{"Papan Tulis", "AC", "WiFi"}, "2")
+        };
 
         if (Room != null)
         {
-            return new List<RoomItem>
+            // Ensure selected room is at top of list if not present
+            if (!sampleRooms.Any(r => r.Id == Room.Id))
             {
-                Room,
-                new("2", "Beta Studio", 4, "Studio modern untuk podcast dan presentasi.", "available", new List<string>{"Camera", "Mic", "WiFi"}, "2"),
-                new("3", "Gamma Lounge", 8, "Ruang santai dengan sofa empuk.", "booked", new List<string>{"Sofa", "Coffee", "WiFi"}, "1")
-            };
+                sampleRooms.Insert(0, Room);
+            }
         }
 
-        return new List<RoomItem>
-        {
-            new("1", "Alpha Boardroom", 12, "Ruang rapat eksekutif premium.", "available", new List<string>{"TV", "WiFi", "Projector"}, "3"),
-            new("2", "Beta Studio", 4, "Studio modern untuk podcast dan presentasi.", "available", new List<string>{"Camera", "Mic", "WiFi"}, "2"),
-            new("3", "Gamma Lounge", 8, "Ruang santai dengan sofa empuk.", "booked", new List<string>{"Sofa", "Coffee", "WiFi"}, "1")
-        };
+        return sampleRooms;
     }
 
     private void SelectRoom(RoomItem room)
@@ -1095,7 +1146,7 @@
     {
         _isCalculatingSchedule = true;
         StateHasChanged();
-        await Task.Delay(300); // Shimmer preview calculation
+        await Task.Delay(350); // Shimmer preview calculation
         _isCalculatingSchedule = false;
         StateHasChanged();
     }
@@ -1144,17 +1195,6 @@
     private void RemoveParticipant(string name)
     {
         _participants.Remove(name);
-    }
-
-    private RoomStatus ParseRoomStatus(string status)
-    {
-        return status?.ToLowerInvariant() switch
-        {
-            "available" or "tersedia" => RoomStatus.Tersedia,
-            "booked" or "dipesan" => RoomStatus.Dipesan,
-            "unavailable" or "maintenance" or "tidak tersedia" => RoomStatus.TidakTersedia,
-            _ => RoomStatus.Tersedia
-        };
     }
 
     private async Task HandleVisibleChanged(bool val)

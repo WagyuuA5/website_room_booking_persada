@@ -138,16 +138,26 @@ html, body {
 }
 
 .skeleton-box {
-    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+    background: linear-gradient(90deg, #eceff1 20%, #f5f6f8 40%, #f5f6f8 60%, #eceff1 80%);
     background-size: 200% 100%;
-    animation: shimmer 1.5s infinite linear;
+    animation: shimmer 2s linear infinite;
     border-radius: 8px;
     display: block;
 }
 
 body.dark-mode .skeleton-box {
-    background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+    background: linear-gradient(90deg, #1e293b 20%, #293548 40%, #293548 60%, #1e293b 80%);
     background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+}
+
+.fade-in-content {
+    animation: fadeInContent 280ms ease-out forwards;
+}
+
+@keyframes fadeInContent {
+    from { opacity: 0; transform: translateY(3px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 
