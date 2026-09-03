@@ -12,4 +12,8 @@
     <PackageReference Include="ClosedXML" Version="0.105.1" />
   </ItemGroup>
 
+  <Target Name="KillLockedProcess" BeforeTargets="Build">
+    <Exec Command="taskkill /F /IM booking_room.exe" ContinueOnError="true" />
+  </Target>
+
 </Project>
