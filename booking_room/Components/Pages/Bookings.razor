@@ -1,5 +1,4 @@
-﻿@page "/bookings"
-@rendermode InteractiveServer
+@page "/bookings"
 @using booking_room.Components.Shared
 @using booking_room.Components.Models
 @using System.Globalization
@@ -32,7 +31,7 @@
                         <line x1="8" y1="2" x2="8" y2="6"></line>
                         <line x1="3" y1="10" x2="21" y2="10"></line>
                     </svg>
-                    <input type="text" class="filter-input cursor-pointer" readonly value="@GetFormattedDateString()" />
+                    <input type="text" class="filter-input cursor-pointer" readonly value="@GetFormattedDateString()" tabindex="-1" style="pointer-events: none;" />
                     <svg class="dropdown-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="6 9 12 15 18 9"></polyline>
                     </svg>
@@ -48,7 +47,7 @@
                             <circle cx="12" cy="12" r="10"></circle>
                             <polyline points="12 6 12 12 16 14"></polyline>
                         </svg>
-                        <input type="text" class="filter-input cursor-pointer" readonly value="@_selectedBookingTime" />
+                        <input type="text" class="filter-input cursor-pointer" readonly value="@_selectedBookingTime" tabindex="-1" style="pointer-events: none;" />
                         <svg class="dropdown-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="6 9 12 15 18 9"></polyline>
                         </svg>
@@ -91,9 +90,8 @@
             <div class="room-card">
                 <div class="room-image-wrapper">
                     <img src="@room.PhotoUrl" alt="@room.Name" />
-                    <div class="status-badge">
-                        <div class="status-dot @(GetStatusDotClass(room.Status))"></div>
-                        @GetStatusText(room.Status)
+                    <div class="status-island-container">
+                        <StatusIsland Status="@ParseRoomStatus(room.Status)" RemainingMinutes="@GetRoomRemainingMinutes(room.Id)" />
                     </div>
                 </div>
                 <div class="room-content">
@@ -408,45 +406,11 @@
         transform: scale(1.03);
     }
 
-    .status-badge {
+    .status-island-container {
         position: absolute;
         top: 14px;
-        right: 14px;
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(8px);
-        padding: 6px 12px;
-        border-radius: 999px;
-        font-weight: 700;
-        font-size: 11px;
-        letter-spacing: 0.3px;
-        color: #0F172A;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-    body.dark-mode .status-badge {
-        background: rgba(29, 29, 31, 0.92);
-        color: #F9FAFB;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-    }
-
-    .status-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-    }
-    .dot-available { 
-        background-color: #10B981; 
-        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
-    }
-    .dot-booked { 
-        background-color: #F59E0B; 
-        box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
-    }
-    .dot-unavailable { 
-        background-color: #EF4444; 
-        box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+        left: 14px;
+        z-index: 2;
     }
 
     .room-content {
@@ -628,7 +592,7 @@
             new("3", "Presentation Hall", 50, "Aula berkapasitas besar cocok untuk rapat divisi akbar atau presentasi klien dengan sistem peredam akustik modern.", "unavailable", new List<string>{"Proyektor", "AC", "Sistem Audio"}, "1", "https://images.unsplash.com/photo-1517502884422-41eaead166d4?auto=format&fit=crop&w=800&q=80"),
             new("4", "Delta Studio", 20, "Studio kedap suara dengan sistem audio profesional, ideal untuk lokakarya, podcast, dan siaran langsung persada.", "available", new List<string>{"Sistem Audio", "Proyektor", "AC", "WiFi"}, "1", "https://images.unsplash.com/photo-1462826303086-329426d1aef5?auto=format&fit=crop&w=800&q=80"),
             new("5", "Executive Suite", 16, "Suite rapat mewah di lantai atas dengan panorama kota Jakarta dan fasilitas lounge eksklusif.", "available", new List<string>{"Konferensi Video", "TV LED", "AC", "WiFi", "Aksesibilitas"}, "5", "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80"),
-            new("6", "Focus Room Alpha", 2, "Ruang kerja tenang kedap suara untuk panggilan konferensi penting dan wawancara daring satu lawan satu.", "available", new List<string>{"AC", "WiFi", "Aksesibilitas"}, "3", "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=800&q=80"),
+            new("6", "Focus Room Alpha", 2, "Ruang kerja tenang kedap suara untuk panggilan konferensi penting dan wawancara daring satu lawan satu.", "maintenance", new List<string>{"AC", "WiFi", "Aksesibilitas"}, "3", "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=800&q=80"),
             new("7", "Training Room B", 30, "Ruang pelatihan interaktif dilengkapi meja berderet dan layar ganda untuk sesi edukasi karyawan.", "booked", new List<string>{"Proyektor", "Papan Tulis", "Sistem Audio", "AC", "WiFi"}, "2", "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=800&q=80")
         };
         
@@ -716,20 +680,20 @@
         _isConfirmBookingVisible = true;
     }
 
-    private string GetStatusText(string status) => status?.ToLowerInvariant() switch
+    private RoomStatus ParseRoomStatus(string status) => status?.ToLowerInvariant() switch
     {
-        "available" => "TERSEDIA",
-        "booked" => "DIPESAN (2 JAM LAGI)",
-        "unavailable" => "TIDAK TERSEDIA",
-        _ => "TERSEDIA"
+        "available" => RoomStatus.Tersedia,
+        "booked" => RoomStatus.Dipesan,
+        "unavailable" => RoomStatus.TidakTersedia,
+        "maintenance" or "pemeliharaan" => RoomStatus.Pemeliharaan,
+        _ => RoomStatus.Tersedia
     };
 
-    private string GetStatusDotClass(string status) => status?.ToLowerInvariant() switch
+    private int GetRoomRemainingMinutes(string id) => id switch
     {
-        "available" => "dot-available",
-        "booked" => "dot-booked",
-        "unavailable" => "dot-unavailable",
-        _ => "dot-available"
+        "2" => 120, // 2 jam
+        "7" => 45,  // 45 menit
+        _ => 90
     };
 
     private string LocalizeAmenity(string amenity) => amenity?.Trim().ToLowerInvariant() switch

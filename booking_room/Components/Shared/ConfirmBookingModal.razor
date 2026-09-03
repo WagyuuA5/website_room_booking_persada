@@ -54,7 +54,9 @@
                             <div class="room-info">
                                 <div class="room-title">@Room.Name</div>
                                 <div class="room-meta">Kapasitas @Room.Capacity org &bull; Lantai @Room.Floor</div>
-                                <div class="room-status"><span class="status-badge @Room.Status.ToLower()">@GetStatusBadgeText(Room.Status)</span></div>
+                                <div class="room-status" style="margin-top: 6px;">
+                                    <StatusIsland Status="@ParseRoomStatus(Room.Status)" RemainingMinutes="120" />
+                                </div>
                             </div>
                         }
                         else
@@ -828,6 +830,15 @@
     private string _notes = "";
 
     private HashSet<int> _skippedDates = new HashSet<int>();
+
+    private RoomStatus ParseRoomStatus(string? status) => status?.ToLowerInvariant() switch
+    {
+        "available" => RoomStatus.Tersedia,
+        "booked" => RoomStatus.Dipesan,
+        "unavailable" => RoomStatus.TidakTersedia,
+        "maintenance" or "pemeliharaan" => RoomStatus.Pemeliharaan,
+        _ => RoomStatus.Tersedia
+    };
 
     private string GetStatusBadgeText(string? status) => status?.ToLower() switch
     {

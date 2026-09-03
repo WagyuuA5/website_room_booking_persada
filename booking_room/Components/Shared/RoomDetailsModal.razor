@@ -9,8 +9,8 @@
             <div class="room-details-left">
                 <div class="photo-wrapper">
                     <img src="@GetRoomPhoto(Room)" alt="@Room.Name" class="room-photo" />
-                    <div class="status-badge @GetStatusBadgeClass(Room.Status)">
-                        @GetStatusText(Room.Status)
+                    <div style="position: absolute; top: 16px; left: 16px; z-index: 2;">
+                        <StatusIsland Status="@ParseRoomStatus(Room.Status)" RemainingMinutes="120" />
                     </div>
                 </div>
                 
@@ -408,6 +408,15 @@
     {
         return string.IsNullOrEmpty(room.PhotoUrl) ? $"/images/default-room.jpg" : room.PhotoUrl;
     }
+
+    private RoomStatus ParseRoomStatus(string? status) => status?.ToLowerInvariant() switch
+    {
+        "available" => RoomStatus.Tersedia,
+        "booked" => RoomStatus.Dipesan,
+        "unavailable" => RoomStatus.TidakTersedia,
+        "maintenance" or "pemeliharaan" => RoomStatus.Pemeliharaan,
+        _ => RoomStatus.Tersedia
+    };
 
     private string GetStatusText(string status)
     {
