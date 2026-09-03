@@ -1,7 +1,7 @@
 ﻿@page "/bookings"
+@rendermode InteractiveServer
 @using booking_room.Components.Shared
 @using booking_room.Components.Models
-@using booking_room.Resources
 @using System.Globalization
 @inject booking_room.Services.LoadingStateService LoadingState
 @inject booking_room.Services.IToastService ToastService
@@ -12,19 +12,19 @@
 <div class="bookings-page">
     <!-- SEARCH ROOMS CARD -->
     <div class="search-card">
-        <label class="search-label">@RoomSearch.SearchRoomsTitle</label>
+        <label class="search-label">CARI RUANGAN</label>
         <div class="search-input-wrapper">
             <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
-            <input type="text" class="search-input" placeholder="@RoomSearch.SearchPlaceholder" @bind="_searchQuery" @bind:event="oninput" @onkeyup="ApplyFilter" aria-label="Cari Ruangan" />
+            <input type="text" class="search-input" placeholder="Cari berdasarkan nama ruangan, gedung, atau lantai..." @bind="_searchQuery" @bind:event="oninput" @onkeyup="ApplyFilter" aria-label="Cari Ruangan" />
         </div>
 
         <div class="search-filters">
             <!-- FIELD TANGGAL -->
             <div class="filter-group date-group">
-                <label class="search-label">@RoomSearch.DateLabel</label>
+                <label class="search-label">TANGGAL</label>
                 <div class="input-with-icon cursor-pointer clickable-field" @onclick="OpenDatePicker" role="button" tabindex="0" title="Klik untuk pilih tanggal">
                     <svg class="input-icon interactive-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -41,7 +41,7 @@
 
             <!-- FIELD WAKTU & DURASI -->
             <div class="filter-group time-duration-group">
-                <label class="search-label">@RoomSearch.TimeAndDurationLabel</label>
+                <label class="search-label">WAKTU & DURASI</label>
                 <div class="time-duration-inputs">
                     <div class="input-with-icon time-input cursor-pointer clickable-field" @onclick="OpenTimePicker" role="button" tabindex="0" title="Klik untuk pilih waktu">
                         <svg class="input-icon interactive-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -70,7 +70,7 @@
 
             <!-- FIELD PESERTA -->
             <div class="filter-group attendees-group">
-                <label class="search-label">@RoomSearch.AttendeesLabel</label>
+                <label class="search-label">PESERTA</label>
                 <div class="input-with-icon">
                     <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -113,15 +113,16 @@
                     <div class="amenities-row">
                         @foreach (var am in room.Amenities.Take(4))
                         {
+                            var amenityItem = RoomAmenity.Create(am);
                             <span class="amenity-pill">
-                                <FacilityIcon Name="@am" Size="13" />
-                                <span>@LocalizeAmenity(am)</span>
+                                <FacilityIcon Name="@amenityItem.Name" SvgPath="@amenityItem.IconSvgPath" Size="13" />
+                                <span>@LocalizeAmenity(amenityItem.Name)</span>
                             </span>
                         }
                     </div>
                     <div class="room-footer">
                         <button type="button" class="view-details-btn" @onclick="() => ViewDetail(room)">
-                            @RoomSearch.ViewDetails
+                            LIHAT DETAIL
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 4px;">
                                 <polyline points="9 18 15 12 9 6"></polyline>
                             </svg>
@@ -717,10 +718,10 @@
 
     private string GetStatusText(string status) => status?.ToLowerInvariant() switch
     {
-        "available" => RoomSearch.Available,
-        "booked" => RoomSearch.Booked,
-        "unavailable" => RoomSearch.Unavailable,
-        _ => RoomSearch.Available
+        "available" => "TERSEDIA",
+        "booked" => "DIPESAN (2 JAM LAGI)",
+        "unavailable" => "TIDAK TERSEDIA",
+        _ => "TERSEDIA"
     };
 
     private string GetStatusDotClass(string status) => status?.ToLowerInvariant() switch
@@ -733,11 +734,10 @@
 
     private string LocalizeAmenity(string amenity) => amenity?.Trim().ToLowerInvariant() switch
     {
-        "projector" => "Proyektor",
-        "video conf" => "Konferensi Video",
-        "video conference" => "Konferensi Video",
-        "whiteboard" => "Papan Tulis",
-        "audio system" => "Sistem Audio",
+        "projector" or "proyektor" => "Proyektor",
+        "video conf" or "video conference" or "konferensi video" => "Konferensi Video",
+        "whiteboard" or "papan tulis" => "Papan Tulis",
+        "audio system" or "sistem audio" => "Sistem Audio",
         _ => amenity ?? ""
     };
 

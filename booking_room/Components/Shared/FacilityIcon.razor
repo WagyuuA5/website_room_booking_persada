@@ -1,111 +1,121 @@
-@namespace booking_room.Components.Shared
+﻿@namespace booking_room.Components.Shared
 
-@switch (Normalize(Name))
+@if (!string.IsNullOrEmpty(SvgPath))
 {
-    case "proyektor":
-    case "layar":
-    case "layar 85 inci":
-        <!-- Proyektor / Layar Proyeksi -->
-        <svg width="@Size" height="@Size" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="@Class">
-            <path d="M2 3h20v14H2z"></path>
-            <path d="M6 21h12"></path>
-            <path d="M10 17v4"></path>
-            <path d="M14 17v4"></path>
-            <circle cx="12" cy="10" r="3"></circle>
-        </svg>
-        break;
+    <img src="@SvgPath" width="@Size" height="@Size" class="@Class" alt="@Name" style="vertical-align: middle;" />
+}
+else
+{
+    @switch (Normalize(Name))
+    {
+        case "proyektor":
+        case "projector":
+        case "layar":
+        case "layar 85 inci":
+            <!-- Proyektor / Layar Proyeksi -->
+            <svg width="@Size" height="@Size" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="@Class">
+                <path d="M2 3h20v14H2z"></path>
+                <path d="M6 21h12"></path>
+                <path d="M10 17v4"></path>
+                <path d="M14 17v4"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            break;
 
-    case "papan tulis":
-    case "whiteboard":
-        <!-- Papan Tulis (Whiteboard) -->
-        <svg width="@Size" height="@Size" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="@Class">
-            <rect x="2" y="3" width="20" height="14" rx="2"></rect>
-            <line x1="2" y1="12" x2="22" y2="12"></line>
-            <line x1="8" y1="21" x2="16" y2="21"></line>
-            <line x1="12" y1="17" x2="12" y2="21"></line>
-        </svg>
-        break;
+        case "papan tulis":
+        case "whiteboard":
+            <!-- Papan Tulis (Whiteboard) -->
+            <svg width="@Size" height="@Size" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="@Class">
+                <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+            break;
 
-    case "tv led":
-    case "tv led / layar":
-    case "tv":
-    case "monitor":
-        <!-- TV LED / Monitor -->
-        <svg width="@Size" height="@Size" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="@Class">
-            <rect x="2" y="3" width="20" height="14" rx="2"></rect>
-            <line x1="8" y1="21" x2="16" y2="21"></line>
-            <line x1="12" y1="17" x2="12" y2="21"></line>
-        </svg>
-        break;
+        case "tv led":
+        case "tv led / layar":
+        case "tv":
+        case "monitor":
+            <!-- TV LED / Monitor -->
+            <svg width="@Size" height="@Size" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="@Class">
+                <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+            break;
 
-    case "audio system":
-    case "sistem audio":
-    case "speaker":
-        <!-- Speaker / Audio System -->
-        <svg width="@Size" height="@Size" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="@Class">
-            <rect x="4" y="2" width="16" height="20" rx="2"></rect>
-            <circle cx="12" cy="14" r="4"></circle>
-            <line x1="12" y1="6" x2="12.01" y2="6"></line>
-        </svg>
-        break;
+        case "audio system":
+        case "sistem audio":
+        case "speaker":
+            <!-- Speaker / Audio System -->
+            <svg width="@Size" height="@Size" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="@Class">
+                <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+                <circle cx="12" cy="14" r="4"></circle>
+                <line x1="12" y1="6" x2="12.01" y2="6"></line>
+            </svg>
+            break;
 
-    case "ac":
-    case "pendingin ruangan":
-        <!-- AC / Snowflake -->
-        <svg width="@Size" height="@Size" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="@Class">
-            <line x1="12" y1="2" x2="12" y2="22"></line>
-            <line x1="2" y1="12" x2="22" y2="12"></line>
-            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
-            <line x1="19.07" y1="4.93" x2="4.93" y2="19.07"></line>
-            <polyline points="9 3 12 6 15 3"></polyline>
-            <polyline points="9 21 12 18 15 21"></polyline>
-            <polyline points="3 9 6 12 3 15"></polyline>
-            <polyline points="21 9 18 12 21 15"></polyline>
-        </svg>
-        break;
+        case "ac":
+        case "pendingin ruangan":
+            <!-- AC / Snowflake -->
+            <svg width="@Size" height="@Size" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="@Class">
+                <line x1="12" y1="2" x2="12" y2="22"></line>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                <line x1="19.07" y1="4.93" x2="4.93" y2="19.07"></line>
+                <polyline points="9 3 12 6 15 3"></polyline>
+                <polyline points="9 21 12 18 15 21"></polyline>
+                <polyline points="3 9 6 12 3 15"></polyline>
+                <polyline points="21 9 18 12 21 15"></polyline>
+            </svg>
+            break;
 
-    case "wifi":
-    case "wifi kecepatan tinggi":
-        <!-- WiFi Sinyal -->
-        <svg width="@Size" height="@Size" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="@Class">
-            <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
-            <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
-            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
-            <line x1="12" y1="20" x2="12.01" y2="20"></line>
-        </svg>
-        break;
+        case "wifi":
+        case "wifi kecepatan tinggi":
+            <!-- WiFi Sinyal -->
+            <svg width="@Size" height="@Size" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="@Class">
+                <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                <line x1="12" y1="20" x2="12.01" y2="20"></line>
+            </svg>
+            break;
 
-    case "konferensi video":
-    case "video conference":
-    case "kamera video":
-        <!-- Konferensi Video (Kamera) -->
-        <svg width="@Size" height="@Size" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="@Class">
-            <polygon points="23 7 16 12 23 17 23 7"></polygon>
-            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
-        </svg>
-        break;
+        case "konferensi video":
+        case "video conf":
+        case "video conference":
+        case "kamera video":
+            <!-- Konferensi Video (Kamera) -->
+            <svg width="@Size" height="@Size" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="@Class">
+                <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+            </svg>
+            break;
 
-    case "aksesibilitas":
-    case "kursi roda":
-        <!-- Aksesibilitas (Kursi Roda) -->
-        <svg width="@Size" height="@Size" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="@Class">
-            <circle cx="12" cy="4" r="2"></circle>
-            <path d="M18 13a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V9"></path>
-            <path d="M9 17v4"></path>
-            <path d="M14 17l2 4"></path>
-        </svg>
-        break;
+        case "aksesibilitas":
+        case "kursi roda":
+            <!-- Aksesibilitas (Kursi Roda) -->
+            <svg width="@Size" height="@Size" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="@Class">
+                <circle cx="12" cy="4" r="2"></circle>
+                <path d="M18 13a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V9"></path>
+                <path d="M9 17v4"></path>
+                <path d="M14 17l2 4"></path>
+            </svg>
+            break;
 
-    default:
-        <!-- Default check / star -->
-        <svg width="@Size" height="@Size" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="@Class">
-            <polyline points="20 6 9 17 4 12"></polyline>
-        </svg>
-        break;
+        default:
+            <!-- Default check / star -->
+            <svg width="@Size" height="@Size" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="@Class">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            break;
+    }
 }
 
 @code {
     [Parameter] public string Name { get; set; } = "";
+    [Parameter] public string? SvgPath { get; set; }
     [Parameter] public int Size { get; set; } = 14;
     [Parameter] public string Class { get; set; } = "";
 
