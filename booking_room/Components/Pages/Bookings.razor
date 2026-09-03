@@ -555,8 +555,9 @@
         _selectedRoomForDetail = null;
     }
 
-    private void ProceedToBook(RoomItem room)
+    private void ProceedToBook(RoomItem? room)
     {
+        if (room == null) return;
         CloseDetail();
         _selectedRoomForBooking = room;
         _isConfirmBookingVisible = true;
