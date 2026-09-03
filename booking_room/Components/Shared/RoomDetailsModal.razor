@@ -38,15 +38,28 @@
                             <path d="M45,45 h20 v10 h-20 z" fill="none" class="map-door" stroke-width="1.5" />
                             <text x="55" y="40" font-size="10" font-weight="600" class="map-text" text-anchor="middle">R.101</text>
                             
-                            <!-- Highlighted Room -->
-                            <rect x="100" y="20" width="100" height="60" class="map-room-active" rx="6" />
-                            <text x="150" y="55" font-size="11" font-weight="700" class="map-text-active" text-anchor="middle">@Room.Name</text>
+                            <!-- Highlighted Room (Bounds: x=95, y=16, width=110, height=68) -->
+                            <rect x="95" y="16" width="110" height="68" class="map-room-active" rx="8" />
                             
-                            <!-- Pin for Highlighted Room -->
-                            <g transform="translate(150, 35)">
-                                <path d="M0 -15 C-4 -15 -7.5 -11.5 -7.5 -7 C-7.5 -1 0 7 0 7 C0 7 7.5 -1 7.5 -7 C7.5 -11.5 4 -15 0 -15 Z" fill="var(--color-primary, #F59E0B)" />
-                                <circle cx="0" cy="-7" r="2.5" fill="#ffffff" />
+                            <!-- Pin for Highlighted Room (Centered at x=150, y=34, safely inside rect) -->
+                            <g transform="translate(150, 34)">
+                                <path d="M0 -9 C-3.5 -9 -6 -6.5 -6 -3 C-6 1.5 0 8 0 8 C0 8 6 1.5 6 -3 C6 -6.5 3.5 -9 0 -9 Z" fill="var(--color-primary, #F59E0B)" />
+                                <circle cx="0" cy="-3" r="2.2" fill="#ffffff" />
                             </g>
+                            
+                            @{
+                                var (mapLine1, mapLine2) = GetRoomNameLines(Room.Name);
+                                var hasLine2 = !string.IsNullOrEmpty(mapLine2);
+                                var fontSize = hasLine2 ? "8.5" : (mapLine1.Length > 11 ? "8.5" : "9.5");
+                                var textY = hasLine2 ? 55 : 60;
+                            }
+                            <text x="150" y="@textY" font-size="@fontSize" font-weight="700" class="map-text-active" text-anchor="middle">
+                                <tspan x="150">@mapLine1</tspan>
+                                @if (hasLine2)
+                                {
+                                    <tspan x="150" dy="11">@mapLine2</tspan>
+                                }
+                            </text>
                             
                             <!-- Neighbor Room 2 -->
                             <rect x="210" y="20" width="70" height="60" class="map-room" rx="6" />
@@ -556,5 +569,44 @@
         {
             await OnBook.InvokeAsync();
         }
+    }
+
+    private (string line1, string line2) GetRoomNameLines(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return ("", "");
+        name = name.Trim();
+        if (name.Length <= 13 || !name.Contains(' '))
+        {
+            return (name, "");
+        }
+
+        var words = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (words.Length == 2)
+        {
+            return (words[0], words[1]);
+        }
+
+        int mid = name.Length / 2;
+        int bestSpace = -1;
+        int minDiff = int.MaxValue;
+        for (int i = 0; i < name.Length; i++)
+        {
+            if (name[i] == ' ')
+            {
+                int diff = Math.Abs(i - mid);
+                if (diff < minDiff)
+                {
+                    minDiff = diff;
+                    bestSpace = i;
+                }
+            }
+        }
+
+        if (bestSpace > 0)
+        {
+            return (name.Substring(0, bestSpace), name.Substring(bestSpace + 1));
+        }
+
+        return (name, "");
     }
 }

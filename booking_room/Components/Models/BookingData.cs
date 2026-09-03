@@ -84,7 +84,7 @@ public static class BookingDataStore
             "https://images.unsplash.com/photo-1462826303086-329426d1aef5?auto=format&fit=crop&w=800&q=80"),
     };
 
-    public static UserProfileData CurrentUser => new(
+    private static UserProfileData _currentUser = new(
         "Wahyu Ravi",
         "whyuravi.2008@gmail.com",
         "+62 897 5678 98",
@@ -94,6 +94,12 @@ public static class BookingDataStore
         "Hari ini, 08:30",
         "WR"
     );
+
+    public static UserProfileData CurrentUser
+    {
+        get => _currentUser;
+        set => _currentUser = value;
+    }
 
     public static string GetStatusLabel(string status) => status switch
     {

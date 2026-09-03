@@ -1,12 +1,14 @@
-﻿@namespace booking_room.Components.Shared
+@namespace booking_room.Components.Shared
 @using booking_room.Components.Models
+@using booking_room.Services
 @using Microsoft.AspNetCore.Components.Forms
 @inject NavigationManager Navigation
+@inject IToastService ToastService
 @implements IDisposable
 
-<AppModal Visible="@Visible" Size="md" Title="Profil Akun" Subtitle="Kelola informasi akun Anda" ShowCloseButton="false" OnClose="CloseModal">
+<AppModal Visible="@Visible" Size="md" Title="Profil Akun" Subtitle="Kelola dan perbarui informasi profil Anda" ShowCloseButton="false" OnClose="CloseModal">
     <IconContent>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             <circle cx="12" cy="7" r="4"></circle>
         </svg>
@@ -18,7 +20,7 @@
                 <div class="profile-avatar-wrap">
                     @if (!string.IsNullOrEmpty(UserProfile.PhotoUrl))
                     {
-                        <img src="@UserProfile.PhotoUrl" class="profile-avatar-img" alt="@UserProfile.Name" />
+                        <img src="@UserProfile.PhotoUrl" class="profile-avatar-img" alt="@UserProfile.FullName" />
                     }
                     else
                     {
@@ -34,55 +36,94 @@
                 </div>
 
                 <div class="profile-info-wrap">
-                    <h3 class="profile-name">@UserProfile.FullName</h3>
-                    <p class="profile-role">@UserProfile.JobTitle â€¢ @UserProfile.Department</p>
-                    <span class="profile-status-badge">ðŸŸ¢ Akun Aktif</span>
+                    <h3 class="profile-name">@_editFullName</h3>
+                    <p class="profile-role">@UserProfile.JobTitle • @UserProfile.Department</p>
+                    <span class="profile-status-badge">
+                        <span class="status-dot-green"></span>
+                        Akun Aktif
+                    </span>
                 </div>
             </div>
 
-            @if (_uploadError)
+            @if (!string.IsNullOrEmpty(_errorMessage))
             {
-                <div class="upload-error-banner">
-                    <span>@_uploadErrorMessage</span>
+                <div class="validation-error-banner">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span>@_errorMessage</span>
                 </div>
             }
 
-            <!-- Data Diri Form -->
+            <!-- Data Diri Form (2-Kolom) -->
             <div class="profile-details-grid">
-                <div class="profile-detail-item">
-                    <label>EMAIL PERUSAHAAN</label>
-                    <div class="detail-value-row">
-                        <span>@UserProfile.Email</span>
-                    </div>
+                <!-- Field Editable 1: Nama -->
+                <div class="profile-detail-item editable-item">
+                    <label for="profile-name-input">NAMA LENGKAP</label>
+                    <input id="profile-name-input" type="text" class="profile-edit-input" 
+                           placeholder="Masukkan nama lengkap" 
+                           @bind="_editFullName" @bind:event="oninput" />
                 </div>
-                <div class="profile-detail-item">
-                    <label>NOMOR TELEPON</label>
-                    <div class="detail-value-row">
-                        <span>@UserProfile.Phone</span>
-                    </div>
+
+                <!-- Field Editable 2: Email Perusahaan -->
+                <div class="profile-detail-item editable-item">
+                    <label for="profile-email-input">EMAIL PERUSAHAAN</label>
+                    <input id="profile-email-input" type="email" class="profile-edit-input" 
+                           placeholder="nama@persada.co.id" 
+                           @bind="_editEmail" @bind:event="oninput" />
                 </div>
-                <div class="profile-detail-item">
+
+                <!-- Field Editable 3: Nomor Telepon -->
+                <div class="profile-detail-item editable-item">
+                    <label for="profile-phone-input">NOMOR TELEPON</label>
+                    <input id="profile-phone-input" type="tel" class="profile-edit-input" 
+                           placeholder="+62 8..." 
+                           @bind="_editPhone" @bind:event="oninput" />
+                </div>
+
+                <!-- Field Read-Only: Lokasi Kerja -->
+                <div class="profile-detail-item readonly-item">
                     <label>LOKASI KERJA</label>
-                    <div class="detail-value-row">
-                        <span>@UserProfile.OfficeLocation</span>
-                    </div>
+                    <div class="readonly-value">@UserProfile.OfficeLocation</div>
                 </div>
-                <div class="profile-detail-item">
+
+                <!-- Field Read-Only: Departemen -->
+                <div class="profile-detail-item readonly-item">
+                    <label>DEPARTEMEN / JABATAN</label>
+                    <div class="readonly-value">@UserProfile.Department (@UserProfile.JobTitle)</div>
+                </div>
+
+                <!-- Field Read-Only: Terakhir Login -->
+                <div class="profile-detail-item readonly-item">
                     <label>TERAKHIR LOGIN</label>
-                    <div class="detail-value-row">
-                        <span>@UserProfile.LastLogin</span>
-                    </div>
+                    <div class="readonly-value">@UserProfile.LastLogin</div>
                 </div>
             </div>
         </div>
     </BodyContent>
+    <FooterContent>
+        <div class="modal-footer-actions">
+            <button type="button" class="btn-profile-close" @onclick="CloseModal">
+                Tutup
+            </button>
+            <button type="button" class="btn-profile-save" @onclick="SaveChanges">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>Simpan Perubahan</span>
+            </button>
+        </div>
+    </FooterContent>
 </AppModal>
 
 <style>
     .user-profile-modal-content {
         display: flex;
         flex-direction: column;
-        gap: 20px;
+        gap: 18px;
+        box-sizing: border-box;
     }
 
     .profile-header-card {
@@ -93,6 +134,7 @@
         background: #F8FAFC;
         border: 1.5px solid #E2E8F0;
         border-radius: 16px;
+        box-sizing: border-box;
     }
     body.dark-mode .profile-header-card {
         background: rgba(15, 23, 42, 0.5);
@@ -103,6 +145,7 @@
         position: relative;
         width: 64px;
         height: 64px;
+        flex-shrink: 0;
     }
     .profile-avatar-img {
         width: 64px;
@@ -116,7 +159,7 @@
         border-radius: 50%;
         background: #1F5D9A;
         color: #FFFFFF;
-        font-size: 1.5rem;
+        font-size: 1.4rem;
         font-weight: 800;
         display: flex;
         align-items: center;
@@ -136,68 +179,201 @@
         justify-content: center;
         cursor: pointer;
         border: 2px solid #FFFFFF;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
+    .profile-info-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        overflow: hidden;
+    }
     .profile-name {
         font-size: 1.15rem;
         font-weight: 800;
         color: var(--persada-navy-900, #0F1F3D);
-        margin: 0 0 2px 0;
+        margin: 0;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
     }
     body.dark-mode .profile-name { color: #F8FAFC; }
     .profile-role {
         font-size: 0.8125rem;
-        color: var(--persada-text-secondary, #6B7280);
-        margin: 0 0 6px 0;
+        color: #64748B;
+        margin: 0 0 4px 0;
     }
     .profile-status-badge {
-        font-size: 0.6875rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.72rem;
         font-weight: 700;
-        color: #16A34A;
+        color: #15803D;
         background: #DCFCE7;
-        padding: 2px 8px;
+        padding: 3px 10px;
         border-radius: 999px;
+        width: fit-content;
+    }
+    .status-dot-green {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #16A34A;
     }
 
-    .upload-error-banner {
+    .validation-error-banner {
+        display: flex;
+        align-items: center;
+        gap: 8px;
         background: #FEE2E2;
         color: #DC2626;
-        padding: 8px 12px;
-        border-radius: 8px;
-        font-size: 0.75rem;
+        border: 1px solid #FCA5A5;
+        padding: 10px 14px;
+        border-radius: 10px;
+        font-size: 0.8125rem;
         font-weight: 600;
+        box-sizing: border-box;
     }
 
+    /* 2-Kolom Grid Form */
     .profile-details-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 14px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        box-sizing: border-box;
     }
+
+    @@media (max-width: 580px) {
+        .profile-details-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
     .profile-detail-item {
         background: #F8FAFC;
-        border: 1px solid #E2E8F0;
-        border-radius: 10px;
-        padding: 10px 12px;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 10px 14px;
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 4px;
+        box-sizing: border-box;
+        transition: border-color 0.15s;
     }
     body.dark-mode .profile-detail-item {
         background: rgba(15, 23, 42, 0.4);
         border-color: rgba(255, 255, 255, 0.08);
     }
-    .profile-detail-item label {
-        font-size: 0.625rem;
-        font-weight: 700;
-        color: #94A3B8;
-        letter-spacing: 0.05em;
+
+    .profile-detail-item.editable-item:focus-within {
+        border-color: #F59E0B;
+        background: #FFFFFF;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.12);
     }
-    .profile-detail-item span {
+    body.dark-mode .profile-detail-item.editable-item:focus-within {
+        background: #1E293B;
+    }
+
+    .profile-detail-item label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: #64748B;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin: 0;
+    }
+    body.dark-mode .profile-detail-item label {
+        color: #94A3B8;
+    }
+
+    .profile-edit-input {
+        width: 100%;
+        background: transparent;
+        border: none;
+        outline: none;
         font-size: 0.875rem;
         font-weight: 600;
         color: var(--persada-navy-900, #0F1F3D);
+        padding: 2px 0;
+        box-sizing: border-box;
+        font-family: inherit;
     }
-    body.dark-mode .profile-detail-item span { color: #F8FAFC; }
+    body.dark-mode .profile-edit-input {
+        color: #F8FAFC;
+    }
+    .profile-edit-input::placeholder {
+        color: #94A3B8;
+        font-weight: 400;
+    }
+
+    .readonly-value {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #475569;
+        padding: 2px 0;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+    body.dark-mode .readonly-value {
+        color: #CBD5E1;
+    }
+
+    /* Modal Footer Buttons */
+    .modal-footer-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 12px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .btn-profile-close {
+        padding: 9px 20px;
+        border-radius: 999px;
+        border: 1.5px solid #CBD5E1;
+        background: #FFFFFF;
+        color: #334155;
+        font-size: 13.5px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+    body.dark-mode .btn-profile-close {
+        background: transparent;
+        border-color: #475569;
+        color: #E2E8F0;
+    }
+    .btn-profile-close:hover {
+        background: #F1F5F9;
+        border-color: #94A3B8;
+    }
+    body.dark-mode .btn-profile-close:hover {
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .btn-profile-save {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 9px 22px;
+        border-radius: 999px;
+        border: none;
+        background: #F59E0B;
+        color: #0F172A;
+        font-size: 13.5px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.15s;
+        box-shadow: 0 2px 6px rgba(245, 158, 11, 0.25);
+    }
+    .btn-profile-save:hover {
+        background: #D97706;
+        color: #FFFFFF;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+    }
 </style>
 
 @code {
@@ -206,13 +382,30 @@
     [Parameter] public EventCallback OnClose { get; set; }
 
     private UserProfileData UserProfile = BookingDataStore.CurrentUser;
-    private bool _uploadError = false;
-    private string _uploadErrorMessage = "";
+
+    private string _editFullName = "";
+    private string _editEmail = "";
+    private string _editPhone = "";
+
+    private string _errorMessage = "";
     private bool _disposed;
     private CancellationTokenSource? _cts;
 
+    protected override void OnParametersSet()
+    {
+        if (Visible)
+        {
+            UserProfile = BookingDataStore.CurrentUser;
+            _editFullName = UserProfile.FullName;
+            _editEmail = UserProfile.Email;
+            _editPhone = UserProfile.Phone;
+            _errorMessage = "";
+        }
+    }
+
     private async Task CloseModal()
     {
+        _errorMessage = "";
         if (VisibleChanged.HasDelegate)
         {
             await VisibleChanged.InvokeAsync(false);
@@ -223,6 +416,60 @@
         }
     }
 
+    private async Task SaveChanges()
+    {
+        _errorMessage = "";
+
+        // 1. Validasi Nama
+        if (string.IsNullOrWhiteSpace(_editFullName))
+        {
+            _errorMessage = "Nama lengkap wajib diisi.";
+            return;
+        }
+
+        // 2. Validasi Format Email
+        if (string.IsNullOrWhiteSpace(_editEmail) || !_editEmail.Contains('@') || !_editEmail.Contains('.'))
+        {
+            _errorMessage = "Format email perusahaan tidak valid (contoh: nama@persada.co.id).";
+            return;
+        }
+
+        // 3. Validasi Nomor Telepon
+        var cleanPhone = _editPhone.Replace(" ", "").Replace("-", "");
+        if (string.IsNullOrWhiteSpace(_editPhone) || cleanPhone.Length < 9 || !cleanPhone.All(c => char.IsDigit(c) || c == '+'))
+        {
+            _errorMessage = "Nomor telepon tidak valid (minimal 9 digit angka, contoh: +62 897 5678 98).";
+            return;
+        }
+
+        // Simpan data baru
+        var initials = GetInitials(_editFullName);
+        var updated = UserProfile with 
+        { 
+            FullName = _editFullName.Trim(), 
+            Email = _editEmail.Trim(), 
+            Phone = _editPhone.Trim(),
+            Initials = initials
+        };
+
+        BookingDataStore.CurrentUser = updated;
+        UserProfile = updated;
+
+        // Tampilkan toast notifikasi sukses
+        ToastService.Success("Profil Berhasil Diperbarui", "Informasi akun Anda telah tersimpan.");
+
+        // Tutup modal
+        await CloseModal();
+    }
+
+    private string GetInitials(string fullName)
+    {
+        if (string.IsNullOrWhiteSpace(fullName)) return "U";
+        var parts = fullName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 1) return parts[0][0].ToString().ToUpper();
+        return $"{parts[0][0]}{parts[^1][0]}".ToUpper();
+    }
+
     private async Task HandleFileSelected(InputFileChangeEventArgs e)
     {
         var file = e.File;
@@ -230,16 +477,14 @@
 
         if (!file.ContentType.StartsWith("image/"))
         {
-            _uploadError = true;
-            _uploadErrorMessage = "Format file harus JPG, PNG, atau WEBP";
+            _errorMessage = "Format file harus JPG, PNG, atau WEBP";
             TriggerErrorReset();
             return;
         }
 
         if (file.Size > 5 * 1024 * 1024)
         {
-            _uploadError = true;
-            _uploadErrorMessage = "Ukuran file maksimal 5MB";
+            _errorMessage = "Ukuran file maksimal 5MB";
             TriggerErrorReset();
             return;
         }
@@ -254,7 +499,7 @@
 
             UserProfile = UserProfile with { PhotoUrl = dataUrl };
             BookingDataStore.CurrentUser.PhotoUrl = dataUrl;
-            _uploadError = false;
+            _errorMessage = "";
         }
         catch { }
     }
@@ -271,10 +516,10 @@
         {
             try
             {
-                await Task.Delay(3000, token);
+                await Task.Delay(4000, token);
                 if (!_disposed && !token.IsCancellationRequested)
                 {
-                    _uploadError = false;
+                    _errorMessage = "";
                     await InvokeAsync(StateHasChanged);
                 }
             }

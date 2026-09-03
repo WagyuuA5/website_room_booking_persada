@@ -18,6 +18,24 @@
         <p class="bookings-page-subtitle">Pilih ruangan, kelola jadwal kalender, dan ajukan fasilitas tambahan di satu tempat.</p>
     </div>
 
+    <!-- TAB SWITCHER / SEGMENTED CONTROL (Requirement CASE 2: Tepat di bawah judul & subjudul) -->
+    <div class="booking-tabs-bar">
+        <div class="booking-segmented-control">
+            <button type="button" class="booking-tab-btn @(_activeTab == "ruangan" ? "active" : "")" @onclick='() => SwitchTab("ruangan")'>
+                <InlineSvg Src="/icons/icon_room.svg" Class="tab-icon" Style="width: 20px; height: 20px; stroke: currentColor; fill: none;" />
+                <span>Pemesanan Ruangan</span>
+            </button>
+            <button type="button" class="booking-tab-btn @(_activeTab == "kalender" ? "active" : "")" @onclick='() => SwitchTab("kalender")'>
+                <InlineSvg Src="/icons/icon_calendar_grid.svg" Class="tab-icon" Style="width: 20px; height: 20px; stroke: currentColor; fill: none;" />
+                <span>Kalender Pemesanan</span>
+            </button>
+            <button type="button" class="booking-tab-btn @(_activeTab == "fasilitas" ? "active" : "")" @onclick='() => SwitchTab("fasilitas")'>
+                <InlineSvg Src="/icons/icon_facility.svg" Class="tab-icon" Style="width: 20px; height: 20px; stroke: currentColor; fill: none;" />
+                <span>Permintaan Fasilitas</span>
+            </button>
+        </div>
+    </div>
+
     <!-- Search Bar (HANYA tampil saat tab "ruangan" aktif - Requirement A.5) -->
     @if (_activeTab == "ruangan")
     {
@@ -127,39 +145,21 @@
         }
     }
 
-    <!-- TAB SWITCHER / SEGMENTED CONTROL (Requirement A.3) -->
-    <div class="booking-tabs-bar">
-        <div class="booking-segmented-control">
-            <button type="button" class="booking-tab-btn @(_activeTab == "ruangan" ? "active" : "")" @onclick='() => SwitchTab("ruangan")'>
-                <InlineSvg Src="/icons/icon_room.svg" Class="tab-icon" Style="width: 20px; height: 20px; stroke: currentColor; fill: none;" />
-                <span>Pemesanan Ruangan</span>
-            </button>
-            <button type="button" class="booking-tab-btn @(_activeTab == "kalender" ? "active" : "")" @onclick='() => SwitchTab("kalender")'>
-                <InlineSvg Src="/icons/icon_calendar_grid.svg" Class="tab-icon" Style="width: 20px; height: 20px; stroke: currentColor; fill: none;" />
-                <span>Kalender Pemesanan</span>
-            </button>
-            <button type="button" class="booking-tab-btn @(_activeTab == "fasilitas" ? "active" : "")" @onclick='() => SwitchTab("fasilitas")'>
-                <InlineSvg Src="/icons/icon_facility.svg" Class="tab-icon" Style="width: 20px; height: 20px; stroke: currentColor; fill: none;" />
-                <span>Permintaan Fasilitas</span>
-            </button>
-        </div>
-    </div>
-
     <!-- KONTEN SESUAI TAB AKTIF -->
     @if (_isTabSwitching)
     {
         <!-- SKELETON TRANSITION -->
         <div class="tab-skeleton-container fade-in-content">
-            <div class="skeleton-shimmer" style="height: 38px; border-radius: 8px; width: 45%; margin-bottom: 18px; background: #E2E8F0;"></div>
+            <div class="skeleton-shimmer" style="height: 38px; border-radius: 8px; width: 45%; margin-bottom: 18px;"></div>
             <div class="rooms-grid">
                 @for (int i = 0; i < 4; i++)
                 {
                     <div class="room-card skeleton-room-card" style="pointer-events: none;">
-                        <div class="skeleton-box skeleton-shimmer" style="width: 100%; height: 180px; border-radius: 12px 12px 0 0; background: #E2E8F0;"></div>
+                        <div class="skeleton-box" style="width: 100%; height: 180px; border-radius: 12px 12px 0 0;"></div>
                         <div class="room-content" style="padding: 16px;">
-                            <div class="skeleton-box skeleton-shimmer" style="width: 60%; height: 20px; margin-bottom: 12px; background: #E2E8F0;"></div>
-                            <div class="skeleton-box skeleton-shimmer" style="width: 100%; height: 14px; margin-bottom: 8px; background: #E2E8F0;"></div>
-                            <div class="skeleton-box skeleton-shimmer" style="width: 80%; height: 14px; margin-bottom: 16px; background: #E2E8F0;"></div>
+                            <div class="skeleton-box" style="width: 60%; height: 20px; margin-bottom: 12px;"></div>
+                            <div class="skeleton-box" style="width: 100%; height: 14px; margin-bottom: 8px;"></div>
+                            <div class="skeleton-box" style="width: 80%; height: 14px; margin-bottom: 16px;"></div>
                         </div>
                     </div>
                 }
@@ -657,7 +657,7 @@
 
     /* PAGE HEADER */
     .bookings-page-header {
-        margin-bottom: 24px;
+        margin-bottom: 20px;
     }
     .bookings-page-title {
         font-size: 26px;
@@ -683,7 +683,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 8px 0 32px 0;
+        margin: 0 0 24px 0;
         width: 100%;
     }
     .booking-segmented-control {
