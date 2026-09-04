@@ -586,50 +586,49 @@
 @if (isAvailableRoomsModalOpen)
 {
     <div class="modal-overlay" @onclick="CloseAvailableRoomsModal">
-        <div class="modal-card available-rooms-modal" @onclick:stopPropagation="true">
+        <div class="modal-card modal-ruangan-tersedia" @onclick:stopPropagation="true">
 
             <div class="modal-header">
                 <div class="modal-header-icon modal-header-icon--success">
-                    <img src="/icon/icon_building.svg" class="icon-md" alt="" />
+                    <img src="/icon/icon_dshboard.svg" class="icon-md" alt="" />
                 </div>
                 <div>
                     <h3 class="text-section-title">Ruangan Tersedia Sekarang</h3>
-                    <p class="text-body-secondary">Pilih ruangan untuk rapat Anda saat ini.</p>
+                    <p class="text-body-secondary">Pilih ruangan untuk rapat Anda saat ini</p>
                 </div>
+                <button class="modal-close-x" @onclick="CloseAvailableRoomsModal" aria-label="Tutup">
+                    <img src="/icon/icon_close.svg" class="icon-sm" alt="" />
+                </button>
             </div>
-            <hr class="modal-divider" />
 
-            @if (!availableRooms.Any(r => r.Description.Contains("VVIP", StringComparison.OrdinalIgnoreCase) || r.Name.Contains("VVIP", StringComparison.OrdinalIgnoreCase)))
+            @if (noVvipAvailable)
             {
-                <div class="modal-note modal-note--info">
-                    Catatan: Tidak ada ruangan VVIP yang tersedia saat ini.
+                <div class="info-banner-subtle">
+                    <img src="/icon/icon_alert_info.svg" class="icon-xs" alt="" />
+                    <span>Tidak ada ruangan VVIP yang tersedia saat ini</span>
                 </div>
             }
 
-            <div class="available-rooms-grid">
+            <div class="ruangan-tersedia-grid">
                 @foreach (var room in availableRooms)
                 {
-                    <div class="available-room-card">
-                        <img src="@room.PhotoUrl" class="available-room-image" alt="@room.Name" />
-                        <div class="available-room-info">
+                    <div class="ruangan-tersedia-card" @onclick="() => PesanCepat(room.Id)">
+                        <img src="@room.PhotoUrl" class="ruangan-tersedia-photo" alt="@room.Name" onerror="this.src='/images/poto 1.jpg'" />
+                        <div class="ruangan-tersedia-info">
                             <span class="text-card-title">@room.Name</span>
-                            <p class="text-body-secondary">@room.Description</p>
-                            <span class="available-room-capacity">
+                            <span class="ruangan-tersedia-meta">
                                 <img src="/icon/icon_group.svg" class="icon-xs" alt="" /> @room.Capacity Orang
                             </span>
-                            <div class="available-room-facilities">
-                                @foreach (var facility in room.Amenities)
+                            <div class="ruangan-tersedia-facilities">
+                                @foreach (var f in GetTopFacilities(room).Take(3))
                                 {
-                                    <span class="facility-badge">@facility</span>
+                                    <span class="facility-chip"><img src="@f.IconPath" class="icon-xxs" alt="" /> @f.Name</span>
                                 }
                             </div>
                         </div>
+                        <button class="btn-pesan-small" @onclick:stopPropagation="true" @onclick="() => PesanCepat(room.Id)">Pesan</button>
                     </div>
                 }
-            </div>
-
-            <div class="modal-footer">
-                <button class="btn-text-link" @onclick="CloseAvailableRoomsModal">Tutup</button>
             </div>
 
         </div>
@@ -639,7 +638,7 @@
 @if (isPendingApprovalModalOpen)
 {
     <div class="modal-overlay" @onclick="ClosePendingApprovalModal">
-        <div class="modal-card" style="width: 480px; max-width: 100%;" @onclick:stopPropagation="true">
+        <div class="modal-card modal-menunggu-persetujuan" @onclick:stopPropagation="true">
 
             <div class="modal-header">
                 <div class="modal-header-icon modal-header-icon--warning">
@@ -647,28 +646,35 @@
                 </div>
                 <div>
                     <h3 class="text-section-title">Menunggu Persetujuan Admin</h3>
-                    <p class="text-body-secondary">Permintaan pemesanan Anda yang masih menunggu persetujuan.</p>
+                    <p class="text-body-secondary">Permintaan pemesanan Anda yang masih menunggu persetujuan</p>
                 </div>
+                <button class="modal-close-x" @onclick="ClosePendingApprovalModal" aria-label="Tutup">
+                    <img src="/icon/icon_close.svg" class="icon-sm" alt="" />
+                </button>
             </div>
             <hr class="modal-divider" />
 
-            <div class="pending-approval-list" style="display: flex; flex-direction: column; gap: 10px; margin: 16px 0;">
-                @foreach (var request in pendingApprovalRequests)
+            <div class="pending-list">
+                @foreach (var item in pendingApprovalRequests)
                 {
-                    <div class="pending-approval-item">
-                        <div>
-                            <span class="text-card-title" style="font-size: 14px; font-weight: 700;">@request.RoomName</span>
-                            <p class="text-body-secondary" style="font-size: 12px; margin: 2px 0 0 0;">
-                                @request.Date.ToString("dd MMM yyyy") • @request.StartTime.ToString("HH:mm")-@request.EndTime.ToString("HH:mm") WIB
-                            </p>
+                    <div class="pending-item">
+                        <div class="pending-item-icon">
+                            <img src="/icon/icon_dshboard.svg" class="icon-sm" alt="" />
                         </div>
-                        <span class="status-badge status-badge--warning">Menunggu Persetujuan</span>
+                        <div class="pending-item-info">
+                            <span class="text-card-title">@item.RoomName</span>
+                            <span class="text-body-secondary">@item.Date.ToString("dd MMM yyyy") • @item.StartTime.ToString("HH:mm")-@item.EndTime.ToString("HH:mm") WIB</span>
+                            <span class="pending-item-waiting">
+                                <img src="/icon/timer_dshbrd.svg" class="icon-xxs" alt="" /> Menunggu @item.WaitingSince
+                            </span>
+                        </div>
+                        <span class="badge-pending">Menunggu</span>
                     </div>
                 }
             </div>
 
-            <div class="modal-footer">
-                <button class="btn-text-link" @onclick="ClosePendingApprovalModal">Tutup</button>
+            <div class="modal-footer" style="margin-top: 14px; text-align: center;">
+                <a class="panel-link-text" @onclick="GoToStatusFull">Lihat semua di halaman Status →</a>
             </div>
 
         </div>
@@ -1631,6 +1637,140 @@
         background: #7F1D1D;
         color: #9CA3AF;
     }
+
+    /* CASE 2 & CASE 3 (V65): Redesign Modal Ruangan Tersedia & Menunggu Persetujuan */
+    .modal-ruangan-tersedia,
+    .modal-menunggu-persetujuan {
+        width: 520px;
+        max-width: 100%;
+        padding: 24px;
+        position: relative;
+    }
+    .modal-header-icon--success { background: var(--color-success-light, #DCFCE7); }
+    .modal-header-icon--warning { background: var(--color-primary-light, #FEF3C7); }
+    .modal-close-x {
+        position: absolute; top: 20px; right: 20px;
+        width: 32px; height: 32px; border-radius: 50%;
+        background: var(--color-bg-page, #F8FAFC); border: none;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; transition: background 150ms ease-in-out;
+    }
+    .modal-close-x:hover { background: #E2E8F0; }
+
+    .info-banner-subtle {
+        display: flex; align-items: center; gap: 8px;
+        background: var(--color-primary-light, #FEF3C7);
+        border-radius: 10px;
+        padding: 10px 14px;
+        margin-top: 14px;
+        margin-bottom: 16px;
+        font-size: 13px;
+        color: #92600A;
+    }
+
+    .ruangan-tersedia-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-height: 380px;
+        overflow-y: auto;
+        padding-right: 4px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--color-border, #E2E8F0) transparent;
+    }
+    .ruangan-tersedia-grid::-webkit-scrollbar { width: 5px; }
+    .ruangan-tersedia-grid::-webkit-scrollbar-thumb { background: var(--color-border, #E2E8F0); border-radius: 999px; }
+
+    .ruangan-tersedia-card {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        background: var(--color-bg-page, #F8FAFC);
+        border: 1px solid transparent;
+        border-radius: 14px;
+        padding: 12px;
+        cursor: pointer;
+        transition: all 200ms cubic-bezier(0.4,0,0.2,1);
+    }
+    .ruangan-tersedia-card:hover {
+        background: white;
+        border-color: var(--color-primary, #F5A623);
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+        transform: translateY(-2px);
+    }
+    .ruangan-tersedia-photo {
+        width: 64px; height: 64px;
+        border-radius: 10px;
+        object-fit: cover;
+        flex-shrink: 0;
+    }
+    .ruangan-tersedia-info { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; text-align: left; }
+    .ruangan-tersedia-meta { font-size: 12px; color: var(--color-text-secondary, #64748B); display: flex; align-items: center; gap: 4px; }
+    .ruangan-tersedia-facilities { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+    .facility-chip {
+        font-size: 10px; font-weight: 500;
+        background: #F1F5F9; color: #475569;
+        padding: 3px 8px; border-radius: 999px;
+        display: flex; align-items: center; gap: 3px;
+    }
+    .icon-xxs { width: 11px; height: 11px; }
+
+    .pending-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        max-height: 380px;
+        overflow-y: auto;
+        padding-right: 4px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--color-border, #E2E8F0) transparent;
+    }
+    .pending-list::-webkit-scrollbar { width: 5px; }
+    .pending-list::-webkit-scrollbar-thumb { background: var(--color-border, #E2E8F0); border-radius: 999px; }
+    .pending-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: var(--color-bg-page, #F8FAFC);
+        border-radius: 12px;
+        padding: 14px;
+        border-left: 3px solid var(--color-primary, #F5A623);
+        transition: background 200ms ease-in-out;
+    }
+    .pending-item:hover { background: #F1F5F9; }
+    .pending-item-icon {
+        width: 36px; height: 36px; border-radius: 10px;
+        background: white; border: 1px solid var(--color-border, #E2E8F0);
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .pending-item-icon img {
+        filter: brightness(0) invert(0.4);
+    }
+    .pending-item-info { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; text-align: left; }
+    .pending-item-waiting {
+        font-size: 11px; color: var(--color-primary-dark, #D97706);
+        display: flex; align-items: center; gap: 4px; margin-top: 2px;
+    }
+    .badge-pending {
+        background: var(--color-primary-light, #FEF3C7);
+        color: var(--color-primary-dark, #D97706);
+        font-size: 11px; font-weight: 700;
+        padding: 5px 12px; border-radius: 999px;
+        flex-shrink: 0;
+    }
+
+    body.dark-mode .modal-close-x { background: rgba(255, 255, 255, 0.08); }
+    body.dark-mode .modal-close-x:hover { background: rgba(255, 255, 255, 0.16); }
+    body.dark-mode .info-banner-subtle { background: rgba(245, 166, 35, 0.15); color: #FBBF24; }
+    body.dark-mode .ruangan-tersedia-card { background: rgba(255, 255, 255, 0.04); }
+    body.dark-mode .ruangan-tersedia-card:hover { background: rgba(255, 255, 255, 0.08); border-color: var(--color-primary, #F5A623); }
+    body.dark-mode .facility-chip { background: rgba(255, 255, 255, 0.08); color: #CBD5E1; }
+    body.dark-mode .pending-item { background: rgba(255, 255, 255, 0.04); }
+    body.dark-mode .pending-item:hover { background: rgba(255, 255, 255, 0.08); }
+    body.dark-mode .pending-item-icon { background: #1C1C1E; border-color: rgba(255, 255, 255, 0.1); }
+    body.dark-mode .pending-item-waiting { color: #F5A623; }
+    body.dark-mode .badge-pending { background: rgba(245, 166, 35, 0.2); color: #FBBF24; }
 </style>
 
 @code {
@@ -1679,6 +1819,9 @@
     private bool isAvailableRoomsModalOpen = false;
     private bool isPendingApprovalModalOpen = false;
 
+    [SupplyParameterFromQuery]
+    public string? Modal { get; set; }
+
     // A2: In-place Reschedule Modal State
     private bool _isRescheduleModalOpen = false;
     private UserMeeting? _rescheduleMeeting = null;
@@ -1688,7 +1831,45 @@
     private bool _isSlotAvailable = true;
     private string _slotStatusMessage = "Slot Tersedia untuk Ruangan Ini";
 
-    public record PendingApprovalRequest(string RoomName, DateTime Date, DateTime StartTime, DateTime EndTime);
+    public record RoomFacility(string Name, string IconPath);
+
+    private IEnumerable<RoomFacility> GetTopFacilities(RoomItem room)
+    {
+        if (room.Amenities == null) yield break;
+        foreach (var amenity in room.Amenities)
+        {
+            var iconPath = amenity.ToLowerInvariant() switch
+            {
+                "proyektor" or "projector" => "/icon/icon_projector.svg",
+                "ac" => "/icon/icon_ac.svg",
+                "wifi" => "/icon/icon_wifi.svg",
+                "konferensi video" or "video conference" or "video conf" => "/icon/icon_video_conf.svg",
+                "papan tulis" or "whiteboard" => "/icon/icon_whiteboard.svg",
+                "sistem audio" or "audio system" or "sound system" => "/icon/icon_audio.svg",
+                "aksesibilitas" or "accessibility" => "/icon/icon_accessibility.svg",
+                "tv" or "tv led" or "smart tv" => "/icon/icon_tv.svg",
+                _ => "/icon/icon_check_circle.svg"
+            };
+            yield return new RoomFacility(amenity, iconPath);
+        }
+    }
+
+    private bool noVvipAvailable => !availableRooms.Any(r => r.Description.Contains("VVIP", StringComparison.OrdinalIgnoreCase) || r.Name.Contains("VVIP", StringComparison.OrdinalIgnoreCase));
+
+    public record PendingApprovalRequest(string RoomName, DateTime Date, DateTime StartTime, DateTime EndTime, DateTime? CreatedAt = null)
+    {
+        public string WaitingSince
+        {
+            get
+            {
+                var created = CreatedAt ?? DateTime.Now.AddHours(-2);
+                var diff = DateTime.Now - created;
+                if (diff.TotalMinutes < 60) return $"{(int)Math.Max(1, diff.TotalMinutes)} menit";
+                if (diff.TotalHours < 24) return $"{(int)diff.TotalHours} jam";
+                return $"{(int)diff.TotalDays} hari";
+            }
+        }
+    }
     private List<PendingApprovalRequest> pendingApprovalRequests = new();
     private List<RoomItem> availableRooms = new();
 
@@ -1754,9 +1935,9 @@
         AvailableRoomsCount = availableRooms.Count;
         pendingApprovalRequests = new List<PendingApprovalRequest>
         {
-            new("Training Room B", today.AddDays(1), today.AddDays(1).AddHours(13), today.AddDays(1).AddHours(16)),
-            new("Presentation Hall", today.AddDays(3), today.AddDays(3).AddHours(9), today.AddDays(3).AddHours(11)),
-            new("Executive Suite", today.AddDays(5), today.AddDays(5).AddHours(14), today.AddDays(5).AddHours(15).AddMinutes(30))
+            new("Training Room B", today.AddDays(1), today.AddDays(1).AddHours(13), today.AddDays(1).AddHours(16), DateTime.Now.AddHours(-2)),
+            new("Presentation Hall", today.AddDays(3), today.AddDays(3).AddHours(9), today.AddDays(3).AddHours(11), DateTime.Now.AddHours(-5)),
+            new("Executive Suite", today.AddDays(5), today.AddDays(5).AddHours(14), today.AddDays(5).AddHours(15).AddMinutes(30), DateTime.Now.AddDays(-1))
         };
         PendingActionCount = pendingApprovalRequests.Count;
 
@@ -1769,6 +1950,10 @@
         isLoadingGrid = false;
         isLoadingActivities = false;
         isLoadingChart = false;
+
+        if (Modal == "ruangan") isAvailableRoomsModalOpen = true;
+        else if (Modal == "pending") isPendingApprovalModalOpen = true;
+        else if (Modal == "checkin") _ = HandleCheckInClick();
     }
 
     private async Task LoadDashboardDataAsync()
@@ -1807,6 +1992,11 @@
     private void GoToStatus() => Navigation.NavigateTo("/status");
     private void GoToPemesananTersedia() => Navigation.NavigateTo("/pemesanan?filter=tersedia-sekarang");
     private void GoToStatusPending() => Navigation.NavigateTo("/status?filter=menunggu-persetujuan");
+    private void GoToStatusFull()
+    {
+        isPendingApprovalModalOpen = false;
+        Navigation.NavigateTo("/status");
+    }
     private void GoToRiwayat() => Navigation.NavigateTo("/history");
 
     private void NavigateToStatusFromModal()
@@ -2014,6 +2204,7 @@
             { "TimeSlot", "10:00 - 12:00" },
             { "Location", "Lantai 42, Gedung Persada Tower" },
             { "Capacity", 15 },
+            { "PhotoUrl", "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80" },
             { "TargetTime", DateTime.Now.AddMinutes(15) }
         };
         await ModalService.ShowAsync<CheckInCountdownCard>(parameters);

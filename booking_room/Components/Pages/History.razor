@@ -87,7 +87,10 @@
                 <div class="empty-state-icon-bg">
                     <img src="/icon/Icon_clndr.svg" class="icon-xl" alt="" />
                 </div>
-                <div class="empty-state-icon-bg-secondary"></div>
+                <svg class="empty-state-ring" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="60" cy="60" r="58" fill="none" stroke="rgba(245, 166, 35, 0.28)" 
+                            stroke-width="1.5" stroke-dasharray="4 6" stroke-linecap="round" />
+                </svg>
             </div>
             <h3 class="text-section-title">Belum Ada Riwayat Pemesanan</h3>
             <p class="text-body-secondary empty-state-desc">
@@ -273,41 +276,43 @@
         position: relative;
         width: 96px;
         height: 96px;
-        margin-bottom: 24px;
+        margin: 0 auto 24px auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     .empty-state-icon-bg {
-        width: 96px;
-        height: 96px;
+        width: 88px;
+        height: 88px;
         border-radius: 50%;
         background: linear-gradient(135deg, var(--color-primary-light, #FEF3C7) 0%, #FFF9EE 100%);
         display: flex;
         align-items: center;
         justify-content: center;
-        position: relative;
-        z-index: 2;
         box-shadow: 0 8px 24px rgba(245, 166, 35, 0.15);
+        z-index: 2;
     }
     .empty-state-icon-bg img {
         filter: none;
         opacity: 0.85;
     }
-    .empty-state-icon-bg-secondary {
+    .empty-state-ring {
         position: absolute;
-        top: 8px;
-        left: 8px;
-        width: 96px;
-        height: 96px;
-        border-radius: 50%;
-        border: 2px dashed rgba(245, 166, 35, 0.25);
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 120px;
+        height: 120px;
         z-index: 1;
-        animation: rotateSlow 20s linear infinite;
+        animation: rotateSlow 24s linear infinite;
+        transform-origin: center;
     }
     @@keyframes rotateSlow {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
+        from { transform: translate(-50%, -50%) rotate(0deg); }
+        to { transform: translate(-50%, -50%) rotate(360deg); }
     }
     @@media (prefers-reduced-motion: reduce) {
-        .empty-state-icon-bg-secondary { animation: none; }
+        .empty-state-ring { animation: none; }
     }
     .empty-state-desc {
         margin: 8px 0 24px 0;
@@ -344,8 +349,8 @@
         background: linear-gradient(135deg, rgba(245, 166, 35, 0.2) 0%, rgba(30, 41, 59, 0.8) 100%);
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
     }
-    body.dark-mode .empty-state-icon-bg-secondary {
-        border-color: rgba(245, 166, 35, 0.35);
+    body.dark-mode .empty-state-ring circle {
+        stroke: rgba(245, 166, 35, 0.35);
     }
     body.dark-mode .btn-primary-hero {
         background: var(--color-primary, #F5A623);
@@ -403,10 +408,14 @@
         return "Semua Tanggal";
     }
 
+    [SupplyParameterFromQuery]
+    public bool Empty { get; set; }
+
     private IEnumerable<BookingItem> FilteredBookings
     {
         get
         {
+            if (Empty) return Enumerable.Empty<BookingItem>();
             var query = BookingDataStore.AllBookings.AsEnumerable();
             
             if (_selectedStatus != "Semua Status")
