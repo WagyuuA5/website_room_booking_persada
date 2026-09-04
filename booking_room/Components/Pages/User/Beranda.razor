@@ -93,8 +93,13 @@
                 </div>
 
                 <div class="jadwal-list">
-                    @foreach (var meeting in FilteredUpcomingMeetings)
+                    @{
+                        var meetingsList = FilteredUpcomingMeetings.ToList();
+                    }
+                    @for (int i = 0; i < meetingsList.Count; i++)
                     {
+                        var meeting = meetingsList[i];
+                        var isLastItem = i >= meetingsList.Count - 2;
                         <!-- Klik seluruh baris membuka popup Detail Pertemuan (Case 4) -->
                         <div class="jadwal-item clickable-row" @onclick="() => OpenMeetingDetailFromRow(meeting)" role="button" tabindex="0">
                             <div class="jadwal-item-date">
@@ -110,17 +115,29 @@
                                 </div>
                             </div>
                             <div class="jadwal-item-actions">
-                                <button class="btn-icon-round" @onclick:stopPropagation="true" @onclick="() => ToggleQuickMenu(meeting.Id)" aria-label="Opsi">
-                                    <img src="/icon/Icon_setting_1.svg" class="icon-sm" alt="Opsi" />
-                                </button>
-                                @if (ActiveQuickMenuId == meeting.Id)
-                                {
-                                    <div class="quick-menu-dropdown" @onclick:stopPropagation="true">
-                                        <button @onclick="() => LihatDetail(meeting.Id)">Lihat Detail</button>
-                                        <button @onclick="() => JadwalkanUlang(meeting.Id)">Jadwalkan Ulang</button>
-                                        <button class="quick-menu-danger" @onclick="() => BatalkanRapat(meeting.Id)">Batalkan</button>
-                                    </div>
-                                }
+                                <div class="quick-menu-wrapper">
+                                    <button type="button" class="btn-icon-round" @onclick:stopPropagation="true" @onclick="() => ToggleQuickMenu(meeting.Id)" aria-label="Opsi lainnya" title="Opsi lainnya">
+                                        <img src="/icon/icon_more_vertical.svg" class="icon-sm" alt="Opsi lainnya" />
+                                    </button>
+                                    @if (ActiveQuickMenuId == meeting.Id)
+                                    {
+                                        <div class="quick-menu-dropdown @(isLastItem ? "open-upward" : "")" @onclick:stopPropagation="true">
+                                            <button type="button" @onclick="() => LihatDetail(meeting.Id)">
+                                                <img src="/icon/icon_check_circle.svg" style="width: 16px; height: 16px;" alt="" />
+                                                <span>Lihat Detail</span>
+                                            </button>
+                                            <button type="button" @onclick="() => JadwalkanUlang(meeting.Id)">
+                                                <img src="/icon/Icon_clndr.svg" style="width: 16px; height: 16px;" alt="" />
+                                                <span>Jadwalkan Ulang</span>
+                                            </button>
+                                            <div class="divider"></div>
+                                            <button type="button" class="danger" @onclick="() => BatalkanRapat(meeting.Id)">
+                                                <img src="/icon/icon_close.svg" style="width: 16px; height: 16px; filter: invert(32%) sepia(89%) saturate(4850%) hue-rotate(345deg) brightness(98%) contrast(92%);" alt="" />
+                                                <span>Batalkan</span>
+                                            </button>
+                                        </div>
+                                    }
+                                </div>
                             </div>
                         </div>
                     }
@@ -168,13 +185,19 @@
     {
         <section class="panel aktivitas-terkini-panel content-fade-in">
             <h2 class="panel-title">Aktivitas Terkini</h2>
-            <div class="aktivitas-timeline">
+            <div class="aktivitas-timeline aktivitas-list">
                 @foreach (var activity in RecentActivities.Take(5))
                 {
+                    var accentClass = !string.IsNullOrEmpty(activity.PersonName)
+                        ? "aktivitas-item--person"
+                        : (activity.TypeSlug == "approved" || activity.TypeSlug == "confirmed" || activity.TypeSlug == "checkin"
+                            ? "aktivitas-item--success"
+                            : "aktivitas-item--warning");
+
                     @if (!string.IsNullOrEmpty(activity.PersonName))
                     {
                         <!-- Item yang melibatkan orang spesifik (Clickable & Avatar Khusus) -->
-                        <div class="aktivitas-item clickable-activity-row" @onclick="() => OpenContactModal(activity)" role="button" tabindex="0">
+                        <div class="aktivitas-item @accentClass clickable-activity-row" @onclick="() => OpenContactModal(activity)" role="button" tabindex="0">
                             <div class="aktivitas-item-avatar-initial" style="background-color: @activity.AvatarBg;">
                                 @GetInitials(activity.PersonName)
                             </div>
@@ -189,7 +212,7 @@
                     else
                     {
                         <!-- Item non-individu (System status icon) -->
-                        <div class="aktivitas-item">
+                        <div class="aktivitas-item @accentClass">
                             <div class="aktivitas-item-icon aktivitas-item-icon--@activity.TypeSlug">
                                 <img src="@GetActivityIcon(activity.Type)" class="icon-sm" alt="" />
                             </div>
@@ -220,6 +243,11 @@
     <button class="fab-pesan-ruangan" @onclick="GoToPemesanan" title="Pesan Ruangan" aria-label="Pesan Ruangan">
         <img src="/icon/Icon_book_1.svg" class="icon-white" style="width: 24px; height: 24px;" alt="Pesan Ruangan" />
     </button>
+
+    @if (ActiveQuickMenuId != null)
+    {
+        <div class="quick-menu-backdrop" @onclick="() => ActiveQuickMenuId = null"></div>
+    }
 </div>
 
 <!-- CASE 3B: Reusable Detail Modal using AppModal (dengan info peserta, agenda, fasilitas, dan bagikan) -->
@@ -293,6 +321,15 @@
                         <span class="facility-pill"><img src="/icon/icon_ac.svg" class="icon-xs" alt="" /> AC Sentral</span>
                     </div>
                 </div>
+
+                <!-- CASE 2.3: Status Info Strip Eksplisit sebelum navigasi ke Status -->
+                <div class="status-info-strip">
+                    <img src="/icon/icon_location.svg" class="icon-sm" alt="" />
+                    <div class="status-info-text">
+                        <span class="text-caption">ID Pemesanan: #@_selectedMeeting.BookingId</span>
+                        <span class="text-body-secondary">Status saat ini: <strong class="text-success">Terkonfirmasi</strong> — disetujui oleh @_selectedMeeting.ApprovedBy</span>
+                    </div>
+                </div>
             </div>
         }
     </BodyContent>
@@ -317,7 +354,7 @@
     </FooterContent>
 </AppModal>
 
-<!-- CASE 6B: Modal Detail Kontak / Pengundang (AppModal) -->
+<!-- CASE 4: Modal Detail Pengundang (Struktur & Tipografi Baru) -->
 <AppModal Visible="@_isContactModalOpen"
           VisibleChanged="@(v => _isContactModalOpen = v)"
           Title="Detail Pengundang"
@@ -331,27 +368,29 @@
     <BodyContent>
         @if (_selectedContact != null)
         {
-            <div class="contact-modal-body">
-                <div class="contact-header-wrap">
-                    <div class="contact-avatar-large" style="background-color: @(_selectedContact.AvatarBg ?? "#3B82F6");">
+            <div class="detail-pengundang-modal">
+                <div class="pengundang-profile-block">
+                    <div class="pengundang-avatar-large" style="background-color: @(_selectedContact.AvatarBg ?? "#3B82F6");">
                         @GetInitials(_selectedContact.PersonName ?? "")
                     </div>
-                    <div class="contact-name">@_selectedContact.PersonName</div>
-                    <div class="contact-title">@_selectedContact.PersonTitle</div>
+                    <div class="pengundang-profile-text">
+                        <span class="text-card-title">@_selectedContact.PersonName</span>
+                        <span class="text-body-secondary">@_selectedContact.PersonTitle</span>
+                    </div>
                 </div>
 
-                <div class="contact-info-card">
-                    <div class="contact-info-row">
-                        <span class="contact-info-label">Email Kantor:</span>
-                        <span class="contact-info-val">@_selectedContact.PersonEmail</span>
+                <div class="pengundang-info-grid">
+                    <div class="pengundang-info-row">
+                        <span class="text-label-uppercase">Email Kantor</span>
+                        <span class="text-body">@_selectedContact.PersonEmail</span>
                     </div>
-                    <div class="contact-info-row">
-                        <span class="contact-info-label">Konteks:</span>
-                        <span class="contact-info-val">@_selectedContact.Description</span>
+                    <div class="pengundang-info-row">
+                        <span class="text-label-uppercase">Aktivitas</span>
+                        <span class="text-body">@_selectedContact.Description</span>
                     </div>
-                    <div class="contact-info-row">
-                        <span class="contact-info-label">Waktu:</span>
-                        <span class="contact-info-val">@_selectedContact.TimeAgo</span>
+                    <div class="pengundang-info-row">
+                        <span class="text-label-uppercase">Waktu</span>
+                        <span class="text-body">@_selectedContact.TimeAgo</span>
                     </div>
                 </div>
             </div>
@@ -594,18 +633,70 @@
     body.dark-mode .btn-icon-round img {
         filter: brightness(0) invert(1) opacity(0.8);
     }
+    .quick-menu-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+    .quick-menu-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 95;
+        background: transparent;
+    }
     .quick-menu-dropdown {
-        position: absolute; right: 0; top: 40px; z-index: 10;
-        background: white; border-radius: var(--radius-md);
-        box-shadow: var(--shadow-card-hover); border: 1px solid var(--color-border);
-        display: flex; flex-direction: column; min-width: 160px; overflow: hidden;
+        position: absolute;
+        top: calc(100% + 6px);
+        right: 0;
+        z-index: 100;
+        background: var(--color-bg-card, #FFFFFF);
+        border: 1px solid var(--color-border, #E2E8F0);
+        border-radius: 10px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        padding: 6px;
+        min-width: 170px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    .quick-menu-dropdown.open-upward {
+        bottom: calc(100% + 6px);
+        top: auto;
     }
     .quick-menu-dropdown button {
-        background: none; border: none; text-align: left; padding: 10px 14px;
-        font-size: 13px; cursor: pointer; color: var(--color-text-primary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        padding: 8px 12px;
+        border: none;
+        background: transparent;
+        border-radius: 6px;
+        font-size: 12.5px;
+        font-weight: 500;
+        color: var(--color-text-primary, #1E293B);
+        cursor: pointer;
+        text-align: left;
+        transition: background 0.15s ease, color 0.15s ease;
     }
-    .quick-menu-dropdown button:hover { background: var(--color-bg-page); }
-    .quick-menu-danger { color: var(--color-danger) !important; }
+    .quick-menu-dropdown button:hover {
+        background: var(--color-bg-page, #F1F5F9);
+    }
+    .quick-menu-dropdown button.danger {
+        color: #DC2626;
+    }
+    .quick-menu-dropdown button.danger:hover {
+        background: #FEF2F2;
+    }
+    .quick-menu-dropdown .divider {
+        height: 1px;
+        background: var(--color-border, #E2E8F0);
+        margin: 4px 0;
+    }
+    .menu-icon {
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+    }
 
     .rekomendasi-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--color-border); }
     .rekomendasi-item:last-child { border-bottom: none; }
@@ -622,26 +713,67 @@
     .panel-link-text { display: block; text-align: center; margin-top: 12px; font-size: 13px; color: var(--color-primary); font-weight: 600; cursor: pointer; }
     .panel-link-text:hover { text-decoration: underline; }
 
-    /* 4. AKTIVITAS TERKINI (Case 6) */
-    .aktivitas-item { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid rgba(226, 232, 240, 0.6); }
-    .aktivitas-item:last-child { border-bottom: none; }
+    /* 4. AKTIVITAS TERKINI (Case 3 & 6) */
+    .aktivitas-list {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .aktivitas-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border-left: 3px solid transparent;
+        background: transparent;
+        transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+    }
+    .aktivitas-item:hover {
+        transform: translateX(2px);
+        background: var(--color-bg-page, #F8FAFC);
+    }
+    .aktivitas-item--person {
+        border-left-color: #3B82F6;
+    }
+    .aktivitas-item--person:hover {
+        border-left-color: #2563EB;
+        background: rgba(59, 130, 246, 0.05);
+    }
+    .aktivitas-item--success {
+        border-left-color: #10B981;
+    }
+    .aktivitas-item--success:hover {
+        border-left-color: #059669;
+        background: rgba(16, 185, 129, 0.05);
+    }
+    .aktivitas-item--warning {
+        border-left-color: #F59E0B;
+    }
+    .aktivitas-item--warning:hover {
+        border-left-color: #D97706;
+        background: rgba(245, 158, 11, 0.05);
+    }
     .clickable-activity-row {
         cursor: pointer;
-        border-radius: 8px;
-        padding: 10px 8px;
-        transition: background 0.15s ease;
-    }
-    .clickable-activity-row:hover {
-        background: #F8FAFC;
-    }
-    body.dark-mode .clickable-activity-row:hover {
-        background: rgba(30, 41, 59, 0.6);
     }
     .aktivitas-item-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .aktivitas-item-icon--approved { background: var(--color-success-light); }
     .aktivitas-item-icon--rejected, .aktivitas-item-icon--warning { background: var(--color-danger-light); }
     .aktivitas-item-icon--checkin { background: var(--color-success-light); }
     .aktivitas-item-icon--invite { background: var(--color-info-light); }
+    .aktivitas-item-avatar-initial {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+        color: white;
+        flex-shrink: 0;
+    }
     .aktivitas-item-body { display: flex; flex-direction: column; gap: 2px; }
     .aktivitas-item-text { font-size: 13px; color: var(--color-text-primary); }
     .aktivitas-item-time { font-size: 11px; color: var(--color-text-muted); }
@@ -721,7 +853,96 @@
         color: var(--color-text-primary);
     }
 
-    /* Modal Detail Kontak (Case 6B) */
+    /* CASE 2: Status Info Strip */
+    .status-info-strip {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 14px;
+        background: rgba(245, 166, 35, 0.08);
+        border: 1px solid rgba(245, 166, 35, 0.25);
+        border-radius: 8px;
+        font-size: 12px;
+    }
+    .status-info-id {
+        font-weight: 700;
+        color: #D97706;
+    }
+    .status-info-text {
+        color: var(--color-text-secondary, #64748B);
+    }
+    .status-info-text strong {
+        color: var(--color-text-primary, #1E293B);
+    }
+
+    /* CASE 4: Detail Pengundang Modal */
+    .detail-pengundang-modal {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        padding: 4px 0;
+    }
+    .pengundang-profile-block {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 12px;
+    }
+    .pengundang-avatar-large {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: 700;
+        color: #FFFFFF;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+    }
+    .pengundang-profile-text {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .pengundang-profile-text .text-card-title {
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--color-text-primary);
+    }
+    .pengundang-profile-text .text-body-secondary {
+        font-size: 13px;
+        color: var(--color-text-secondary);
+    }
+    .pengundang-info-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        background: var(--color-bg-page, #F8FAFC);
+        border: 1px solid var(--color-border, #E2E8F0);
+        border-radius: 10px;
+        padding: 14px 16px;
+    }
+    .pengundang-info-row {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    .pengundang-info-row .text-label-uppercase {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        color: var(--color-text-muted, #94A3B8);
+        text-transform: uppercase;
+    }
+    .pengundang-info-row .text-body {
+        font-size: 13.5px;
+        font-weight: 500;
+        color: var(--color-text-primary, #1E293B);
+    }
+
+    /* Modal Detail Kontak (Legacy Fallback) */
     .contact-modal-body {
         display: flex;
         flex-direction: column;
@@ -807,7 +1028,7 @@
         border-color: rgba(255, 255, 255, 0.15);
     }
     body.dark-mode .quick-menu-dropdown {
-        background: var(--color-dark-bg-secondary);
+        background: var(--color-dark-bg-secondary, #1E293B);
         border-color: rgba(255, 255, 255, 0.15);
     }
     body.dark-mode .quick-menu-dropdown button {
@@ -816,8 +1037,25 @@
     body.dark-mode .quick-menu-dropdown button:hover {
         background: rgba(255, 255, 255, 0.08);
     }
-    body.dark-mode .aktivitas-item {
-        border-bottom-color: rgba(255, 255, 255, 0.08);
+    body.dark-mode .quick-menu-dropdown .divider {
+        background: rgba(255, 255, 255, 0.1);
+    }
+    body.dark-mode .pengundang-info-grid {
+        background: var(--color-dark-bg, #0F172A);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    body.dark-mode .pengundang-info-row .text-body {
+        color: #F8FAFC;
+    }
+    body.dark-mode .status-info-strip {
+        background: rgba(245, 166, 35, 0.12);
+        border-color: rgba(245, 166, 35, 0.3);
+    }
+    body.dark-mode .status-info-text strong {
+        color: #F8FAFC;
+    }
+    body.dark-mode .aktivitas-item:hover {
+        background: rgba(255, 255, 255, 0.04);
     }
     body.dark-mode .attendee-avatar-circle {
         border-color: var(--color-dark-bg);
@@ -825,7 +1063,7 @@
 </style>
 
 @code {
-    public record UserMeeting(string Id, string Title, string RoomName, string Floor, DateTime Date, DateTime StartTime, DateTime EndTime, string CategorySlug, string CategoryLabel);
+    public record UserMeeting(string Id, string Title, string RoomName, string Floor, DateTime Date, DateTime StartTime, DateTime EndTime, string CategorySlug, string CategoryLabel, string BookingId = "REQ-8942-BR", string ApprovedBy = "General Affairs");
     public record RecommendedRoom(string Id, string Name, int Capacity, string PhotoUrl, string ReasonType, string ReasonLabel);
     public record ActivityItem(string Type, string TypeSlug, string Description, string TimeAgo, string? PersonName = null, string? PersonTitle = null, string? PersonEmail = null, string? AvatarBg = null);
 
@@ -840,7 +1078,7 @@
     private int TotalRoomsCount = 20;
     private int PendingActionCount = 3;
     private string NextMeetingCountdown = "45 MENIT";
-    private UserMeeting NextMeeting = new("1", "Rapat Strategi Q4", "Executive Boardroom A", "42", DateTime.Today, DateTime.Today.AddHours(10), DateTime.Today.AddHours(12), "ruangrapat", "Ruang Rapat");
+    private UserMeeting NextMeeting = new("1", "Rapat Strategi Q4", "Executive Boardroom A", "42", DateTime.Today, DateTime.Today.AddHours(10), DateTime.Today.AddHours(12), "ruangrapat", "Ruang Rapat", "REQ-8942-BR", "General Affairs");
 
     private string? ActiveQuickMenuId = null;
     private bool _isMeetingDetailOpen = false;
@@ -875,9 +1113,9 @@
         var today = DateTime.Today;
         UserMeetings = new List<UserMeeting>
         {
-            new("1", "Rapat Evaluasi Eksekutif Q4", "Executive Boardroom A", "42", today, today.AddHours(10), today.AddHours(12), "ruangrapat", "Ruang Rapat"),
-            new("2", "Workshop Orientasi Tim Baru", "Training Room B", "2", today.AddDays(1), today.AddDays(1).AddHours(13), today.AddDays(1).AddHours(16), "fasilitaskhusus", "Fasilitas Khusus"),
-            new("3", "Review Desain Sprint Mobile UX", "Huddle Space C", "1", today.AddDays(2), today.AddDays(2).AddHours(14), today.AddDays(2).AddHours(15).AddMinutes(30), "areakolaborasi", "Area Kolaborasi")
+            new("1", "Rapat Evaluasi Eksekutif Q4", "Executive Boardroom A", "42", today, today.AddHours(10), today.AddHours(12), "ruangrapat", "Ruang Rapat", "REQ-8942-BR", "General Affairs"),
+            new("2", "Workshop Orientasi Tim Baru", "Training Room B", "2", today.AddDays(1), today.AddDays(1).AddHours(13), today.AddDays(1).AddHours(16), "fasilitaskhusus", "Fasilitas Khusus", "REQ-7731-MR", "General Affairs"),
+            new("3", "Review Desain Sprint Mobile UX", "Huddle Space C", "1", today.AddDays(2), today.AddDays(2).AddHours(14), today.AddDays(2).AddHours(15).AddMinutes(30), "areakolaborasi", "Area Kolaborasi", "REQ-6650-HS", "Budi Santoso")
         };
 
         UpcomingMeetings = UserMeetings.ToList();
@@ -948,7 +1186,8 @@
     private void NavigateToStatusFromModal()
     {
         _isMeetingDetailOpen = false;
-        Navigation.NavigateTo("/status");
+        var bkgId = _selectedMeeting?.BookingId ?? "101";
+        Navigation.NavigateTo($"/status?highlight={bkgId}");
     }
 
     private void ShareInvitation()
@@ -1006,7 +1245,8 @@
     private void JadwalkanUlang(string meetingId)
     {
         ActiveQuickMenuId = null;
-        Navigation.NavigateTo($"/status?bookingId={meetingId}");
+        var meeting = UpcomingMeetings.FirstOrDefault(m => m.Id == meetingId) ?? NextMeeting;
+        Navigation.NavigateTo($"/status?highlight={meeting.BookingId}");
     }
 
     private void BatalkanRapat(string meetingId)

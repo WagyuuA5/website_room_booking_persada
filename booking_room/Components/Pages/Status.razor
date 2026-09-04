@@ -5,6 +5,7 @@
 @using booking_room.Services
 @inject IToastService ToastService
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 @implements IDisposable
 
 <PageTitle>Status Pemesanan — Persada Ruangan</PageTitle>
@@ -71,7 +72,7 @@
             {
                 @foreach (var booking in FilteredBookings)
                 {
-                    <div class="booking-list-card @(selectedBooking?.Id == booking.Id ? "active" : "")" @onclick="() => SelectBooking(booking)">
+                    <div id="@($"booking-card-{booking.RequestId}")" class="booking-list-card @(selectedBooking?.Id == booking.Id ? "active" : "") @(IsHighlighted(booking) ? "highlighted" : "")" @onclick="() => SelectBooking(booking)">
                         <!-- CASE 12: Robust <img> thumb with fallback for all statuses including Ditolak -->
                         <div class="booking-card-thumb">
                             <img src="@GetSafePhoto(booking)" alt="@booking.RoomName" class="booking-thumb-img" onerror="this.src='https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&auto=format&fit=crop&q=80'" />
@@ -509,6 +510,29 @@
     body.dark-mode .booking-list-card.active {
         background: rgba(31, 93, 154, 0.15);
         border-color: #3B82F6;
+    }
+    .booking-list-card.highlighted {
+        border-color: #F5A623 !important;
+        animation: highlightPulse 2s ease-out 1;
+        box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.35);
+    }
+    body.dark-mode .booking-list-card.highlighted {
+        border-color: #F5A623 !important;
+        box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.4);
+    }
+    @@keyframes highlightPulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(245, 166, 35, 0.7);
+            border-color: #F5A623;
+        }
+        50% {
+            box-shadow: 0 0 0 8px rgba(245, 166, 35, 0.25);
+            border-color: #F5A623;
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(245, 166, 35, 0);
+            border-color: #CBD5E1;
+        }
     }
     
     .booking-card-thumb {
@@ -1073,6 +1097,9 @@
     [SupplyParameterFromQuery(Name = "bookingId")]
     public string? BookingIdQuery { get; set; }
 
+    [SupplyParameterFromQuery(Name = "highlight")]
+    public string? HighlightQuery { get; set; }
+
     private bool _disposed;
     private System.Threading.CancellationTokenSource? _cts;
     
@@ -1089,6 +1116,9 @@
     private List<BookingItem> _allBookings = new();
     private BookingItem? selectedBooking;
 
+    private string? _highlightedBookingId;
+    private bool _hasScrolledToHighlight = false;
+
     protected override async Task OnInitializedAsync()
     {
         _cts = new System.Threading.CancellationTokenSource();
@@ -1104,14 +1134,44 @@
             activeFilter = StatusFilterQuery;
         }
 
-        if (!string.IsNullOrEmpty(BookingIdQuery) && _allBookings.Any())
+        var targetId = !string.IsNullOrEmpty(HighlightQuery) ? HighlightQuery : BookingIdQuery;
+        if (!string.IsNullOrEmpty(targetId))
         {
-            var match = _allBookings.FirstOrDefault(b => b.Id == BookingIdQuery || b.RequestId.Contains(BookingIdQuery, StringComparison.OrdinalIgnoreCase));
-            if (match != null)
+            _highlightedBookingId = targetId;
+            if (_allBookings.Any())
             {
-                selectedBooking = match;
+                var match = _allBookings.FirstOrDefault(b => b.Id.Equals(targetId, StringComparison.OrdinalIgnoreCase) || 
+                                                            b.RequestId.Equals(targetId, StringComparison.OrdinalIgnoreCase) || 
+                                                            b.RequestId.Contains(targetId, StringComparison.OrdinalIgnoreCase));
+                if (match != null)
+                {
+                    selectedBooking = match;
+                    activeFilter = "Semua Status";
+                }
             }
         }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!string.IsNullOrEmpty(_highlightedBookingId) && !_hasScrolledToHighlight && _allBookings.Any())
+        {
+            _hasScrolledToHighlight = true;
+            try
+            {
+                await Task.Delay(250);
+                await JS.InvokeVoidAsync("eval", $"const el = document.getElementById('booking-card-{_highlightedBookingId}') || document.querySelector('.booking-list-card.highlighted'); if (el) el.scrollIntoView({{ behavior: 'smooth', block: 'center' }});");
+            }
+            catch { }
+        }
+    }
+
+    private bool IsHighlighted(BookingItem booking)
+    {
+        if (string.IsNullOrEmpty(_highlightedBookingId)) return false;
+        return booking.RequestId.Equals(_highlightedBookingId, StringComparison.OrdinalIgnoreCase) ||
+               booking.Id.Equals(_highlightedBookingId, StringComparison.OrdinalIgnoreCase) ||
+               booking.RequestId.Contains(_highlightedBookingId, StringComparison.OrdinalIgnoreCase);
     }
 
     private async Task LoadDataAsync(System.Threading.CancellationToken token)
@@ -1120,17 +1180,19 @@
         await Task.Delay(200, token);
         _allBookings = BookingDataStore.AllBookings.ToList();
 
-        if (selectedBooking == null && _allBookings.Count > 0)
+        var targetId = !string.IsNullOrEmpty(HighlightQuery) ? HighlightQuery : BookingIdQuery;
+        if (!string.IsNullOrEmpty(targetId))
         {
-            if (!string.IsNullOrEmpty(BookingIdQuery))
-            {
-                var match = _allBookings.FirstOrDefault(b => b.Id == BookingIdQuery || b.RequestId.Contains(BookingIdQuery, StringComparison.OrdinalIgnoreCase));
-                selectedBooking = match ?? _allBookings[0];
-            }
-            else
-            {
-                selectedBooking = _allBookings[0];
-            }
+            _highlightedBookingId = targetId;
+            var match = _allBookings.FirstOrDefault(b => b.Id.Equals(targetId, StringComparison.OrdinalIgnoreCase) || 
+                                                        b.RequestId.Equals(targetId, StringComparison.OrdinalIgnoreCase) || 
+                                                        b.RequestId.Contains(targetId, StringComparison.OrdinalIgnoreCase));
+            selectedBooking = match ?? _allBookings[0];
+            if (match != null) activeFilter = "Semua Status";
+        }
+        else if (selectedBooking == null && _allBookings.Count > 0)
+        {
+            selectedBooking = _allBookings[0];
         }
         
         if (!_disposed) {

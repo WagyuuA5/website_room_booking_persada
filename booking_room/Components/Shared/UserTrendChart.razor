@@ -11,9 +11,9 @@
         </div>
         <div class="trend-header-actions">
             <div class="chart-period-toggle">
-                <button type="button" class="@(_selectedPeriod == "minggu" ? "active" : "")" @onclick='() => SetPeriod("minggu")'>Mingguan</button>
-                <button type="button" class="@(_selectedPeriod == "bulan" ? "active" : "")" @onclick='() => SetPeriod("bulan")'>Bulanan</button>
-                <button type="button" class="@(_selectedPeriod == "tahun" ? "active" : "")" @onclick='() => SetPeriod("tahun")'>Tahunan</button>
+                <button type="button" class="@(_selectedPeriod == "minggu" ? "active" : "")" @onclick='() => ChangePeriod("minggu")'>Mingguan</button>
+                <button type="button" class="@(_selectedPeriod == "bulan" ? "active" : "")" @onclick='() => ChangePeriod("bulan")'>Bulanan</button>
+                <button type="button" class="@(_selectedPeriod == "tahun" ? "active" : "")" @onclick='() => ChangePeriod("tahun")'>Tahunan</button>
             </div>
             <button type="button" class="btn-export-pill" @onclick="ExportData">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -58,7 +58,8 @@
     </div>
 
     <div class="user-trend-chart-box clickable-chart" @onclick="OpenDetailModal" title="Klik area grafik untuk melihat breakdown detail" style="min-height: 250px;">
-        <ApexChart TItem="TrendPoint"
+        <ApexChart @ref="_chart"
+                   TItem="TrendPoint"
                    Options="options"
                    Height="@("250")">
             
@@ -194,19 +195,22 @@
         gap: 12px;
     }
 
-    .trend-period-tabs {
+    .trend-period-tabs,
+    .chart-period-toggle {
         display: flex;
         background: #F1F5F9;
         border-radius: 999px;
         padding: 3px;
         gap: 2px;
     }
-    body.dark-mode .trend-period-tabs { background: #1E293B; }
+    body.dark-mode .trend-period-tabs,
+    body.dark-mode .chart-period-toggle { background: #1E293B; }
 
-    .trend-tab-btn {
+    .trend-tab-btn,
+    .chart-period-toggle button {
         border: none;
         background: transparent;
-        padding: 5px 12px;
+        padding: 5px 14px;
         border-radius: 999px;
         font-size: 12px;
         font-weight: 600;
@@ -214,15 +218,35 @@
         cursor: pointer;
         transition: all 0.15s ease;
     }
-    .trend-tab-btn.active {
+    .trend-tab-btn.active,
+    .chart-period-toggle button.active {
         background: #FFFFFF;
         color: #0F172A;
         font-weight: 700;
         box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
     }
-    body.dark-mode .trend-tab-btn.active {
+    body.dark-mode .trend-tab-btn.active,
+    body.dark-mode .chart-period-toggle button.active {
         background: #334155;
         color: #F8FAFC;
+    }
+
+    /* Case 5: Chart Typography & Axis/Tooltip Styling */
+    .chart-axis-label,
+    .apexcharts-text {
+        font-family: var(--font-family-base, 'Plus Jakarta Sans', sans-serif) !important;
+        font-size: 11px !important;
+        font-weight: 600 !important;
+    }
+    .apexcharts-tooltip {
+        font-family: var(--font-family-base, 'Plus Jakarta Sans', sans-serif) !important;
+        border-radius: 8px !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
+    }
+    .chart-tooltip,
+    .chart-tooltip-label,
+    .chart-tooltip-value {
+        font-family: var(--font-family-base, 'Plus Jakarta Sans', sans-serif) !important;
     }
 
     .btn-export-pill {
@@ -450,6 +474,7 @@
 
 @code {
     private record TrendPoint(int Order, string Label, int Value);
+    private ApexChart<TrendPoint>? _chart;
     private List<TrendPoint> _chartPoints = new();
     private ApexChartOptions<TrendPoint> options = new();
     private string _selectedPeriod = "bulan";
@@ -461,6 +486,15 @@
     protected override void OnInitialized()
     {
         SetPeriod("bulan");
+    }
+
+    private async Task ChangePeriod(string period)
+    {
+        SetPeriod(period);
+        if (_chart != null)
+        {
+            await _chart.UpdateSeriesAsync(true);
+        }
     }
 
     private void OpenDetailModal()
@@ -548,7 +582,8 @@
             Chart = new Chart
             {
                 Toolbar = new Toolbar { Show = false },
-                Animations = new Animations { Enabled = true, Easing = Easing.Easeinout, Speed = 800 }
+                Animations = new Animations { Enabled = true, Easing = Easing.Easeinout, Speed = 800 },
+                FontFamily = "var(--font-family-base, 'Plus Jakarta Sans', sans-serif)"
             },
             Colors = new List<string> { "#F5A623" },
             Stroke = new Stroke { Curve = Curve.Smooth, Width = 3 },
