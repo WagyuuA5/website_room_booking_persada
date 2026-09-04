@@ -10,9 +10,10 @@
             <p class="trend-subtitle">Statistik frekuensi dan utilisasi reservasi ruangan kerja Anda</p>
         </div>
         <div class="trend-header-actions">
-            <div class="trend-period-tabs">
-                <button type="button" class="trend-tab-btn @(_selectedPeriod == "6m" ? "active" : "")" @onclick='() => SetPeriod("6m")'>6 Bulan</button>
-                <button type="button" class="trend-tab-btn @(_selectedPeriod == "1y" ? "active" : "")" @onclick='() => SetPeriod("1y")'>Tahun Ini</button>
+            <div class="chart-period-toggle">
+                <button type="button" class="@(_selectedPeriod == "minggu" ? "active" : "")" @onclick='() => SetPeriod("minggu")'>Mingguan</button>
+                <button type="button" class="@(_selectedPeriod == "bulan" ? "active" : "")" @onclick='() => SetPeriod("bulan")'>Bulanan</button>
+                <button type="button" class="@(_selectedPeriod == "tahun" ? "active" : "")" @onclick='() => SetPeriod("tahun")'>Tahunan</button>
             </div>
             <button type="button" class="btn-export-pill" @onclick="ExportData">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -35,9 +36,9 @@
             </div>
         </div>
         <div class="trend-kpi-item">
-            <span class="trend-kpi-label">RATA-RATA BULANAN</span>
+            <span class="trend-kpi-label">RATA-RATA @GetAverageLabel()</span>
             <div class="trend-kpi-value-row">
-                <span class="trend-kpi-num">@AverageBookings Sesi/Bln</span>
+                <span class="trend-kpi-num">@AverageBookings Sesi</span>
                 <span class="trend-kpi-badge neutral">Stabil</span>
             </div>
         </div>
@@ -56,7 +57,7 @@
         </div>
     </div>
 
-    <div class="user-trend-chart-box" style="min-height: 250px;">
+    <div class="user-trend-chart-box clickable-chart" @onclick="OpenDetailModal" title="Klik area grafik untuk melihat breakdown detail" style="min-height: 250px;">
         <ApexChart TItem="TrendPoint"
                    Options="options"
                    Height="@("250")">
@@ -65,11 +66,91 @@
                              Items="_chartPoints"
                              Name="Pemesanan"
                              SeriesType="SeriesType.Area"
-                             XValue="e => e.Month"
+                             XValue="e => e.Label"
                              YAggregate="e => e.Sum(e => e.Value)" />
         </ApexChart>
     </div>
 </div>
+
+<!-- Modal Detail Tren Pemesanan (Case 8C) -->
+<AppModal Visible="@_showDetailModal"
+          VisibleChanged="@(v => _showDetailModal = v)"
+          Title="Detail Tren Pemesanan"
+          Subtitle="@($"Breakdown statistik reservasi periode {GetPeriodLabel()}")"
+          Size="md"
+          ShowHeader="true"
+          ShowFooter="true">
+    <IconContent>
+        <img src="/icon/Icon_clndr.svg" class="icon-sm" alt="" />
+    </IconContent>
+    <BodyContent>
+        <div class="trend-modal-content">
+            <div class="trend-modal-summary">
+                <div class="trend-summary-box">
+                    <span class="trend-box-label">Total Pemesanan</span>
+                    <span class="trend-box-val">@TotalBookings Sesi</span>
+                </div>
+                <div class="trend-summary-box">
+                    <span class="trend-box-label">Rata-rata</span>
+                    <span class="trend-box-val">@AverageBookings Sesi</span>
+                </div>
+                <div class="trend-summary-box">
+                    <span class="trend-box-label">Periode</span>
+                    <span class="trend-box-val">@GetPeriodLabel()</span>
+                </div>
+            </div>
+
+            <div class="trend-table-wrap">
+                <table class="trend-breakdown-table">
+                    <thead>
+                        <tr>
+                            <th>@GetTableColumnHeader()</th>
+                            <th>Jumlah Pemesanan</th>
+                            <th>Kontribusi</th>
+                            <th>Status Utilisasi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in _chartPoints)
+                        {
+                            var pct = TotalBookings > 0 ? (int)Math.Round((double)p.Value / TotalBookings * 100) : 0;
+                            <tr>
+                                <td><strong>@p.Label</strong></td>
+                                <td>@p.Value Sesi</td>
+                                <td>
+                                    <div class="trend-bar-track">
+                                        <div class="trend-bar-fill" style="width: @(Math.Max(pct, 5))%;"></div>
+                                        <span class="trend-bar-pct">@(pct)%</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (p.Value >= 10)
+                                    {
+                                        <span class="badge-status-high">Sangat Padat</span>
+                                    }
+                                    else if (p.Value >= 4)
+                                    {
+                                        <span class="badge-status-med">Optimal</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge-status-low">Renggang</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </BodyContent>
+    <FooterContent>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; width: 100%;">
+            <button type="button" class="btn btn-secondary" style="border-radius: 999px; padding: 8px 20px; font-size: 13px;" @onclick="() => _showDetailModal = false">Tutup</button>
+            <button type="button" class="btn btn-primary" style="background: #F5A623; border: none; border-radius: 999px; padding: 8px 20px; font-weight: 700; font-size: 13px; color: #1A1A1A;" @onclick="ExportData">Ekspor Data</button>
+        </div>
+    </FooterContent>
+</AppModal>
 
 <style>
     .user-trend-card {
@@ -233,58 +314,234 @@
         position: relative;
         width: 100%;
     }
+
+    .clickable-chart {
+        cursor: pointer;
+        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, filter 0.2s ease;
+        border-radius: 12px;
+        padding: 6px;
+    }
+    .clickable-chart:hover {
+        opacity: 0.96;
+        filter: drop-shadow(0 4px 12px rgba(245, 166, 35, 0.15));
+        background: rgba(245, 166, 35, 0.02);
+    }
+
+    /* Modal Breakdown Styles */
+    .trend-modal-content {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+    .trend-modal-summary {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+    .trend-summary-box {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 10px;
+        padding: 10px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    body.dark-mode .trend-summary-box {
+        background: rgba(15, 23, 42, 0.5);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    .trend-box-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: #64748B;
+    }
+    .trend-box-val {
+        font-size: 14px;
+        font-weight: 700;
+        color: #0F172A;
+    }
+    body.dark-mode .trend-box-val { color: #F8FAFC; }
+
+    .trend-table-wrap {
+        overflow-x: auto;
+        border: 1px solid #E2E8F0;
+        border-radius: 10px;
+    }
+    body.dark-mode .trend-table-wrap {
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    .trend-breakdown-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        text-align: left;
+    }
+    .trend-breakdown-table th {
+        background: #F1F5F9;
+        padding: 10px 14px;
+        font-weight: 700;
+        color: #475569;
+        border-bottom: 1px solid #E2E8F0;
+    }
+    body.dark-mode .trend-breakdown-table th {
+        background: #1E293B;
+        color: #CBD5E1;
+        border-bottom-color: rgba(255, 255, 255, 0.1);
+    }
+    .trend-breakdown-table td {
+        padding: 10px 14px;
+        border-bottom: 1px solid #F1F5F9;
+        color: #334155;
+    }
+    body.dark-mode .trend-breakdown-table td {
+        border-bottom-color: rgba(255, 255, 255, 0.05);
+        color: #E2E8F0;
+    }
+    .trend-bar-track {
+        background: #E2E8F0;
+        border-radius: 999px;
+        height: 8px;
+        width: 100px;
+        display: inline-block;
+        position: relative;
+        vertical-align: middle;
+        margin-right: 8px;
+        overflow: hidden;
+    }
+    body.dark-mode .trend-bar-track {
+        background: rgba(255, 255, 255, 0.15);
+    }
+    .trend-bar-fill {
+        background: #F5A623;
+        height: 100%;
+        border-radius: 999px;
+    }
+    .trend-bar-pct {
+        font-size: 11px;
+        font-weight: 600;
+        color: #64748B;
+    }
+    .badge-status-high {
+        background: #FEE2E2;
+        color: #DC2626;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+    .badge-status-med {
+        background: #DCFCE7;
+        color: #16A34A;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+    .badge-status-low {
+        background: #EFF6FF;
+        color: #2563EB;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+    }
 </style>
 
 @code {
-    private record TrendPoint(int Year, int MonthNumber, string Month, int Value);
+    private record TrendPoint(int Order, string Label, int Value);
     private List<TrendPoint> _chartPoints = new();
     private ApexChartOptions<TrendPoint> options = new();
-    private string _selectedPeriod = "6m";
+    private string _selectedPeriod = "bulan";
+    private bool _showDetailModal = false;
 
     private int TotalBookings => _chartPoints.Sum(p => p.Value);
     private double AverageBookings => _chartPoints.Any() ? Math.Round((double)TotalBookings / _chartPoints.Count, 1) : 0;
 
     protected override void OnInitialized()
     {
-        SetPeriod("6m");
+        SetPeriod("bulan");
     }
+
+    private void OpenDetailModal()
+    {
+        _showDetailModal = true;
+    }
+
+    private string GetAverageLabel() => _selectedPeriod switch
+    {
+        "minggu" => "HARIAN",
+        "bulan" => "MINGGUAN",
+        "tahun" => "BULANAN",
+        _ => "BULANAN"
+    };
+
+    private string GetPeriodLabel() => _selectedPeriod switch
+    {
+        "minggu" => "Minggu Ini (7 Hari Terakhir)",
+        "bulan" => "Bulan Ini (Per-Minggu)",
+        "tahun" => "Tahun Ini (12 Bulan)",
+        _ => "Bulan Ini"
+    };
+
+    private string GetTableColumnHeader() => _selectedPeriod switch
+    {
+        "minggu" => "Hari",
+        "bulan" => "Minggu Ke",
+        "tahun" => "Bulan",
+        _ => "Periode"
+    };
 
     private void SetPeriod(string period)
     {
         _selectedPeriod = period;
         List<TrendPoint> rawData;
-        if (period == "1y")
+
+        if (period == "minggu")
         {
             rawData = new List<TrendPoint>
             {
-                new TrendPoint(2026, 1, "Jan", 6),
-                new TrendPoint(2026, 2, "Feb", 5),
-                new TrendPoint(2026, 3, "Mar", 9),
-                new TrendPoint(2026, 4, "Apr", 7),
-                new TrendPoint(2026, 5, "Mei", 4),
-                new TrendPoint(2026, 6, "Jun", 8),
-                new TrendPoint(2026, 7, "Jul", 5),
-                new TrendPoint(2026, 8, "Ags", 12),
-                new TrendPoint(2026, 9, "Sep", 9),
-                new TrendPoint(2026, 10, "Okt", 15)
+                new TrendPoint(1, "Sen", 2),
+                new TrendPoint(2, "Sel", 4),
+                new TrendPoint(3, "Rab", 3),
+                new TrendPoint(4, "Kam", 5),
+                new TrendPoint(5, "Jum", 4),
+                new TrendPoint(6, "Sab", 1),
+                new TrendPoint(7, "Min", 0)
             };
         }
-        else
+        else if (period == "tahun")
         {
             rawData = new List<TrendPoint>
             {
-                new TrendPoint(2026, 5, "Mei", 4),
-                new TrendPoint(2026, 6, "Jun", 8),
-                new TrendPoint(2026, 7, "Jul", 5),
-                new TrendPoint(2026, 8, "Ags", 12),
-                new TrendPoint(2026, 9, "Sep", 9),
-                new TrendPoint(2026, 10, "Okt", 15)
+                new TrendPoint(1, "Jan", 6),
+                new TrendPoint(2, "Feb", 5),
+                new TrendPoint(3, "Mar", 9),
+                new TrendPoint(4, "Apr", 7),
+                new TrendPoint(5, "Mei", 4),
+                new TrendPoint(6, "Jun", 8),
+                new TrendPoint(7, "Jul", 5),
+                new TrendPoint(8, "Ags", 12),
+                new TrendPoint(9, "Sep", 9),
+                new TrendPoint(10, "Okt", 15),
+                new TrendPoint(11, "Nov", 11),
+                new TrendPoint(12, "Des", 8)
+            };
+        }
+        else // "bulan"
+        {
+            rawData = new List<TrendPoint>
+            {
+                new TrendPoint(1, "Minggu 1", 6),
+                new TrendPoint(2, "Minggu 2", 9),
+                new TrendPoint(3, "Minggu 3", 7),
+                new TrendPoint(4, "Minggu 4", 11)
             };
         }
 
-        // KRONOLOGIS PALING LAMA KE PALING BARU (kiri ke kanan)
-        _chartPoints = rawData.OrderBy(x => x.Year).ThenBy(x => x.MonthNumber).ToList();
-        Console.WriteLine($"[UserTrendChart] Points (Chronological): {string.Join(" -> ", _chartPoints.Select(p => $"{p.Month}:{p.Value}"))}");
+        // KRONOLOGIS PALING LAMA KE PALING BARU (kiri ke kanan berdasarkan Order)
+        _chartPoints = rawData.OrderBy(x => x.Order).ToList();
+        Console.WriteLine($"[UserTrendChart] Period: {period} | Points: {string.Join(" -> ", _chartPoints.Select(p => $"{p.Label}:{p.Value}"))}");
 
         options = new ApexChartOptions<TrendPoint>
         {

@@ -5114,3 +5114,135 @@ body.dark-mode .btn-app-outline:hover {
     border-color: #F59E0B !important;
 }
 
+/* =========================================================
+   V53 — Perbaikan & Diferensiasi Fitur Beranda User
+   ========================================================= */
+
+/* CASE 1: FAB Pesan Ruangan */
+.fab-pesan-ruangan {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-primary) 0%, #FFC24D 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 16px rgba(245, 166, 35, 0.4);
+    cursor: pointer;
+    z-index: 40;
+    border: none;
+    transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.fab-pesan-ruangan:hover {
+    transform: scale(1.08);
+}
+
+/* CASE 5: Badge Alasan Rekomendasi Ruangan */
+.rekomendasi-reason-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+    display: inline-block;
+    margin-top: 4px;
+    width: fit-content;
+}
+.rekomendasi-reason-badge--frequent {
+    background: var(--color-info-light);
+    color: var(--color-info);
+}
+.rekomendasi-reason-badge--capacity {
+    background: var(--color-purple-light);
+    color: var(--color-purple);
+}
+.rekomendasi-reason-badge--default {
+    background: #F1F5F9;
+    color: #475569;
+}
+
+/* CASE 6: Avatar Aktivitas Terkini */
+.aktivitas-item-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1px solid var(--color-border);
+}
+.aktivitas-item-avatar-initial {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+}
+
+/* CASE 8A: Segmented Control 3 Opsi */
+.chart-period-toggle {
+    display: flex;
+    background: var(--color-bg-page);
+    border-radius: 999px;
+    padding: 4px;
+    gap: 2px;
+}
+.chart-period-toggle button {
+    border: none;
+    background: transparent;
+    padding: 7px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.chart-period-toggle button.active {
+    background: white;
+    color: var(--color-text-primary);
+    box-shadow: var(--shadow-card);
+}
+body.dark-mode .chart-period-toggle {
+    background: rgba(255, 255, 255, 0.05);
+}
+body.dark-mode .chart-period-toggle button.active {
+    background: #1E293B;
+    color: #F8FAFC;
+}
+
+/* CASE 9: Glassmorphism Lihat Detail Ruangan */
+.lihat-detail-ruangan-btn {
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 999px;
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    cursor: pointer;
+    transition: background 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.lihat-detail-ruangan-btn:hover {
+    background: rgba(255, 255, 255, 0.75);
+}
+body.dark-mode .lihat-detail-ruangan-btn {
+    background: rgba(15, 23, 42, 0.65);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #F8FAFC;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
