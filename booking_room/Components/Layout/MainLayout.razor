@@ -4,6 +4,7 @@
 @inject NavigationManager Navigation
 @inject INotificationService NotificationService
 @inject booking_room.Services.LoadingStateService LoadingState
+@inject booking_room.Services.IToastService ToastService
 @inject IJSRuntime JS
 @implements IDisposable
 
@@ -34,8 +35,13 @@
             <div class="d-flex align-items-center gap-2">
             </div>
             <div class="dashboard-header-right">
-                <button class="dark-mode-toggle nav-calendar-btn" @onclick="ToggleCalendarHistoryModal" aria-label="Riwayat Pemesanan Ringkas" title="Riwayat Pemesanan Ringkas">
-                    <img src="/icon/Icon_clndr.svg" style="width: 20px; height: 20px; object-fit: contain;" alt="Kalender" />
+                <button class="nav-datepicker-btn" @onclick="ToggleDatePickerModal" aria-label="Pilih Tanggal" title="Pilih Tanggal">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
                 </button>
                 <button class="dark-mode-toggle" @onclick="ToggleDarkMode" aria-label="Ganti Mode Gelap" title="Ganti Mode Gelap">
                     @if (_isDarkMode)
@@ -152,10 +158,19 @@
     </FooterContent>
 </booking_room.Components.Shared.AppModal>
 
+<!-- CASE 1 (V59): DatePicker Modal (Pilih Tanggal) -->
+<booking_room.Components.Shared.DatePickerModal Visible="@_showDatePickerModal"
+                                               VisibleChanged="@(v => _showDatePickerModal = v)"
+                                               SelectedDate="@_selectedDate"
+                                               OnDateSelected="HandleDateSelected"
+                                               OnCancel="() => _showDatePickerModal = false" />
+
 @code {
     private bool _showNotificationPanel = false;
     private bool _showProfilePanel = false;
     private bool _showCalendarHistoryModal = false;
+    private bool _showDatePickerModal = false;
+    private DateTime? _selectedDate = DateTime.Today;
     private bool _isDarkMode = false;
     private bool _isNavigating = false;
     
@@ -167,6 +182,26 @@
     
     private bool _disposed;
     private CancellationTokenSource? _cts;
+
+    private void ToggleDatePickerModal()
+    {
+        _showDatePickerModal = !_showDatePickerModal;
+        if (_showDatePickerModal)
+        {
+            _showNotificationPanel = false;
+            _showProfilePanel = false;
+        }
+    }
+
+    private void HandleDateSelected(DateTime? date)
+    {
+        _selectedDate = date;
+        _showDatePickerModal = false;
+        if (date.HasValue)
+        {
+            ToastService.Success("Tanggal Dipilih", $"Menampilkan jadwal untuk {date.Value.ToString("dd MMMM yyyy")}");
+        }
+    }
 
     private void ToggleNotificationPanel()
     {
