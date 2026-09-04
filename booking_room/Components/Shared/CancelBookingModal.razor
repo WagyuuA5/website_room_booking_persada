@@ -56,15 +56,8 @@
 
             <!-- Footer Actions -->
             <div class="cbm-footer-actions">
-                <button type="button" class="btn-secondary-app cbm-btn-close" @onclick="Close">
-                    Tutup
-                </button>
-                <button type="button" class="btn-danger-app cbm-btn-confirm" disabled="@(string.IsNullOrWhiteSpace(Reason))" @onclick="Confirm">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    <span>Konfirmasi Batal</span>
-                </button>
+                <AnimatedButton Text="Kembali" Variant="secondary" OnClick="Close" />
+                <AnimatedButton Text="Ya, Batalkan Jadwal" Variant="danger" Disabled="@(string.IsNullOrWhiteSpace(Reason))" OnClick="Confirm" />
             </div>
         </div>
     </BodyContent>

@@ -152,25 +152,27 @@
     </BodyContent>
     <FooterContent>
         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-            <a href="/history" @onclick="() => _showCalendarHistoryModal = false" style="font-size: 13px; font-weight: 600; color: #F5A623; text-decoration: none;">Lihat Riwayat Lengkap →</a>
-            <button type="button" class="btn btn-secondary" style="border-radius: 999px; padding: 6px 18px; font-size: 13px;" @onclick="() => _showCalendarHistoryModal = false">Tutup</button>
+            <booking_room.Components.Shared.AnimatedButton Text="Lihat Riwayat Lengkap" Variant="primary" OnClick="GoToHistory" />
+            <booking_room.Components.Shared.AnimatedButton Text="Tutup" Variant="secondary" OnClick="() => _showCalendarHistoryModal = false" />
         </div>
     </FooterContent>
 </booking_room.Components.Shared.AppModal>
 
-<!-- CASE 1 (V59): DatePicker Modal (Pilih Tanggal) -->
-<booking_room.Components.Shared.DatePickerModal Visible="@_showDatePickerModal"
-                                               VisibleChanged="@(v => _showDatePickerModal = v)"
-                                               SelectedDate="@_selectedDate"
-                                               OnDateSelected="HandleDateSelected"
-                                               OnCancel="() => _showDatePickerModal = false" />
+<!-- CASE 1 (V60): DateRangePicker Modal (Pilih Tanggal Modern) -->
+<booking_room.Components.Shared.DateRangePickerModal Visible="@_showDatePickerModal"
+                                                     VisibleChanged="@(v => _showDatePickerModal = v)"
+                                                     StartDate="@_selectedStartDate"
+                                                     EndDate="@_selectedEndDate"
+                                                     OnConfirm="HandleDateRangeConfirmed"
+                                                     OnClose="() => _showDatePickerModal = false" />
 
 @code {
     private bool _showNotificationPanel = false;
     private bool _showProfilePanel = false;
     private bool _showCalendarHistoryModal = false;
     private bool _showDatePickerModal = false;
-    private DateTime? _selectedDate = DateTime.Today;
+    private DateTime? _selectedStartDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 4);
+    private DateTime? _selectedEndDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 17);
     private bool _isDarkMode = false;
     private bool _isNavigating = false;
     
@@ -193,14 +195,25 @@
         }
     }
 
-    private void HandleDateSelected(DateTime? date)
+    private void HandleDateRangeConfirmed((DateTime? Start, DateTime? End) range)
     {
-        _selectedDate = date;
+        _selectedStartDate = range.Start;
+        _selectedEndDate = range.End;
         _showDatePickerModal = false;
-        if (date.HasValue)
+        if (range.Start.HasValue && range.End.HasValue)
         {
-            ToastService.Success("Tanggal Dipilih", $"Menampilkan jadwal untuk {date.Value.ToString("dd MMMM yyyy")}");
+            ToastService.Success("Rentang Tanggal Dipilih", $"Menampilkan jadwal {range.Start.Value:dd MMM} - {range.End.Value:dd MMM yyyy}");
         }
+        else if (range.Start.HasValue)
+        {
+            ToastService.Success("Tanggal Dipilih", $"Menampilkan jadwal {range.Start.Value:dd MMMM yyyy}");
+        }
+    }
+
+    private void GoToHistory()
+    {
+        _showCalendarHistoryModal = false;
+        Navigation.NavigateTo("/history");
     }
 
     private void ToggleNotificationPanel()

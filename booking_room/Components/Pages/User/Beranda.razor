@@ -167,7 +167,7 @@
                                     @room.ReasonLabel
                                 </span>
                             </div>
-                            <button class="btn-pesan-small" @onclick="() => PesanCepat(room.Id)">Pesan</button>
+                            <AnimatedButton Text="Pesan" Variant="primary" Class="btn-pesan-animated" OnClick="() => PesanCepat(room.Id)" />
                         </div>
                     }
                 </div>
@@ -435,10 +435,8 @@
     </BodyContent>
     <FooterContent>
         <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; width: 100%;">
-            <button type="button" class="btn-secondary" style="border-radius: 999px; padding: 10px 20px; font-weight: 600; font-size: 14px; border: 1px solid var(--color-border); background: transparent; cursor: pointer;" @onclick="CloseCancelModal">Kembali</button>
-            <button type="button" class="btn-danger" @onclick="ConfirmCancellation" disabled="@string.IsNullOrWhiteSpace(cancellationReason)">
-                Ya, Batalkan Jadwal
-            </button>
+            <AnimatedButton Text="Kembali" Variant="secondary" OnClick="CloseCancelModal" />
+            <AnimatedButton Text="Ya, Batalkan Jadwal" Variant="danger" Disabled="@string.IsNullOrWhiteSpace(cancellationReason)" OnClick="ConfirmCancellation" />
         </div>
     </FooterContent>
 </AppModal>

@@ -1,0 +1,171 @@
+﻿@namespace booking_room.Components.Shared
+
+@if (Visible)
+{
+    <div class="modal-backdrop-overlay animate-fade-in" style="z-index: 999999;" @onclick="HandleClose">
+        <div class="date-range-modal animate-scale-up" @onclick:stopPropagation="true">
+
+            <div class="calendar-header">
+                <button type="button" class="calendar-nav-btn" @onclick="PrevMonth" aria-label="Bulan sebelumnya">
+                    <img src="/icon/icon_chevron_left.svg" class="icon-sm" alt="‹" />
+                </button>
+                <span class="calendar-month-label">@displayedMonth.ToString("MMMM yyyy", new System.Globalization.CultureInfo("en-US"))</span>
+                <button type="button" class="calendar-nav-btn" @onclick="NextMonth" aria-label="Bulan berikutnya">
+                    <img src="/icon/icon_chevron_right.svg" class="icon-sm" alt="›" />
+                </button>
+            </div>
+
+            <div class="calendar-weekday-row">
+                @foreach (var wd in new[] { "Su", "Mo", "Tu", "We", "Th", "Fr", "Sa" })
+                {
+                    <span class="calendar-weekday-cell">@wd</span>
+                }
+            </div>
+
+            <div class="calendar-grid">
+                @foreach (var date in BuildCalendarGrid(displayedMonth))
+                {
+                    <button type="button"
+                            class="@GetCellCssClass(date)"
+                            @onclick="() => OnDateClick(date)"
+                            @onmouseenter="() => OnDateHover(date)">
+                        <span class="calendar-cell-text">@date.Day</span>
+                    </button>
+                }
+            </div>
+
+            <div class="modal-footer">
+                <AnimatedButton Text="Tutup" Variant="secondary" OnClick="HandleClose" />
+                <AnimatedButton Text="Pilih" Variant="primary" OnClick="ConfirmSelection" />
+            </div>
+
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool Visible { get; set; } = true;
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public DateTime? StartDate { get; set; }
+    [Parameter] public DateTime? EndDate { get; set; }
+    [Parameter] public EventCallback<(DateTime? Start, DateTime? End)> OnConfirm { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private DateTime displayedMonth = DateTime.Today;
+    private DateTime? tentativeStart;
+    private DateTime? tentativeEnd;
+    private DateTime? hoverDate;
+
+    protected override void OnInitialized()
+    {
+        InitializeDates();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (Visible && !tentativeStart.HasValue)
+        {
+            InitializeDates();
+        }
+    }
+
+    private void InitializeDates()
+    {
+        tentativeStart = StartDate ?? new DateTime(DateTime.Today.Year, DateTime.Today.Month, 4);
+        tentativeEnd = EndDate ?? new DateTime(DateTime.Today.Year, DateTime.Today.Month, 17);
+        if (tentativeStart.HasValue)
+        {
+            displayedMonth = new DateTime(tentativeStart.Value.Year, tentativeStart.Value.Month, 1);
+        }
+        else
+        {
+            displayedMonth = DateTime.Today;
+        }
+    }
+
+    private void PrevMonth() => displayedMonth = displayedMonth.AddMonths(-1);
+    private void NextMonth() => displayedMonth = displayedMonth.AddMonths(1);
+
+    private List<DateTime> BuildCalendarGrid(DateTime month)
+    {
+        var firstOfMonth = new DateTime(month.Year, month.Month, 1);
+        int offset = (int)firstOfMonth.DayOfWeek; // Su=0
+        var gridStart = firstOfMonth.AddDays(-offset);
+
+        var days = new List<DateTime>();
+        for (int i = 0; i < 42; i++)
+            days.Add(gridStart.AddDays(i));
+        return days;
+    }
+
+    private void OnDateClick(DateTime date)
+    {
+        if (tentativeStart == null || (tentativeStart != null && tentativeEnd != null))
+        {
+            tentativeStart = date;
+            tentativeEnd = null;
+        }
+        else if (date < tentativeStart)
+        {
+            tentativeEnd = tentativeStart;
+            tentativeStart = date;
+        }
+        else
+        {
+            tentativeEnd = date;
+        }
+    }
+
+    private void OnDateHover(DateTime date) => hoverDate = date;
+
+    private string GetCellCssClass(DateTime date)
+    {
+        bool isOutside = date.Month != displayedMonth.Month;
+        bool isToday = date.Date == DateTime.Today;
+        bool isStart = tentativeStart.HasValue && date.Date == tentativeStart.Value.Date;
+        bool isEnd = tentativeEnd.HasValue && date.Date == tentativeEnd.Value.Date;
+
+        var previewEnd = tentativeEnd ?? hoverDate;
+        DateTime? effectiveStart = tentativeStart;
+        DateTime? effectiveEnd = previewEnd;
+        if (effectiveStart.HasValue && effectiveEnd.HasValue && effectiveEnd < effectiveStart)
+        {
+            var temp = effectiveStart;
+            effectiveStart = effectiveEnd;
+            effectiveEnd = temp;
+        }
+
+        bool isInRange = effectiveStart.HasValue && effectiveEnd.HasValue
+            && date.Date > effectiveStart.Value.Date && date.Date < effectiveEnd.Value.Date;
+
+        var css = "calendar-cell";
+        if (isOutside) css += " calendar-cell--outside";
+        if (isToday) css += " calendar-cell--today";
+        if (isStart)
+        {
+            css += " calendar-cell--range-start";
+            if (effectiveEnd.HasValue && effectiveEnd.Value > date) css += " has-range-end";
+        }
+        if (isEnd)
+        {
+            css += " calendar-cell--range-end";
+            if (effectiveStart.HasValue && effectiveStart.Value < date) css += " has-range-start";
+        }
+        if (isInRange) css += " calendar-cell--range-middle";
+        return css;
+    }
+
+    private async Task HandleClose()
+    {
+        Visible = false;
+        await VisibleChanged.InvokeAsync(false);
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task ConfirmSelection()
+    {
+        Visible = false;
+        await VisibleChanged.InvokeAsync(false);
+        await OnConfirm.InvokeAsync((tentativeStart, tentativeEnd));
+    }
+}

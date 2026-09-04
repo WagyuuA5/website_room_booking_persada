@@ -1,0 +1,32 @@
+﻿@namespace booking_room.Components.Shared
+
+<button class="animated-btn animated-btn--@Variant @Class"
+        type="@(string.IsNullOrEmpty(Type) ? "button" : Type)"
+        style="@Style"
+        disabled="@Disabled"
+        @onclick="OnClick">
+    <span class="animated-btn__circle"></span>
+    <span class="animated-btn__label-default">@Text</span>
+    <span class="animated-btn__label-hover">
+        @Text
+        @if (!string.IsNullOrEmpty(IconPath))
+        {
+            <img src="@IconPath" class="icon-xs" style="width: 14px; height: 14px; filter: brightness(0) invert(1);" alt="" />
+        }
+        else
+        {
+            <span class="animated-btn__arrow">→</span>
+        }
+    </span>
+</button>
+
+@code {
+    [Parameter] public string Text { get; set; } = "Button";
+    [Parameter] public string Variant { get; set; } = "primary"; // primary | secondary | danger | blue
+    [Parameter] public string? IconPath { get; set; }
+    [Parameter] public EventCallback OnClick { get; set; }
+    [Parameter] public bool Disabled { get; set; } = false;
+    [Parameter] public string? Type { get; set; } = "button";
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string? Style { get; set; }
+}

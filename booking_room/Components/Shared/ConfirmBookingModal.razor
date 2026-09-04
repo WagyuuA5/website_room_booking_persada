@@ -243,11 +243,8 @@
     </ChildContent>
     <FooterContent>
         <div class="confirm-footer-btns">
-            <button type="button" class="btn-cancel-modal" @onclick="Back">Tutup</button>
-            <button type="button" class="btn-confirm-modal" @onclick="Confirm">
-                <span>Konfirmasi Pemesanan</span>
-                <InlineSvg Src="icons/icon_check_circle.svg" Class="icon-sm" Style="color:#FFFFFF; stroke:#FFFFFF;" />
-            </button>
+            <AnimatedButton Text="Tutup" Variant="secondary" OnClick="Back" />
+            <AnimatedButton Text="Konfirmasi Pemesanan" Variant="primary" IconPath="/icon/icon_check_circle.svg" OnClick="Confirm" />
         </div>
     </FooterContent>
 </AppModal>

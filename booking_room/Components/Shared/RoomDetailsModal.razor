@@ -122,13 +122,10 @@
                 </div>
 
                 <div class="room-details-footer @(IsViewOnly ? "view-only" : "")">
-                    <button type="button" class="btn-cancel @(IsViewOnly ? "btn-cancel-viewonly" : "")" @onclick="Close">Tutup</button>
+                    <AnimatedButton Text="Tutup" Variant="secondary" OnClick="Close" />
                     @if (!IsViewOnly)
                     {
-                        <button type="button" class="btn-book" @onclick="Book">
-                            <InlineSvg Src="/icons/icon_pemesanan.svg" Class="icon-sm" Style="stroke:currentColor; fill:none; color:#FFFFFF;" />
-                            <span>Pesan Sekarang</span>
-                        </button>
+                        <AnimatedButton Text="Pesan Sekarang" Variant="primary" IconPath="/icon/icon_pemesanan.svg" OnClick="Book" />
                     }
                 </div>
             </div>
