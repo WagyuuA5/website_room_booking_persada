@@ -35,14 +35,17 @@
             <div class="d-flex align-items-center gap-2">
             </div>
             <div class="dashboard-header-right">
-                <button class="nav-datepicker-btn" @onclick="ToggleDatePickerModal" aria-label="Pilih Tanggal" title="Pilih Tanggal">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                    </svg>
-                </button>
+                @if (IsBerandaPage)
+                {
+                    <button class="nav-datepicker-btn" @onclick="ToggleDatePickerModal" aria-label="Pilih Tanggal" title="Pilih Tanggal">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                    </button>
+                }
                 <button class="dark-mode-toggle" @onclick="ToggleDarkMode" aria-label="Ganti Mode Gelap" title="Ganti Mode Gelap">
                     @if (_isDarkMode)
                     {
@@ -252,6 +255,16 @@
     {
         _showProfilePanel = false;
         _showUserProfileModal = true;
+    }
+
+    private bool IsBerandaPage
+    {
+        get
+        {
+            var path = Navigation.ToBaseRelativePath(Navigation.Uri).ToLowerInvariant();
+            var cleanPath = path.Split('?')[0].Trim('/');
+            return string.IsNullOrEmpty(cleanPath) || cleanPath == "beranda";
+        }
     }
 
     protected override void OnInitialized()

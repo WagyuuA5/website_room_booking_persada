@@ -1,17 +1,16 @@
 @namespace booking_room.Components.Shared
 
-<button class="animated-btn animated-btn--@Variant app-btn app-btn--@Variant @Class"
+<button class="app-btn app-btn--@Variant @Class"
         type="@(string.IsNullOrEmpty(Type) ? "button" : Type)"
         style="@Style"
         disabled="@Disabled"
         @onclick="OnClick">
-    <span class="animated-btn__label-default app-btn__label">@Text</span>
+    <span class="app-btn__label">@Text</span>
 </button>
 
 @code {
-    [Parameter] public string Text { get; set; } = "Button";
-    [Parameter] public string Variant { get; set; } = "primary"; // primary | secondary | danger | blue
-    [Parameter] public string? IconPath { get; set; }
+    [Parameter] public string Text { get; set; } = "Tombol";
+    [Parameter] public string Variant { get; set; } = "primary"; // primary | secondary | danger | ghost | dark
     [Parameter] public EventCallback OnClick { get; set; }
     [Parameter] public bool Disabled { get; set; } = false;
     [Parameter] public string? Type { get; set; } = "button";

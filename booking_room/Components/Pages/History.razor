@@ -20,7 +20,7 @@
                     <line x1="8" y1="2" x2="8" y2="6"></line>
                     <line x1="3" y1="10" x2="21" y2="10"></line>
                 </svg>
-                <span>@(_selectedDate?.ToString("dd/MM/yyyy") ?? "Semua Tanggal")</span>
+                <span>@GetDateFilterLabel()</span>
             </button>
 
             <!-- Filter Status -->
@@ -89,14 +89,6 @@
     }
 </div>
 
-@if (_isDatePickerOpen)
-{
-    <DatePickerModal 
-        Visible="true"
-        SelectedDate="_selectedDate"
-        OnDateSelected="HandleDateSelected"
-        OnCancel="() => _isDatePickerOpen = false" />
-}
 
 @if (_selectedBooking != null)
 {
@@ -284,15 +276,35 @@
     }
 </style>
 
-
+<DateRangePickerModal Visible="@_isDatePickerOpen"
+                      VisibleChanged="@(v => _isDatePickerOpen = v)"
+                      StartDate="@_selectedStartDate"
+                      EndDate="@_selectedEndDate"
+                      OnConfirm="HandleDateRangeConfirmed"
+                      OnClose="() => _isDatePickerOpen = false" />
 
 @code {
-    private DateTime? _selectedDate;
+    private DateTime? _selectedStartDate;
+    private DateTime? _selectedEndDate;
     private string _selectedStatus = "Semua Status";
     private readonly string[] _statusOptions = { "Semua Status", "Disetujui", "Menunggu Persetujuan", "Ditolak", "Selesai" };
     private bool _isStatusOpen = false;
     private bool _isDatePickerOpen = false;
     private BookingItem? _selectedBooking;
+    private readonly System.Globalization.CultureInfo _idCulture = new("id-ID");
+
+    private string GetDateFilterLabel()
+    {
+        if (_selectedStartDate.HasValue && _selectedEndDate.HasValue)
+        {
+            return $"{_selectedStartDate.Value:dd/MM} - {_selectedEndDate.Value:dd/MM/yyyy}";
+        }
+        if (_selectedStartDate.HasValue)
+        {
+            return _selectedStartDate.Value.ToString("dd/MM/yyyy");
+        }
+        return "Semua Tanggal";
+    }
 
     private IEnumerable<BookingItem> FilteredBookings
     {
@@ -312,9 +324,13 @@
                 query = query.Where(b => b.Status == mappedStatus);
             }
 
-            if (_selectedDate.HasValue)
+            if (_selectedStartDate.HasValue && _selectedEndDate.HasValue)
             {
-                var dateStr = _selectedDate.Value.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("id-ID"));
+                query = query.Where(b => DateTime.TryParseExact(b.Date, "dd MMMM yyyy", _idCulture, System.Globalization.DateTimeStyles.None, out var d) && d.Date >= _selectedStartDate.Value.Date && d.Date <= _selectedEndDate.Value.Date);
+            }
+            else if (_selectedStartDate.HasValue)
+            {
+                var dateStr = _selectedStartDate.Value.ToString("dd MMMM yyyy", _idCulture);
                 query = query.Where(b => b.Date == dateStr);
             }
 
@@ -330,10 +346,13 @@
     }
 
     private void ToggleDatePicker() => _isDatePickerOpen = !_isDatePickerOpen;
-    private void HandleDateSelected(DateTime? date)
+
+    private void HandleDateRangeConfirmed((DateTime? Start, DateTime? End) range)
     {
-        _selectedDate = date;
+        _selectedStartDate = range.Start;
+        _selectedEndDate = range.End;
         _isDatePickerOpen = false;
+        StateHasChanged();
     }
 
     private void OpenDetail(BookingItem item) => _selectedBooking = item;

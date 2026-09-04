@@ -12,7 +12,10 @@
                 </div>
                 <div>
                     <h3 class="text-section-title">Pilih Tanggal</h3>
-                    <p class="text-body-secondary">@HeaderSubtitle</p>
+                    @if (!string.IsNullOrWhiteSpace(HeaderSubtitle))
+                    {
+                        <p class="text-body-secondary">@HeaderSubtitle</p>
+                    }
                 </div>
             </div>
             <hr class="modal-divider" />
@@ -57,7 +60,7 @@
 @code {
     [Parameter] public bool Visible { get; set; } = false;
     [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
-    [Parameter] public string HeaderSubtitle { get; set; } = "Kapan rapat Anda berlangsung?";
+    [Parameter] public string HeaderSubtitle { get; set; } = "";
     [Parameter] public string ConfirmText { get; set; } = "Pilih Tanggal";
     [Parameter] public bool IsRangeMode { get; set; } = false;
     [Parameter] public DateTime? SelectedDate { get; set; }
@@ -72,6 +75,7 @@
     private DateTime? tentativeStart;
     private DateTime? tentativeEnd;
     private CultureInfo _culture = new CultureInfo("id-ID");
+    private bool _previousVisible = false;
 
     protected override void OnInitialized()
     {
@@ -80,10 +84,11 @@
 
     protected override void OnParametersSet()
     {
-        if (Visible)
+        if (Visible && !_previousVisible)
         {
             InitializeDates();
         }
+        _previousVisible = Visible;
     }
 
     private void InitializeDates()
