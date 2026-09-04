@@ -388,6 +388,83 @@ h1:focus {
     stroke: #FFFFFF !important;
 }
 
+/* CASE 1: NavMenu Logout Button Icon & Hover (Consistent Red) */
+.nav-menu-item.text-danger,
+.nav-menu-item-logout {
+    color: #EF4444 !important;
+}
+
+.nav-menu-item.text-danger svg,
+.nav-menu-item.text-danger .sidebar-nav-icon,
+.nav-menu-item-logout svg,
+.nav-menu-item-logout .sidebar-nav-icon,
+.nav-menu-item.text-danger:hover svg,
+.nav-menu-item.text-danger:hover .sidebar-nav-icon,
+.nav-menu-item-logout:hover svg,
+.nav-menu-item-logout:hover .sidebar-nav-icon {
+    color: #EF4444 !important;
+    stroke: #EF4444 !important;
+}
+
+.nav-menu-item.text-danger:hover,
+.nav-menu-item-logout:hover {
+    background-color: rgba(239, 68, 68, 0.12) !important;
+    color: #EF4444 !important;
+}
+
+/* CASE 2: Custom Modern Dark Mode Scrollbars & Sidebar Containment */
+.sidebar {
+    z-index: 1000 !important;
+    background-color: var(--sidebar-bg, #0F1F3D) !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+}
+
+body.dark-mode .sidebar {
+    background-color: #060B18 !important;
+    border-bottom: none !important;
+}
+
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+.sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 999px;
+}
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Scrollbars in Dark Mode */
+body.dark-mode *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+body.dark-mode *::-webkit-scrollbar-track {
+    background: transparent;
+}
+body.dark-mode *::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+}
+body.dark-mode *::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.35);
+}
+
+/* Firefox scrollbar support */
+.sidebar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+body.dark-mode * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
 .main-content {
     min-height: 100vh;
     background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);

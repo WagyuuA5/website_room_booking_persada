@@ -157,7 +157,7 @@
                                 <div class="toggle-card">
                                     <div class="toggle-info">
                                         <div class="toggle-name">Pembatalan Terlambat / Tidak Hadir</div>
-                                        <div class="toggle-desc">Peringatan sistem jika Anda belum melakukan check-in setelah 15 menit waktu rapat berjalan (Auto-release SOP).</div>
+                                        <div class="toggle-desc">Peringatan sistem jika Anda belum melakukan konfirmasi kehadiran setelah 15 menit waktu rapat berjalan (Auto-release SOP).</div>
                                     </div>
                                     <label class="switch">
                                         <input type="checkbox" @bind="_notifNoShowLate" />
@@ -275,20 +275,20 @@
                                     </button>
                                 </div>
 
-                                <div class="auth-method-card">
-                                    <div class="method-row">
-                                        <div class="method-icon-wrap">
-                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2">
-                                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                                                <polyline points="22,6 12,13 2,6"></polyline>
-                                            </svg>
+                                <div class="toggle-card">
+                                    <div class="toggle-info">
+                                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 2px;">
+                                            <span class="toggle-name" style="margin: 0;">Kode Verifikasi via Email</span>
+                                            <span class="badge-email-verified">
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                                Terverifikasi
+                                            </span>
                                         </div>
-                                        <div class="method-text">
-                                            <div class="method-title">Kode Verifikasi via Email</div>
-                                            <div class="method-meta">whyuravi.2008@gmail.com • Terverifikasi</div>
-                                        </div>
-                                        <span class="badge-status-active">Aktif</span>
+                                        <div class="toggle-desc">whyuravi.2008@gmail.com • Menerima kode verifikasi login darurat saat autentikasi utama tidak tersedia.</div>
                                     </div>
+                                    <span class="badge-status-pill-active">Aktif</span>
                                 </div>
                             </div>
 
@@ -314,66 +314,48 @@
                             </div>
 
                             <div class="devices-list">
-                                <!-- Device 1: Current -->
-                                <div class="device-item current">
-                                    <div class="device-icon-box">
-                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                                            <line x1="8" y1="21" x2="16" y2="21"></line>
-                                            <line x1="12" y1="17" x2="12" y2="21"></line>
-                                        </svg>
-                                    </div>
-                                    <div class="device-details">
-                                        <div class="device-name-row">
-                                            <span class="device-name">Windows PC — Google Chrome</span>
-                                            <span class="badge-this-device">Perangkat Ini</span>
+                                @foreach (var dev in _devices)
+                                {
+                                    <div class="device-item @(dev.IsCurrent ? "current" : "") @(dev.IsRemoving ? "removing" : "")">
+                                        <div class="device-icon-box">
+                                            @if (dev.IconType == "mobile")
+                                            {
+                                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                                                    <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                                                </svg>
+                                            }
+                                            else
+                                            {
+                                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                                    <line x1="8" y1="21" x2="16" y2="21"></line>
+                                                    <line x1="12" y1="17" x2="12" y2="21"></line>
+                                                </svg>
+                                            }
                                         </div>
-                                        <div class="device-meta">Jakarta, Indonesia • Aktif Sekarang (IP: 182.253.xx.xx)</div>
-                                    </div>
-                                </div>
-
-                                <!-- Device 2 -->
-                                <div class="device-item">
-                                    <div class="device-icon-box">
-                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
-                                            <line x1="12" y1="18" x2="12.01" y2="18"></line>
-                                        </svg>
-                                    </div>
-                                    <div class="device-details">
-                                        <div class="device-name-row">
-                                            <span class="device-name">iPhone 14 Pro — Safari Mobile</span>
+                                        <div class="device-details">
+                                            <div class="device-name-row">
+                                                <span class="device-name">@dev.Name</span>
+                                                @if (dev.IsCurrent)
+                                                {
+                                                    <span class="badge-this-device">Perangkat Ini</span>
+                                                }
+                                            </div>
+                                            <div class="device-meta">@dev.Meta</div>
                                         </div>
-                                        <div class="device-meta">Jakarta, Indonesia • Terakhir aktif 2 jam yang lalu</div>
+                                        @if (!dev.IsCurrent)
+                                        {
+                                            <button type="button" class="btn-logout-device" @onclick="() => LogoutDevice(dev)" disabled="@dev.IsRemoving">
+                                                Logout
+                                            </button>
+                                        }
                                     </div>
-                                    <button type="button" class="btn-logout-device" @onclick='() => ToastService.Success("Sesi Dikeluarkan", "Akses dari iPhone 14 Pro telah dihentikan.")'>
-                                        Logout
-                                    </button>
-                                </div>
-
-                                <!-- Device 3 -->
-                                <div class="device-item">
-                                    <div class="device-icon-box">
-                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                                            <line x1="8" y1="21" x2="16" y2="21"></line>
-                                            <line x1="12" y1="17" x2="12" y2="21"></line>
-                                        </svg>
-                                    </div>
-                                    <div class="device-details">
-                                        <div class="device-name-row">
-                                            <span class="device-name">MacBook Air — Mozilla Firefox</span>
-                                        </div>
-                                        <div class="device-meta">Bandung, Indonesia • Terakhir aktif 3 hari yang lalu</div>
-                                    </div>
-                                    <button type="button" class="btn-logout-device" @onclick='() => ToastService.Success("Sesi Dikeluarkan", "Akses dari MacBook Air telah dihentikan.")'>
-                                        Logout
-                                    </button>
-                                </div>
+                                }
                             </div>
 
                             <div class="panel-action-footer">
-                                <button type="button" class="btn-danger-outline" @onclick='() => ToastService.Success("Semua Sesi Dikeluarkan", "Semua perangkat lain telah berhasil di-logout.")'>
+                                <button type="button" class="btn-danger-outline" @onclick="LogoutAllOtherDevices">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                                         <polyline points="16 17 21 12 16 7"></polyline>
@@ -399,7 +381,7 @@
                                 <div class="form-group-field">
                                     <label>Bahasa Tampilan</label>
                                     <select class="user-input-control" @bind="_selectedLanguage">
-                                        <option value="id">Bahasa Indonesia (ID) — Baku</option>
+                                        <option value="id">Bahasa Indonesia (ID)</option>
                                         <option value="en">English (US)</option>
                                     </select>
                                 </div>
@@ -925,6 +907,39 @@
         flex-direction: column;
         gap: 12px;
     }
+    .badge-email-verified {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: #D1FAE5;
+        color: #065F46;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        border: 1px solid #A7F3D0;
+    }
+    body.dark-mode .badge-email-verified {
+        background: rgba(16, 185, 129, 0.15);
+        color: #34D399;
+        border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-status-pill-active {
+        padding: 4px 12px;
+        background: #D1FAE5;
+        color: #065F46;
+        font-size: 0.75rem;
+        font-weight: 700;
+        border-radius: 999px;
+        border: 1px solid #A7F3D0;
+    }
+    body.dark-mode .badge-status-pill-active {
+        background: rgba(16, 185, 129, 0.15);
+        color: #34D399;
+        border-color: rgba(16, 185, 129, 0.3);
+    }
+
     .device-item {
         display: flex;
         align-items: center;
@@ -933,10 +948,24 @@
         background: #F8FAFC;
         border: 1px solid #E2E8F0;
         border-radius: 14px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        opacity: 1;
+        transform: scale(1);
+        max-height: 120px;
+        overflow: hidden;
     }
     body.dark-mode .device-item {
         background: rgba(15, 23, 42, 0.4);
         border-color: #334155;
+    }
+    .device-item.removing {
+        opacity: 0;
+        transform: scale(0.95) translateY(-8px);
+        max-height: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+        margin-top: -6px;
+        border-width: 0;
     }
     .device-icon-box {
         width: 42px;
@@ -975,8 +1004,10 @@
     .device-meta { font-size: 0.75rem; color: #64748B; margin-top: 2px; }
     .btn-logout-device {
         background: none; border: none; color: #DC2626; font-size: 0.8125rem; font-weight: 700; cursor: pointer; padding: 6px 10px; border-radius: 6px;
+        transition: background 0.15s;
     }
-    .btn-logout-device:hover { background: #FEE2E2; }
+    .btn-logout-device:hover:not(:disabled) { background: #FEE2E2; }
+    .btn-logout-device:disabled { opacity: 0.5; cursor: not-allowed; }
 
     /* Integration Items */
     .integration-item-card {
@@ -1030,7 +1061,9 @@
         background: #FEF3C7;
         border-color: #F59E0B;
         color: #92400E;
-           /* Skeleton Loading Animation */
+    }
+
+    /* Skeleton Loading Animation */
     .settings-skeleton-box {
         display: flex;
         flex-direction: column;
@@ -1141,6 +1174,74 @@
         _newPassword = "";
         _confirmPassword = "";
         ToastService.Success("Kata Sandi Diperbarui", "Kata sandi baru Anda berhasil disimpan.");
+    }
+
+    private class UserDeviceSession
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Meta { get; set; } = "";
+        public bool IsCurrent { get; set; }
+        public string IconType { get; set; } = "desktop";
+        public bool IsRemoving { get; set; }
+    }
+
+    private List<UserDeviceSession> _devices = new()
+    {
+        new UserDeviceSession
+        {
+            Id = "dev-1",
+            Name = "Windows PC — Google Chrome",
+            Meta = "Jakarta, Indonesia • Aktif Sekarang (IP: 182.253.xx.xx)",
+            IsCurrent = true,
+            IconType = "desktop"
+        },
+        new UserDeviceSession
+        {
+            Id = "dev-2",
+            Name = "iPhone 14 Pro — Safari Mobile",
+            Meta = "Jakarta, Indonesia • Terakhir aktif 2 jam yang lalu",
+            IsCurrent = false,
+            IconType = "mobile"
+        },
+        new UserDeviceSession
+        {
+            Id = "dev-3",
+            Name = "MacBook Air — Mozilla Firefox",
+            Meta = "Bandung, Indonesia • Terakhir aktif 3 hari yang lalu",
+            IsCurrent = false,
+            IconType = "desktop"
+        }
+    };
+
+    private async Task LogoutDevice(UserDeviceSession dev)
+    {
+        if (dev.IsCurrent || dev.IsRemoving) return;
+        dev.IsRemoving = true;
+        StateHasChanged();
+        await Task.Delay(300);
+        _devices.Remove(dev);
+        ToastService.Success("Sesi Dikeluarkan", $"Akses dari {dev.Name} telah dihentikan.");
+        StateHasChanged();
+    }
+
+    private async Task LogoutAllOtherDevices()
+    {
+        var others = _devices.Where(d => !d.IsCurrent).ToList();
+        if (!others.Any())
+        {
+            ToastService.Info("Info Sesi", "Tidak ada sesi perangkat lain yang aktif.");
+            return;
+        }
+        foreach (var d in others)
+        {
+            d.IsRemoving = true;
+        }
+        StateHasChanged();
+        await Task.Delay(300);
+        _devices.RemoveAll(d => !d.IsCurrent);
+        ToastService.Success("Semua Sesi Dikeluarkan", "Semua perangkat lain telah berhasil di-logout.");
+        StateHasChanged();
     }
 
     public void Dispose()

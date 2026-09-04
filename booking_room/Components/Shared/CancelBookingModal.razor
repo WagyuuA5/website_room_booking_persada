@@ -14,9 +14,16 @@
             </div>
 
             <!-- Title & Warning -->
-            <h3 class="cbm-title">Batalkan Pemesanan Ini?</h3>
+            <h3 class="cbm-title">@(string.IsNullOrEmpty(Title) ? "Batalkan Pemesanan Ini?" : Title)</h3>
             <p class="cbm-warning-text">
-                Apakah Anda yakin ingin membatalkan permintaan pemesanan <strong>@(string.IsNullOrEmpty(RoomName) ? "Ruangan" : RoomName)</strong>@(string.IsNullOrEmpty(RequestId) ? "" : $" (#{RequestId})")?
+                @if (!string.IsNullOrEmpty(WarningMessage))
+                {
+                    @((MarkupString)WarningMessage)
+                }
+                else
+                {
+                    <span>Apakah Anda yakin ingin membatalkan permintaan pemesanan <strong>@(string.IsNullOrEmpty(RoomName) ? "Ruangan" : RoomName)</strong>@(string.IsNullOrEmpty(RequestId) ? "" : $" (#{RequestId})")?</span>
+                }
                 <span class="cbm-warning-badge">Tindakan ini tidak dapat dibatalkan.</span>
             </p>
 
@@ -210,6 +217,8 @@
 @code {
     [Parameter] public bool Visible { get; set; }
     [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? WarningMessage { get; set; }
     [Parameter] public string? RoomName { get; set; }
     [Parameter] public string? RequestId { get; set; }
     [Parameter] public EventCallback<string> OnConfirmCancel { get; set; }

@@ -7,6 +7,7 @@
 @inject NavigationManager Navigation
 @inject NotificationState NotificationState
 @inject IToastService ToastService
+@inject IModalService ModalService
 @inject IJSRuntime JS
 @implements IDisposable
 
@@ -896,7 +897,7 @@
             new("approved", "approved", "Reservasi Executive Boardroom A telah disetujui oleh General Affairs", "5 menit lalu"),
             new("invite", "invite", "mengundang Anda ke sesi Workshop Cloud di Training Room B", "35 menit lalu", "Ahmad Fauzi", "Koordinator IT", "ahmad.fauzi@persada.com", "#3B82F6"),
             new("warning", "warning", "Permintaan reservasi Huddle Space C dialihkan karena perbaikan fasilitas", "2 jam lalu"),
-            new("checkin", "checkin", "Check-in berhasil untuk rapat di Focus Room Alpha", "1 hari lalu"),
+            new("checkin", "checkin", "Konfirmasi kehadiran berhasil untuk rapat di Focus Room Alpha", "1 hari lalu"),
             new("invite", "invite", "membagikan dokumen agenda untuk Town Hall Q4", "2 hari lalu", "Sarah Jenkins", "Lead Product Operations", "sarah.jenkins@persada.com", "#8B5CF6")
         };
 
@@ -1026,10 +1027,17 @@
         _isCancelModalOpen = false;
     }
 
-    private void HandleCheckInClick()
+    private async Task HandleCheckInClick()
     {
-        ToastService.Success("Check-in Berhasil", "Kehadiran Anda di ruangan telah terkonfirmasi.");
-        NotificationState.DismissBanner();
+        var parameters = new Dictionary<string, object>
+        {
+            { "RoomName", "Executive Boardroom A" },
+            { "TimeSlot", "10:00 - 12:00" },
+            { "Location", "Lantai 42, Gedung Persada Tower" },
+            { "Capacity", 15 },
+            { "TargetTime", DateTime.Now.AddMinutes(15) }
+        };
+        await ModalService.ShowAsync<CheckInCountdownCard>(parameters);
     }
 
     private void SafeStateHasChanged()

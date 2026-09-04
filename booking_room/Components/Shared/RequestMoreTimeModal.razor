@@ -1,6 +1,7 @@
 @namespace booking_room.Components.Shared
 @using booking_room.Components.Models
-@inject booking_room.Services.ToastService Toast
+@using booking_room.Services
+@inject IToastService ToastService
 
 <AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Size="md" ShowHeader="false" ShowFooter="false">
     <BodyContent>
@@ -17,7 +18,7 @@
         <div class="modal-body-pad">
             <div class="info-box-amber">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                <p>Anda dapat memperpanjang jendela check-in selama tepat 10 menit. Aksi ini hanya bisa dilakukan sekali per pemesanan.</p>
+                <p>Anda dapat memperpanjang batas waktu konfirmasi kehadiran selama tepat 10 menit. Aksi ini hanya bisa dilakukan sekali per pemesanan.</p>
             </div>
 
             <div class="form-group" style="margin-top: 16px;">
@@ -37,10 +38,11 @@
 </AppModal>
 
 @code {
-    [Parameter] public bool Visible { get; set; }
+    [Parameter] public bool Visible { get; set; } = true;
     [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
     [Parameter] public string RoomName { get; set; } = "Ruangan";
     [Parameter] public EventCallback OnSuccess { get; set; }
+    [Parameter] public EventCallback<string> OnRequestExtension { get; set; }
 
     private string _reason = "";
 
@@ -58,8 +60,15 @@
     private async Task Submit()
     {
         if (string.IsNullOrWhiteSpace(_reason)) return;
-        Toast.Show("Waktu check-in berhasil diperpanjang 10 menit.", "success");
-        await OnSuccess.InvokeAsync();
+        ToastService.Success("Waktu Tambahan Diberikan", "Batas waktu konfirmasi kehadiran berhasil diperpanjang 10 menit.");
+        if (OnRequestExtension.HasDelegate)
+        {
+            await OnRequestExtension.InvokeAsync(_reason);
+        }
+        if (OnSuccess.HasDelegate)
+        {
+            await OnSuccess.InvokeAsync();
+        }
         await Close();
     }
 }

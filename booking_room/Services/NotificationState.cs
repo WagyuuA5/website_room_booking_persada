@@ -8,7 +8,7 @@ namespace booking_room.Services
         private System.Timers.Timer? _timer;
         private bool _disposed;
         
-        public DateTime? NextBookingTime { get; set; } = DateTime.Now.AddMinutes(16);
+        public DateTime? NextBookingTime { get; set; } = DateTime.Now.AddMinutes(12);
         
         public event Action? OnChange;
 
