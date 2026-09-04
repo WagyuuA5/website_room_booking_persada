@@ -1,45 +1,76 @@
 
 :root {
-    /* DS-11: Radius System */
-    --radius-sm: 8px;
-    --radius-md: 14px;
-    --radius-lg: 22px;
-    --radius-full: 999px;
+  --color-primary: #F5A623;        /* oranye brand utama, untuk tombol utama & aksen */
+  --color-primary-dark: #D48806;   /* oranye lebih gelap, untuk hover state tombol primary */
+  --color-primary-light: #FFF3DC;  /* oranye sangat muda, untuk background badge/section pending */
+  --color-success: #16A34A;        /* hijau, untuk status tersedia/disetujui */
+  --color-success-light: #DCFCE7;  /* hijau muda, background badge sukses */
+  --color-danger: #DC2626;         /* merah, untuk status ditolak/error */
+  --color-danger-light: #FEE2E2;   /* merah muda, background badge error */
+  --color-info: #2563EB;           /* biru, untuk badge kategori info/area kolaborasi */
+  --color-info-light: #DBEAFE;     /* biru muda, background badge info */
+  --color-purple: #7C3AED;         /* ungu, untuk badge kategori fasilitas khusus */
+  --color-purple-light: #EDE9FE;   /* ungu muda, background badge fasilitas khusus */
+  --color-dark-bg: #0F172A;        /* navy gelap, untuk sidebar & card gelap (Rapat Berikutnya) */
+  --color-dark-bg-secondary: #1E293B; /* navy sedikit lebih terang, untuk gradient card gelap */
+  --color-text-primary: #0F172A;   /* teks utama, hampir hitam */
+  --color-text-secondary: #64748B; /* teks sekunder/abu-abu */
+  --color-text-muted: #94A3B8;     /* teks placeholder/label kecil */
+  --color-border: #E2E8F0;         /* border tipis default */
+  --color-bg-page: #F8FAFC;        /* background halaman (off-white) */
+  --color-bg-card: #FFFFFF;        /* background card */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-card-hover: 0 8px 16px rgba(15, 23, 42, 0.10), 0 2px 4px rgba(15, 23, 42, 0.06);
+  --transition-fast: 150ms ease-in-out;
+  --transition-normal: 250ms ease-in-out;
 
-    /* DS-10: Typography */
-    --fs-h1: 32px;
-    --fs-h2: 24px;
-    --fs-h3: 20px;
-    --fs-base: 16px;
-    --fs-sm: 14px;
-    --fs-xs: 12px;
+  /* Additional typography and motion fallbacks */
+  --fs-h1: 32px;
+  --fs-h2: 24px;
+  --fs-h3: 20px;
+  --fs-base: 16px;
+  --fs-sm: 14px;
+  --fs-xs: 12px;
 
-    --fw-regular: 400;
-    --fw-medium: 500;
-    --fw-semibold: 600;
-    --fw-bold: 700;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
 
-    /* DS-13 & DS-14: Motion & Transitions */
-    --motion-fast: 150ms ease-out;
-    --motion-base: 250ms ease-out;
-    --motion-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
-    --motion-chart: 900ms cubic-bezier(0.16, 1, 0.3, 1);
-
-    /* DS-09 & DS-12: Colors (Skedda/Robin/Apple style neutral) */
-    --color-neutral-100: #F5F5F7;
-    --color-neutral-200: #E8E8ED;
-    --color-neutral-400: #86868B;
-    --color-neutral-600: #515154;
-    --color-neutral-900: #1D1D1F;
-    
-    --color-white: #FFFFFF;
-    --color-navy: #0F172A;
-    --color-primary: #0A84FF;
-    --color-success: #34D399;
-    --color-warning: #F59E0B;
-    --color-danger: #EF4444;
-    --color-info: #3B82F6;
+  --color-neutral-100: #F5F5F7;
+  --color-neutral-200: #E8E8ED;
+  --color-neutral-400: #86868B;
+  --color-neutral-600: #515154;
+  --color-neutral-900: #1D1D1F;
+  --color-white: #FFFFFF;
+  --color-navy: #0F172A;
+  --radius-full: 999px;
 }
+
+.icon-white { filter: brightness(0) invert(1); }
+.icon-xs { width: 14px; height: 14px; }
+.icon-sm { width: 18px; height: 18px; }
+.icon-md { width: 22px; height: 22px; }
+.icon-lg { width: 28px; height: 28px; }
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+.skeleton {
+    background: linear-gradient(90deg, #EEF1F5 25%, #E2E8F0 50%, #EEF1F5 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.8s ease-in-out infinite;
+    border-radius: var(--radius-md);
+}
+.skeleton-fade-out { animation: fadeOut 300ms ease-in-out forwards; }
+.content-fade-in { animation: fadeIn 300ms ease-in-out forwards; }
+@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 @import url('css/design-tokens.css');

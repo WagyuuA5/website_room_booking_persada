@@ -36,6 +36,21 @@
             <button class="notif-tab @(activeTab == "System" ? "active" : "")" @onclick='() => SetTab("System")'>Sistem</button>
         </div>
 
+        @if (isReconnecting)
+        {
+            <div class="notif-reconnecting-bar">
+                <span class="spinner-inline"></span>
+                <span>Menyambungkan ulang...</span>
+            </div>
+        }
+        else if (showManualReconnectButton)
+        {
+            <div class="notif-reconnect-bar">
+                <span>Koneksi terputus. Klik untuk mencoba lagi.</span>
+                <button type="button" class="btn-reconnect-small" @onclick="TryAutoRefresh">Coba Lagi</button>
+            </div>
+        }
+
         <div class="notif-list">
             @if (!FilteredNotifications.Any())
             {
@@ -355,6 +370,55 @@
         text-decoration: underline;
     }
     body.dark-mode .btn-notif-view-all { color: #FBBF24; }
+
+    .notif-reconnecting-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 16px;
+        background: #FEF3C7;
+        color: #92400E;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border-bottom: 1px solid #FDE68A;
+    }
+    .spinner-inline {
+        width: 12px;
+        height: 12px;
+        border: 2px solid rgba(146, 64, 14, 0.25);
+        border-top-color: #92400E;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        display: inline-block;
+    }
+    @@keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    .notif-reconnect-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 6px 16px;
+        background: #FEE2E2;
+        color: #991B1B;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border-bottom: 1px solid #FECACA;
+    }
+    .btn-reconnect-small {
+        background: #DC2626;
+        color: #FFFFFF;
+        border: none;
+        border-radius: 999px;
+        padding: 3px 10px;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.15s ease;
+    }
+    .btn-reconnect-small:hover {
+        background: #B91C1C;
+    }
 </style>
 
 @code {
@@ -363,6 +427,33 @@
 
     private string activeTab = "All";
     private bool _disposed;
+
+    private int retryCount = 0;
+    private bool isReconnecting = false;
+    private bool showManualReconnectButton = false;
+
+    private async Task<bool> TryFetchNotificationsAsync()
+    {
+        await Task.Delay(100);
+        return true;
+    }
+
+    private async Task TryAutoRefresh()
+    {
+        isReconnecting = true;
+        showManualReconnectButton = false;
+        StateHasChanged();
+        while (retryCount < 3)
+        {
+            await Task.Delay(2000);
+            var success = await TryFetchNotificationsAsync();
+            if (success) { isReconnecting = false; retryCount = 0; StateHasChanged(); return; }
+            retryCount++;
+        }
+        isReconnecting = false;
+        showManualReconnectButton = true;
+        StateHasChanged();
+    }
 
     protected override void OnInitialized()
     {

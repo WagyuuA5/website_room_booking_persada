@@ -1,560 +1,840 @@
 @page "/beranda"
 @page "/user/beranda"
+@rendermode InteractiveServer
 @using booking_room.Components.Models
 @using booking_room.Components.Shared
 @using booking_room.Services
 @inject NavigationManager Navigation
 @inject NotificationState NotificationState
-@inject booking_room.Services.LoadingStateService LoadingState
 @inject IToastService ToastService
-@inject IModalService ModalService
+@inject IJSRuntime JS
 @implements IDisposable
 
 <PageTitle>Beranda — Persada Booking Ruangan</PageTitle>
 
-@if (LoadingState.IsLoading)
-{
-    <div class="content-loading-shimmer" style="padding: 24px;">
-        <div class="skeleton-banner" style="height: 60px; border-radius: 12px; margin-bottom: 20px;"></div>
-        <div class="skeleton-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;">
-            <div class="skeleton-card" style="height: 110px; border-radius: 16px;"></div>
-            <div class="skeleton-card" style="height: 110px; border-radius: 16px;"></div>
-            <div class="skeleton-card" style="height: 110px; border-radius: 16px;"></div>
-            <div class="skeleton-card" style="height: 110px; border-radius: 16px;"></div>
-        </div>
-    </div>
-}
-else
-{
-    <div class="beranda-container content-fade-in">
-        @if (NotificationState.CurrentBannerType != NotificationState.BannerType.None)
-        {
+<div class="beranda-container">
+    @if (NotificationState.CurrentBannerType != NotificationState.BannerType.None)
+    {
+        <div style="margin-bottom: 24px;">
             <NotificationBanner BannerType="@NotificationState.CurrentBannerType"
                                 TargetTime="@NotificationState.NextBookingTime"
-                                OnDismiss="DismissReminder"
+                                OnDismiss="() => NotificationState.DismissBanner()"
                                 OnCheckIn="HandleCheckInClick" />
-        }
-
-        <div class="hero-welcome-card">
-            <div class="hero-text-content">
-                <h1 class="hero-greeting">Selamat Datang, <span>@BookingDataStore.CurrentUser.FullName</span> 👋</h1>
-                <p class="hero-subtext">Kelola reservasi ruangan kerja dan jadwal pertemuan Anda dengan mudah dan cepat.</p>
-            </div>
-            <div class="hero-quick-actions">
-                <button class="btn-hero-action primary" @onclick='() => Navigation.NavigateTo("/bookings")'>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="4" width="18" height="18" rx="2"></rect>
-                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                    </svg>
-                    <span>Pesan Ruangan</span>
-                </button>
-                <button class="btn-hero-action secondary" @onclick='() => Navigation.NavigateTo("/status")'>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                        <line x1="16" y1="13" x2="8" y2="13"></line>
-                        <line x1="16" y1="17" x2="8" y2="17"></line>
-                        <polyline points="10 9 9 9 8 9"></polyline>
-                    </svg>
-                    <span>Status Saya</span>
-                </button>
-            </div>
         </div>
+    }
 
-        <div class="summary-cards-row">
-            <!-- DASH-01: Ruangan Tersedia -->
-            <div class="summary-card" @onclick="() => _isAvailableRoomsOpen = true">
-                <div class="card-icon-wrap bg-green-light">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+    <!-- 1. Hero Banner -->
+    @if (isLoadingHero)
+    {
+        <div class="skeleton" style="height: 190px; margin-bottom: 32px;"></div>
+    }
+    else
+    {
+        <section class="hero-banner content-fade-in">
+            <div class="hero-banner-pattern"></div> <!-- pattern dekoratif -->
+            <div class="hero-banner-content">
+                <div class="hero-banner-text">
+                    <h1 class="hero-greeting">Selamat Datang, <span class="hero-name">@UserName</span> 👋</h1>
+                    <p class="hero-subtitle">@GetDynamicContextText()</p>
                 </div>
-                <div class="card-text-col">
-                    <span class="card-label">RUANGAN TERSEDIA</span>
-                    <div class="card-value-row">
-                        <span class="value-large">8</span>
-                        <span class="value-total">/ 20</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- UI-08: Menunggu Persetujuan -->
-            <div class="summary-card interactive" @onclick="() => _isPendingOpen = true">
-                <div class="card-icon-wrap bg-amber-light">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><circle cx="12" cy="14" r="3"></circle></svg>
-                </div>
-                <div class="card-text-col">
-                    <span class="card-label">MENUNGGU PERSETUJUAN</span>
-                    <span class="value-large">3</span>
-                    <span class="card-desc">Permintaan pemesanan menunggu tindakan</span>
-                </div>
-                <svg class="chevron-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-            </div>
-
-            <!-- UI-07: Tersedia Berikutnya -->
-            <div class="summary-card dark-accent" @onclick="() => _isAvailableRoomsOpen = true">
-                <div class="card-top-row">
-                    <div class="card-icon-wrap bg-green-accent">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-                    </div>
-                    <span class="pill-badge green-pill">TERSEDIA DALAM 45 MENIT</span>
-                </div>
-                <div class="card-text-col mt-2">
-                    <span class="card-label">Tersedia Berikutnya</span>
-                    <span class="value-large text-white">Delta Boardroom</span>
-                    <span class="card-desc text-gray">Kapasitas: 20</span>
-                </div>
-                <button class="btn-primary btn-sm mt-3" style="width: 100%; border-radius: 999px;">Pesan Instan</button>
-            </div>
-        </div>
-
-        <div class="dashboard-main-columns">
-            <div class="dashboard-card upcoming-card">
-                <div class="dashboard-card-header">
-                    <div>
-                        <h2 class="card-title">Jadwal Pertemuan Mendatang</h2>
-                        <p class="card-subtitle">Daftar agenda rapat dan reservasi terdekat Anda</p>
-                    </div>
-                    <button class="btn-card-more" @onclick='() => Navigation.NavigateTo("/status")'>
-                        Lihat Semua
+                <div class="hero-banner-actions">
+                    <button class="btn-primary-hero" @onclick="GoToPemesanan">
+                        <img src="/icon/Icon_book_1.svg" class="icon-sm icon-white" alt="" />
+                        <span>Pesan Ruangan</span>
+                    </button>
+                    <button class="btn-secondary-hero" @onclick="GoToStatus">
+                        <img src="/icon/Icon_status_1.svg" class="icon-sm" alt="" />
+                        <span>Status Saya</span>
                     </button>
                 </div>
+            </div>
+            <div class="hero-quick-access">
+                <span class="quick-access-label">Akses Cepat:</span>
+                @foreach (var room in FavoriteRooms.Take(3))
+                {
+                    <button class="quick-access-chip" @onclick="() => QuickBook(room.Id)" title="@room.Name">
+                        @room.Name
+                    </button>
+                }
+            </div>
+        </section>
+    }
 
-                <div class="upcoming-items-list">
-                    @foreach (var item in DashboardData.UpcomingBookings.Take(3))
+    <!-- 2. Ringkasan Statistik -->
+    @if (isLoadingSummary)
+    {
+        <div class="skeleton" style="height: 120px; margin-bottom: 32px;"></div>
+    }
+    else
+    {
+        <section class="summary-cards-grid content-fade-in">
+            <div class="stat-card stat-card--success" @onclick="GoToPemesananTersedia">
+                <div class="stat-card-icon-wrap stat-card-icon-wrap--success">
+                    <img src="/icon/icon_dshboard.svg" class="icon-md" alt="" />
+                </div>
+                <div class="stat-card-body">
+                    <span class="stat-card-label">RUANGAN TERSEDIA SEKARANG</span>
+                    <span class="stat-card-value">@AvailableRoomsCount <span class="stat-card-value-sub">/ @TotalRoomsCount</span></span>
+                </div>
+            </div>
+
+            <div class="stat-card stat-card--warning" @onclick="GoToStatusPending">
+                <div class="stat-card-icon-wrap stat-card-icon-wrap--warning">
+                    <img src="/icon/icon_alert_warning.svg" class="icon-md" alt="" />
+                </div>
+                <div class="stat-card-body">
+                    <span class="stat-card-label">MENUNGGU TINDAKAN ANDA</span>
+                    <span class="stat-card-value">@PendingActionCount</span>
+                    <span class="stat-card-desc">Permintaan pemesanan menunggu tindakan</span>
+                </div>
+            </div>
+
+            <div class="stat-card stat-card--dark" @onclick="LihatDetailRapatBerikutnya">
+                <div class="stat-card-dark-header">
+                    <img src="/icon/timer_dshbrd.svg" class="icon-sm icon-white" alt="" />
+                    <span class="stat-card-dark-badge">TERSEDIA DALAM @NextMeetingCountdown</span>
+                </div>
+                <span class="stat-card-dark-label">Rapat Berikutnya</span>
+                <span class="stat-card-dark-title">@NextMeeting.RoomName</span>
+                <button class="btn-stat-dark" @onclick:stopPropagation="true" @onclick="LihatDetailRapatBerikutnya">
+                    Lihat Detail
+                </button>
+            </div>
+        </section>
+    }
+
+    <!-- 3. Grid dua kolom: Jadwal Mendatang (kiri) + Rekomendasi Ruangan (kanan) -->
+    @if (isLoadingGrid)
+    {
+        <div class="skeleton" style="height: 290px; margin-bottom: 32px;"></div>
+    }
+    else
+    {
+        <section class="content-grid-two-col content-fade-in">
+            <div class="panel jadwal-mendatang-panel">
+                <div class="panel-header">
+                    <div>
+                        <h2 class="panel-title">Jadwal Pertemuan Mendatang</h2>
+                        <p class="panel-subtitle">Daftar agenda rapat dan reservasi terdekat Anda</p>
+                    </div>
+                    <button class="btn-panel-link" @onclick="GoToRiwayat">Lihat Semua</button>
+                </div>
+                <div class="jadwal-list">
+                    @foreach (var meeting in UpcomingMeetings.Take(3))
                     {
-                        <div class="upcoming-item-row" @onclick='() => Navigation.NavigateTo("/status")'>
-                            <div class="item-time-box">
-                                <span class="time-main">@(item.Date.Split(',').Length > 1 ? item.Date.Split(',')[1].Trim() : item.Date)</span>
-                                <span class="time-sub">@item.TimeSlot</span>
+                        <div class="jadwal-item">
+                            <div class="jadwal-item-date">
+                                <span class="jadwal-item-date-day">@meeting.Date.ToString("dd")</span>
+                                <span class="jadwal-item-date-month">@meeting.Date.ToString("MMM")</span>
                             </div>
-                            <div class="item-divider-line"></div>
-                            <div class="item-content-box">
-                                <h4 class="item-title">@item.RoomName</h4>
-                                <p class="item-purpose">@item.Location</p>
-                                <div class="item-tags-row">
-                                    <span class="tag-chip">@item.Category</span>
-                                    <span class="tag-chip status-ok">Terkonfirmasi</span>
+                            <div class="jadwal-item-info">
+                                <span class="jadwal-item-title">@meeting.Title</span>
+                                <span class="jadwal-item-meta">@meeting.RoomName (Lantai @meeting.Floor) • @meeting.StartTime.ToString("HH:mm")-@meeting.EndTime.ToString("HH:mm")</span>
+                                <div class="jadwal-item-tags">
+                                    <span class="tag-badge tag-badge--@meeting.CategorySlug">@meeting.CategoryLabel</span>
+                                    <span class="tag-badge tag-badge--success">Terkonfirmasi</span>
                                 </div>
                             </div>
-                            <div class="item-arrow">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            <div class="jadwal-item-actions">
+                                <button class="btn-icon-round" @onclick="() => ToggleQuickMenu(meeting.Id)">
+                                    <img src="/icon/Icon_setting_1.svg" class="icon-sm" alt="Opsi" />
+                                </button>
+                                @if (ActiveQuickMenuId == meeting.Id)
+                                {
+                                    <div class="quick-menu-dropdown">
+                                        <button @onclick="() => LihatDetail(meeting.Id)">Lihat Detail</button>
+                                        <button @onclick="() => JadwalkanUlang(meeting.Id)">Jadwalkan Ulang</button>
+                                        <button class="quick-menu-danger" @onclick="() => BatalkanRapat(meeting.Id)">Batalkan</button>
+                                    </div>
+                                }
                             </div>
                         </div>
                     }
                 </div>
             </div>
 
-            <div class="dashboard-card available-rooms-card">
-                <div class="dashboard-card-header">
+            <div class="panel rekomendasi-ruangan-panel">
+                <div class="panel-header">
                     <div>
-                        <h2 class="card-title">Rekomendasi Ruangan</h2>
-                        <p class="card-subtitle">Ruangan siap pakai dengan fasilitas terbaik</p>
+                        <h2 class="panel-title">Rekomendasi Untuk Anda</h2>
+                        <p class="panel-subtitle">Berdasarkan riwayat pemesanan Anda</p>
                     </div>
-                    <button class="btn-card-more" @onclick='() => Navigation.NavigateTo("/bookings")'>
-                        Katalog Ruangan
-                    </button>
                 </div>
-
-                <div class="rooms-preview-grid">
-                    @foreach (var r in DashboardData.AllRooms.Where(x => x.Status == "Tersedia").Take(3))
+                <div class="rekomendasi-list">
+                    @foreach (var room in RecommendedRooms.Take(3))
                     {
-                        <div class="room-preview-item" @onclick='() => Navigation.NavigateTo("/pemesanan?tab=ruangan")'>
-                            <div class="room-preview-avatar">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                        <div class="rekomendasi-item">
+                            <img src="@room.PhotoUrl" class="rekomendasi-item-photo" alt="@room.Name" />
+                            <div class="rekomendasi-item-info">
+                                <span class="rekomendasi-item-name">@room.Name</span>
+                                <span class="rekomendasi-item-meta">
+                                    <img src="/icon/icon_group.svg" class="icon-xs" alt="" /> @room.Capacity Orang
+                                </span>
                             </div>
-                            <div class="room-preview-info">
-                                <h4 class="room-preview-name">@r.RoomName</h4>
-                                <span class="room-preview-meta">@r.Floor • Kapasitas @r.Capacity Orang</span>
-                            </div>
-                            <button class="btn-room-quick-book" @onclick='() => Navigation.NavigateTo("/pemesanan?tab=ruangan")' @onclick:stopPropagation="true">
-                                Pesan
-                            </button>
+                            <button class="btn-pesan-small" @onclick="() => PesanCepat(room.Id)">Pesan</button>
                         </div>
                     }
                 </div>
+                <a class="panel-link-text" @onclick="GoToPemesanan">Lihat semua ruangan →</a>
             </div>
-        </div>
+        </section>
+    }
 
-        <!-- CASE 14: Grafik Tren Pemesanan Ruangan Saya di Beranda -->
-        <UserTrendChart />
-    </div>
-}
+    <!-- 4. Aktivitas Terkini -->
+    @if (isLoadingActivities)
+    {
+        <div class="skeleton" style="height: 200px; margin-bottom: 32px;"></div>
+    }
+    else
+    {
+        <section class="panel aktivitas-terkini-panel content-fade-in">
+            <h2 class="panel-title">Aktivitas Terkini</h2>
+            <div class="aktivitas-timeline">
+                @foreach (var activity in RecentActivities.Take(5))
+                {
+                    <div class="aktivitas-item">
+                        <div class="aktivitas-item-icon aktivitas-item-icon--@activity.TypeSlug">
+                            <img src="@GetActivityIcon(activity.Type)" class="icon-sm" alt="" />
+                        </div>
+                        <div class="aktivitas-item-body">
+                            <span class="aktivitas-item-text">@activity.Description</span>
+                            <span class="aktivitas-item-time">@activity.TimeAgo</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        </section>
+    }
+
+    <!-- 5. Tren Pemesanan (grafik) -->
+    @if (isLoadingChart)
+    {
+        <div class="skeleton" style="height: 260px; margin-bottom: 32px;"></div>
+    }
+    else
+    {
+        <section class="tren-pemesanan-panel content-fade-in" style="padding: 0; background: transparent; box-shadow: none;">
+            <UserTrendChart />
+        </section>
+    }
+
+    <!-- 6. Floating Action Button -->
+    <button class="fab-pesan-instan" @onclick="GoToPemesanan" title="Pesan Ruangan Instan">
+        <img src="/icon/icon_plus.svg" class="icon-sm icon-white" alt="" />
+        <span>Pesan Instan</span>
+    </button>
+</div>
+
+<!-- Reusable Detail Modal using AppModal -->
+<AppModal Visible="@_isMeetingDetailOpen"
+          VisibleChanged="@(v => _isMeetingDetailOpen = v)"
+          Title="Detail Pertemuan"
+          Subtitle="Informasi jadwal rapat dan reservasi ruangan"
+          Size="md"
+          ShowHeader="true"
+          ShowFooter="true">
+    <IconContent>
+        <img src="/icon/timer_dshbrd.svg" class="icon-sm" style="filter: invert(36%) sepia(85%) saturate(1450%) hue-rotate(203deg);" alt="" />
+    </IconContent>
+    <BodyContent>
+        @if (_selectedMeeting != null)
+        {
+            <div style="display: flex; flex-direction: column; gap: 16px; padding: 4px 0;">
+                <div style="background: var(--color-bg-page); border: 1px solid var(--color-border); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 6px;">
+                    <div style="font-size: 1.15rem; font-weight: 700; color: var(--color-text-primary);">@_selectedMeeting.Title</div>
+                    <div style="font-size: 0.875rem; color: var(--color-text-secondary); display: flex; align-items: center; gap: 6px;">
+                        <img src="/icon/icon_room.svg" class="icon-xs" alt="" />
+                        <span>@_selectedMeeting.RoomName (Lantai @_selectedMeeting.Floor)</span>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div style="background: var(--color-bg-page); border: 1px solid var(--color-border); border-radius: 12px; padding: 12px;">
+                        <span style="font-size: 11px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase;">Tanggal</span>
+                        <div style="font-size: 14px; font-weight: 600; color: var(--color-text-primary); margin-top: 2px;">@_selectedMeeting.Date.ToString("dd MMMM yyyy")</div>
+                    </div>
+                    <div style="background: var(--color-bg-page); border: 1px solid var(--color-border); border-radius: 12px; padding: 12px;">
+                        <span style="font-size: 11px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase;">Waktu</span>
+                        <div style="font-size: 14px; font-weight: 600; color: var(--color-text-primary); margin-top: 2px;">@_selectedMeeting.StartTime.ToString("HH:mm") - @_selectedMeeting.EndTime.ToString("HH:mm") WIB</div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <span class="tag-badge tag-badge--@_selectedMeeting.CategorySlug">@_selectedMeeting.CategoryLabel</span>
+                    <span class="tag-badge tag-badge--success">Terkonfirmasi</span>
+                </div>
+            </div>
+        }
+    </BodyContent>
+    <FooterContent>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; width: 100%;">
+            <button type="button" class="btn btn-secondary" style="border-radius: 999px; padding: 8px 18px; font-weight: 600; font-size: 13px;" @onclick="() => _isMeetingDetailOpen = false">Tutup</button>
+            <button type="button" class="btn btn-primary" style="background: #F5A623; border: none; border-radius: 999px; padding: 8px 18px; font-weight: 700; font-size: 13px; color: #1A1A1A;" @onclick="NavigateToStatusFromModal">Lihat di Status</button>
+        </div>
+    </FooterContent>
+</AppModal>
+
+<!-- Reusable Cancel Confirmation Modal using AppModal -->
+<AppModal Visible="@_isCancelModalOpen"
+          VisibleChanged="@(v => _isCancelModalOpen = v)"
+          Title="Batalkan Rapat"
+          Subtitle="Konfirmasi pembatalan reservasi ruangan"
+          Size="sm"
+          ShowHeader="true"
+          ShowFooter="true">
+    <IconContent>
+        <img src="/icon/icon_alert_danger.svg" class="icon-sm" alt="" />
+    </IconContent>
+    <BodyContent>
+        <p style="font-size: 14px; color: var(--color-text-secondary); margin: 0; line-height: 1.5;">
+            Apakah Anda yakin ingin membatalkan jadwal rapat <strong>@_selectedMeeting?.Title</strong> di <strong>@_selectedMeeting?.RoomName</strong>?
+        </p>
+    </BodyContent>
+    <FooterContent>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; width: 100%;">
+            <button type="button" class="btn btn-secondary" style="border-radius: 999px; padding: 8px 18px; font-weight: 600; font-size: 13px;" @onclick="() => _isCancelModalOpen = false">Kembali</button>
+            <button type="button" class="btn btn-danger" style="background: #DC2626; border: none; border-radius: 999px; padding: 8px 18px; font-weight: 700; font-size: 13px; color: #FFFFFF;" @onclick="ConfirmCancelMeeting">Ya, Batalkan</button>
+        </div>
+    </FooterContent>
+</AppModal>
 
 <style>
     .beranda-container {
         max-width: 1400px;
         margin: 0 auto;
-        padding: 24px;
+        padding: 24px 32px;
         display: flex;
         flex-direction: column;
-        gap: 24px;
+    }
+    @@media (max-width: 768px) {
+        .beranda-container {
+            padding: 16px;
+        }
     }
 
-    .hero-welcome-card {
-        background: linear-gradient(135deg, #0F1F3D 0%, #1F5D9A 100%);
-        border-radius: 20px;
-        padding: 32px;
-        color: #FFFFFF;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: 0 10px 25px -5px rgba(15, 31, 61, 0.2);
-    }
-    .hero-greeting {
-        font-size: 1.75rem;
-        font-weight: 800;
-        margin: 0 0 8px 0;
-        letter-spacing: -0.02em;
-    }
-    .hero-greeting span { color: #F59E0B; }
-    .hero-subtext {
-        font-size: 0.9375rem;
-        color: rgba(255, 255, 255, 0.8);
-        margin: 0;
-        max-width: 540px;
-        line-height: 1.5;
-    }
-    .hero-quick-actions { display: flex; gap: 12px; }
-    .btn-hero-action {
-        height: 44px;
-        padding: 0 20px;
-        border-radius: 999px;
-        font-size: 0.875rem;
-        font-weight: 700;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-    .btn-hero-action.primary {
-        background: #F59E0B;
-        color: #0F1F3D;
-        border: none;
-    }
-    .btn-hero-action.primary:hover {
-        background: #D97706;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
-    }
-    .btn-hero-action.secondary {
-        background: rgba(255, 255, 255, 0.15);
-        color: #FFFFFF;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        backdrop-filter: blur(8px);
-    }
-    .btn-hero-action.secondary:hover {
-        background: rgba(255, 255, 255, 0.25);
-        transform: translateY(-1px);
+    .beranda-container > section {
+        margin-bottom: 32px;
     }
 
-    .stats-overview-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 16px;
+    /* 1. HERO BANNER */
+    .hero-banner {
+        position: relative;
+        background: linear-gradient(135deg, var(--color-dark-bg) 0%, var(--color-dark-bg-secondary) 100%);
+        border-radius: var(--radius-xl);
+        padding: 32px 36px;
+        overflow: hidden;
+        color: white;
     }
-    .stat-card {
-        background: var(--surface-card, #FFFFFF);
-        border: 1.5px solid var(--color-brand-gray-border, #E5E7EB);
-        border-radius: 16px;
-        padding: 20px;
-        display: flex;
-        gap: 16px;
-        align-items: center;
-        box-shadow: 0 2px 10px rgba(15, 31, 61, 0.03);
+    .hero-banner-pattern {
+        position: absolute;
+        top: 0; right: 0;
+        width: 320px; height: 100%;
+        background-image: radial-gradient(circle, rgba(245, 166, 35, 0.08) 1.5px, transparent 1.5px);
+        background-size: 20px 20px;
+        opacity: 0.6;
+        pointer-events: none;
     }
-    body.dark-mode .stat-card {
-        background: #1C1C1E;
-        border-color: rgba(255, 255, 255, 0.1);
-    }
-    .stat-icon-wrap {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-    .stat-icon-wrap.navy { background: #EEF2FF; color: #1F5D9A; }
-    .stat-icon-wrap.gold { background: #FEF3C7; color: #D97706; }
-    .stat-icon-wrap.green { background: #DCFCE7; color: #16A34A; }
-    .stat-icon-wrap.purple { background: #F3E8FF; color: #9333EA; }
-    body.dark-mode .stat-icon-wrap.navy { background: rgba(31, 93, 154, 0.25); color: #93C5FD; }
-    body.dark-mode .stat-icon-wrap.gold { background: rgba(245, 158, 11, 0.25); color: #FCD34D; }
-    body.dark-mode .stat-icon-wrap.green { background: rgba(22, 163, 74, 0.25); color: #86EFAC; }
-    body.dark-mode .stat-icon-wrap.purple { background: rgba(147, 51, 234, 0.25); color: #D8B4FE; }
-
-    .stat-label {
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: var(--persada-text-secondary, #6B7280);
-        display: block;
-        margin-bottom: 2px;
-    }
-    .stat-value {
-        font-size: 1.5rem;
-        font-weight: 800;
-        color: var(--persada-navy-900, #0F1F3D);
-        margin: 0 0 2px 0;
-    }
-    body.dark-mode .stat-value { color: #F8FAFC; }
-    .stat-hint {
-        font-size: 0.6875rem;
-        font-weight: 600;
-        color: #6B7280;
-    }
-    .stat-hint.positive { color: #16A34A; }
-    body.dark-mode .stat-hint.positive { color: #4ADE80; }
-
-    .dashboard-main-columns {
-        display: grid;
-        grid-template-columns: 1.2fr 0.8fr;
-        gap: 24px;
-    }
-    .dashboard-card {
-        background: var(--surface-card, #FFFFFF);
-        border: 1.5px solid var(--color-brand-gray-border, #E5E7EB);
-        border-radius: 20px;
-        padding: 24px;
-        display: flex;
-        flex-direction: column;
-        box-shadow: 0 4px 16px rgba(15, 31, 61, 0.04);
-    }
-    body.dark-mode .dashboard-card {
-        background: #1C1C1E;
-        border-color: rgba(255, 255, 255, 0.1);
-    }
-    .dashboard-card-header {
+    .hero-banner-content {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 20px;
+        position: relative;
+        z-index: 1;
     }
-    .card-title {
-        font-size: 1.125rem;
-        font-weight: 800;
-        color: var(--persada-navy-900, #0F1F3D);
-        margin: 0 0 4px 0;
-    }
-    body.dark-mode .card-title { color: #F8FAFC; }
-    .card-subtitle {
-        font-size: 0.8125rem;
-        color: var(--persada-text-secondary, #6B7280);
-        margin: 0;
-    }
-    .btn-card-more {
-        background: transparent;
-        border: 1px solid #E2E8F0;
-        padding: 6px 14px;
-        border-radius: 999px;
-        font-size: 0.75rem;
+    .hero-greeting {
+        font-size: 26px;
         font-weight: 700;
-        color: #1F5D9A;
-        cursor: pointer;
-        transition: all 0.15s ease;
+        margin: 0 0 8px 0;
     }
-    .btn-card-more:hover {
-        background: #EFF6FF;
-        border-color: #BFDBFE;
+    .hero-name { color: var(--color-primary); }
+    .hero-subtitle {
+        font-size: 14px;
+        color: rgba(255,255,255,0.75);
+        margin: 0;
+        max-width: 480px;
     }
-    body.dark-mode .btn-card-more {
-        border-color: rgba(255, 255, 255, 0.15);
-        color: #60A5FA;
-    }
-
-    .upcoming-items-list {
+    .hero-banner-actions { display: flex; gap: 12px; }
+    .btn-primary-hero {
+        background: linear-gradient(135deg, var(--color-primary) 0%, #FFC24D 100%);
+        color: #1A1A1A;
+        border: none;
+        border-radius: 999px;
+        padding: 12px 22px;
+        font-weight: 600;
+        font-size: 14px;
         display: flex;
-        flex-direction: column;
-        gap: 12px;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(245, 166, 35, 0.35);
+        transition: transform var(--transition-fast), box-shadow var(--transition-fast);
     }
-    .upcoming-item-row {
+    .btn-primary-hero:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(245, 166, 35, 0.45); }
+    .btn-secondary-hero {
+        background: rgba(255,255,255,0.1);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 999px;
+        padding: 12px 22px;
+        font-weight: 600;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: background var(--transition-fast);
+    }
+    .btn-secondary-hero:hover { background: rgba(255,255,255,0.18); }
+    .hero-quick-access {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(255,255,255,0.12);
+        position: relative; z-index: 1;
+        flex-wrap: wrap;
+    }
+    .quick-access-label { font-size: 12px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; }
+    .quick-access-chip {
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.15);
+        color: white;
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: background var(--transition-fast);
+    }
+    .quick-access-chip:hover { background: rgba(245, 166, 35, 0.25); border-color: var(--color-primary); }
+
+    /* 2. RINGKASAN STATISTIK */
+    .summary-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+    @@media (max-width: 900px) {
+        .summary-cards-grid { grid-template-columns: 1fr; }
+    }
+    .stat-card {
+        background: var(--color-bg-card);
+        border-radius: var(--radius-lg);
+        padding: 20px 22px;
+        box-shadow: var(--shadow-card);
+        cursor: pointer;
+        transition: transform var(--transition-fast), box-shadow var(--transition-fast);
         display: flex;
         align-items: center;
         gap: 16px;
-        padding: 14px 16px;
-        background: #F8FAFC;
-        border: 1px solid #E2E8F0;
-        border-radius: 14px;
-        cursor: pointer;
-        transition: all 0.2s ease;
+        border-left: 4px solid transparent;
+        border-top: 1px solid var(--color-border);
+        border-right: 1px solid var(--color-border);
+        border-bottom: 1px solid var(--color-border);
     }
-    .upcoming-item-row:hover {
-        border-color: #CBD5E1;
-        background: #FFFFFF;
-        box-shadow: 0 4px 12px rgba(15, 31, 61, 0.05);
-        transform: translateY(-1px);
-    }
-    body.dark-mode .upcoming-item-row {
-        background: rgba(15, 23, 42, 0.5);
-        border-color: rgba(255, 255, 255, 0.08);
-    }
-    .item-time-box {
-        display: flex;
-        flex-direction: column;
-        min-width: 100px;
-    }
-    .time-main {
-        font-size: 0.8125rem;
-        font-weight: 700;
-        color: var(--persada-navy-900, #0F1F3D);
-    }
-    body.dark-mode .time-main { color: #F8FAFC; }
-    .time-sub {
-        font-size: 0.6875rem;
-        color: #6B7280;
-    }
-    .item-divider-line {
-        width: 1px;
-        height: 36px;
-        background: #E2E8F0;
-    }
-    body.dark-mode .item-divider-line { background: rgba(255, 255, 255, 0.1); }
-    .item-content-box {
-        flex: 1;
-        min-width: 0;
-    }
-    .item-title {
-        font-size: 0.875rem;
-        font-weight: 700;
-        color: var(--persada-navy-900, #0F1F3D);
-        margin: 0 0 2px 0;
-    }
-    body.dark-mode .item-title { color: #F8FAFC; }
-    .item-purpose {
-        font-size: 0.75rem;
-        color: #6B7280;
-        margin: 0 0 6px 0;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    .item-tags-row { display: flex; gap: 6px; }
-    .tag-chip {
-        font-size: 0.625rem;
-        font-weight: 600;
-        padding: 2px 8px;
-        border-radius: 999px;
-        background: #FFFFFF;
-        border: 1px solid #E2E8F0;
-        color: #475569;
-    }
-    body.dark-mode .tag-chip {
-        background: #1E293B;
-        border-color: rgba(255, 255, 255, 0.1);
-        color: #CBD5E1;
-    }
-    .tag-chip.status-ok {
-        background: #DCFCE7;
-        border-color: #BBF7D0;
-        color: #15803D;
-    }
-    body.dark-mode .tag-chip.status-ok {
-        background: rgba(22, 163, 74, 0.2);
-        border-color: rgba(74, 222, 128, 0.3);
-        color: #4ADE80;
-    }
-    .item-arrow { color: #9CA3AF; }
-
-    .rooms-preview-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-    .room-preview-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px;
-        background: #F8FAFC;
-        border: 1px solid #E2E8F0;
-        border-radius: 12px;
-        cursor: pointer;
-        transition: all 0.15s ease;
-    }
-    body.dark-mode .room-preview-item {
-        background: rgba(15, 23, 42, 0.5);
-        border-color: rgba(255, 255, 255, 0.08);
-    }
-    .room-preview-item:hover {
-        background: #EFF6FF;
-        border-color: #BFDBFE;
-    }
-    .room-preview-avatar {
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
-        background: #FFFFFF;
-        border: 1px solid #E2E8F0;
-        color: #1F5D9A;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-card-hover); }
+    .stat-card--success { border-left-color: var(--color-success); }
+    .stat-card--warning { border-left-color: var(--color-primary); }
+    .stat-card-icon-wrap {
+        width: 44px; height: 44px;
+        border-radius: var(--radius-md);
+        display: flex; align-items: center; justify-content: center;
         flex-shrink: 0;
     }
-    body.dark-mode .room-preview-avatar {
-        background: #1E293B;
-        border-color: rgba(255, 255, 255, 0.1);
-        color: #93C5FD;
+    .stat-card-icon-wrap--success { background: var(--color-success-light); }
+    .stat-card-icon-wrap--warning { background: var(--color-primary-light); }
+    .stat-card-icon-wrap--success img { filter: none; }
+    .stat-card-body { display: flex; flex-direction: column; gap: 2px; }
+    .stat-card-label {
+        font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+        color: var(--color-text-muted); text-transform: uppercase;
     }
-    .room-preview-info {
-        flex: 1;
-        min-width: 0;
-    }
-    .room-preview-name {
-        font-size: 0.875rem;
-        font-weight: 700;
-        color: var(--persada-navy-900, #0F1F3D);
-        margin: 0;
-    }
-    body.dark-mode .room-preview-name { color: #F8FAFC; }
-    .room-preview-meta {
-        font-size: 0.72rem;
-        color: #6B7280;
-    }
-    .btn-room-quick-book {
-        padding: 6px 14px;
-        border-radius: 999px;
-        background: #1F5D9A;
-        color: #FFFFFF;
-        font-size: 0.75rem;
-        font-weight: 700;
-        border: none;
-        cursor: pointer;
-        transition: background 0.15s ease;
-    }
-    .btn-room-quick-book:hover { background: #164879; }
+    .stat-card-value { font-size: 28px; font-weight: 700; color: var(--color-text-primary); }
+    .stat-card-value-sub { font-size: 16px; font-weight: 500; color: var(--color-text-muted); }
+    .stat-card-desc { font-size: 12px; color: var(--color-text-secondary); }
 
-    @@media (max-width: 1024px) {
-        .stats-overview-grid { grid-template-columns: repeat(2, 1fr); }
-        .dashboard-main-columns { grid-template-columns: 1fr; }
-        .hero-welcome-card { flex-direction: column; gap: 20px; align-items: flex-start; }
+    .stat-card--dark {
+        background: linear-gradient(135deg, var(--color-dark-bg) 0%, var(--color-dark-bg-secondary) 100%);
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        color: white;
+        border: none;
     }
-    @@media (max-width: 640px) {
-        .stats-overview-grid { grid-template-columns: 1fr; }
+    .stat-card-dark-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .stat-card-dark-badge {
+        background: rgba(22, 163, 74, 0.2);
+        color: #4ADE80;
+        font-size: 11px; font-weight: 600;
+        padding: 3px 10px;
+        border-radius: 999px;
+    }
+    .stat-card-dark-label { font-size: 12px; color: rgba(255,255,255,0.6); }
+    .stat-card-dark-title { font-size: 20px; font-weight: 700; margin-bottom: 10px; color: #FFFFFF; }
+    .btn-stat-dark {
+        background: var(--color-info);
+        color: white; border: none; border-radius: 999px;
+        padding: 10px 18px; font-size: 13px; font-weight: 600;
+        cursor: pointer; width: 100%;
+        transition: background var(--transition-fast);
+    }
+    .btn-stat-dark:hover { background: #1D4ED8; }
+
+    /* 3. CONTENT GRID TWO COLUMN */
+    .content-grid-two-col {
+        display: grid;
+        grid-template-columns: 1.6fr 1fr;
+        gap: 20px;
+        align-items: start;
+    }
+    @@media (max-width: 1024px) {
+        .content-grid-two-col { grid-template-columns: 1fr; }
+    }
+    .panel {
+        background: var(--color-bg-card);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: 24px;
+        box-shadow: var(--shadow-card);
+    }
+    .panel-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; }
+    .panel-title { font-size: 17px; font-weight: 700; color: var(--color-text-primary); margin: 0 0 4px 0; }
+    .panel-subtitle { font-size: 13px; color: var(--color-text-secondary); margin: 0; }
+    .btn-panel-link {
+        background: var(--color-bg-page); border: 1px solid var(--color-border);
+        border-radius: 999px; padding: 8px 16px; font-size: 13px; font-weight: 600;
+        color: var(--color-text-primary); cursor: pointer;
+        transition: background var(--transition-fast);
+    }
+    .btn-panel-link:hover { background: #E2E8F0; }
+    .jadwal-item {
+        display: flex; gap: 14px; align-items: flex-start;
+        padding: 14px; border-radius: var(--radius-md);
+        background: var(--color-bg-page);
+        margin-bottom: 10px;
+        position: relative;
+    }
+    .jadwal-item-date {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        background: white; border-radius: var(--radius-sm);
+        width: 48px; height: 48px; flex-shrink: 0;
+        border: 1px solid var(--color-border);
+    }
+    .jadwal-item-date-day { font-size: 16px; font-weight: 700; color: var(--color-text-primary); }
+    .jadwal-item-date-month { font-size: 10px; text-transform: uppercase; color: var(--color-text-muted); }
+    .jadwal-item-info { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+    .jadwal-item-title { font-size: 14px; font-weight: 600; color: var(--color-text-primary); }
+    .jadwal-item-meta { font-size: 12px; color: var(--color-text-secondary); }
+    .jadwal-item-tags { display: flex; gap: 6px; margin-top: 4px; }
+    .tag-badge { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
+    .tag-badge--ruangrapat { background: #F1F5F9; color: #475569; }
+    .tag-badge--areakolaborasi { background: var(--color-info-light); color: var(--color-info); }
+    .tag-badge--fasilitaskhusus { background: var(--color-purple-light); color: var(--color-purple); }
+    .tag-badge--success { background: var(--color-success-light); color: var(--color-success); }
+    .btn-icon-round {
+        width: 32px; height: 32px; border-radius: 50%;
+        background: white; border: 1px solid var(--color-border);
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+    }
+    .btn-icon-round img {
+        filter: brightness(0) opacity(0.6);
+    }
+    body.dark-mode .btn-icon-round img {
+        filter: brightness(0) invert(1) opacity(0.8);
+    }
+    .quick-menu-dropdown {
+        position: absolute; right: 0; top: 40px; z-index: 10;
+        background: white; border-radius: var(--radius-md);
+        box-shadow: var(--shadow-card-hover); border: 1px solid var(--color-border);
+        display: flex; flex-direction: column; min-width: 160px; overflow: hidden;
+    }
+    .quick-menu-dropdown button {
+        background: none; border: none; text-align: left; padding: 10px 14px;
+        font-size: 13px; cursor: pointer; color: var(--color-text-primary);
+    }
+    .quick-menu-dropdown button:hover { background: var(--color-bg-page); }
+    .quick-menu-danger { color: var(--color-danger) !important; }
+
+    .rekomendasi-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--color-border); }
+    .rekomendasi-item:last-child { border-bottom: none; }
+    .rekomendasi-item-photo { width: 56px; height: 56px; border-radius: var(--radius-sm); object-fit: cover; }
+    .rekomendasi-item-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+    .rekomendasi-item-name { font-size: 13px; font-weight: 600; color: var(--color-text-primary); }
+    .rekomendasi-item-meta { font-size: 12px; color: var(--color-text-secondary); display: flex; align-items: center; gap: 4px; }
+    .btn-pesan-small {
+        background: var(--color-primary); color: #1A1A1A; border: none;
+        border-radius: 999px; padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer;
+        transition: background var(--transition-fast);
+    }
+    .btn-pesan-small:hover { background: var(--color-primary-dark); }
+    .panel-link-text { display: block; text-align: center; margin-top: 12px; font-size: 13px; color: var(--color-primary); font-weight: 600; cursor: pointer; }
+    .panel-link-text:hover { text-decoration: underline; }
+
+    /* 4. AKTIVITAS TERKINI */
+    .aktivitas-item { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid rgba(226, 232, 240, 0.6); }
+    .aktivitas-item:last-child { border-bottom: none; }
+    .aktivitas-item-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .aktivitas-item-icon--approved { background: var(--color-success-light); }
+    .aktivitas-item-icon--rejected { background: var(--color-danger-light); }
+    .aktivitas-item-icon--invite { background: var(--color-info-light); }
+    .aktivitas-item-body { display: flex; flex-direction: column; gap: 2px; }
+    .aktivitas-item-text { font-size: 13px; color: var(--color-text-primary); }
+    .aktivitas-item-time { font-size: 11px; color: var(--color-text-muted); }
+
+    /* 6. FLOATING ACTION BUTTON */
+    .fab-pesan-instan {
+        position: fixed;
+        bottom: 32px;
+        right: 32px;
+        background: linear-gradient(135deg, var(--color-primary) 0%, #FFC24D 100%);
+        color: #1A1A1A;
+        border: none;
+        border-radius: 999px;
+        padding: 14px 24px;
+        font-size: 14px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 6px 20px rgba(245, 166, 35, 0.4);
+        cursor: pointer;
+        z-index: 99;
+        transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    }
+    .fab-pesan-instan:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 8px 25px rgba(245, 166, 35, 0.5);
+    }
+
+    /* Dark Mode Adjustments */
+    body.dark-mode .panel {
+        background: var(--color-dark-bg-secondary);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    body.dark-mode .stat-card {
+        background: var(--color-dark-bg-secondary);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    body.dark-mode .panel-title,
+    body.dark-mode .stat-card-value,
+    body.dark-mode .jadwal-item-title,
+    body.dark-mode .rekomendasi-item-name,
+    body.dark-mode .aktivitas-item-text,
+    body.dark-mode .jadwal-item-date-day {
+        color: #F8FAFC;
+    }
+    body.dark-mode .jadwal-item {
+        background: rgba(15, 23, 42, 0.6);
+    }
+    body.dark-mode .jadwal-item-date {
+        background: var(--color-dark-bg);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    body.dark-mode .btn-panel-link {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.15);
+        color: #F8FAFC;
+    }
+    body.dark-mode .btn-icon-round {
+        background: var(--color-dark-bg);
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+    body.dark-mode .quick-menu-dropdown {
+        background: var(--color-dark-bg-secondary);
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+    body.dark-mode .quick-menu-dropdown button {
+        color: #F8FAFC;
+    }
+    body.dark-mode .quick-menu-dropdown button:hover {
+        background: rgba(255, 255, 255, 0.08);
+    }
+    body.dark-mode .aktivitas-item {
+        border-bottom-color: rgba(255, 255, 255, 0.08);
     }
 </style>
 
-<!-- UI-09 Modal Tersedia -->
-<AvailableRoomsModal Visible="_isAvailableRoomsOpen" VisibleChanged="v => _isAvailableRoomsOpen = v" />
-<!-- UI-10 Modal Menunggu Persetujuan -->
-<ScheduleDetailModal Visible="_isScheduleDetailOpen" VisibleChanged="v => _isScheduleDetailOpen = v" />
-<CheckInSuccessModal Visible="_isCheckInSuccessOpen" VisibleChanged="v => _isCheckInSuccessOpen = v" />
-<PendingApprovalsModal Visible="_isPendingOpen" VisibleChanged="v => _isPendingOpen = v" />
-
-
 @code {
-    private bool _isAvailableRoomsOpen;
-    private bool _isPendingOpen;
+    public record UserMeeting(string Id, string Title, string RoomName, string Floor, DateTime Date, DateTime StartTime, DateTime EndTime, string CategorySlug, string CategoryLabel);
+    public record FavoriteRoom(string Id, string Name);
+    public record RecommendedRoom(string Id, string Name, int Capacity, string PhotoUrl);
+    public record ActivityItem(string Type, string TypeSlug, string Description, string TimeAgo);
+
+    private string UserName => string.IsNullOrEmpty(BookingDataStore.CurrentUser.FullName) ? "Wahyu Ravi" : BookingDataStore.CurrentUser.FullName;
+    
+    private List<FavoriteRoom> FavoriteRooms = new()
+    {
+        new("1", "Executive Boardroom A"),
+        new("5", "Conference Hall"),
+        new("4", "Focus Room Alpha")
+    };
+
+    private List<UserMeeting> UserMeetings = new();
+    private List<UserMeeting> UpcomingMeetings = new();
+    private List<RecommendedRoom> RecommendedRooms = new();
+    private List<ActivityItem> RecentActivities = new();
+
+    private int AvailableRoomsCount = 8;
+    private int TotalRoomsCount = 20;
+    private int PendingActionCount = 3;
+    private string NextMeetingCountdown = "45 MENIT";
+    private UserMeeting NextMeeting = new("1", "Rapat Strategi Q4", "Executive Boardroom A", "42", DateTime.Today, DateTime.Today.AddHours(10), DateTime.Today.AddHours(12), "ruangrapat", "Ruang Rapat");
+
+    private string? ActiveQuickMenuId = null;
+    private bool _isMeetingDetailOpen = false;
+    private bool _isCancelModalOpen = false;
+    private UserMeeting? _selectedMeeting = null;
+
+    // Independent skeleton loading flags
+    private bool isLoadingHero = true;
+    private bool isLoadingSummary = true;
+    private bool isLoadingGrid = true;
+    private bool isLoadingActivities = true;
+    private bool isLoadingChart = true;
 
     private bool _disposed;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         DashboardData.CurrentUserRole = "User";
         NotificationState.OnChange += SafeStateHasChanged;
-        LoadingState.OnChange += SafeStateHasChanged;
+
+        // Initialize mock user meetings
+        var today = DateTime.Today;
+        UserMeetings = new List<UserMeeting>
+        {
+            new("1", "Rapat Evaluasi Eksekutif Q4", "Executive Boardroom A", "42", today, today.AddHours(10), today.AddHours(12), "ruangrapat", "Ruang Rapat"),
+            new("2", "Workshop Orientasi Tim Baru", "Training Room B", "2", today.AddDays(1), today.AddDays(1).AddHours(13), today.AddDays(1).AddHours(16), "fasilitaskhusus", "Fasilitas Khusus"),
+            new("3", "Review Desain Sprint Mobile UX", "Huddle Space C", "1", today.AddDays(2), today.AddDays(2).AddHours(14), today.AddDays(2).AddHours(15).AddMinutes(30), "areakolaborasi", "Area Kolaborasi")
+        };
+
+        UpcomingMeetings = UserMeetings.ToList();
+        NextMeeting = UserMeetings[0];
+
+        RecommendedRooms = new List<RecommendedRoom>
+        {
+            new("4", "Focus Room Alpha", 4, "/images/poto 1.jpg"),
+            new("6", "Innovation Lab", 15, "/images/poto 2.jpg"),
+            new("1", "Executive Boardroom A", 15, "/images/poto 3.png")
+        };
+
+        RecentActivities = new List<ActivityItem>
+        {
+            new("approved", "approved", "Reservasi Executive Boardroom A telah disetujui oleh General Affairs", "5 menit lalu"),
+            new("invite", "invite", "Ahmad Fauzi mengundang Anda ke sesi Workshop Cloud di Training Room B", "35 menit lalu"),
+            new("rejected", "rejected", "Permintaan reservasi Huddle Space C dialihkan karena perbaikan fasilitas", "2 jam lalu"),
+            new("approved", "approved", "Check-in berhasil untuk rapat di Focus Room Alpha", "1 hari lalu"),
+            new("invite", "invite", "Sarah Jenkins membagikan dokumen agenda untuk Town Hall Q4", "2 hari lalu")
+        };
+
+        // Standard skeleton transition delay per V46/V50 requirement
+        var minDelay = Task.Delay(500);
+        var dataTask = LoadDashboardDataAsync();
+        await Task.WhenAll(minDelay, dataTask);
+
+        isLoadingHero = false;
+        isLoadingSummary = false;
+        isLoadingGrid = false;
+        isLoadingActivities = false;
+        isLoadingChart = false;
+    }
+
+    private async Task LoadDashboardDataAsync()
+    {
+        await Task.Delay(100);
+    }
+
+    private string GetDynamicContextText()
+    {
+        var todayMeetings = UserMeetings.Where(m => m.Date == DateTime.Today).ToList();
+        if (todayMeetings.Count == 0)
+            return "Tidak ada jadwal rapat untuk hari ini. Waktu yang tepat untuk merencanakan pertemuan berikutnya.";
+        if (todayMeetings.Count == 1)
+            return $"Anda memiliki 1 rapat hari ini, dimulai pukul {todayMeetings[0].StartTime:HH:mm}.";
+        return $"Anda memiliki {todayMeetings.Count} rapat hari ini, dimulai pukul {todayMeetings.Min(m => m.StartTime):HH:mm}.";
+    }
+
+    private string GetActivityIcon(string type) => type.ToLowerInvariant() switch
+    {
+        "approved" => "/icon/icon_alert_success.svg",
+        "rejected" => "/icon/icon_alert_danger.svg",
+        "invite" => "/icon/icon_group.svg",
+        _ => "/icon/icon_alert_info.svg"
+    };
+
+    private void GoToPemesanan() => Navigation.NavigateTo("/pemesanan");
+    private void GoToStatus() => Navigation.NavigateTo("/status");
+    private void GoToPemesananTersedia() => Navigation.NavigateTo("/pemesanan");
+    private void GoToStatusPending() => Navigation.NavigateTo("/status?filter=pending");
+    private void GoToRiwayat() => Navigation.NavigateTo("/history");
+    private void NavigateToStatusFromModal()
+    {
+        _isMeetingDetailOpen = false;
+        Navigation.NavigateTo("/status");
+    }
+
+    private void QuickBook(string roomId)
+    {
+        Navigation.NavigateTo("/pemesanan?tab=ruangan");
+    }
+
+    private void PesanCepat(string roomId)
+    {
+        Navigation.NavigateTo("/pemesanan?tab=ruangan");
+    }
+
+    private void LihatDetailRapatBerikutnya()
+    {
+        _selectedMeeting = NextMeeting;
+        _isMeetingDetailOpen = true;
+    }
+
+    private void ToggleQuickMenu(string meetingId)
+    {
+        if (ActiveQuickMenuId == meetingId)
+            ActiveQuickMenuId = null;
+        else
+            ActiveQuickMenuId = meetingId;
+    }
+
+    private void LihatDetail(string meetingId)
+    {
+        ActiveQuickMenuId = null;
+        _selectedMeeting = UpcomingMeetings.FirstOrDefault(m => m.Id == meetingId) ?? NextMeeting;
+        _isMeetingDetailOpen = true;
+    }
+
+    private void JadwalkanUlang(string meetingId)
+    {
+        ActiveQuickMenuId = null;
+        Navigation.NavigateTo($"/status?bookingId={meetingId}");
+    }
+
+    private void BatalkanRapat(string meetingId)
+    {
+        ActiveQuickMenuId = null;
+        _selectedMeeting = UpcomingMeetings.FirstOrDefault(m => m.Id == meetingId) ?? NextMeeting;
+        _isCancelModalOpen = true;
+    }
+
+    private void ConfirmCancelMeeting()
+    {
+        if (_selectedMeeting != null)
+        {
+            UpcomingMeetings.RemoveAll(m => m.Id == _selectedMeeting.Id);
+            UserMeetings.RemoveAll(m => m.Id == _selectedMeeting.Id);
+            ToastService.Success("Reservasi Dibatalkan", $"Reservasi rapat di {_selectedMeeting.RoomName} telah dibatalkan.");
+        }
+        _isCancelModalOpen = false;
+    }
+
+    private void HandleCheckInClick()
+    {
+        ToastService.Success("Check-in Berhasil", "Kehadiran Anda di ruangan telah terkonfirmasi.");
+        NotificationState.DismissBanner();
     }
 
     private void SafeStateHasChanged()
@@ -572,31 +852,5 @@ else
     {
         _disposed = true;
         NotificationState.OnChange -= SafeStateHasChanged;
-        LoadingState.OnChange -= SafeStateHasChanged;
     }
-
-    private void DismissReminder()
-    {
-        NotificationState.DismissBanner();
-    }
-
-            private bool _isCheckInSuccessOpen;
-    private bool _isScheduleDetailOpen;
-
-        private async Task HandleCheckInClick()
-    {
-        var parameters = new Dictionary<string, object>
-        {
-            { "RoomName", "Executive Boardroom A" },
-            { "TimeSlot", "09:00 - 11:00" },
-            { "Location", "Lantai 3, Sayap Utara" },
-            { "Capacity", 15 },
-            { "OnConfirm", EventCallback.Factory.Create(this, async () => {
-                await ModalService.CloseTopAsync(ModalResult.Ok());
-                _isCheckInSuccessOpen = true;
-                StateHasChanged();
-            })}
-        };
-        await ModalService.ShowAsync<CheckInCountdownCard>(parameters);
-    }
-}
+}

@@ -66,8 +66,7 @@
                              Name="Pemesanan"
                              SeriesType="SeriesType.Area"
                              XValue="e => e.Month"
-                             YAggregate="e => e.Sum(e => e.Value)"
-                             OrderBy="e => e.X" />
+                             YAggregate="e => e.Sum(e => e.Value)" />
         </ApexChart>
     </div>
 </div>
@@ -237,7 +236,7 @@
 </style>
 
 @code {
-    private record TrendPoint(int X, string Month, int Value);
+    private record TrendPoint(int Year, int MonthNumber, string Month, int Value);
     private List<TrendPoint> _chartPoints = new();
     private ApexChartOptions<TrendPoint> options = new();
     private string _selectedPeriod = "6m";
@@ -253,34 +252,39 @@
     private void SetPeriod(string period)
     {
         _selectedPeriod = period;
+        List<TrendPoint> rawData;
         if (period == "1y")
         {
-            _chartPoints = new List<TrendPoint>
+            rawData = new List<TrendPoint>
             {
-                new TrendPoint(1, "Jan", 6),
-                new TrendPoint(2, "Feb", 5),
-                new TrendPoint(3, "Mar", 9),
-                new TrendPoint(4, "Apr", 7),
-                new TrendPoint(5, "Mei", 4),
-                new TrendPoint(6, "Jun", 8),
-                new TrendPoint(7, "Jul", 5),
-                new TrendPoint(8, "Ags", 12),
-                new TrendPoint(9, "Sep", 9),
-                new TrendPoint(10, "Okt", 15)
+                new TrendPoint(2026, 1, "Jan", 6),
+                new TrendPoint(2026, 2, "Feb", 5),
+                new TrendPoint(2026, 3, "Mar", 9),
+                new TrendPoint(2026, 4, "Apr", 7),
+                new TrendPoint(2026, 5, "Mei", 4),
+                new TrendPoint(2026, 6, "Jun", 8),
+                new TrendPoint(2026, 7, "Jul", 5),
+                new TrendPoint(2026, 8, "Ags", 12),
+                new TrendPoint(2026, 9, "Sep", 9),
+                new TrendPoint(2026, 10, "Okt", 15)
             };
         }
         else
         {
-            _chartPoints = new List<TrendPoint>
+            rawData = new List<TrendPoint>
             {
-                new TrendPoint(1, "Mei", 4),
-                new TrendPoint(2, "Jun", 8),
-                new TrendPoint(3, "Jul", 5),
-                new TrendPoint(4, "Ags", 12),
-                new TrendPoint(5, "Sep", 9),
-                new TrendPoint(6, "Okt", 15)
+                new TrendPoint(2026, 5, "Mei", 4),
+                new TrendPoint(2026, 6, "Jun", 8),
+                new TrendPoint(2026, 7, "Jul", 5),
+                new TrendPoint(2026, 8, "Ags", 12),
+                new TrendPoint(2026, 9, "Sep", 9),
+                new TrendPoint(2026, 10, "Okt", 15)
             };
         }
+
+        // KRONOLOGIS PALING LAMA KE PALING BARU (kiri ke kanan)
+        _chartPoints = rawData.OrderBy(x => x.Year).ThenBy(x => x.MonthNumber).ToList();
+        Console.WriteLine($"[UserTrendChart] Points (Chronological): {string.Join(" -> ", _chartPoints.Select(p => $"{p.Month}:{p.Value}"))}");
 
         options = new ApexChartOptions<TrendPoint>
         {

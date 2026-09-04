@@ -36,6 +36,16 @@ if (!app.Environment.IsDevelopment())
 
 app.UseAntiforgery();
 
+var iconsDir = Path.Combine(app.Environment.WebRootPath, "icons");
+if (Directory.Exists(iconsDir))
+{
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(iconsDir),
+        RequestPath = "/icon"
+    });
+}
+
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
