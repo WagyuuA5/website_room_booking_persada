@@ -126,46 +126,6 @@
                                         <span class="meeting-card-zoom__author-role">@authorRole</span>
                                     </div>
                                 </div>
-                                
-                                <div class="quick-menu-wrapper @(ActiveQuickMenuId == meeting.Id ? "is-active" : "")" @onclick:stopPropagation="true">
-                                    <button type="button" class="btn-icon-round" @onclick="() => ToggleQuickMenu(meeting.Id)" aria-label="Opsi lainnya" title="Opsi lainnya">
-                                        <img src="/icon/icon_more_vertical.svg" class="icon-sm" alt="Opsi" />
-                                    </button>
-                                    @if (ActiveQuickMenuId == meeting.Id)
-                                    {
-                                        <div class="quick-menu-backdrop" @onclick="() => ActiveQuickMenuId = null" @onclick:stopPropagation="true"></div>
-                                        <div class="quick-menu-dropdown">
-                                            <button type="button" @onclick="() => OpenMeetingDetailFromRow(meeting)">
-                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                                                <span>Lihat Detail</span>
-                                            </button>
-                                            @if (isOwner)
-                                            {
-                                                <button type="button" @onclick="() => OpenRescheduleModal(meeting)">
-                                                    <img src="/icon/Icon_clndr.svg" style="width: 15px; height: 15px;" alt="" />
-                                                    <span>Jadwalkan Ulang</span>
-                                                </button>
-                                                <div class="divider"></div>
-                                                <button type="button" class="danger" @onclick="() => BatalkanRapat(meeting.Id)">
-                                                    <img src="/icon/icon_close.svg" style="width: 15px; height: 15px; filter: invert(32%) sepia(89%) saturate(4850%) hue-rotate(345deg);" alt="" />
-                                                    <span>Batalkan</span>
-                                                </button>
-                                            }
-                                            else
-                                            {
-                                                <button type="button" @onclick="() => TerimaUndangan(meeting)">
-                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                                                    <span style="color: #059669; font-weight: 600;">Terima Undangan</span>
-                                                </button>
-                                                <div class="divider"></div>
-                                                <button type="button" class="danger" @onclick="() => TolakUndangan(meeting)">
-                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                                                    <span>Tolak Undangan</span>
-                                                </button>
-                                            }
-                                        </div>
-                                    }
-                                </div>
                             </div>
 
                             <!-- Body: Title & Meta Info -->
@@ -406,30 +366,34 @@
     <FooterContent>
         @if (_selectedMeeting != null)
         {
-            @if (!_selectedMeeting.IsUserOwner)
+            @if (_selectedMeeting.Status == "Menunggu Persetujuan Admin")
             {
-                <!-- Varian 1 Footer: Undangan (Tolak, Tutup, Terima) -->
-                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                    <AppButton Text="Tolak Undangan" Variant="danger" OnClick="() => TolakUndangan(_selectedMeeting)" />
-                    <div style="display: flex; gap: 10px;">
+                @if (_selectedMeeting.IsUserOwner)
+                {
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 10px;">
+                        <div style="display: flex; gap: 8px;">
+                            <AppButton Text="Ubah Jadwal" Variant="primary" OnClick="() => OpenRescheduleModal(_selectedMeeting)" />
+                            <AppButton Text="Batalkan" Variant="danger" OnClick="() => BatalkanRapat(_selectedMeeting.Id)" />
+                        </div>
                         <AppButton Text="Tutup" Variant="secondary" OnClick="() => _isMeetingDetailOpen = false" />
-                        <AppButton Text="Terima Undangan" Variant="primary" OnClick="() => TerimaUndangan(_selectedMeeting)" />
                     </div>
-                </div>
+                }
+                else
+                {
+                    <!-- Varian 1 Footer: Undangan (Tolak, Tutup, Terima) -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <AppButton Text="Tolak Undangan" Variant="danger" OnClick="() => TolakUndangan(_selectedMeeting)" />
+                        <div style="display: flex; gap: 10px;">
+                            <AppButton Text="Tutup" Variant="secondary" OnClick="() => _isMeetingDetailOpen = false" />
+                            <AppButton Text="Terima Undangan" Variant="primary" OnClick="() => TerimaUndangan(_selectedMeeting)" />
+                        </div>
+                    </div>
+                }
             }
             else
             {
-                <!-- Varian 2 Footer: Pemilik Reservasi (Ubah Jadwal, Batalkan Permintaan, Lihat Jadwal Ruangan, Tutup) -->
-                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 8px;">
-                    <div style="display: flex; gap: 8px;">
-                        <AppButton Text="Ubah Jadwal" Variant="primary" OnClick="() => OpenRescheduleModal(_selectedMeeting)" />
-                        <AppButton Text="Batalkan" Variant="danger" OnClick="() => BatalkanRapat(_selectedMeeting.Id)" />
-                    </div>
-                    <div style="display: flex; gap: 8px;">
-                        <AppButton Text="Lihat Jadwal Ruangan" Variant="secondary" OnClick="GoToKalenderRuangan" />
-                        <AppButton Text="Tutup" Variant="ghost" OnClick="() => _isMeetingDetailOpen = false" />
-                    </div>
-                </div>
+                <!-- Status Terkonfirmasi atau lainnya: HANYA SATU TOMBOL TUTUP PENUH -->
+                <button type="button" class="btn-secondary-full" @onclick="() => _isMeetingDetailOpen = false">Tutup</button>
             }
         }
     </FooterContent>
@@ -464,13 +428,13 @@
                     </div>
                 </div>
 
-                <!-- Input Tanggal Baru -->
+                <!-- Input Tanggal Baru (Popup DatePickerModal) -->
                 <div class="form-group-reschedule">
                     <label class="form-label-reschedule">Pilih Tanggal Baru</label>
-                    <input type="date" class="form-control-reschedule"
-                           value="@_rescheduleDate.ToString("yyyy-MM-dd")"
-                           min="@DateTime.Today.ToString("yyyy-MM-dd")"
-                           @onchange="@(e => { if (DateTime.TryParse(e.Value?.ToString(), out var d)) { _rescheduleDate = d; OnRescheduleTimeOrDateChanged(); } })" />
+                    <div class="form-control-reschedule clickable-field" @onclick="() => _isRescheduleDatePickerOpen = true" role="button" tabindex="0" title="Klik untuk pilih tanggal" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+                        <span>@_rescheduleDate.ToString("dd MMMM yyyy", _culture)</span>
+                        <img src="/icon/Icon_clndr.svg" style="width: 18px; height: 18px; opacity: 0.7;" alt="" />
+                    </div>
                 </div>
 
                 <!-- Input Waktu & Durasi -->
@@ -518,6 +482,11 @@
         </div>
     </FooterContent>
 </AppModal>
+
+<DatePickerModal @bind-Visible="_isRescheduleDatePickerOpen"
+                 SelectedDate="@_rescheduleDate"
+                 OriginalDate="@_rescheduleMeeting?.Date"
+                 OnDateSelected="@HandleRescheduleDateSelected" />
 
 <!-- CASE 4: Modal Detail Pengundang (Struktur & Tipografi Baru) -->
 <AppModal Visible="@_isContactModalOpen"
@@ -1092,72 +1061,21 @@
     body.dark-mode .btn-icon-round img {
         filter: brightness(0) invert(1) opacity(0.85);
     }
-    .quick-menu-wrapper {
-        position: relative;
-        display: inline-block;
-        z-index: 50;
-    }
-    .quick-menu-wrapper.is-active {
-        z-index: 10002;
-    }
-    .quick-menu-backdrop {
-        position: fixed;
-        inset: 0;
-        z-index: 10000;
-        background: transparent;
-    }
-    .quick-menu-dropdown {
-        position: absolute;
-        top: calc(100% + 6px);
-        right: 0;
-        z-index: 10001;
-        background: var(--color-bg-card, #FFFFFF);
-        border: 1px solid var(--color-border, #E2E8F0);
-        border-radius: 12px;
-        box-shadow: 0 14px 28px -4px rgba(0, 0, 0, 0.22), 0 8px 12px -4px rgba(0, 0, 0, 0.12);
-        padding: 6px;
-        min-width: 175px;
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        animation: quickMenuFadeIn 0.15s ease-out;
-    }
-    @@keyframes quickMenuFadeIn {
-        from { opacity: 0; transform: translateY(-4px) scale(0.97); }
-        to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    .quick-menu-dropdown button {
-        display: flex;
-        align-items: center;
-        gap: 8px;
+    .btn-secondary-full {
         width: 100%;
-        padding: 8px 12px;
-        border: none;
-        background: transparent;
-        border-radius: 8px;
-        font-size: 12.5px;
-        font-weight: 500;
+        background: var(--color-bg-page, #F8FAFC);
+        border: 1px solid var(--color-border, #E2E8F0);
+        border-radius: 999px;
+        padding: 12px 20px;
+        font-weight: 600;
+        font-size: 14px;
         color: var(--color-text-primary, #1E293B);
         cursor: pointer;
-        text-align: left;
-        transition: background 0.15s ease, color 0.15s ease;
+        transition: background 150ms ease-in-out, border-color 150ms ease-in-out;
+        text-align: center;
     }
-    .quick-menu-dropdown button:hover {
-        background: var(--color-bg-page, #F1F5F9);
-    }
-    .quick-menu-dropdown button.danger {
-        color: #DC2626;
-    }
-    .quick-menu-dropdown button.danger:hover {
-        background: #FEF2F2;
-    }
-    body.dark-mode .quick-menu-dropdown button.danger:hover {
-        background: rgba(239, 68, 68, 0.15);
-    }
-    .quick-menu-dropdown .divider {
-        height: 1px;
-        background: var(--color-border, #E2E8F0);
-        margin: 4px 0;
+    .btn-secondary-full:hover {
+        background: #EEF1F5;
     }
     .menu-icon {
         width: 14px;
@@ -1621,18 +1539,13 @@
         background: var(--color-dark-bg);
         border-color: rgba(255, 255, 255, 0.15);
     }
-    body.dark-mode .quick-menu-dropdown {
-        background: var(--color-dark-bg-secondary, #1E293B);
+    body.dark-mode .btn-secondary-full {
+        background: var(--color-dark-bg, #0F172A);
         border-color: rgba(255, 255, 255, 0.15);
-    }
-    body.dark-mode .quick-menu-dropdown button {
         color: #F8FAFC;
     }
-    body.dark-mode .quick-menu-dropdown button:hover {
+    body.dark-mode .btn-secondary-full:hover {
         background: rgba(255, 255, 255, 0.08);
-    }
-    body.dark-mode .quick-menu-dropdown .divider {
-        background: rgba(255, 255, 255, 0.1);
     }
     body.dark-mode .pengundang-info-grid {
         background: var(--color-dark-bg, #0F172A);
@@ -1758,7 +1671,8 @@
     private string NextMeetingCountdown = "45 MENIT";
     private UserMeeting NextMeeting = new("1", "Rapat Strategi Q4", "Executive Boardroom A", "42", DateTime.Today, DateTime.Today.AddHours(10), DateTime.Today.AddHours(12), "ruangrapat", "Ruang Rapat", "REQ-8942-BR", "General Affairs", "Terkonfirmasi", true, "Wahyu Ravi", "Project Lead", 10, 15, "Proyektor 4K, Smart TV, Video Conference, Whiteboard", "Evaluasi pencapaian KPI kuartal berjalan dan alokasi sumber daya kuartal mendatang.");
 
-    private string? ActiveQuickMenuId = null;
+    private bool _isRescheduleDatePickerOpen = false;
+    private System.Globalization.CultureInfo _culture = new("id-ID");
     private bool _isMeetingDetailOpen = false;
     private bool _isCancelModalOpen = false;
     private bool _isContactModalOpen = false;
@@ -1939,21 +1853,6 @@
         _isContactModalOpen = false;
     }
 
-    private void ToggleQuickMenu(string meetingId)
-    {
-        if (ActiveQuickMenuId == meetingId)
-            ActiveQuickMenuId = null;
-        else
-            ActiveQuickMenuId = meetingId;
-    }
-
-    private void LihatDetail(string meetingId)
-    {
-        ActiveQuickMenuId = null;
-        _selectedMeeting = UpcomingMeetings.FirstOrDefault(m => m.Id == meetingId) ?? NextMeeting;
-        _isMeetingDetailOpen = true;
-    }
-
     private async Task ScrollJadwalLeft()
     {
         try
@@ -1972,16 +1871,17 @@
         catch { }
     }
 
-    private void JadwalkanUlang(string meetingId)
+    private void HandleRescheduleDateSelected(DateTime? date)
     {
-        ActiveQuickMenuId = null;
-        var meeting = UpcomingMeetings.FirstOrDefault(m => m.Id == meetingId) ?? NextMeeting;
-        OpenRescheduleModal(meeting);
+        if (date.HasValue)
+        {
+            _rescheduleDate = date.Value;
+            OnRescheduleTimeOrDateChanged();
+        }
     }
 
     private void OpenRescheduleModal(UserMeeting meeting)
     {
-        ActiveQuickMenuId = null;
         _isMeetingDetailOpen = false;
         _rescheduleMeeting = meeting;
         _rescheduleDate = meeting.Date;
@@ -2061,28 +1961,19 @@
     private void TerimaUndangan(UserMeeting meeting)
     {
         _isMeetingDetailOpen = false;
-        ActiveQuickMenuId = null;
         ToastService.Success("Undangan Diterima", $"Anda telah mengonfirmasi kehadiran untuk rapat '{meeting.Title}'.");
     }
 
     private void TolakUndangan(UserMeeting meeting)
     {
         _isMeetingDetailOpen = false;
-        ActiveQuickMenuId = null;
         UpcomingMeetings.RemoveAll(m => m.Id == meeting.Id);
         ToastService.Warning("Undangan Ditolak", $"Anda telah menolak undangan rapat '{meeting.Title}'.");
         SafeStateHasChanged();
     }
 
-    private void GoToKalenderRuangan()
-    {
-        _isMeetingDetailOpen = false;
-        Navigation.NavigateTo("/pemesanan?tab=kalender");
-    }
-
     private void BatalkanRapat(string meetingId)
     {
-        ActiveQuickMenuId = null;
         _selectedMeeting = UpcomingMeetings.FirstOrDefault(m => m.Id == meetingId) ?? NextMeeting;
         cancellationReason = "";
         showValidationError = false;

@@ -1,4 +1,5 @@
 @page "/history"
+@inject NavigationManager Navigation
 @using booking_room.Components.Models
 @using booking_room.Components.Shared
 
@@ -81,10 +82,21 @@
     }
     else
     {
-        <div class="empty-state">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: #9CA3AF; margin-bottom: 16px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-            <h3 style="color: #374151; margin: 0 0 8px 0;">Belum Ada Riwayat</h3>
-            <p style="color: #6B7280; margin: 0; font-size: 0.875rem;">Riwayat pemesanan ruangan Anda akan muncul di sini.</p>
+        <div class="empty-state-container">
+            <div class="empty-state-illustration">
+                <div class="empty-state-icon-bg">
+                    <img src="/icon/Icon_clndr.svg" class="icon-xl" alt="" />
+                </div>
+                <div class="empty-state-icon-bg-secondary"></div>
+            </div>
+            <h3 class="text-section-title">Belum Ada Riwayat Pemesanan</h3>
+            <p class="text-body-secondary empty-state-desc">
+                Riwayat reservasi ruangan Anda pada rentang tanggal ini akan muncul di sini setelah Anda melakukan pemesanan.
+            </p>
+            <button class="btn-primary-hero" @onclick="GoToPemesanan">
+                <img src="/icon/Icon_book_1.svg" class="icon-sm icon-white" alt="" />
+                Pesan Ruangan Sekarang
+            </button>
         </div>
     }
 </div>
@@ -247,12 +259,97 @@
         justify-content: flex-end;
         flex-shrink: 0;
     }
-    .empty-state {
-        padding: 64px 20px;
+    .empty-state-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 64px 24px;
         text-align: center;
-        background: #F9FAFB;
-        border: 2px dashed #E5E7EB;
-        border-radius: 16px;
+        max-width: 380px;
+        margin: 0 auto;
+    }
+    .empty-state-illustration {
+        position: relative;
+        width: 96px;
+        height: 96px;
+        margin-bottom: 24px;
+    }
+    .empty-state-icon-bg {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--color-primary-light, #FEF3C7) 0%, #FFF9EE 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 2;
+        box-shadow: 0 8px 24px rgba(245, 166, 35, 0.15);
+    }
+    .empty-state-icon-bg img {
+        filter: none;
+        opacity: 0.85;
+    }
+    .empty-state-icon-bg-secondary {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        border: 2px dashed rgba(245, 166, 35, 0.25);
+        z-index: 1;
+        animation: rotateSlow 20s linear infinite;
+    }
+    @@keyframes rotateSlow {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    @@media (prefers-reduced-motion: reduce) {
+        .empty-state-icon-bg-secondary { animation: none; }
+    }
+    .empty-state-desc {
+        margin: 8px 0 24px 0;
+        line-height: 1.6;
+    }
+    .btn-primary-hero {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: var(--color-primary, #F5A623);
+        color: var(--color-navy, #0F172A);
+        font-weight: 700;
+        font-size: 14px;
+        padding: 12px 24px;
+        border-radius: 999px;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(245, 166, 35, 0.35);
+        transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+    }
+    .btn-primary-hero:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(245, 166, 35, 0.45);
+        opacity: 0.95;
+    }
+    .btn-primary-hero:active {
+        transform: translateY(0);
+    }
+    .btn-primary-hero .icon-white {
+        filter: brightness(0);
+    }
+    body.dark-mode .empty-state-icon-bg {
+        background: linear-gradient(135deg, rgba(245, 166, 35, 0.2) 0%, rgba(30, 41, 59, 0.8) 100%);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+    body.dark-mode .empty-state-icon-bg-secondary {
+        border-color: rgba(245, 166, 35, 0.35);
+    }
+    body.dark-mode .btn-primary-hero {
+        background: var(--color-primary, #F5A623);
+        color: #0F172A;
     }
 
     @@media (max-width: 640px) {
@@ -356,4 +453,6 @@
     }
 
     private void OpenDetail(BookingItem item) => _selectedBooking = item;
+
+    private void GoToPemesanan() => Navigation.NavigateTo("/pemesanan");
 }

@@ -3,7 +3,7 @@
 
 @if (Visible)
 {
-    <div class="modal-overlay" @onclick="HandleClose">
+    <div class="modal-overlay" style="z-index: 1000005 !important;" @onclick="HandleClose">
         <div class="date-picker-modal" @onclick:stopPropagation="true">
 
             <div class="modal-header">
@@ -62,41 +62,34 @@
     [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
     [Parameter] public string HeaderSubtitle { get; set; } = "";
     [Parameter] public string ConfirmText { get; set; } = "Pilih Tanggal";
-    [Parameter] public bool IsRangeMode { get; set; } = false;
     [Parameter] public DateTime? SelectedDate { get; set; }
-    [Parameter] public DateTime? StartDate { get; set; }
-    [Parameter] public DateTime? EndDate { get; set; }
+    [Parameter] public DateTime? OriginalDate { get; set; }
     [Parameter] public EventCallback<DateTime?> OnDateSelected { get; set; }
-    [Parameter] public EventCallback<(DateTime? Start, DateTime? End)> OnConfirm { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
 
     private DateTime displayedMonth = DateTime.Today;
     private DateTime? selectedDate;
-    private DateTime? tentativeStart;
-    private DateTime? tentativeEnd;
     private CultureInfo _culture = new CultureInfo("id-ID");
     private bool _previousVisible = false;
 
     protected override void OnInitialized()
     {
-        InitializeDates();
+        ResetCalendarState();
     }
 
     protected override void OnParametersSet()
     {
         if (Visible && !_previousVisible)
         {
-            InitializeDates();
+            ResetCalendarState();
         }
         _previousVisible = Visible;
     }
 
-    private void InitializeDates()
+    private void ResetCalendarState()
     {
         selectedDate = SelectedDate ?? DateTime.Today;
-        tentativeStart = StartDate ?? (IsRangeMode ? new DateTime(DateTime.Today.Year, DateTime.Today.Month, 4) : selectedDate);
-        tentativeEnd = EndDate ?? (IsRangeMode ? new DateTime(DateTime.Today.Year, DateTime.Today.Month, 17) : null);
-        displayedMonth = tentativeStart ?? selectedDate ?? DateTime.Today;
+        displayedMonth = selectedDate.Value;
     }
 
     private void PrevMonth() => displayedMonth = displayedMonth.AddMonths(-1);
@@ -116,60 +109,31 @@
 
     private void OnDateClick(DateTime date)
     {
-        if (IsRangeMode)
-        {
-            if (tentativeStart == null || (tentativeStart != null && tentativeEnd != null))
-            {
-                tentativeStart = date;
-                tentativeEnd = null;
-            }
-            else if (date < tentativeStart)
-            {
-                tentativeEnd = tentativeStart;
-                tentativeStart = date;
-            }
-            else
-            {
-                tentativeEnd = date;
-            }
-        }
-        else
-        {
-            selectedDate = date;
-        }
+        selectedDate = date;
     }
 
     private string GetCellCssClass(DateTime date)
     {
         bool isOutside = date.Month != displayedMonth.Month;
-        bool isToday = date.Date == DateTime.Today;
-        
+        bool isSelected = selectedDate.HasValue && date.Date == selectedDate.Value.Date;
+        var effectiveOriginal = OriginalDate ?? SelectedDate;
+        bool isOriginal = effectiveOriginal.HasValue && date.Date == effectiveOriginal.Value.Date && !isSelected;
+        bool isToday = date.Date == DateTime.Today && !isSelected && !isOriginal;
+
         var css = "calendar-cell";
         if (isOutside) css += " calendar-cell--outside";
 
-        if (IsRangeMode)
+        if (isSelected)
         {
-            bool isStart = tentativeStart.HasValue && date.Date == tentativeStart.Value.Date;
-            bool isEnd = tentativeEnd.HasValue && date.Date == tentativeEnd.Value.Date;
-            bool isInRange = tentativeStart.HasValue && tentativeEnd.HasValue
-                && date.Date > tentativeStart.Value.Date && date.Date < tentativeEnd.Value.Date;
-
-            if (isStart) css += " calendar-cell--range-start calendar-cell--selected-solid";
-            else if (isEnd) css += " calendar-cell--range-end calendar-cell--selected-solid";
-            else if (isInRange) css += " calendar-cell--range-middle";
-            else if (isToday) css += " calendar-cell--outline-only";
+            css += " calendar-cell--selected-solid";
         }
-        else
+        else if (isOriginal)
         {
-            bool isSelected = selectedDate.HasValue && date.Date == selectedDate.Value.Date;
-            if (isSelected)
-            {
-                css += " calendar-cell--selected-solid";
-            }
-            else if (isToday)
-            {
-                css += " calendar-cell--outline-only";
-            }
+            css += " calendar-cell--outline-only";
+        }
+        else if (isToday)
+        {
+            css += " calendar-cell--outline-only";
         }
 
         return css;
@@ -186,13 +150,6 @@
     {
         Visible = false;
         await VisibleChanged.InvokeAsync(false);
-        if (IsRangeMode)
-        {
-            await OnConfirm.InvokeAsync((tentativeStart, tentativeEnd));
-        }
-        else
-        {
-            await OnDateSelected.InvokeAsync(selectedDate);
-        }
+        await OnDateSelected.InvokeAsync(selectedDate);
     }
 }

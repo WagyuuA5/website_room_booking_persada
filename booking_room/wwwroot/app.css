@@ -5765,7 +5765,7 @@ body.dark-mode .app-btn--ghost:hover:not(:disabled) {
 .modal-overlay {
     position: fixed !important;
     inset: 0 !important;
-    z-index: 1000 !important;
+    z-index: 1000005 !important;
     background: rgba(15, 23, 42, 0.45) !important;
     backdrop-filter: blur(8px) !important;
     -webkit-backdrop-filter: blur(8px) !important;
