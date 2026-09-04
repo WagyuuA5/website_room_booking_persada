@@ -100,7 +100,7 @@
                     {
                         var meeting = meetingsList[i];
                         var isLastItem = i >= meetingsList.Count - 2;
-                        <!-- Klik seluruh baris membuka popup Detail Pertemuan (Case 4) -->
+                        <!-- Klik seluruh baris membuka popup Detail Pertemuan (Case 2) -->
                         <div class="jadwal-item clickable-row" @onclick="() => OpenMeetingDetailFromRow(meeting)" role="button" tabindex="0">
                             <div class="jadwal-item-date">
                                 <span class="jadwal-item-date-day">@meeting.Date.ToString("dd")</span>
@@ -111,26 +111,26 @@
                                 <span class="jadwal-item-meta">@meeting.RoomName (Lantai @meeting.Floor) • @meeting.StartTime.ToString("HH:mm")-@meeting.EndTime.ToString("HH:mm")</span>
                                 <div class="jadwal-item-tags">
                                     <span class="tag-badge tag-badge--@meeting.CategorySlug">@meeting.CategoryLabel</span>
-                                    <span class="tag-badge tag-badge--success">Terkonfirmasi</span>
+                                    <span class="tag-badge @(meeting.Status == "Menunggu Persetujuan Admin" ? "tag-badge--warning" : "tag-badge--success")">@meeting.Status</span>
                                 </div>
                             </div>
                             <div class="jadwal-item-actions">
-                                <div class="quick-menu-wrapper">
-                                    <button type="button" class="btn-icon-round" @onclick:stopPropagation="true" @onclick="() => ToggleQuickMenu(meeting.Id)" aria-label="Opsi lainnya" title="Opsi lainnya">
+                                <div class="quick-menu-wrapper" @onclick:stopPropagation="true">
+                                    <button type="button" class="btn-icon-round" @onclick="() => ToggleQuickMenu(meeting.Id)" aria-label="Opsi lainnya" title="Opsi lainnya">
                                         <img src="/icon/icon_more_vertical.svg" class="icon-sm" alt="Opsi lainnya" />
                                     </button>
                                     @if (ActiveQuickMenuId == meeting.Id)
                                     {
-                                        <div class="quick-menu-dropdown @(isLastItem ? "open-upward" : "")" @onclick:stopPropagation="true">
-                                            <button type="button" @onclick="() => LihatDetail(meeting.Id)">
-                                                <img src="/icon/icon_check_circle.svg" style="width: 16px; height: 16px;" alt="" />
-                                                <span>Lihat Detail</span>
-                                            </button>
-                                            <button type="button" @onclick="() => JadwalkanUlang(meeting.Id)">
-                                                <img src="/icon/Icon_clndr.svg" style="width: 16px; height: 16px;" alt="" />
-                                                <span>Jadwalkan Ulang</span>
-                                            </button>
-                                            <div class="divider"></div>
+                                        <div class="quick-menu-backdrop" @onclick="() => ActiveQuickMenuId = null" @onclick:stopPropagation="true"></div>
+                                        <div class="quick-menu-dropdown @(isLastItem ? "open-upward" : "")">
+                                            @if (meeting.Status == "Menunggu Persetujuan Admin")
+                                            {
+                                                <button type="button" @onclick="() => JadwalkanUlang(meeting.Id)">
+                                                    <img src="/icon/Icon_clndr.svg" style="width: 16px; height: 16px;" alt="" />
+                                                    <span>Jadwalkan Ulang</span>
+                                                </button>
+                                                <div class="divider"></div>
+                                            }
                                             <button type="button" class="danger" @onclick="() => BatalkanRapat(meeting.Id)">
                                                 <img src="/icon/icon_close.svg" style="width: 16px; height: 16px; filter: invert(32%) sepia(89%) saturate(4850%) hue-rotate(345deg) brightness(98%) contrast(92%);" alt="" />
                                                 <span>Batalkan</span>
@@ -241,13 +241,8 @@
 
     <!-- CASE 1: Floating Action Button (FAB) Pesan Ruangan (Tombol Pesan Instan dihapus) -->
     <button class="fab-pesan-ruangan" @onclick="GoToPemesanan" title="Pesan Ruangan" aria-label="Pesan Ruangan">
-        <img src="/icon/Icon_book_1.svg" class="icon-white" style="width: 24px; height: 24px;" alt="Pesan Ruangan" />
+        <InlineSvg Src="/icons/icon_pemesanan.svg" Class="icon-white" Style="width: 24px; height: 24px; stroke: #FFFFFF; fill: none;" />
     </button>
-
-    @if (ActiveQuickMenuId != null)
-    {
-        <div class="quick-menu-backdrop" @onclick="() => ActiveQuickMenuId = null"></div>
-    }
 </div>
 
 <!-- CASE 3B: Reusable Detail Modal using AppModal (dengan info peserta, agenda, fasilitas, dan bagikan) -->
@@ -404,26 +399,47 @@
     </FooterContent>
 </AppModal>
 
-<!-- Reusable Cancel Confirmation Modal using AppModal -->
+<!-- CASE 4: Reusable Cancel Confirmation Modal with Required Reason -->
 <AppModal Visible="@_isCancelModalOpen"
           VisibleChanged="@(v => _isCancelModalOpen = v)"
-          Title="Batalkan Rapat"
-          Subtitle="Konfirmasi pembatalan reservasi ruangan"
-          Size="sm"
+          Title="Batalkan Jadwal Pertemuan"
+          Subtitle="Tindakan ini tidak dapat dibatalkan setelah dikonfirmasi"
+          Size="md"
           ShowHeader="true"
           ShowFooter="true">
     <IconContent>
-        <img src="/icon/icon_alert_danger.svg" class="icon-sm" alt="" />
+        <div class="modal-header-icon--danger" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #FEE2E2;">
+            <img src="/icon/icon_alert_danger.svg" class="icon-md" alt="" style="width: 20px; height: 20px;" />
+        </div>
     </IconContent>
     <BodyContent>
-        <p style="font-size: 14px; color: var(--color-text-secondary); margin: 0; line-height: 1.5;">
-            Apakah Anda yakin ingin membatalkan jadwal rapat <strong>@_selectedMeeting?.Title</strong> di <strong>@_selectedMeeting?.RoomName</strong>?
-        </p>
+        <div class="modal-konfirmasi-batal">
+            <div class="meeting-summary-strip">
+                <span class="text-card-title" style="font-weight: 700; font-size: 15px; color: var(--color-text-primary);">@_selectedMeeting?.Title</span>
+                <span class="text-body-secondary" style="font-size: 13px; color: var(--color-text-secondary);">@_selectedMeeting?.RoomName • @_selectedMeeting?.Date.ToString("dd MMM yyyy") • @_selectedMeeting?.StartTime.ToString("HH:mm")-@_selectedMeeting?.EndTime.ToString("HH:mm")</span>
+            </div>
+
+            <div class="form-group" style="margin-top: 14px;">
+                <label class="text-label-uppercase" style="display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--color-text-secondary); margin-bottom: 8px;">
+                    Alasan Pembatalan <span class="text-danger" style="color: #DC2626;">*</span>
+                </label>
+                <textarea class="textarea-modern" placeholder="Contoh: Rapat dijadwalkan ulang oleh pihak terkait, agenda tidak lagi diperlukan, dst."
+                          @bind="cancellationReason" @bind:event="oninput" rows="3"></textarea>
+                @if (showValidationError)
+                {
+                    <span class="text-danger text-caption" style="display: block; margin-top: 6px; font-size: 12px; color: #DC2626; font-weight: 500;">
+                        Alasan pembatalan wajib diisi sebelum melanjutkan.
+                    </span>
+                }
+            </div>
+        </div>
     </BodyContent>
     <FooterContent>
-        <div style="display: flex; justify-content: flex-end; gap: 10px; width: 100%;">
-            <button type="button" class="btn btn-secondary" style="border-radius: 999px; padding: 8px 18px; font-weight: 600; font-size: 13px;" @onclick="() => _isCancelModalOpen = false">Kembali</button>
-            <button type="button" class="btn btn-danger" style="background: #DC2626; border: none; border-radius: 999px; padding: 8px 18px; font-weight: 700; font-size: 13px; color: #FFFFFF;" @onclick="ConfirmCancelMeeting">Ya, Batalkan</button>
+        <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; width: 100%;">
+            <button type="button" class="btn-secondary" style="border-radius: 999px; padding: 10px 20px; font-weight: 600; font-size: 14px; border: 1px solid var(--color-border); background: transparent; cursor: pointer;" @onclick="CloseCancelModal">Kembali</button>
+            <button type="button" class="btn-danger" @onclick="ConfirmCancellation" disabled="@string.IsNullOrWhiteSpace(cancellationReason)">
+                Ya, Batalkan Jadwal
+            </button>
         </div>
     </FooterContent>
 </AppModal>
@@ -636,6 +652,7 @@
     .quick-menu-wrapper {
         position: relative;
         display: inline-block;
+        z-index: 101;
     }
     .quick-menu-backdrop {
         position: fixed;
@@ -1060,10 +1077,74 @@
     body.dark-mode .attendee-avatar-circle {
         border-color: var(--color-dark-bg);
     }
+
+    /* CASE 4: Modal Konfirmasi Batal Styles */
+    .modal-header-icon--danger {
+        background: var(--color-danger-light, #FEE2E2);
+    }
+    .meeting-summary-strip {
+        background: var(--color-bg-page, #F8FAFC);
+        border-radius: 12px;
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-bottom: 16px;
+        border: 1px solid var(--color-border, #E2E8F0);
+    }
+    body.dark-mode .meeting-summary-strip {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    .textarea-modern {
+        width: 100%;
+        border: 1px solid var(--color-border, #CBD5E1);
+        border-radius: 12px;
+        padding: 12px 14px;
+        font-family: var(--font-family-base, inherit);
+        font-size: 14px;
+        resize: vertical;
+        transition: border-color 150ms ease-in-out, box-shadow 150ms ease-in-out;
+        background: var(--color-bg-card, #FFFFFF);
+        color: var(--color-text-primary, #0F172A);
+        box-sizing: border-box;
+    }
+    body.dark-mode .textarea-modern {
+        background: #1E293B;
+        border-color: #334155;
+        color: #F8FAFC;
+    }
+    .textarea-modern:focus {
+        outline: none;
+        border-color: var(--color-primary, #F5A623);
+        box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.15);
+    }
+    .btn-danger {
+        background: var(--color-danger, #DC2626);
+        color: white;
+        border: none;
+        border-radius: 999px;
+        padding: 10px 20px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background 150ms ease-in-out;
+    }
+    .btn-danger:hover {
+        background: #B91C1C;
+    }
+    .btn-danger:disabled {
+        background: #FCA5A5;
+        cursor: not-allowed;
+    }
+    body.dark-mode .btn-danger:disabled {
+        background: #7F1D1D;
+        color: #9CA3AF;
+    }
 </style>
 
 @code {
-    public record UserMeeting(string Id, string Title, string RoomName, string Floor, DateTime Date, DateTime StartTime, DateTime EndTime, string CategorySlug, string CategoryLabel, string BookingId = "REQ-8942-BR", string ApprovedBy = "General Affairs");
+    public record UserMeeting(string Id, string Title, string RoomName, string Floor, DateTime Date, DateTime StartTime, DateTime EndTime, string CategorySlug, string CategoryLabel, string BookingId = "REQ-8942-BR", string ApprovedBy = "General Affairs", string Status = "Terkonfirmasi");
     public record RecommendedRoom(string Id, string Name, int Capacity, string PhotoUrl, string ReasonType, string ReasonLabel);
     public record ActivityItem(string Type, string TypeSlug, string Description, string TimeAgo, string? PersonName = null, string? PersonTitle = null, string? PersonEmail = null, string? AvatarBg = null);
 
@@ -1078,7 +1159,7 @@
     private int TotalRoomsCount = 20;
     private int PendingActionCount = 3;
     private string NextMeetingCountdown = "45 MENIT";
-    private UserMeeting NextMeeting = new("1", "Rapat Strategi Q4", "Executive Boardroom A", "42", DateTime.Today, DateTime.Today.AddHours(10), DateTime.Today.AddHours(12), "ruangrapat", "Ruang Rapat", "REQ-8942-BR", "General Affairs");
+    private UserMeeting NextMeeting = new("1", "Rapat Strategi Q4", "Executive Boardroom A", "42", DateTime.Today, DateTime.Today.AddHours(10), DateTime.Today.AddHours(12), "ruangrapat", "Ruang Rapat", "REQ-8942-BR", "General Affairs", "Terkonfirmasi");
 
     private string? ActiveQuickMenuId = null;
     private bool _isMeetingDetailOpen = false;
@@ -1086,6 +1167,8 @@
     private bool _isContactModalOpen = false;
     private UserMeeting? _selectedMeeting = null;
     private ActivityItem? _selectedContact = null;
+    private string cancellationReason = "";
+    private bool showValidationError = false;
 
     private string _jadwalFilter = "semua";
 
@@ -1113,9 +1196,9 @@
         var today = DateTime.Today;
         UserMeetings = new List<UserMeeting>
         {
-            new("1", "Rapat Evaluasi Eksekutif Q4", "Executive Boardroom A", "42", today, today.AddHours(10), today.AddHours(12), "ruangrapat", "Ruang Rapat", "REQ-8942-BR", "General Affairs"),
-            new("2", "Workshop Orientasi Tim Baru", "Training Room B", "2", today.AddDays(1), today.AddDays(1).AddHours(13), today.AddDays(1).AddHours(16), "fasilitaskhusus", "Fasilitas Khusus", "REQ-7731-MR", "General Affairs"),
-            new("3", "Review Desain Sprint Mobile UX", "Huddle Space C", "1", today.AddDays(2), today.AddDays(2).AddHours(14), today.AddDays(2).AddHours(15).AddMinutes(30), "areakolaborasi", "Area Kolaborasi", "REQ-6650-HS", "Budi Santoso")
+            new("1", "Rapat Evaluasi Eksekutif Q4", "Executive Boardroom A", "42", today, today.AddHours(10), today.AddHours(12), "ruangrapat", "Ruang Rapat", "REQ-8942-BR", "General Affairs", "Terkonfirmasi"),
+            new("2", "Workshop Orientasi Tim Baru", "Training Room B", "2", today.AddDays(1), today.AddDays(1).AddHours(13), today.AddDays(1).AddHours(16), "fasilitaskhusus", "Fasilitas Khusus", "REQ-7731-MR", "General Affairs", "Menunggu Persetujuan Admin"),
+            new("3", "Review Desain Sprint Mobile UX", "Huddle Space C", "1", today.AddDays(2), today.AddDays(2).AddHours(14), today.AddDays(2).AddHours(15).AddMinutes(30), "areakolaborasi", "Area Kolaborasi", "REQ-6650-HS", "Budi Santoso", "Terkonfirmasi")
         };
 
         UpcomingMeetings = UserMeetings.ToList();
@@ -1253,18 +1336,35 @@
     {
         ActiveQuickMenuId = null;
         _selectedMeeting = UpcomingMeetings.FirstOrDefault(m => m.Id == meetingId) ?? NextMeeting;
+        cancellationReason = "";
+        showValidationError = false;
         _isCancelModalOpen = true;
     }
 
-    private void ConfirmCancelMeeting()
+    private void CloseCancelModal()
     {
+        _isCancelModalOpen = false;
+        cancellationReason = "";
+        showValidationError = false;
+    }
+
+    private void ConfirmCancellation()
+    {
+        if (string.IsNullOrWhiteSpace(cancellationReason))
+        {
+            showValidationError = true;
+            return;
+        }
+
         if (_selectedMeeting != null)
         {
             UpcomingMeetings.RemoveAll(m => m.Id == _selectedMeeting.Id);
             UserMeetings.RemoveAll(m => m.Id == _selectedMeeting.Id);
-            ToastService.Success("Reservasi Dibatalkan", $"Reservasi rapat di {_selectedMeeting.RoomName} telah dibatalkan.");
+            ToastService.Success("Jadwal Dibatalkan", $"Reservasi rapat di {_selectedMeeting.RoomName} telah dibatalkan.");
         }
         _isCancelModalOpen = false;
+        cancellationReason = "";
+        showValidationError = false;
     }
 
     private async Task HandleCheckInClick()

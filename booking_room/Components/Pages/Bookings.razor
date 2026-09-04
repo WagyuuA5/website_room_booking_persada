@@ -14,7 +14,10 @@
 <div class="bookings-page">
     <!-- Header Halaman -->
     <div class="bookings-page-header">
-        <h1 class="bookings-page-title">Pemesanan Ruangan</h1>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <InlineSvg Src="/icons/icon_pemesanan.svg" Class="bookings-header-icon" Style="width: 28px; height: 28px; stroke: currentColor; fill: none;" />
+            <h1 class="bookings-page-title mb-0">Pemesanan Ruangan</h1>
+        </div>
         <p class="bookings-page-subtitle">Pilih ruangan, kelola jadwal kalender, dan ajukan fasilitas tambahan di satu tempat.</p>
     </div>
 
@@ -22,7 +25,7 @@
     <div class="booking-tabs-bar">
         <div class="booking-segmented-control">
             <button type="button" class="booking-tab-btn @(_activeTab == "ruangan" ? "active" : "")" @onclick='() => SwitchTab("ruangan")'>
-                <InlineSvg Src="/icons/icon_room.svg" Class="tab-icon" Style="width: 20px; height: 20px; stroke: currentColor; fill: none;" />
+                <InlineSvg Src="/icons/icon_pemesanan.svg" Class="tab-icon" Style="width: 20px; height: 20px; stroke: currentColor; fill: none;" />
                 <span>Pemesanan Ruangan</span>
             </button>
             <button type="button" class="booking-tab-btn @(_activeTab == "kalender" ? "active" : "")" @onclick='() => SwitchTab("kalender")'>

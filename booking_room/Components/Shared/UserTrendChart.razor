@@ -58,7 +58,8 @@
     </div>
 
     <div class="user-trend-chart-box clickable-chart" @onclick="OpenDetailModal" title="Klik area grafik untuk melihat breakdown detail" style="min-height: 250px;">
-        <ApexChart @ref="_chart"
+        <ApexChart @key="_selectedPeriod"
+                   @ref="_chart"
                    TItem="TrendPoint"
                    Options="options"
                    Height="@("250")">
@@ -125,17 +126,17 @@
                                     </div>
                                 </td>
                                 <td>
-                                    @if (p.Value >= 10)
+                                    @if (p.Value > AverageBookings * 1.3)
                                     {
                                         <span class="badge-status-high">Sangat Padat</span>
                                     }
-                                    else if (p.Value >= 4)
+                                    else if (p.Value < AverageBookings * 0.5)
                                     {
-                                        <span class="badge-status-med">Optimal</span>
+                                        <span class="badge-status-low">Renggang</span>
                                     }
                                     else
                                     {
-                                        <span class="badge-status-low">Renggang</span>
+                                        <span class="badge-status-med">Optimal</span>
                                     }
                                 </td>
                             </tr>
@@ -491,9 +492,10 @@
     private async Task ChangePeriod(string period)
     {
         SetPeriod(period);
+        StateHasChanged();
         if (_chart != null)
         {
-            await _chart.UpdateSeriesAsync(true);
+            await _chart.RenderAsync();
         }
     }
 
@@ -512,10 +514,10 @@
 
     private string GetPeriodLabel() => _selectedPeriod switch
     {
-        "minggu" => "Minggu Ini (7 Hari Terakhir)",
+        "minggu" => "Minggu Ini (Per-Hari)",
         "bulan" => "Bulan Ini (Per-Minggu)",
-        "tahun" => "Tahun Ini (12 Bulan)",
-        _ => "Bulan Ini"
+        "tahun" => $"Tahun {DateTime.Now.Year} (Per-Bulan)",
+        _ => "Bulan Ini (Per-Minggu)"
     };
 
     private string GetTableColumnHeader() => _selectedPeriod switch
@@ -535,13 +537,13 @@
         {
             rawData = new List<TrendPoint>
             {
-                new TrendPoint(1, "Sen", 2),
-                new TrendPoint(2, "Sel", 4),
-                new TrendPoint(3, "Rab", 3),
-                new TrendPoint(4, "Kam", 5),
-                new TrendPoint(5, "Jum", 4),
-                new TrendPoint(6, "Sab", 1),
-                new TrendPoint(7, "Min", 0)
+                new TrendPoint(1, "Senin", 2),
+                new TrendPoint(2, "Selasa", 4),
+                new TrendPoint(3, "Rabu", 3),
+                new TrendPoint(4, "Kamis", 5),
+                new TrendPoint(5, "Jumat", 4),
+                new TrendPoint(6, "Sabtu", 1),
+                new TrendPoint(7, "Minggu", 0)
             };
         }
         else if (period == "tahun")
