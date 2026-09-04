@@ -1,0 +1,127 @@
+.animated-btn {
+    position: relative !important;
+    overflow: hidden !important;
+    border-radius: 999px !important;
+    padding: 10px 24px 10px 32px !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    cursor: pointer !important;
+    border: 1px solid var(--color-border, #E2E8F0) !important;
+    background: #FFFFFF !important;
+    min-width: 110px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-decoration: none !important;
+    line-height: 1.2 !important;
+    transition: all 300ms ease-in-out !important;
+    box-sizing: border-box !important;
+}
+
+.animated-btn:disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+}
+
+.animated-btn__circle {
+    position: absolute !important;
+    left: 16px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 8px !important;
+    height: 8px !important;
+    border-radius: 999px !important;
+    background: var(--color-primary, #F5A623) !important;
+    transition: all 300ms ease-in-out !important;
+    z-index: 0 !important;
+    pointer-events: none !important;
+}
+
+.animated-btn:hover:not(:disabled) .animated-btn__circle {
+    left: 0 !important;
+    top: 0 !important;
+    transform: none !important;
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 999px !important;
+}
+
+.animated-btn__label-default {
+    position: relative !important;
+    z-index: 1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    transition: all 300ms ease-in-out !important;
+    transform: translateX(4px) !important;
+    color: var(--color-navy, #0F172A) !important;
+    white-space: nowrap !important;
+}
+
+.animated-btn:hover:not(:disabled) .animated-btn__label-default {
+    transform: translateX(48px) !important;
+    opacity: 0 !important;
+}
+
+.animated-btn__label-hover {
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    color: #FFFFFF !important;
+    transform: translateX(48px) !important;
+    opacity: 0 !important;
+    transition: all 300ms ease-in-out !important;
+    pointer-events: none !important;
+    white-space: nowrap !important;
+    font-weight: 700 !important;
+}
+
+.animated-btn:hover:not(:disabled) .animated-btn__label-hover {
+    transform: translateX(-4px) !important;
+    opacity: 1 !important;
+}
+
+.animated-btn img.icon-xs {
+    width: 16px !important;
+    height: 16px !important;
+    display: inline-block !important;
+    object-fit: contain !important;
+    flex-shrink: 0 !important;
+}
+
+.animated-btn__arrow {
+    font-size: 16px !important;
+    line-height: 1 !important;
+    transition: transform 200ms ease !important;
+}
+
+.animated-btn:hover:not(:disabled) .animated-btn__arrow {
+    transform: translateX(3px) !important;
+}
+
+/* Varian warna */
+.animated-btn--primary .animated-btn__circle {
+    background: var(--color-primary, #F5A623) !important;
+}
+.animated-btn--secondary .animated-btn__circle {
+    background: var(--color-neutral-600, #64748B) !important;
+}
+.animated-btn--danger .animated-btn__circle {
+    background: var(--color-danger, #EF4444) !important;
+}
+.animated-btn--blue .animated-btn__circle,
+.animated-btn--info .animated-btn__circle {
+    background: #3B82F6 !important;
+}
+
+:global(body.dark-mode) .animated-btn {
+    background: #1E293B !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+}
+:global(body.dark-mode) .animated-btn__label-default {
+    color: #F8FAFC !important;
+}

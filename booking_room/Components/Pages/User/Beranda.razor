@@ -33,7 +33,7 @@
     {
         <section class="summary-cards-grid content-fade-in" style="margin-top: 24px;">
             <!-- Card 1: Ruangan Tersedia Sekarang -->
-            <div class="stat-card stat-card--success" @onclick="GoToPemesananTersedia" role="button" tabindex="0">
+            <div class="stat-card stat-card--success" @onclick="OpenAvailableRoomsModal" role="button" tabindex="0">
                 <div class="stat-card-icon-wrap stat-card-icon-wrap--success">
                     <img src="/icon/icon_dshboard.svg" class="icon-md" alt="" />
                 </div>
@@ -44,7 +44,7 @@
             </div>
 
             <!-- Card 2: Menunggu Persetujuan Admin (Case 2) -->
-            <div class="stat-card stat-card--warning" @onclick="GoToStatusPending" role="button" tabindex="0">
+            <div class="stat-card stat-card--warning" @onclick="OpenPendingApprovalModal" role="button" tabindex="0">
                 <div class="stat-card-icon-wrap stat-card-icon-wrap--warning">
                     <img src="/icon/icon_alert_warning.svg" class="icon-md" alt="" />
                 </div>
@@ -440,6 +440,98 @@
         </div>
     </FooterContent>
 </AppModal>
+
+@if (isAvailableRoomsModalOpen)
+{
+    <div class="modal-overlay" @onclick="CloseAvailableRoomsModal">
+        <div class="modal-card available-rooms-modal" @onclick:stopPropagation="true">
+
+            <div class="modal-header">
+                <div class="modal-header-icon modal-header-icon--success">
+                    <img src="/icon/icon_building.svg" class="icon-md" alt="" />
+                </div>
+                <div>
+                    <h3 class="text-section-title">Ruangan Tersedia Sekarang</h3>
+                    <p class="text-body-secondary">Pilih ruangan untuk rapat Anda saat ini.</p>
+                </div>
+            </div>
+            <hr class="modal-divider" />
+
+            @if (!availableRooms.Any(r => r.Description.Contains("VVIP", StringComparison.OrdinalIgnoreCase) || r.Name.Contains("VVIP", StringComparison.OrdinalIgnoreCase)))
+            {
+                <div class="modal-note modal-note--info">
+                    Catatan: Tidak ada ruangan VVIP yang tersedia saat ini.
+                </div>
+            }
+
+            <div class="available-rooms-grid">
+                @foreach (var room in availableRooms)
+                {
+                    <div class="available-room-card">
+                        <img src="@room.PhotoUrl" class="available-room-image" alt="@room.Name" />
+                        <div class="available-room-info">
+                            <span class="text-card-title">@room.Name</span>
+                            <p class="text-body-secondary">@room.Description</p>
+                            <span class="available-room-capacity">
+                                <img src="/icon/icon_group.svg" class="icon-xs" alt="" /> @room.Capacity Orang
+                            </span>
+                            <div class="available-room-facilities">
+                                @foreach (var facility in room.Amenities)
+                                {
+                                    <span class="facility-badge">@facility</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-text-link" @onclick="CloseAvailableRoomsModal">Tutup</button>
+            </div>
+
+        </div>
+    </div>
+}
+
+@if (isPendingApprovalModalOpen)
+{
+    <div class="modal-overlay" @onclick="ClosePendingApprovalModal">
+        <div class="modal-card" style="width: 480px; max-width: 100%;" @onclick:stopPropagation="true">
+
+            <div class="modal-header">
+                <div class="modal-header-icon modal-header-icon--warning">
+                    <img src="/icon/icon_alert_warning.svg" class="icon-md" alt="" />
+                </div>
+                <div>
+                    <h3 class="text-section-title">Menunggu Persetujuan Admin</h3>
+                    <p class="text-body-secondary">Permintaan pemesanan Anda yang masih menunggu persetujuan.</p>
+                </div>
+            </div>
+            <hr class="modal-divider" />
+
+            <div class="pending-approval-list" style="display: flex; flex-direction: column; gap: 10px; margin: 16px 0;">
+                @foreach (var request in pendingApprovalRequests)
+                {
+                    <div class="pending-approval-item">
+                        <div>
+                            <span class="text-card-title" style="font-size: 14px; font-weight: 700;">@request.RoomName</span>
+                            <p class="text-body-secondary" style="font-size: 12px; margin: 2px 0 0 0;">
+                                @request.Date.ToString("dd MMM yyyy") • @request.StartTime.ToString("HH:mm")-@request.EndTime.ToString("HH:mm") WIB
+                            </p>
+                        </div>
+                        <span class="status-badge status-badge--warning">Menunggu Persetujuan</span>
+                    </div>
+                }
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-text-link" @onclick="ClosePendingApprovalModal">Tutup</button>
+            </div>
+
+        </div>
+    </div>
+}
 
 <style>
     .beranda-container {
@@ -1193,6 +1285,13 @@
     private bool _isMeetingDetailOpen = false;
     private bool _isCancelModalOpen = false;
     private bool _isContactModalOpen = false;
+    private bool isAvailableRoomsModalOpen = false;
+    private bool isPendingApprovalModalOpen = false;
+
+    public record PendingApprovalRequest(string RoomName, DateTime Date, DateTime StartTime, DateTime EndTime);
+    private List<PendingApprovalRequest> pendingApprovalRequests = new();
+    private List<RoomItem> availableRooms = new();
+
     private UserMeeting? _selectedMeeting = null;
     private ActivityItem? _selectedContact = null;
     private string cancellationReason = "";
@@ -1250,6 +1349,16 @@
             new("invite", "invite", "membagikan dokumen agenda untuk Town Hall Q4", "2 hari lalu", "Sarah Jenkins", "Lead Product Operations", "sarah.jenkins@persada.com", "#8B5CF6")
         };
 
+        availableRooms = RoomDataProvider.GetRooms().Where(r => r.Status == "available").ToList();
+        AvailableRoomsCount = availableRooms.Count;
+        pendingApprovalRequests = new List<PendingApprovalRequest>
+        {
+            new("Training Room B", today.AddDays(1), today.AddDays(1).AddHours(13), today.AddDays(1).AddHours(16)),
+            new("Presentation Hall", today.AddDays(3), today.AddDays(3).AddHours(9), today.AddDays(3).AddHours(11)),
+            new("Executive Suite", today.AddDays(5), today.AddDays(5).AddHours(14), today.AddDays(5).AddHours(15).AddMinutes(30))
+        };
+        PendingActionCount = pendingApprovalRequests.Count;
+
         // Standard skeleton transition delay per V46/V50 requirement
         var minDelay = Task.Delay(500);
         var dataTask = LoadDashboardDataAsync();
@@ -1265,6 +1374,11 @@
     {
         await Task.Delay(100);
     }
+
+    private void OpenAvailableRoomsModal() => isAvailableRoomsModalOpen = true;
+    private void CloseAvailableRoomsModal() => isAvailableRoomsModalOpen = false;
+    private void OpenPendingApprovalModal() => isPendingApprovalModalOpen = true;
+    private void ClosePendingApprovalModal() => isPendingApprovalModalOpen = false;
 
     private string GetActivityIcon(string type) => type.ToLowerInvariant() switch
     {

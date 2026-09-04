@@ -9,16 +9,16 @@
 @inject booking_room.Services.IToastService ToastService
 @implements IDisposable
 
-<PageTitle>Pemesanan Ruangan</PageTitle>
+<PageTitle>@GetPageHeader().Title</PageTitle>
 
 <div class="bookings-page">
     <!-- Header Halaman -->
     <div class="bookings-page-header">
         <div class="d-flex align-items-center gap-2 mb-1">
-            <InlineSvg Src="/icons/icon_pemesanan.svg" Class="bookings-header-icon" Style="width: 28px; height: 28px; stroke: currentColor; fill: none;" />
-            <h1 class="bookings-page-title mb-0">Pemesanan Ruangan</h1>
+            <InlineSvg Src="@GetPageHeader().Icon" Class="bookings-header-icon" Style="width: 28px; height: 28px; stroke: currentColor; fill: none;" />
+            <h1 class="bookings-page-title mb-0">@GetPageHeader().Title</h1>
         </div>
-        <p class="bookings-page-subtitle">Pilih ruangan, kelola jadwal kalender, dan ajukan fasilitas tambahan di satu tempat.</p>
+        <p class="bookings-page-subtitle">@GetPageHeader().Subtitle</p>
     </div>
 
     <!-- TAB SWITCHER / SEGMENTED CONTROL (Requirement CASE 2: Tepat di bawah judul & subjudul) -->
@@ -807,6 +807,16 @@
         Navigation.NavigateTo($"/pemesanan?tab={tab}", replace: false);
         await Task.Delay(200);
         _isTabSwitching = false;
+    }
+
+    private (string Title, string Subtitle, string Icon) GetPageHeader()
+    {
+        return _activeTab switch
+        {
+            "kalender" => ("Kalender Pemesanan", "Lihat dan kelola jadwal pemesanan ruangan Anda dalam tampilan kalender.", "/icons/icon_calendar_grid.svg"),
+            "fasilitas" => ("Permintaan Fasilitas", "Ajukan dan pantau permintaan fasilitas tambahan untuk ruangan Anda.", "/icons/icon_facility.svg"),
+            _ => ("Pemesanan Ruangan", "Pilih ruangan, kelola jadwal kalender, dan ajukan fasilitas tambahan di satu tempat.", "/icons/icon_pemesanan.svg")
+        };
     }
 
     private bool _isBookingDatePickerOpen = false;
