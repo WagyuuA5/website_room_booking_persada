@@ -1,36 +1,63 @@
 @page "/pengaturan/jam-operasional"
 @page "/operational-hours"
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 @implements IDisposable
 
 <PageTitle>Jam Operasional — Persada</PageTitle>
 
-<div class="content-fade-in" style="padding: 24px; max-width: 800px; margin: 0 auto;">
-    <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--persada-navy-900, #0F1F3D); margin-bottom: 20px;">Jam Operasional</h2>
-    
-    <div style="background: var(--surface-card, #FFFFFF); border: 1.5px solid var(--color-brand-gray-border, #E5E7EB); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 16px;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-weight: 700; color: var(--persada-text-primary, #111827);">Senin - Jumat</span>
-            <span style="font-weight: 600; color: #1F5D9A;">08:00 - 18:00 WIB</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-weight: 700; color: var(--persada-text-primary, #111827);">Sabtu</span>
-            <span style="font-weight: 600; color: #1F5D9A;">08:00 - 14:00 WIB</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-weight: 700; color: var(--persada-text-primary, #111827);">Minggu / Hari Libur</span>
-            <span style="font-weight: 600; color: #EF4444;">Tutup</span>
-        </div>
+@if (_isAuthorized)
+{
+    <div class="content-fade-in" style="padding: 24px; max-width: 800px; margin: 0 auto;">
+        <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--persada-navy-900, #0F1F3D); margin-bottom: 20px;">Jam Operasional</h2>
+        
+        <div style="background: var(--surface-card, #FFFFFF); border: 1.5px solid var(--color-brand-gray-border, #E5E7EB); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 700; color: var(--persada-text-primary, #111827);">Senin - Jumat</span>
+                <span style="font-weight: 600; color: #1F5D9A;">08:00 - 18:00 WIB</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 700; color: var(--persada-text-primary, #111827);">Sabtu</span>
+                <span style="font-weight: 600; color: #1F5D9A;">08:00 - 14:00 WIB</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 700; color: var(--persada-text-primary, #111827);">Minggu / Hari Libur</span>
+                <span style="font-weight: 600; color: #EF4444;">Tutup</span>
+            </div>
 
-        <button class="btn btn-primary" style="height: 42px; border-radius: 999px; font-weight: 700; background: #1F5D9A; border: none; margin-top: 10px;" @onclick="SaveAndNavigateBack">
-            Kembali ke Pengaturan
-        </button>
+            <button class="btn btn-primary" style="height: 42px; border-radius: 999px; font-weight: 700; background: #1F5D9A; border: none; margin-top: 10px;" @onclick="SaveAndNavigateBack">
+                Kembali ke Pengaturan
+            </button>
+        </div>
     </div>
-</div>
+}
 
 @code {
+    private bool _isAuthorized = false;
     private bool _disposed;
     private CancellationTokenSource? _cts;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                var role = await JS.InvokeAsync<string>("localStorage.getItem", "userRole");
+                if (role != "Admin")
+                {
+                    Navigation.NavigateTo("/pengaturan", replace: true);
+                    return;
+                }
+                _isAuthorized = true;
+                StateHasChanged();
+            }
+            catch
+            {
+                Navigation.NavigateTo("/pengaturan", replace: true);
+            }
+        }
+    }
 
     private async Task SaveAndNavigateBack()
     {
@@ -58,3 +85,4 @@
         _cts?.Dispose();
     }
 }
+

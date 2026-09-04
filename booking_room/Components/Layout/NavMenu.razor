@@ -10,17 +10,17 @@
 
     <nav class="nav flex-column flex-grow-1 px-2">
         <NavLink class="nav-menu-item" href="@_homeUrl" Match="NavLinkMatch.All" ActiveClass="nav-active">
-            <InlineSvg Src="/icons/icon_dshboard.svg" Class="sidebar-nav-icon" Style="width: 20px; height: 20px; fill: currentColor;" />
+            <InlineSvg Src="/icons/icon_dashboard.svg" Class="sidebar-nav-icon" Style="width: 20px; height: 20px; fill: currentColor;" />
             <span>Beranda</span>
         </NavLink>
 
         <a class="nav-menu-item @(IsPemesananActive ? "nav-active" : "")" href="/pemesanan">
-            <InlineSvg Src="/icons/icon_room.svg" Class="sidebar-nav-icon" Style="width: 20px; height: 20px; stroke: currentColor; fill: none;" />
+            <InlineSvg Src="/icons/icon_pemesanan.svg" Class="sidebar-nav-icon" Style="width: 20px; height: 20px; stroke: currentColor; fill: none;" />
             <span>Pemesanan</span>
         </a>
 
         <NavLink class="nav-menu-item" href="/status" ActiveClass="nav-active">
-            <InlineSvg Src="/icons/Icon_status_1.svg" Class="sidebar-nav-icon" Style="width: 20px; height: 20px; fill: currentColor;" />
+            <InlineSvg Src="/icons/icon_status.svg" Class="sidebar-nav-icon" Style="width: 20px; height: 20px; fill: currentColor;" />
             <span>Status</span>
         </NavLink>
 
@@ -33,7 +33,7 @@
         </NavLink>
 
         <NavLink class="nav-menu-item" href="/pengaturan" ActiveClass="nav-active">
-            <InlineSvg Src="/icons/Icon_setting_1.svg" Class="sidebar-nav-icon" Style="width: 20px; height: 20px; fill: currentColor;" />
+            <InlineSvg Src="/icons/icon_setting.svg" Class="sidebar-nav-icon" Style="width: 20px; height: 20px; fill: currentColor;" />
             <span>Pengaturan</span>
         </NavLink>
     </nav>

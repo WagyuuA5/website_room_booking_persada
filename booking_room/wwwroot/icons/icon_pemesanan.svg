@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Rounded square outer box container -->
+  <rect x="2.5" y="2.5" width="19" height="19" rx="4.5" />
+  
+  <!-- Mini building / room glyph inside -->
+  <path d="M7 17.5V7.5C7 7.22386 7.22386 7 7.5 7H16.5C16.7761 7 17 7.22386 17 7.5V17.5" />
+  
+  <!-- Building windows -->
+  <line x1="9.5" y1="9.5" x2="10.5" y2="9.5" stroke-width="2" />
+  <line x1="13.5" y1="9.5" x2="14.5" y2="9.5" stroke-width="2" />
+  <line x1="9.5" y1="12" x2="10.5" y2="12" stroke-width="2" />
+  <line x1="13.5" y1="12" x2="14.5" y2="12" stroke-width="2" />
+  
+  <!-- Building entrance door -->
+  <path d="M10.5 17.5V14.5H13.5V17.5" />
+</svg>

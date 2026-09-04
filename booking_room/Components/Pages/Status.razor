@@ -176,25 +176,34 @@
                     }
 
                     <div class="detail-panel-actions">
-                        @if (selectedBooking.Status.Equals("pending", StringComparison.OrdinalIgnoreCase) || selectedBooking.Status.Equals("menunggu persetujuan", StringComparison.OrdinalIgnoreCase))
+                        @if (BookingPolicy.CanModifyBooking(selectedBooking.Status) || BookingPolicy.CanCancelBooking(selectedBooking.Status))
                         {
-                            <button type="button" class="btn-action-modify" @onclick="OpenModifyModal">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                </svg>
-                                <span>Ubah Jadwal</span>
-                            </button>
-                            <button type="button" class="btn-action-cancel-outline" @onclick="OpenCancelModal">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="3 6 5 6 21 6"></polyline>
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                </svg>
-                                <span>Batalkan Permintaan</span>
-                            </button>
+                            <div class="detail-action-subrow">
+                                @if (BookingPolicy.CanModifyBooking(selectedBooking.Status))
+                                {
+                                    <button type="button" class="btn-action-modify" @onclick="OpenModifyModal">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                        </svg>
+                                        <span>Ubah Jadwal</span>
+                                    </button>
+                                }
+                                @if (BookingPolicy.CanCancelBooking(selectedBooking.Status))
+                                {
+                                    <button type="button" class="btn-action-cancel-outline" @onclick="OpenCancelModal">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                        </svg>
+                                        <span>Batalkan Permintaan</span>
+                                    </button>
+                                }
+                            </div>
                         }
-                        else if (selectedBooking.Status.Equals("approved", StringComparison.OrdinalIgnoreCase) || selectedBooking.Status.Equals("disetujui", StringComparison.OrdinalIgnoreCase))
-                        {
+
+                        <div class="detail-action-subrow">
+                            <!-- Tombol "Lihat Jadwal Ruangan" SELALU tampil, apapun status -->
                             <button type="button" class="btn-action-view" @onclick='() => Navigation.NavigateTo($"/pemesanan?tab=kalender")'>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <rect x="3" y="4" width="18" height="18" rx="2"></rect>
@@ -204,15 +213,12 @@
                                 </svg>
                                 <span>Lihat Jadwal Ruangan</span>
                             </button>
-                            <button type="button" class="btn-action-cancel-outline" @onclick="OpenCancelModal">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="3 6 5 6 21 6"></polyline>
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                </svg>
-                                <span>Batalkan Permintaan</span>
+                            <button type="button" class="btn-action-close" @onclick="() => selectedBooking = null" title="Tutup detail panel">
+                                <span>Tutup</span>
                             </button>
-                        }
-                        else
+                        </div>
+
+                        @if (selectedBooking.Status.Equals("rejected", StringComparison.OrdinalIgnoreCase) || selectedBooking.Status.Equals("ditolak", StringComparison.OrdinalIgnoreCase))
                         {
                             <button type="button" class="btn-action-rebook" @onclick='() => Navigation.NavigateTo("/pemesanan?tab=ruangan")'>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -782,12 +788,20 @@
     
     .detail-panel-actions {
         display: flex;
+        flex-direction: column;
         gap: 10px;
         margin-top: 8px;
         padding-top: 14px;
         border-top: 1px solid var(--divider-subtle, rgba(15, 23, 42, 0.06));
     }
     body.dark-mode .detail-panel-actions { border-color: rgba(255, 255, 255, 0.08); }
+
+    .detail-action-subrow {
+        display: flex;
+        gap: 10px;
+        width: 100%;
+        align-items: center;
+    }
     
     .btn-action-modify {
         flex: 1;
@@ -840,9 +854,9 @@
         background: rgba(239, 68, 68, 0.2);
     }
     
-    .btn-action-view, .btn-action-rebook {
-        width: 100%;
-        height: 42px;
+    .btn-action-view {
+        flex: 1;
+        height: 44px;
         border-radius: 999px;
         background: #1F5D9A;
         color: #FFFFFF;
@@ -856,10 +870,62 @@
         cursor: pointer;
         transition: all 0.2s ease;
     }
-    .btn-action-view:hover, .btn-action-rebook:hover {
+    .btn-action-view:hover {
         background: #164879;
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(31, 93, 154, 0.25);
+    }
+
+    .btn-action-rebook {
+        width: 100%;
+        height: 44px;
+        border-radius: 999px;
+        background: #1F5D9A;
+        color: #FFFFFF;
+        font-weight: 700;
+        font-size: 0.875rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .btn-action-rebook:hover {
+        background: #164879;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(31, 93, 154, 0.25);
+    }
+
+    .btn-action-close {
+        height: 44px;
+        padding: 0 20px;
+        border-radius: 999px;
+        border: 1.5px solid #CBD5E1;
+        background: transparent;
+        color: #475569;
+        font-weight: 600;
+        font-size: 0.875rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        min-width: 80px;
+    }
+    .btn-action-close:hover {
+        background: #F1F5F9;
+        color: #0F172A;
+        border-color: #94A3B8;
+    }
+    body.dark-mode .btn-action-close {
+        border-color: #475569;
+        color: #E2E8F0;
+    }
+    body.dark-mode .btn-action-close:hover {
+        background: #334155;
+        color: #FFFFFF;
     }
     
     .status-empty-state {

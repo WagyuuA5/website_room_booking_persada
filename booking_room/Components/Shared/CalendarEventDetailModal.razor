@@ -154,15 +154,21 @@
             <div class="modal-footer-flex">
                 <button type="button" class="btn-modal-close" @onclick="Close">Tutup</button>
 
-                @if (EventItem.Status == "MyBooking")
+                @if (BookingPolicy.CanModifyBooking(EventItem.Status) || BookingPolicy.CanCancelBooking(EventItem.Status))
                 {
                     <div class="modal-action-btns">
-                        <button type="button" class="btn-modal-modify" @onclick="HandleModify">
-                            Ubah Jadwal
-                        </button>
-                        <button type="button" class="btn-modal-cancel" @onclick="HandleCancel">
-                            Batalkan Pemesanan
-                        </button>
+                        @if (BookingPolicy.CanModifyBooking(EventItem.Status))
+                        {
+                            <button type="button" class="btn-modal-modify" @onclick="HandleModify">
+                                Ubah Jadwal
+                            </button>
+                        }
+                        @if (BookingPolicy.CanCancelBooking(EventItem.Status))
+                        {
+                            <button type="button" class="btn-modal-cancel" @onclick="HandleCancel">
+                                Batalkan Pemesanan
+                            </button>
+                        }
                     </div>
                 }
             </div>
