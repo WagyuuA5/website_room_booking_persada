@@ -70,9 +70,9 @@
 }
 
 .modal-header-icon-box {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
     background: #EEF2FF;
     color: #4F46E5;
     display: flex;

@@ -254,7 +254,9 @@
           ShowHeader="true"
           ShowFooter="true">
     <IconContent>
-        <img src="/icon/timer_dshbrd.svg" class="icon-sm" style="filter: invert(36%) sepia(85%) saturate(1450%) hue-rotate(203deg);" alt="" />
+        <div class="modal-header-icon--info" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #EFF6FF;">
+            <img src="/icon/timer_dshbrd.svg" class="icon-sm" style="filter: invert(36%) sepia(85%) saturate(1450%) hue-rotate(203deg);" alt="" />
+        </div>
     </IconContent>
     <BodyContent>
         @if (_selectedMeeting != null)
@@ -358,7 +360,9 @@
           ShowHeader="true"
           ShowFooter="true">
     <IconContent>
-        <img src="/icon/icon_group.svg" class="icon-sm" alt="" />
+        <div class="modal-header-icon--person" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #EEF2FF;">
+            <img src="/icon/icon_group.svg" class="icon-sm" alt="" />
+        </div>
     </IconContent>
     <BodyContent>
         @if (_selectedContact != null)
@@ -459,14 +463,14 @@
     }
 
     .beranda-container > section {
-        margin-bottom: 32px;
+        margin-bottom: 24px;
     }
 
     /* 2. RINGKASAN STATISTIK */
     .summary-cards-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 20px;
+        gap: 24px;
     }
     @@media (max-width: 900px) {
         .summary-cards-grid { grid-template-columns: 1fr; }
@@ -554,7 +558,7 @@
     .content-grid-two-col {
         display: grid;
         grid-template-columns: 1.6fr 1fr;
-        gap: 20px;
+        gap: 24px;
         align-items: start;
     }
     @@media (max-width: 1024px) {
@@ -632,16 +636,36 @@
     .jadwal-item-title { font-size: 14px; font-weight: 600; color: var(--color-text-primary); }
     .jadwal-item-meta { font-size: 12px; color: var(--color-text-secondary); }
     .jadwal-item-tags { display: flex; gap: 6px; margin-top: 4px; }
-    .tag-badge { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
-    .tag-badge--ruangrapat { background: #F1F5F9; color: #475569; }
-    .tag-badge--areakolaborasi { background: var(--color-info-light); color: var(--color-info); }
-    .tag-badge--fasilitaskhusus { background: var(--color-purple-light); color: var(--color-purple); }
-    .tag-badge--success { background: var(--color-success-light); color: var(--color-success); }
+    .tag-badge { 
+        font-size: 11px; 
+        font-weight: 600; 
+        padding: 4px 10px; 
+        border-radius: 999px; 
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        line-height: 1.2;
+    }
+    .tag-badge--ruangrapat { background: #F1F5F9; color: #475569; border: 1px solid #E2E8F0; }
+    .tag-badge--areakolaborasi { background: var(--color-info-light, #DBEAFE); color: var(--color-info, #2563EB); border: 1px solid #BFDBFE; }
+    .tag-badge--fasilitaskhusus { background: var(--color-purple-light, #EDE9FE); color: var(--color-purple, #7C3AED); border: 1px solid #DDD6FE; }
+    .tag-badge--success { background: #ECFDF5; color: #059669; border: 1px solid #A7F3D0; }
+    .tag-badge--warning { background: #FFFBEB; color: #D97706; border: 1px solid #FDE68A; }
+    .tag-badge--danger { background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; }
+    body.dark-mode .tag-badge--success { background: rgba(16, 185, 129, 0.2); color: #34D399; border-color: rgba(16, 185, 129, 0.4); }
+    body.dark-mode .tag-badge--warning { background: rgba(245, 158, 11, 0.2); color: #FBBF24; border-color: rgba(245, 158, 11, 0.4); }
+    body.dark-mode .tag-badge--danger { background: rgba(239, 68, 68, 0.2); color: #F87171; border-color: rgba(239, 68, 68, 0.4); }
     .btn-icon-round {
-        width: 32px; height: 32px; border-radius: 50%;
+        width: 36px; height: 36px; border-radius: 50%;
         background: white; border: 1px solid var(--color-border);
         display: flex; align-items: center; justify-content: center;
         cursor: pointer;
+        transition: background-color 150ms ease-in-out, border-color 150ms ease-in-out, transform 150ms ease-in-out;
+    }
+    .btn-icon-round:hover {
+        background: #F8FAFC;
+        border-color: #CBD5E1;
+        transform: scale(1.04);
     }
     .btn-icon-round img {
         filter: brightness(0) opacity(0.6);
@@ -715,7 +739,18 @@
         flex-shrink: 0;
     }
 
-    .rekomendasi-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--color-border); }
+    .rekomendasi-item { 
+        display: flex; align-items: center; gap: 12px; padding: 12px 10px; 
+        border-radius: var(--radius-md);
+        border-bottom: 1px solid var(--color-border); 
+        transition: background-color 150ms ease-in-out;
+    }
+    .rekomendasi-item:hover {
+        background-color: var(--color-bg-page, #F8FAFC);
+    }
+    body.dark-mode .rekomendasi-item:hover {
+        background-color: rgba(255, 255, 255, 0.04);
+    }
     .rekomendasi-item:last-child { border-bottom: none; }
     .rekomendasi-item-photo { width: 56px; height: 56px; border-radius: var(--radius-sm); object-fit: cover; }
     .rekomendasi-item-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }

@@ -419,9 +419,18 @@
         border-bottom: 1px solid #F1F5F9;
         color: #334155;
     }
+    .trend-breakdown-table tbody tr {
+        transition: background-color 150ms ease-in-out;
+    }
+    .trend-breakdown-table tbody tr:hover {
+        background-color: #F8FAFC;
+    }
     body.dark-mode .trend-breakdown-table td {
         border-bottom-color: rgba(255, 255, 255, 0.05);
         color: #E2E8F0;
+    }
+    body.dark-mode .trend-breakdown-table tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.04);
     }
     .trend-bar-track {
         background: #E2E8F0;
