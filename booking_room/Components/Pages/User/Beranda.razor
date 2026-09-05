@@ -566,9 +566,6 @@
                     <h3 class="text-section-title">Ruangan Tersedia Sekarang</h3>
                     <p class="text-body-secondary">Pilih ruangan untuk rapat Anda saat ini</p>
                 </div>
-                <button class="modal-close-x" @onclick="CloseAvailableRoomsModal" aria-label="Tutup">
-                    <img src="/icon/icon_close.svg" class="icon-sm" alt="" />
-                </button>
             </div>
 
             @if (noVvipAvailable)
@@ -601,6 +598,12 @@
                 }
             </div>
 
+            <div class="modal-footer" style="margin-top: 20px; display: flex; justify-content: flex-end;">
+                <button type="button" class="btn-secondary-themed" @onclick="CloseAvailableRoomsModal" style="min-width: 100px;">
+                    Tutup
+                </button>
+            </div>
+
         </div>
     </div>
 }
@@ -618,22 +621,19 @@
                     <h3 class="text-section-title">Menunggu Persetujuan Admin</h3>
                     <p class="text-body-secondary">Permintaan pemesanan Anda yang masih menunggu persetujuan</p>
                 </div>
-                <button class="modal-close-x" @onclick="ClosePendingApprovalModal" aria-label="Tutup">
-                    <img src="/icon/icon_close.svg" class="icon-sm" alt="" />
-                </button>
             </div>
             <hr class="modal-divider" />
 
             <div class="pending-list">
                 @foreach (var item in pendingApprovalRequests)
                 {
-                    <div class="pending-item" @onclick="() => OpenDetailPermintaan(item.Id)">
+                    <div class="pending-item" @onclick="() => OpenDetailPermintaan(item.Id)" role="button" tabindex="0" title="Klik untuk melihat detail permintaan">
                         <div class="pending-item-icon">
                             <img src="/icon/icon_pemesanan.svg" class="icon-sm" alt="" />
                         </div>
                         <div class="pending-item-info">
-                            <span class="text-card-title">@item.RoomName</span>
-                            <span class="text-body-secondary">@item.Date.ToString("dd MMM yyyy") • @item.StartTime.ToString("HH:mm")-@item.EndTime.ToString("HH:mm") WIB</span>
+                            <span class="pending-item-title">@item.RoomName</span>
+                            <span class="pending-item-meta">@item.Date.ToString("dd MMM yyyy") • @item.StartTime.ToString("HH:mm")-@item.EndTime.ToString("HH:mm") WIB</span>
                             <span class="pending-item-waiting">
                                 <img src="/icon/timer_dshbrd.svg" class="icon-xxs" alt="" /> Menunggu @item.WaitingSince
                             </span>
@@ -643,8 +643,10 @@
                 }
             </div>
 
-            <div class="modal-footer" style="margin-top: 14px; text-align: center;">
-                <a class="panel-link-text" @onclick="GoToStatusFull">Lihat semua di halaman Status →</a>
+            <div class="modal-footer pending-modal-footer" style="margin-top: 20px; display: flex; justify-content: flex-end;">
+                <button type="button" class="btn-secondary-themed" @onclick="ClosePendingApprovalModal" style="min-width: 100px;">
+                    Tutup
+                </button>
             </div>
 
         </div>
@@ -657,13 +659,10 @@
     var room = _selectedRoomDetail;
     <div class="modal-overlay" @onclick="CloseRoomDetailModal">
         <div class="modal-card modal-room-detail" @onclick:stopPropagation="true">
-            <!-- Hero Photo Banner with Overlay & Close Button -->
+            <!-- Hero Photo Banner with Overlay (No Close Button - Backdrop or Kembali to exit) -->
             <div class="room-detail-hero-wrapper">
                 <img src="@room.PhotoUrl" class="room-detail-hero-img" alt="@room.Name" onerror="this.src='/images/poto 1.jpg'" />
                 <div class="room-detail-hero-overlay"></div>
-                <button type="button" class="modal-close-x modal-close-x--on-hero" @onclick="CloseRoomDetailModal" aria-label="Tutup">
-                    <img src="/icon/icon_close.svg" class="icon-sm" alt="" />
-                </button>
             </div>
 
             <div class="modal-body room-detail-body">
@@ -719,14 +718,10 @@
     var request = _selectedPendingRequest;
     <div class="modal-overlay" @onclick="CloseDetailPermintaan">
         <div class="modal-card modal-detail-permintaan" @onclick:stopPropagation="true">
-            <!-- 2b: Hero photo banner at top with gradient overlay -->
+            <!-- 2b: Hero photo banner at top with gradient overlay (No close button - Backdrop or Tutup button to exit) -->
             <div class="permintaan-hero-wrapper">
                 <img src="@GetRoomPhotoForPending(request.RoomName)" class="permintaan-hero-img" alt="@request.RoomName" onerror="this.src='/images/poto 1.jpg'" />
                 <div class="permintaan-hero-overlay"></div>
-                <!-- 2a: Close button cleanly isolated on hero top-right, never overlapping title -->
-                <button type="button" class="modal-close-x modal-close-x--on-hero" @onclick="CloseDetailPermintaan" aria-label="Tutup">
-                    <img src="/icon/icon_close.svg" class="icon-sm" alt="" />
-                </button>
             </div>
 
             <!-- 2a: Safe Header with flexbox -->
@@ -1873,11 +1868,12 @@
     }
     .icon-xxs { width: 11px; height: 11px; }
 
+
     .pending-list {
         display: flex;
         flex-direction: column;
-        gap: 10px;
-        max-height: 380px;
+        gap: 12px;
+        max-height: 400px;
         overflow-y: auto;
         padding-right: 4px;
         scrollbar-width: thin;
@@ -1888,34 +1884,69 @@
     .pending-item {
         display: flex;
         align-items: center;
-        gap: 12px;
-        background: var(--color-bg-page, #F8FAFC);
-        border-radius: 12px;
-        padding: 14px;
-        border-left: 3px solid var(--color-primary, #F5A623);
-        transition: background 200ms ease-in-out;
+        gap: 14px;
+        background: #FFFFFF;
+        border: 1px solid var(--color-border, #E2E8F0);
+        border-left: 4px solid var(--color-primary, #F5A623);
+        border-radius: 14px;
+        padding: 15px 18px;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
     }
-    .pending-item:hover { background: #F1F5F9; }
+    .pending-item:hover {
+        background: #F8FAFC;
+        border-color: #CBD5E1;
+        border-left-color: #D97706;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    }
     .pending-item-icon {
-        width: 40px; height: 40px; border-radius: 10px;
-        background: var(--color-primary-light, #FEF6EC);
+        width: 44px; height: 44px; border-radius: 12px;
+        background: #FEF3C7;
+        border: 1px solid rgba(245, 166, 35, 0.25);
         display: flex; align-items: center; justify-content: center;
         flex-shrink: 0;
     }
     .pending-item-icon img {
-        width: 20px; height: 20px;
+        width: 22px; height: 22px;
     }
-    .pending-item-info { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; text-align: left; }
+    .pending-item-info { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; text-align: left; }
+    .pending-item-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #0F172A;
+        line-height: 1.25;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .pending-item-meta {
+        font-size: 12.5px;
+        font-weight: 500;
+        color: #64748B;
+        line-height: 1.3;
+    }
     .pending-item-waiting {
-        font-size: 11px; color: var(--color-primary-dark, #D97706);
-        display: flex; align-items: center; gap: 4px; margin-top: 2px;
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #D97706;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 2px;
     }
     .badge-pending {
-        background: var(--color-primary-light, #FEF3C7);
-        color: var(--color-primary-dark, #D97706);
-        font-size: 11px; font-weight: 700;
-        padding: 5px 12px; border-radius: 999px;
+        background: #FEF3C7;
+        color: #D97706;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 6px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(245, 166, 35, 0.3);
         flex-shrink: 0;
+        align-self: center;
+        letter-spacing: 0.2px;
     }
 
     /* CASE 5 (V67): Jadwal Mendatang Full Width Section */
@@ -1926,6 +1957,8 @@
     .modal-room-detail {
         width: 500px;
         max-width: 95vw;
+        max-height: 90vh;
+        overflow-y: auto;
         padding: 24px;
         position: relative;
         text-align: left;
@@ -2065,6 +2098,8 @@
     .modal-detail-permintaan {
         width: 520px;
         max-width: 95vw;
+        max-height: 90vh;
+        overflow-y: auto;
         padding: 24px;
         position: relative;
         text-align: left;
@@ -2332,10 +2367,30 @@
     body.dark-mode .ruangan-tersedia-card { background: rgba(255, 255, 255, 0.04); }
     body.dark-mode .ruangan-tersedia-card:hover { background: rgba(255, 255, 255, 0.08); border-color: var(--color-primary, #F5A623); }
     body.dark-mode .facility-chip { background: rgba(255, 255, 255, 0.08); color: #CBD5E1; }
-    body.dark-mode .pending-item { background: rgba(255, 255, 255, 0.04); }
-    body.dark-mode .pending-item:hover { background: rgba(255, 255, 255, 0.08); }
-    body.dark-mode .pending-item-icon { background: rgba(245, 166, 35, 0.15); border-color: rgba(245, 166, 35, 0.3); }
-    body.dark-mode .pending-item-waiting { color: #F5A623; }
+    body.dark-mode .pending-item {
+        background: rgba(30, 41, 59, 0.6);
+        border-color: rgba(255, 255, 255, 0.08);
+        border-left-color: #F5A623;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+    body.dark-mode .pending-item:hover {
+        background: rgba(30, 41, 59, 0.95);
+        border-color: rgba(255, 255, 255, 0.16);
+        border-left-color: #FBBF24;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    }
+    body.dark-mode .pending-item-title { color: #F8FAFC; }
+    body.dark-mode .pending-item-meta { color: #94A3B8; }
+    body.dark-mode .pending-item-icon {
+        background: rgba(245, 166, 35, 0.15);
+        border-color: rgba(245, 166, 35, 0.3);
+    }
+    body.dark-mode .pending-item-waiting { color: #FBBF24; }
+    body.dark-mode .badge-pending {
+        background: rgba(245, 166, 35, 0.2);
+        color: #FBBF24;
+        border-color: rgba(245, 166, 35, 0.35);
+    }
 </style>
 
 @code {

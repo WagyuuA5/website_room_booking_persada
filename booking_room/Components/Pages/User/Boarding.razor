@@ -11,13 +11,13 @@
      @ontouchstart="HandleTouchStart"
      @ontouchend="HandleTouchEnd">
      
-    <!-- Background Slides Full-Bleed (Layar 1: Interior Signage, Layar 2: Gedung Sunset) -->
+    <!-- Background Slides Full-Bleed (Layar 1: Gedung Sunset/Eksterior, Layar 2: Gedung Sudut/Interior) -->
     <div class="boarding-bg-layer">
         <div class="boarding-bg-slide @(currentSlide == 0 ? "active" : "")">
-            <img src="/images/poto 2.jpg" alt="Interior Persada Signage" class="boarding-bg-img ken-burns" />
+            <img src="/images/FOTO_GEDUNG_PERSADA.png" alt="Gedung Persada Eksterior" class="boarding-bg-img ken-burns" />
         </div>
         <div class="boarding-bg-slide @(currentSlide == 1 ? "active" : "")">
-            <img src="/images/FOTO GEDEUNG PERSADA.png" alt="Gedung Persada" class="boarding-bg-img ken-burns" />
+            <img src="/images/FOTO_GEDUNG_PERSADA (2).png" alt="Gedung Persada Sudut" class="boarding-bg-img ken-burns" />
         </div>
         <!-- Gradient Overlay Langsung ke Foto Latar (Bukan Kotak Teks) -->
         <div class="boarding-overlay"></div>
