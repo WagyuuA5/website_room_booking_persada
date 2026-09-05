@@ -10,17 +10,27 @@
     <BodyContent>
         @if (_isConfirmedSuccess)
         {
-            <!-- CASE 8a: Tampilan Popup Sukses Konfirmasi Kehadiran -->
-            <div class="checkin-success-view animate-fade-in">
-                <div class="success-check-circle">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20 6L9 17l-5-5"/>
-                    </svg>
+            <!-- CASE 3 (V67): Tampilan Popup Sukses Konfirmasi Kehadiran Modern -->
+            <div class="checkin-success-view">
+                <div class="celebratory-check-wrapper">
+                    <div class="success-check-circle-celebratory">
+                        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                    </div>
                 </div>
+                
                 <h2 class="checkin-success-title">Konfirmasi Kehadiran Berhasil</h2>
+                
                 <p class="checkin-success-desc">
-                    Kehadiran Anda telah dikonfirmasi untuk rapat di <strong>@RoomName</strong>.
+                    Kehadiran Anda telah terverifikasi untuk agenda rapat di:
                 </p>
+
+                <div class="checkin-room-chip">
+                    <img src="/icon/icon_pemesanan.svg" class="icon-xs" alt="" />
+                    <span>@RoomName</span>
+                </div>
+
                 <div class="checkin-success-badge">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="10"></circle>
@@ -28,7 +38,8 @@
                     </svg>
                     <span>Dikonfirmasi pada @DateTime.Now.ToString("HH:mm") WIB</span>
                 </div>
-                <button type="button" class="btn-checkin-confirm" style="margin-top: 20px;" @onclick="DismissSuccess">
+
+                <button type="button" class="btn-primary-hero btn-full-width" style="margin-top: 24px;" @onclick="DismissSuccess">
                     Selesai
                 </button>
             </div>
@@ -116,34 +127,50 @@
 {
     <div class="modal-overlay modal-extend-time-overlay" @onclick="() => _showExtendModal = false">
         <div class="modal-card modal-extend-time" @onclick:stopPropagation="true">
-            <div class="modal-header">
-                <div class="modal-header-icon modal-header-icon--info">
+            <div class="modal-header modal-header--safe">
+                <div class="modal-header-icon modal-header-icon--warning">
                     <img src="/icon/timer_dshbrd.svg" class="icon-md" alt="" />
                 </div>
-                <div>
+                <div class="modal-header-title-container">
                     <h3 class="text-section-title">Minta Waktu Tambahan</h3>
-                    <p class="text-body-secondary">Perpanjang waktu konfirmasi kehadiran untuk @RoomName</p>
+                    <p class="text-body-secondary">Perpanjang batas konfirmasi kehadiran untuk @RoomName</p>
                 </div>
-                <button class="modal-close-x" @onclick="() => _showExtendModal = false" aria-label="Tutup">
+                <button type="button" class="modal-close-x" @onclick="() => _showExtendModal = false" aria-label="Tutup">
                     <img src="/icon/icon_close.svg" class="icon-sm" alt="" />
                 </button>
             </div>
             <hr class="modal-divider" />
-            <div class="form-group" style="margin-bottom: 16px;">
-                <label class="text-label-uppercase">Durasi Tambahan</label>
+
+            <div class="form-group" style="margin-bottom: 18px;">
+                <label class="text-label-uppercase" style="display: block; margin-bottom: 8px;">Pilih Durasi Tambahan</label>
                 <div class="duration-chip-group">
-                    <button type="button" class="duration-chip @(_selectedExtendDuration == 10 ? "active" : "")" @onclick="() => _selectedExtendDuration = 10">+10 menit</button>
-                    <button type="button" class="duration-chip @(_selectedExtendDuration == 15 ? "active" : "")" @onclick="() => _selectedExtendDuration = 15">+15 menit</button>
-                    <button type="button" class="duration-chip @(_selectedExtendDuration == 30 ? "active" : "")" @onclick="() => _selectedExtendDuration = 30">+30 menit</button>
+                    <button type="button" class="duration-chip @(_selectedExtendDuration == 10 ? "active" : "")" @onclick="() => _selectedExtendDuration = 10">
+                        @if (_selectedExtendDuration == 10) { <span class="chip-check-icon">✓</span> } +10 menit
+                    </button>
+                    <button type="button" class="duration-chip @(_selectedExtendDuration == 15 ? "active" : "")" @onclick="() => _selectedExtendDuration = 15">
+                        @if (_selectedExtendDuration == 15) { <span class="chip-check-icon">✓</span> } +15 menit
+                    </button>
+                    <button type="button" class="duration-chip @(_selectedExtendDuration == 30 ? "active" : "")" @onclick="() => _selectedExtendDuration = 30">
+                        @if (_selectedExtendDuration == 30) { <span class="chip-check-icon">✓</span> } +30 menit
+                    </button>
                 </div>
             </div>
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label class="text-label-uppercase">Alasan Penambahan Waktu <span class="text-danger">*</span></label>
-                <textarea class="textarea-modern" placeholder="Contoh: Masih dalam perjalanan menuju ruangan, rapat sebelumnya molor, dst."
-                          @bind="_extendReason" rows="3"></textarea>
+
+            <div class="form-group" style="margin-bottom: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <label class="text-label-uppercase">Alasan Penambahan Waktu <span class="text-danger">*</span></label>
+                    <span class="char-counter">@(_extendReason?.Length ?? 0)/150</span>
+                </div>
+                <textarea class="textarea-modern textarea-extend" 
+                          placeholder="Contoh: Masih dalam perjalanan menuju ruangan, rapat sebelumnya molor, dst."
+                          maxlength="150"
+                          @bind="_extendReason" 
+                          @bind:event="oninput" 
+                          rows="3"></textarea>
             </div>
-            <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
-                <button type="button" class="btn-secondary" @onclick="() => _showExtendModal = false">Batal</button>
+
+            <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px;">
+                <button type="button" class="btn-secondary-themed" @onclick="() => _showExtendModal = false">Batal</button>
                 <button type="button" class="btn-primary-hero" @onclick="ConfirmExtendTime" disabled="@(string.IsNullOrWhiteSpace(_extendReason) || _selectedExtendDuration == 0)">
                     Ajukan Penambahan Waktu
                 </button>
@@ -171,34 +198,44 @@
         gap: 16px;
     }
 
-    /* CASE 8a: Success State Inside Modal */
+    /* CASE 3 (V67): Celebratory Success State Inside Modal */
     .checkin-success-view {
         display: flex;
         flex-direction: column;
         align-items: center;
         text-align: center;
         padding: 24px 16px 8px;
-        gap: 12px;
+        gap: 10px;
     }
-    .success-check-circle {
-        width: 72px;
-        height: 72px;
+    .celebratory-check-wrapper {
+        margin-bottom: 6px;
+    }
+    .success-check-circle-celebratory {
+        width: 80px;
+        height: 80px;
         border-radius: 50%;
         background: #DCFCE7;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 16px rgba(22, 163, 74, 0.2);
-        animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 0 0 10px rgba(34, 197, 94, 0.15), 0 8px 24px rgba(22, 163, 74, 0.25);
+        animation: celebratoryPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
     }
-    body.dark-mode .success-check-circle {
+    body.dark-mode .success-check-circle-celebratory {
         background: rgba(34, 197, 94, 0.2);
+        box-shadow: 0 0 0 10px rgba(34, 197, 94, 0.1), 0 8px 24px rgba(22, 163, 74, 0.3);
+    }
+    @@keyframes celebratoryPop {
+        0% { transform: scale(0.6); opacity: 0; }
+        70% { transform: scale(1.1); }
+        100% { transform: scale(1); opacity: 1; }
     }
     .checkin-success-title {
         font-size: 1.35rem;
         font-weight: 800;
         color: #0F172A;
-        margin: 4px 0 0;
+        margin: 6px 0 0;
+        letter-spacing: -0.01em;
     }
     body.dark-mode .checkin-success-title { color: #F8FAFC; }
     .checkin-success-desc {
@@ -209,6 +246,23 @@
         max-width: 320px;
     }
     body.dark-mode .checkin-success-desc { color: #94A3B8; }
+    .checkin-room-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #FEF3C7;
+        color: #92400E;
+        font-size: 0.95rem;
+        font-weight: 700;
+        padding: 6px 16px;
+        border-radius: 999px;
+        margin: 4px 0 6px;
+        border: 1px solid rgba(245, 166, 35, 0.25);
+    }
+    body.dark-mode .checkin-room-chip {
+        background: rgba(245, 166, 35, 0.2);
+        color: #FBBF24;
+    }
     .checkin-success-badge {
         display: inline-flex;
         align-items: center;
@@ -400,46 +454,114 @@
     }
     .duration-chip {
         flex: 1;
-        padding: 10px;
-        border-radius: 10px;
-        border: 1px solid var(--color-border, #E2E8F0);
-        background: white;
+        padding: 11px 8px;
+        border-radius: 12px;
+        border: 1.5px solid var(--color-border, #E2E8F0);
+        background: #F8FAFC;
         font-size: 13px;
         font-weight: 600;
         cursor: pointer;
         transition: all 150ms ease-in-out;
         color: var(--color-text-primary, #0F172A);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
     }
-    body.dark-mode .duration-chip {
-        background: #0F172A;
-        border-color: #334155;
-        color: #F1F5F9;
+    .duration-chip:hover {
+        background: #F1F5F9;
+        border-color: #CBD5E1;
     }
     .duration-chip.active {
-        background: var(--color-primary-light, #FEF6EC);
-        border-color: var(--color-primary, #F5A623);
-        color: var(--color-primary-dark, #D97706);
+        background: #FEF3C7;
+        border-color: #F5A623;
+        color: #92400E;
+        font-weight: 700;
+        box-shadow: 0 2px 8px rgba(245, 166, 35, 0.25);
     }
-    .textarea-modern {
+    .chip-check-icon {
+        font-size: 12px;
+        font-weight: 800;
+        color: #D97706;
+        margin-right: 2px;
+    }
+    .textarea-extend {
         width: 100%;
-        border-radius: 10px;
-        border: 1px solid var(--color-border, #E2E8F0);
-        padding: 10px 12px;
-        font-size: 13px;
+        border-radius: 12px;
+        border: 1.5px solid var(--color-border, #E2E8F0);
+        padding: 12px 14px;
+        font-size: 13.5px;
         font-family: inherit;
         resize: vertical;
         outline: none;
         margin-top: 6px;
         box-sizing: border-box;
+        transition: all 150ms ease-in-out;
     }
-    .textarea-modern:focus {
-        border-color: var(--color-primary, #F5A623);
-        box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.15);
+    .textarea-extend:focus {
+        border-color: #F5A623;
+        box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.18);
     }
-    body.dark-mode .textarea-modern {
+    .char-counter {
+        font-size: 11px;
+        color: var(--color-text-secondary, #64748B);
+        font-weight: 600;
+    }
+    .btn-secondary-themed {
+        background: #F1F5F9;
+        color: #334155;
+        border: 1px solid #E2E8F0;
+        border-radius: 999px;
+        padding: 10px 22px;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 150ms ease-in-out;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .btn-secondary-themed:hover {
+        background: #E2E8F0;
+        border-color: rgba(245, 166, 35, 0.4);
+        color: #0F172A;
+        transform: translateY(-1px);
+    }
+    .btn-secondary-themed:active { transform: translateY(0); }
+
+    body.dark-mode .duration-chip {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 255, 255, 0.12);
+        color: #F1F5F9;
+    }
+    body.dark-mode .duration-chip:hover {
+        background: rgba(255, 255, 255, 0.08);
+    }
+    body.dark-mode .duration-chip.active {
+        background: rgba(245, 166, 35, 0.25);
+        border-color: #F5A623;
+        color: #FDE68A;
+    }
+    body.dark-mode .duration-chip.active .chip-check-icon {
+        color: #FBBF24;
+    }
+    body.dark-mode .textarea-extend {
         background: #0F172A;
         border-color: #334155;
+        color: #F8FAFC;
+    }
+    body.dark-mode .textarea-extend:focus {
+        border-color: #F5A623;
+        box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.25);
+    }
+    body.dark-mode .btn-secondary-themed {
+        background: rgba(255, 255, 255, 0.08);
         color: #F1F5F9;
+        border-color: rgba(255, 255, 255, 0.14);
+    }
+    body.dark-mode .btn-secondary-themed:hover {
+        background: rgba(255, 255, 255, 0.14);
+        border-color: rgba(245, 166, 35, 0.4);
     }
 </style>
 
@@ -453,6 +575,7 @@
     [Parameter] public EventCallback OnConfirm { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
     [Parameter] public EventCallback OnAutoReleased { get; set; }
+    [Parameter] public bool InitialSuccess { get; set; }
 
     private PeriodicTimer? _timer;
     private CancellationTokenSource? _cts;
@@ -520,6 +643,10 @@
     protected override void OnInitialized()
     {
         _totalSeconds = 15 * 60;
+        if (InitialSuccess)
+        {
+            _isConfirmedSuccess = true;
+        }
         UpdateCountdown();
     }
 

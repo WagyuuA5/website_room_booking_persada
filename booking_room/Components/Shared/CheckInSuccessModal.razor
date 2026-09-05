@@ -2,24 +2,148 @@
 
 <AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Size="sm" ShowHeader="false" ShowFooter="false">
     <BodyContent>
-        <div class="modal-body-pad text-center checkin-success-modal">
-            <div class="success-icon-large">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <div class="modal-body-pad text-center checkin-success-modal-celebratory">
+            <div class="celebratory-check-wrapper">
+                <div class="success-check-circle-celebratory">
+                    <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
             </div>
             
-            <h2 class="success-title">Konfirmasi Kehadiran Berhasil</h2>
-            <p class="success-sub">pukul @DateTime.Now.ToString("HH:mm")</p>
+            <h2 class="success-title-celebratory">Konfirmasi Kehadiran Berhasil</h2>
+            
+            <p class="success-sub-celebratory">
+                Kehadiran Anda telah terverifikasi untuk agenda rapat di:
+            </p>
 
-            <button class="btn-primary" style="width: 100%; margin-top: 24px;" @onclick="Close">
-                Tutup
+            <div class="checkin-room-chip">
+                <img src="/icon/icon_pemesanan.svg" class="icon-xs" alt="" />
+                <span>@(string.IsNullOrEmpty(RoomName) ? "Executive Boardroom A" : RoomName)</span>
+            </div>
+
+            <div class="checkin-time-pill-center">
+                <img src="/icon/timer_dshbrd.svg" class="icon-xs" alt="" />
+                <span>Dikonfirmasi pada @DateTime.Now.ToString("HH:mm") WIB</span>
+            </div>
+
+            <button type="button" class="btn-primary-hero btn-full-width" style="margin-top: 24px;" @onclick="Close">
+                Selesai
             </button>
         </div>
     </BodyContent>
 </AppModal>
 
+<style>
+    .checkin-success-modal-celebratory {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 24px 16px 8px;
+    }
+    .celebratory-check-wrapper {
+        margin-bottom: 8px;
+    }
+    .success-check-circle-celebratory {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: #DCFCE7;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 0 10px rgba(34, 197, 94, 0.15), 0 8px 24px rgba(22, 163, 74, 0.25);
+        animation: celebratoryPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+    }
+    body.dark-mode .success-check-circle-celebratory {
+        background: rgba(34, 197, 94, 0.2);
+        box-shadow: 0 0 0 10px rgba(34, 197, 94, 0.1), 0 8px 24px rgba(22, 163, 74, 0.3);
+    }
+    @@keyframes celebratoryPop {
+        0% { transform: scale(0.6); opacity: 0; }
+        70% { transform: scale(1.1); }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    .success-title-celebratory {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: #0F172A;
+        margin: 12px 0 4px;
+        letter-spacing: -0.01em;
+    }
+    body.dark-mode .success-title-celebratory { color: #F8FAFC; }
+    .success-sub-celebratory {
+        font-size: 0.875rem;
+        color: #64748B;
+        line-height: 1.5;
+        margin: 0 0 8px;
+    }
+    body.dark-mode .success-sub-celebratory { color: #94A3B8; }
+    .checkin-room-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #FEF3C7;
+        color: #92400E;
+        font-size: 0.875rem;
+        font-weight: 700;
+        padding: 6px 14px;
+        border-radius: 999px;
+        margin-bottom: 8px;
+    }
+    body.dark-mode .checkin-room-chip {
+        background: rgba(245, 166, 35, 0.2);
+        color: #FBBF24;
+    }
+    .checkin-time-pill-center {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #F1F5F9;
+        color: #475569;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        padding: 6px 14px;
+        border-radius: 999px;
+    }
+    body.dark-mode .checkin-time-pill-center {
+        background: rgba(255, 255, 255, 0.08);
+        color: #CBD5E1;
+    }
+    .btn-full-width {
+        width: 100%;
+    }
+    .btn-primary-hero {
+        background: linear-gradient(135deg, #F5A623 0%, #D97706 100%);
+        color: #FFFFFF;
+        border: none;
+        border-radius: 999px;
+        padding: 12px 24px;
+        font-weight: 700;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(245, 166, 35, 0.3);
+        transition: all 150ms ease-in-out;
+    }
+    .btn-primary-hero:hover {
+        background: linear-gradient(135deg, #E59819 0%, #B45309 100%);
+        box-shadow: 0 6px 18px rgba(245, 166, 35, 0.4);
+        transform: translateY(-1px);
+    }
+    .btn-primary-hero:active {
+        transform: translateY(0);
+    }
+</style>
+
 @code {
     [Parameter] public bool Visible { get; set; }
     [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public string? RoomName { get; set; }
 
     private async Task HandleVisibleChanged(bool val)
     {

@@ -77,9 +77,9 @@
     }
     else
     {
-        <section class="content-grid-two-col content-fade-in">
-            <!-- Kolom Kiri: Jadwal Pertemuan Mendatang (Case 4 - Redesign Zoom Meeting Card & Horizontal Scroll) -->
-            <div class="panel jadwal-mendatang-panel">
+        <section class="jadwal-mendatang-section content-fade-in">
+            <!-- Jadwal Pertemuan Mendatang (Case 4 - Redesign Zoom Meeting Card & Horizontal Scroll) -->
+            <div class="panel jadwal-mendatang-panel jadwal-mendatang-panel--full">
                 <div class="panel-header">
                     <div>
                         <h2 class="panel-title">Jadwal Pertemuan Mendatang</h2>
@@ -167,35 +167,6 @@
                                 </span>
                             </div>
 
-                        </div>
-                    }
-                </div>
-            </div>
-
-            <!-- Kolom Kanan: Rekomendasi Untuk Anda (Case 5) -->
-            <div class="panel rekomendasi-ruangan-panel">
-                <div class="panel-header">
-                    <div>
-                        <h2 class="panel-title">Rekomendasi Untuk Anda</h2>
-                        <p class="panel-subtitle">Berdasarkan riwayat pemesanan Anda</p>
-                    </div>
-                </div>
-                <div class="rekomendasi-list">
-                    @foreach (var room in RecommendedRooms.Take(3))
-                    {
-                        <div class="rekomendasi-item">
-                            <img src="@room.PhotoUrl" class="rekomendasi-item-photo" @onclick="() => OpenRoomDetailFromRecommendation(room.Id)" style="cursor:pointer;" alt="@room.Name" />
-                            <div class="rekomendasi-item-info" @onclick="() => OpenRoomDetailFromRecommendation(room.Id)" style="cursor:pointer;">
-                                <span class="rekomendasi-item-name">@room.Name</span>
-                                <span class="rekomendasi-item-meta">
-                                    <img src="/icon/icon_group.svg" class="icon-xs" alt="" /> @room.Capacity Orang
-                                </span>
-                                <!-- Badge Alasan Rekomendasi Eksplisit (Case 5) -->
-                                <span class="rekomendasi-reason-badge rekomendasi-reason-badge--@room.ReasonType">
-                                    @room.ReasonLabel
-                                </span>
-                            </div>
-                            <button class="btn-pesan-small" @onclick:stopPropagation="true" @onclick="() => PesanCepat(room.Id)">Pesan</button>
                         </div>
                     }
                 </div>
@@ -680,22 +651,44 @@
     </div>
 }
 
-<!-- CASE 1 & CASE 3 (V66): Popup Detail Ruangan -->
+<!-- CASE 1 (V67): Popup Detail Ruangan -->
 @if (_isRoomDetailModalOpen && _selectedRoomDetail != null)
 {
     var room = _selectedRoomDetail;
     <div class="modal-overlay" @onclick="CloseRoomDetailModal">
         <div class="modal-card modal-room-detail" @onclick:stopPropagation="true">
-            <img src="@room.PhotoUrl" class="room-detail-hero" alt="@room.Name" onerror="this.src='/images/poto 1.jpg'" />
-            <div class="modal-body" style="padding: 0 4px;">
-                <span class="badge-status badge-status--@GetStatusSlug(room.Status)">@GetStatusLabel(room.Status)</span>
-                <h3 class="text-page-title" style="margin: 8px 0 4px 0;">@room.Name</h3>
-                <span class="text-body-secondary"><img src="/icon/icon_location.svg" class="icon-xs" alt="" /> Lantai @room.Floor, Gedung Persada</span>
-                <p class="text-body" style="margin-top:12px; font-size: 13px; line-height: 1.5; color: var(--color-text-secondary, #64748B);">@room.Description</p>
-                <div class="room-detail-meta-row">
-                    <span><img src="/icon/icon_group.svg" class="icon-sm" alt="" /> Kapasitas @room.Capacity Orang</span>
+            <!-- Hero Photo Banner with Overlay & Close Button -->
+            <div class="room-detail-hero-wrapper">
+                <img src="@room.PhotoUrl" class="room-detail-hero-img" alt="@room.Name" onerror="this.src='/images/poto 1.jpg'" />
+                <div class="room-detail-hero-overlay"></div>
+                <button type="button" class="modal-close-x modal-close-x--on-hero" @onclick="CloseRoomDetailModal" aria-label="Tutup">
+                    <img src="/icon/icon_close.svg" class="icon-sm" alt="" />
+                </button>
+            </div>
+
+            <div class="modal-body room-detail-body">
+                <div class="room-detail-header-badges">
+                    <span class="badge-status-pill badge-status-pill--@GetStatusSlug(room.Status)">
+                        <span class="status-dot"></span> @GetStatusLabel(room.Status)
+                    </span>
+                    <span class="badge-meta-pill">
+                        <img src="/icon/icon_group.svg" class="icon-xs" alt="" />
+                        <span>Kapasitas @room.Capacity Orang</span>
+                    </span>
                 </div>
-                <span class="text-label-uppercase" style="margin-top:16px; display:block;">Fasilitas Tersedia</span>
+
+                <h3 class="room-detail-title">@room.Name</h3>
+                
+                <div class="room-detail-location">
+                    <img src="/icon/icon_location.svg" class="icon-xs" alt="" />
+                    <span>Lantai @room.Floor, Gedung Persada HQ</span>
+                </div>
+
+                <p class="room-detail-desc">@room.Description</p>
+
+                <div class="room-detail-section-header">
+                    <span class="text-label-uppercase">Fasilitas Ruangan</span>
+                </div>
                 <div class="room-detail-facilities">
                     @foreach (var f in GetTopFacilities(room))
                     {
@@ -703,43 +696,121 @@
                     }
                 </div>
             </div>
-            <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
-                <button class="btn-secondary" @onclick="BackToRoomList">Kembali</button>
-                <button class="btn-primary-hero" @onclick="() => LanjutkanPemesanan(room.Id)">Lanjutkan Pemesanan</button>
+
+            <!-- Footer Buttons: Secondary Themed & Primary Solid Orange -->
+            <div class="modal-footer room-detail-footer">
+                <button type="button" class="btn-secondary-themed" @onclick="BackToRoomList">Kembali</button>
+                @if (!_isRoomDetailViewOnly)
+                {
+                    <button type="button" class="btn-primary-hero" @onclick="() => LanjutkanPemesanan(room.Id)">Lanjutkan Pemesanan</button>
+                }
+                else
+                {
+                    <button type="button" class="btn-primary-hero" @onclick="CloseRoomDetailModal">Tutup</button>
+                }
             </div>
         </div>
     </div>
 }
 
-<!-- CASE 2 (V66): Popup Detail Permintaan Pemesanan -->
+<!-- CASE 2 (V67): Popup Detail Permintaan Pemesanan -->
 @if (_isDetailPermintaanModalOpen && _selectedPendingRequest != null)
 {
     var request = _selectedPendingRequest;
     <div class="modal-overlay" @onclick="CloseDetailPermintaan">
         <div class="modal-card modal-detail-permintaan" @onclick:stopPropagation="true">
-            <div class="modal-header">
-                <div class="modal-header-icon modal-header-icon--warning">
-                    <img src="/icon/icon_alert_warning.svg" class="icon-md" alt="" />
-                </div>
-                <div>
-                    <h3 class="text-section-title">Detail Permintaan Pemesanan</h3>
-                    <p class="text-body-secondary">ID Reservasi: #@request.BookingId</p>
-                </div>
-                <button class="modal-close-x" @onclick="CloseDetailPermintaan" aria-label="Tutup">
+            <!-- 2b: Hero photo banner at top with gradient overlay -->
+            <div class="permintaan-hero-wrapper">
+                <img src="@GetRoomPhotoForPending(request.RoomName)" class="permintaan-hero-img" alt="@request.RoomName" onerror="this.src='/images/poto 1.jpg'" />
+                <div class="permintaan-hero-overlay"></div>
+                <!-- 2a: Close button cleanly isolated on hero top-right, never overlapping title -->
+                <button type="button" class="modal-close-x modal-close-x--on-hero" @onclick="CloseDetailPermintaan" aria-label="Tutup">
                     <img src="/icon/icon_close.svg" class="icon-sm" alt="" />
                 </button>
             </div>
-            <hr class="modal-divider" />
-            <div class="permintaan-info-grid">
-                <div class="permintaan-info-row"><span class="text-label-uppercase">Ruangan Diajukan</span><span class="text-body">@request.RoomName</span></div>
-                <div class="permintaan-info-row"><span class="text-label-uppercase">Tanggal & Waktu</span><span class="text-body">@request.Date.ToString("dd MMM yyyy") • @request.StartTime.ToString("HH:mm")-@request.EndTime.ToString("HH:mm") WIB</span></div>
-                <div class="permintaan-info-row"><span class="text-label-uppercase">Status Persetujuan</span><span class="badge-pending">Menunggu Persetujuan Admin</span></div>
-                <div class="permintaan-info-row"><span class="text-label-uppercase">Diajukan Sejak</span><span class="text-body">@request.WaitingSince</span></div>
-                <div class="permintaan-info-row"><span class="text-label-uppercase">Estimasi Waktu Tinjau</span><span class="text-body-secondary">Admin biasanya merespons dalam 1x24 jam kerja</span></div>
+
+            <!-- 2a: Safe Header with flexbox -->
+            <div class="modal-header modal-header--safe">
+                <div class="modal-header-icon modal-header-icon--warning">
+                    <img src="/icon/icon_pemesanan.svg" class="icon-md" alt="" />
+                </div>
+                <div class="modal-header-title-container">
+                    <h3 class="text-section-title modal-title-nowrap">Detail Permintaan Pemesanan</h3>
+                    <p class="text-body-secondary">ID Reservasi: #@request.BookingId</p>
+                </div>
             </div>
-            <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
-                <button class="btn-danger-outline" @onclick="() => OpenKonfirmasiPembatalan(request.Id)">Batalkan Permintaan</button>
-                <button class="btn-secondary" @onclick="CloseDetailPermintaan">Tutup</button>
+
+            <hr class="modal-divider" />
+
+            <!-- 2d: 2-column info grid with scannable icons -->
+            <div class="permintaan-info-grid-2col">
+                <div class="permintaan-info-card">
+                    <div class="info-card-header">
+                        <img src="/icon/icon_location.svg" class="icon-xs" alt="" />
+                        <span class="text-label-uppercase">Ruangan Diajukan</span>
+                    </div>
+                    <div class="info-card-body">
+                        <span class="info-card-value">@request.RoomName</span>
+                        <!-- 2c: Fitur Tombol/Link "Lihat Detail" -->
+                        <button type="button" class="btn-link-lihat-detail" @onclick="() => OpenRoomDetailFromPending(request.RoomName)" title="Lihat detail lengkap ruangan">
+                            <span>Lihat Detail Ruangan</span>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="permintaan-info-card">
+                    <div class="info-card-header">
+                        <img src="/icon/Icon_clndr.svg" class="icon-xs" alt="" />
+                        <span class="text-label-uppercase">Tanggal & Waktu</span>
+                    </div>
+                    <div class="info-card-body">
+                        <span class="info-card-value">@request.Date.ToString("dd MMM yyyy")</span>
+                        <span class="info-card-sub">@request.StartTime.ToString("HH:mm") - @request.EndTime.ToString("HH:mm") WIB</span>
+                    </div>
+                </div>
+
+                <div class="permintaan-info-card">
+                    <div class="info-card-header">
+                        <img src="/icon/timer_dshbrd.svg" class="icon-xs" alt="" />
+                        <span class="text-label-uppercase">Status Persetujuan</span>
+                    </div>
+                    <div class="info-card-body">
+                        <span class="badge-pending-pill">
+                            <span class="pending-dot"></span> Menunggu Persetujuan Admin
+                        </span>
+                    </div>
+                </div>
+
+                <div class="permintaan-info-card">
+                    <div class="info-card-header">
+                        <img src="/icon/timer_dshbrd.svg" class="icon-xs" alt="" />
+                        <span class="text-label-uppercase">Diajukan Sejak</span>
+                    </div>
+                    <div class="info-card-body">
+                        <span class="info-card-value">@request.WaitingSince</span>
+                    </div>
+                </div>
+
+                <div class="permintaan-info-card permintaan-info-card--full">
+                    <div class="info-card-header">
+                        <img src="/icon/icon_alert_info.svg" class="icon-xs" alt="" />
+                        <span class="text-label-uppercase">Estimasi Waktu Tinjau</span>
+                    </div>
+                    <div class="info-card-body">
+                        <span class="info-card-sub">Admin biasanya merespons dalam 1x24 jam kerja. Notifikasi akan dikirimkan otomatis setelah permohonan disetujui.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer: Destructive outline red & Secondary themed -->
+            <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+                <button type="button" class="btn-destructive-themed" @onclick="() => OpenKonfirmasiPembatalan(request.Id)">
+                    Batalkan Permintaan
+                </button>
+                <button type="button" class="btn-secondary-themed" @onclick="CloseDetailPermintaan">
+                    Tutup
+                </button>
             </div>
         </div>
     </div>
@@ -1828,101 +1899,414 @@
         flex-shrink: 0;
     }
 
-    /* CASE 1 & CASE 3 (V66): Modal Room Detail */
+    /* CASE 5 (V67): Jadwal Mendatang Full Width Section */
+    .jadwal-mendatang-section { margin-bottom: 32px; width: 100%; }
+    .jadwal-mendatang-panel--full { width: 100%; min-width: 0; }
+
+    /* CASE 1 (V67): Modal Room Detail */
     .modal-room-detail {
-        width: 480px;
-        max-width: 100%;
+        width: 500px;
+        max-width: 95vw;
         padding: 24px;
         position: relative;
         text-align: left;
+        border-radius: 20px;
     }
-    .room-detail-hero {
+    .room-detail-hero-wrapper {
+        position: relative;
         width: calc(100% + 48px);
-        height: 200px;
-        object-fit: cover;
+        height: 180px;
         border-radius: 20px 20px 0 0;
         margin: -24px -24px 16px -24px;
+        overflow: hidden;
     }
-    .room-detail-meta-row {
+    .room-detail-hero-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center 40%;
+        display: block;
+    }
+    .room-detail-hero-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(15,23,42,0.15) 0%, rgba(15,23,42,0.65) 100%);
+    }
+    .modal-close-x--on-hero {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        z-index: 10;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
         display: flex;
-        gap: 16px;
-        margin: 12px 0;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 150ms ease-in-out;
+    }
+    .modal-close-x--on-hero:hover {
+        background: rgba(15, 23, 42, 0.85);
+        transform: scale(1.08);
+    }
+    .modal-close-x--on-hero img {
+        filter: brightness(0) invert(1);
+    }
+    .room-detail-body { padding: 0 2px; }
+    .room-detail-header-badges {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+    .badge-status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .badge-status-pill--success { background: #DCFCE7; color: #166534; }
+    .badge-status-pill--warning { background: #FEF3C7; color: #92400E; }
+    .badge-meta-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #F1F5F9;
+        color: #475569;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 4px 12px;
+        border-radius: 999px;
+    }
+    .room-detail-title {
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--color-text-primary, #0F172A);
+        margin: 0 0 6px 0;
+    }
+    .room-detail-location {
+        display: flex;
+        align-items: center;
+        gap: 6px;
         font-size: 13px;
         color: var(--color-text-secondary, #64748B);
+        margin-bottom: 14px;
     }
-    body.dark-mode .room-detail-meta-row { color: #94A3B8; }
+    .room-detail-desc {
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--color-text-secondary, #475569);
+        margin: 0 0 16px 0;
+    }
+    .room-detail-section-header {
+        margin: 16px 0 8px 0;
+    }
     .room-detail-facilities {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-        margin-top: 8px;
     }
     .facility-chip-full {
         display: inline-flex;
         align-items: center;
         gap: 6px;
         background: var(--color-bg-page, #F8FAFC);
-        padding: 8px 14px;
+        border: 1px solid var(--color-border, #E2E8F0);
+        padding: 7px 13px;
         border-radius: 999px;
-        font-size: 13px;
-        margin: 4px 6px 4px 0;
+        font-size: 12.5px;
         color: var(--color-text-primary, #0F172A);
+        transition: all 150ms ease-in-out;
     }
-    body.dark-mode .facility-chip-full {
-        background: rgba(255, 255, 255, 0.06);
-        color: #F1F5F9;
+    .facility-chip-full:hover {
+        background: #E2E8F0;
+        border-color: rgba(245, 166, 35, 0.4);
+        transform: translateY(-1px);
+    }
+    .room-detail-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 24px;
+        padding-top: 14px;
+        border-top: 1px solid var(--color-border, #E2E8F0);
     }
 
-    /* CASE 2 (V66): Modal Detail Permintaan */
+    /* CASE 2 (V67): Modal Detail Permintaan Pemesanan */
     .modal-detail-permintaan {
-        width: 500px;
-        max-width: 100%;
+        width: 520px;
+        max-width: 95vw;
         padding: 24px;
         position: relative;
         text-align: left;
+        border-radius: 20px;
     }
-    .permintaan-info-grid {
+    .permintaan-hero-wrapper {
+        position: relative;
+        width: calc(100% + 48px);
+        height: 160px;
+        border-radius: 20px 20px 0 0;
+        margin: -24px -24px 16px -24px;
+        overflow: hidden;
+    }
+    .permintaan-hero-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center 40%;
+        display: block;
+    }
+    .permintaan-hero-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(15,23,42,0.15) 0%, rgba(15,23,42,0.7) 100%);
+    }
+    .modal-header--safe {
         display: flex;
-        flex-direction: column;
-        gap: 14px;
+        align-items: flex-start;
+        gap: 12px;
+        width: 100%;
+        padding-right: 8px;
+    }
+    .modal-header-title-container {
+        flex: 1;
+        min-width: 0;
+    }
+    .modal-title-nowrap {
+        font-size: 18px;
+        font-weight: 800;
+        color: var(--color-text-primary, #0F172A);
+        margin: 0 0 4px 0;
+        white-space: normal;
+        line-height: 1.3;
+    }
+    .permintaan-info-grid-2col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
         margin: 16px 0;
     }
-    .permintaan-info-row {
+    @@media (max-width: 580px) {
+        .permintaan-info-grid-2col { grid-template-columns: 1fr; }
+    }
+    .permintaan-info-card {
+        background: var(--color-bg-page, #F8FAFC);
+        border: 1px solid var(--color-border, #E2E8F0);
+        border-radius: 12px;
+        padding: 12px 14px;
         display: flex;
         flex-direction: column;
         gap: 4px;
+        text-align: left;
     }
-    .btn-danger-outline {
-        background: none;
-        border: 1px solid var(--color-danger, #EF4444);
-        color: var(--color-danger, #EF4444);
-        font-size: 13px;
-        font-weight: 600;
-        padding: 8px 16px;
-        border-radius: 10px;
-        cursor: pointer;
-        transition: all 150ms;
+    .permintaan-info-card--full {
+        grid-column: 1 / -1;
     }
-    .btn-danger-outline:hover {
-        background: rgba(239, 68, 68, 0.08);
-    }
-
-    .badge-status {
-        display: inline-flex;
+    .info-card-header {
+        display: flex;
         align-items: center;
-        padding: 4px 10px;
-        border-radius: 999px;
+        gap: 6px;
+    }
+    .info-card-header .text-label-uppercase {
         font-size: 11px;
         font-weight: 700;
-        text-transform: uppercase;
         letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: #64748B;
+    }
+    .info-card-body {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        margin-top: 2px;
+    }
+    .info-card-value {
+        font-size: 13.5px;
+        font-weight: 700;
+        color: var(--color-text-primary, #0F172A);
+    }
+    .info-card-sub {
+        font-size: 12px;
+        color: var(--color-text-secondary, #64748B);
+        line-height: 1.4;
+    }
+    .badge-pending-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #FEF3C7;
+        color: #92400E;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 999px;
         width: fit-content;
     }
-    .badge-status--success { background: #DCFCE7; color: #166534; }
-    .badge-status--warning { background: #FEF3C7; color: #92400E; }
-    body.dark-mode .badge-status--success { background: rgba(34, 197, 94, 0.2); color: #4ADE80; }
-    body.dark-mode .badge-status--warning { background: rgba(245, 166, 35, 0.2); color: #FBBF24; }
+    .pending-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #F59E0B;
+    }
+    .btn-link-lihat-detail {
+        background: none;
+        border: none;
+        padding: 0;
+        margin-top: 4px;
+        color: #D97706;
+        font-size: 12px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        cursor: pointer;
+        transition: color 150ms ease;
+    }
+    .btn-link-lihat-detail:hover {
+        color: #B45309;
+        text-decoration: underline;
+    }
 
+    /* GLOBAL BUTTON HIERARCHY (V67) */
+    .btn-secondary-themed {
+        background: #F1F5F9;
+        color: #334155;
+        border: 1px solid #E2E8F0;
+        border-radius: 999px;
+        padding: 10px 22px;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 150ms ease-in-out;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .btn-secondary-themed:hover {
+        background: #E2E8F0;
+        border-color: rgba(245, 166, 35, 0.4);
+        color: #0F172A;
+        transform: translateY(-1px);
+    }
+    .btn-secondary-themed:active { transform: translateY(0); }
+
+    .btn-destructive-themed {
+        background: rgba(239, 68, 68, 0.06);
+        border: 1.5px solid #EF4444;
+        color: #EF4444;
+        border-radius: 999px;
+        padding: 10px 20px;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 150ms ease-in-out;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .btn-destructive-themed:hover {
+        background: rgba(239, 68, 68, 0.12);
+        border-color: #DC2626;
+        color: #DC2626;
+        transform: translateY(-1px);
+    }
+    .btn-destructive-themed:active { transform: translateY(0); }
+
+    .btn-primary-hero {
+        background: linear-gradient(135deg, #F5A623 0%, #D97706 100%);
+        color: #FFFFFF;
+        border: none;
+        border-radius: 999px;
+        padding: 10px 24px;
+        font-weight: 700;
+        font-size: 13px;
+        box-shadow: 0 4px 14px rgba(245, 166, 35, 0.3);
+        cursor: pointer;
+        transition: all 150ms ease-in-out;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    .btn-primary-hero:hover {
+        background: linear-gradient(135deg, #E59819 0%, #B45309 100%);
+        box-shadow: 0 6px 18px rgba(245, 166, 35, 0.4);
+        transform: translateY(-1px);
+    }
+    .btn-primary-hero:active { transform: translateY(0); }
+
+    /* DARK MODE STYLES (V67) */
+    body.dark-mode .modal-room-detail,
+    body.dark-mode .modal-detail-permintaan {
+        background: #1E293B;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    body.dark-mode .room-detail-title,
+    body.dark-mode .modal-title-nowrap,
+    body.dark-mode .info-card-value {
+        color: #F8FAFC;
+    }
+    body.dark-mode .room-detail-location,
+    body.dark-mode .room-detail-desc,
+    body.dark-mode .info-card-sub {
+        color: #94A3B8;
+    }
+    body.dark-mode .facility-chip-full {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #F1F5F9;
+    }
+    body.dark-mode .facility-chip-full:hover {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(245, 166, 35, 0.5);
+    }
+    body.dark-mode .permintaan-info-card {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+    body.dark-mode .badge-meta-pill {
+        background: rgba(255, 255, 255, 0.08);
+        color: #CBD5E1;
+    }
+    body.dark-mode .badge-status-pill--success {
+        background: rgba(34, 197, 94, 0.2);
+        color: #4ADE80;
+    }
+    body.dark-mode .badge-status-pill--warning,
+    body.dark-mode .badge-pending-pill {
+        background: rgba(245, 166, 35, 0.2);
+        color: #FBBF24;
+    }
+    body.dark-mode .btn-secondary-themed {
+        background: rgba(255, 255, 255, 0.08);
+        color: #F1F5F9;
+        border-color: rgba(255, 255, 255, 0.14);
+    }
+    body.dark-mode .btn-secondary-themed:hover {
+        background: rgba(255, 255, 255, 0.14);
+        border-color: rgba(245, 166, 35, 0.4);
+    }
+    body.dark-mode .btn-destructive-themed {
+        background: rgba(239, 68, 68, 0.12);
+        border-color: #F87171;
+        color: #FCA5A5;
+    }
+    body.dark-mode .btn-link-lihat-detail {
+        color: #FBBF24;
+    }
+    body.dark-mode .room-detail-footer {
+        border-top-color: rgba(255, 255, 255, 0.1);
+    }
     body.dark-mode .modal-close-x { background: rgba(255, 255, 255, 0.08); }
     body.dark-mode .modal-close-x:hover { background: rgba(255, 255, 255, 0.16); }
     body.dark-mode .info-banner-subtle { background: rgba(245, 166, 35, 0.15); color: #FBBF24; }
@@ -1933,7 +2317,6 @@
     body.dark-mode .pending-item:hover { background: rgba(255, 255, 255, 0.08); }
     body.dark-mode .pending-item-icon { background: rgba(245, 166, 35, 0.15); border-color: rgba(245, 166, 35, 0.3); }
     body.dark-mode .pending-item-waiting { color: #F5A623; }
-    body.dark-mode .badge-pending { background: rgba(245, 166, 35, 0.2); color: #FBBF24; }
 </style>
 
 @code {
@@ -2126,8 +2509,11 @@
         if (Modal == "ruangan") isAvailableRoomsModalOpen = true;
         else if (Modal == "pending") isPendingApprovalModalOpen = true;
         else if (Modal == "checkin") _ = HandleCheckInClick();
+        else if (Modal == "checkinsuccess") _ = HandleCheckInSuccessClick();
         else if (Modal == "detailruangan") OpenRoomDetailFromAvailable("1");
+        else if (Modal == "detailruanganalpha") OpenRoomDetailFromAvailable("4");
         else if (Modal == "detailpending") OpenDetailPermintaan("1");
+        else if (Modal == "detailpendingroom") OpenRoomDetailFromPending("Executive Boardroom A");
         else if (Modal == "konfirmasibooking") { _selectedRoomForBooking = availableRooms.FirstOrDefault(); _isConfirmBookingVisible = true; }
     }
 
@@ -2192,10 +2578,43 @@
         _isConfirmBookingVisible = true;
     }
 
+    private bool _isRoomDetailViewOnly = false;
+
+    private string GetRoomPhotoForPending(string roomName)
+    {
+        var found = availableRooms.FirstOrDefault(r => r.Name.Equals(roomName, StringComparison.OrdinalIgnoreCase))
+                    ?? RoomDataProvider.GetRoomById(roomName);
+        if (found != null && !string.IsNullOrEmpty(found.PhotoUrl)) return found.PhotoUrl;
+        return RoomDataProvider.GetRoomPhoto(null, roomName);
+    }
+
+    private void OpenRoomDetailFromPending(string roomName)
+    {
+        _selectedRoomDetail = availableRooms.FirstOrDefault(r => r.Name.Equals(roomName, StringComparison.OrdinalIgnoreCase))
+                              ?? RoomDataProvider.GetRoomById(roomName);
+        if (_selectedRoomDetail == null)
+        {
+            _selectedRoomDetail = new RoomItem(
+                Guid.NewGuid().ToString(),
+                roomName,
+                15,
+                "Ruang pertemuan representatif dengan fasilitas lengkap dan teknologi terkini untuk mendukung kelancaran kolaborasi.",
+                "available",
+                new List<string> { "Proyektor", "WiFi", "AC", "Papan Tulis", "Sound System" },
+                "3",
+                GetRoomPhotoForPending(roomName)
+            );
+        }
+        _roomDetailSource = "pending";
+        _isRoomDetailViewOnly = true;
+        _isRoomDetailModalOpen = true;
+    }
+
     private void OpenRoomDetailFromAvailable(string roomId)
     {
         _selectedRoomDetail = availableRooms.FirstOrDefault(r => r.Id == roomId) ?? RoomDataProvider.GetRoomById(roomId);
         _roomDetailSource = "available";
+        _isRoomDetailViewOnly = false;
         isAvailableRoomsModalOpen = false;
         _isRoomDetailModalOpen = true;
     }
@@ -2212,6 +2631,7 @@
             }
         }
         _roomDetailSource = "recommendation";
+        _isRoomDetailViewOnly = false;
         _isRoomDetailModalOpen = true;
     }
 
@@ -2448,7 +2868,10 @@
         showValidationError = false;
     }
 
-    private async Task HandleCheckInClick()
+    private async Task HandleCheckInClick() => await OpenCheckInModal(false);
+    private async Task HandleCheckInSuccessClick() => await OpenCheckInModal(true);
+
+    private async Task OpenCheckInModal(bool initialSuccess)
     {
         var parameters = new Dictionary<string, object>
         {
@@ -2457,7 +2880,8 @@
             { "Location", "Lantai 42, Gedung Persada Tower" },
             { "Capacity", 15 },
             { "PhotoUrl", "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80" },
-            { "TargetTime", DateTime.Now.AddMinutes(15) }
+            { "TargetTime", DateTime.Now.AddMinutes(15) },
+            { "InitialSuccess", initialSuccess }
         };
         await ModalService.ShowAsync<CheckInCountdownCard>(parameters);
     }
