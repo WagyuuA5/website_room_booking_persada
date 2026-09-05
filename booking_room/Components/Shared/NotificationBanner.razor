@@ -1,10 +1,10 @@
 @implements IDisposable
 @namespace booking_room.Components.Shared
 
-<div class="notification-banner @(BannerType == booking_room.Services.NotificationState.BannerType.ActionRequired ? "action-required" : "reminder")">
-    <div class="banner-content">
-        @if (BannerType == booking_room.Services.NotificationState.BannerType.ActionRequired)
-        {
+@if (BannerType == booking_room.Services.NotificationState.BannerType.ActionRequired)
+{
+    <div class="notification-banner action-required">
+        <div class="banner-content">
             <div class="banner-icon-circle">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="12" cy="13" r="9" stroke="#0f1f3d" stroke-width="2"/>
@@ -17,32 +17,82 @@
                 <p>Konfirmasi kehadiran dalam <strong>@RemainingTimeFormatted</strong> atau slot akan otomatis dilepas.</p>
             </div>
             <button class="banner-btn-checkin" @onclick="CheckInNow">Konfirmasi Kehadiran →</button>
-        }
-        else
+        </div>
+        @if (countdownPercentage > 0)
         {
-            <div class="banner-icon-circle">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="12" cy="12" r="9" stroke="#f59e0b" stroke-width="2"/>
-                    <path d="M12 7v5l3 3" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </div>
-            <span class="banner-bullet">•</span>
-            <span class="banner-text">Akan datang: Alpha Room pukul 09:00 (15 menit lagi)</span>
-            <button class="banner-link" @onclick="Dismiss">Nanti</button>
-            <button class="banner-btn-checkin" @onclick="CheckInNow">Konfirmasi Kehadiran</button>
+            <div class="banner-countdown-bar" style="width: @countdownPercentage.ToString("0.0")%;"></div>
         }
     </div>
-    @if (BannerType == booking_room.Services.NotificationState.BannerType.ActionRequired && countdownPercentage > 0)
-    {
-        <div class="banner-countdown-bar" style="width: @countdownPercentage.ToString("0.0")%;"></div>
-    }
-</div>
+}
+else
+{
+    <div class="reminder-strip">
+        <div class="reminder-strip-left">
+            <div class="reminder-strip-icon">
+                <img src="/icon/timer_dshbrd.svg" class="icon-sm icon-white" alt="" />
+            </div>
+            <div class="reminder-strip-text">
+                <span class="reminder-strip-title">Akan datang: @RoomName</span>
+                <span class="reminder-strip-subtitle">Pukul @(MeetingTime?.ToString("HH:mm") ?? "09:00") • @MinutesUntil menit lagi</span>
+            </div>
+        </div>
+        <div class="reminder-strip-actions">
+            <button class="btn-text-ghost" @onclick="Dismiss">Nanti</button>
+            <button class="btn-primary-hero btn-compact" @onclick="CheckInNow">Konfirmasi Kehadiran</button>
+        </div>
+    </div>
+}
+
+<style>
+.reminder-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: linear-gradient(135deg, var(--color-dark-bg, #0F1F3D) 0%, var(--color-dark-bg-secondary, #1E293B) 100%);
+    border-radius: 16px;
+    padding: 14px 18px;
+    animation: slideDownFade 300ms cubic-bezier(0.4,0,0.2,1);
+    box-shadow: 0 4px 16px rgba(15, 31, 61, 0.25);
+    margin-bottom: 24px;
+}
+@@keyframes slideDownFade {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.reminder-strip-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.reminder-strip-icon {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.icon-white {
+    filter: brightness(0) invert(1);
+}
+.reminder-strip-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.reminder-strip-title { color: white; font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.reminder-strip-subtitle { color: rgba(255,255,255,0.6); font-size: 12px; }
+.reminder-strip-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.btn-text-ghost { background: none; border: none; color: rgba(255,255,255,0.7); font-size: 13px; font-weight: 600; cursor: pointer; padding: 8px; transition: color 150ms; }
+.btn-text-ghost:hover { color: #ffffff; }
+.btn-compact { padding: 8px 16px; font-size: 13px; border-radius: 10px; }
+
+/* RESPONSIVE: di layar sempit, stack vertikal */
+@@media (max-width: 640px) {
+    .reminder-strip { flex-direction: column; align-items: stretch; gap: 12px; }
+    .reminder-strip-actions { justify-content: flex-end; }
+}
+</style>
 
 @code {
     [Parameter] public booking_room.Services.NotificationState.BannerType BannerType { get; set; }
     [Parameter] public EventCallback OnDismiss { get; set; }
     [Parameter] public EventCallback OnCheckIn { get; set; }
     [Parameter] public DateTime? TargetTime { get; set; }
+    [Parameter] public string RoomName { get; set; } = "Alpha Room";
+    [Parameter] public DateTime? MeetingTime { get; set; }
+    [Parameter] public int MinutesUntil { get; set; } = 15;
 
     private string RemainingTimeFormatted = "00:00";
     private double countdownPercentage = 100;

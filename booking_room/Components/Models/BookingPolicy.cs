@@ -58,10 +58,10 @@ public static class BookingPolicy
 
     /// <summary>
     /// Checks if the informative "Lihat Jadwal Ruangan" button can be shown.
-    /// Informative and read-only; always available for all statuses.
+    /// Informative and read-only; hidden for pending approval (Menunggu Persetujuan) status.
     /// </summary>
-    public static bool CanViewRoomSchedule(BookingStatus status) => true;
-    public static bool CanViewRoomSchedule(string? status) => true;
+    public static bool CanViewRoomSchedule(BookingStatus status) => status != BookingStatus.Pending;
+    public static bool CanViewRoomSchedule(string? status) => CanViewRoomSchedule(ParseStatus(status));
 
     /// <summary>
     /// Returns the Indonesian user-facing label for a status.

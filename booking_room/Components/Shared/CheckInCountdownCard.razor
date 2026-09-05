@@ -77,6 +77,16 @@
                     </div>
                 </div>
 
+                <div class="checkin-facilities-section">
+                    <span class="text-label-uppercase">Fasilitas Ruangan</span>
+                    <div class="room-detail-facilities">
+                        @foreach (var f in GetRoomFacilities())
+                        {
+                            <span class="facility-chip-full"><img src="@f.IconPath" class="icon-xs" alt="" /> @f.Name</span>
+                        }
+                    </div>
+                </div>
+
                 <div class="checkin-actions">
                     <button class="btn-primary-hero btn-full-width" @onclick="ConfirmCheckIn">
                         <img src="/icon/icon_check_circle.svg" class="icon-sm icon-white" alt="" /> Konfirmasi Kehadiran
@@ -94,7 +104,7 @@
                         </div>
                     }
                     <button class="btn-text-danger" @onclick="OpenCancelModal">
-                        Lepas / Batalkan Pemesanan
+                        Batalkan Pemesanan
                     </button>
                 </div>
             </div>
@@ -102,13 +112,53 @@
     </BodyContent>
 </AppModal>
 
+@if (_showExtendModal)
+{
+    <div class="modal-overlay modal-extend-time-overlay" @onclick="() => _showExtendModal = false">
+        <div class="modal-card modal-extend-time" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <div class="modal-header-icon modal-header-icon--info">
+                    <img src="/icon/timer_dshbrd.svg" class="icon-md" alt="" />
+                </div>
+                <div>
+                    <h3 class="text-section-title">Minta Waktu Tambahan</h3>
+                    <p class="text-body-secondary">Perpanjang waktu konfirmasi kehadiran untuk @RoomName</p>
+                </div>
+                <button class="modal-close-x" @onclick="() => _showExtendModal = false" aria-label="Tutup">
+                    <img src="/icon/icon_close.svg" class="icon-sm" alt="" />
+                </button>
+            </div>
+            <hr class="modal-divider" />
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label class="text-label-uppercase">Durasi Tambahan</label>
+                <div class="duration-chip-group">
+                    <button type="button" class="duration-chip @(_selectedExtendDuration == 10 ? "active" : "")" @onclick="() => _selectedExtendDuration = 10">+10 menit</button>
+                    <button type="button" class="duration-chip @(_selectedExtendDuration == 15 ? "active" : "")" @onclick="() => _selectedExtendDuration = 15">+15 menit</button>
+                    <button type="button" class="duration-chip @(_selectedExtendDuration == 30 ? "active" : "")" @onclick="() => _selectedExtendDuration = 30">+30 menit</button>
+                </div>
+            </div>
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label class="text-label-uppercase">Alasan Penambahan Waktu <span class="text-danger">*</span></label>
+                <textarea class="textarea-modern" placeholder="Contoh: Masih dalam perjalanan menuju ruangan, rapat sebelumnya molor, dst."
+                          @bind="_extendReason" rows="3"></textarea>
+            </div>
+            <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn-secondary" @onclick="() => _showExtendModal = false">Batal</button>
+                <button type="button" class="btn-primary-hero" @onclick="ConfirmExtendTime" disabled="@(string.IsNullOrWhiteSpace(_extendReason) || _selectedExtendDuration == 0)">
+                    Ajukan Penambahan Waktu
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
 <!-- CASE 8c: Reuse Modal Konfirmasi Pembatalan (V49/V50) dengan Alasan Wajib -->
 <CancelBookingModal Visible="@_showCancelModal"
                     VisibleChanged="@(v => _showCancelModal = v)"
                     OnClose="@(() => _showCancelModal = false)"
-                    Title="Lepas / Batalkan Pemesanan?"
+                    Title="Batalkan Pemesanan?"
                     RoomName="@RoomName"
-                    WarningMessage="@($"Apakah Anda yakin ingin melepas/membatalkan pemesanan <strong>{RoomName}</strong>? Ruangan akan dibebaskan untuk dipesan orang lain.")"
+                    WarningMessage="@($"Apakah Anda yakin ingin membatalkan pemesanan <strong>{RoomName}</strong>? Ruangan akan dibebaskan untuk dipesan orang lain.")"
                     OnConfirmCancel="HandleConfirmReleaseWithReason" />
 
 <style>
@@ -182,12 +232,12 @@
     }
     .checkin-hero {
         position: relative;
-        height: 120px;
+        height: 160px;
         border-radius: 20px 20px 0 0;
         overflow: hidden;
         margin: -24px -28px 0 -28px; /* full-bleed di dalam modal padding standar */
     }
-    .checkin-hero-bg { width: 100%; height: 100%; object-fit: cover; }
+    .checkin-hero-bg { width: 100%; height: 100%; object-fit: cover; object-position: center 40%; }
     .checkin-hero-overlay {
         position: absolute; inset: 0;
         background: linear-gradient(180deg, rgba(15,23,42,0.1) 0%, rgba(15,23,42,0.75) 100%);
@@ -293,11 +343,103 @@
     }
     .btn-text-danger:hover { text-decoration: underline; }
 
-    .extension-limit-notice {
-        font-size: 0.75rem;
-        color: #94A3B8;
-        padding: 4px;
-        text-align: center;
+    .checkin-facilities-section {
+        text-align: left;
+        margin-bottom: 20px;
+    }
+    .room-detail-facilities {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 8px;
+    }
+    .facility-chip-full {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--color-bg-page, #F8FAFC);
+        padding: 8px 14px;
+        border-radius: 999px;
+        font-size: 13px;
+        color: var(--color-text-primary, #0F172A);
+    }
+    body.dark-mode .facility-chip-full {
+        background: rgba(255, 255, 255, 0.06);
+        color: #F1F5F9;
+    }
+    .modal-extend-time-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 1050;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        animation: fadeIn 200ms ease;
+    }
+    .modal-extend-time {
+        background: #FFFFFF;
+        border-radius: 20px;
+        padding: 24px;
+        max-width: 440px;
+        width: 100%;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        text-align: left;
+        animation: modalScaleIn 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    body.dark-mode .modal-extend-time {
+        background: #1E293B;
+        color: #FFFFFF;
+    }
+    .duration-chip-group {
+        display: flex;
+        gap: 8px;
+        margin-top: 6px;
+    }
+    .duration-chip {
+        flex: 1;
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid var(--color-border, #E2E8F0);
+        background: white;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 150ms ease-in-out;
+        color: var(--color-text-primary, #0F172A);
+    }
+    body.dark-mode .duration-chip {
+        background: #0F172A;
+        border-color: #334155;
+        color: #F1F5F9;
+    }
+    .duration-chip.active {
+        background: var(--color-primary-light, #FEF6EC);
+        border-color: var(--color-primary, #F5A623);
+        color: var(--color-primary-dark, #D97706);
+    }
+    .textarea-modern {
+        width: 100%;
+        border-radius: 10px;
+        border: 1px solid var(--color-border, #E2E8F0);
+        padding: 10px 12px;
+        font-size: 13px;
+        font-family: inherit;
+        resize: vertical;
+        outline: none;
+        margin-top: 6px;
+        box-sizing: border-box;
+    }
+    .textarea-modern:focus {
+        border-color: var(--color-primary, #F5A623);
+        box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.15);
+    }
+    body.dark-mode .textarea-modern {
+        background: #0F172A;
+        border-color: #334155;
+        color: #F1F5F9;
     }
 </style>
 
@@ -321,6 +463,42 @@
     private int _extensionCount = 0;
     private bool _isConfirmedSuccess = false;
     private bool _showCancelModal = false;
+    private bool _showExtendModal = false;
+    private int _selectedExtendDuration = 10;
+    private string _extendReason = "";
+
+    public record CheckinFacility(string Name, string IconPath);
+
+    private IEnumerable<CheckinFacility> GetRoomFacilities()
+    {
+        var room = RoomDataProvider.GetRooms().FirstOrDefault(r => r.Name.Equals(RoomName, StringComparison.OrdinalIgnoreCase));
+        if (room != null && room.Amenities != null && room.Amenities.Any())
+        {
+            foreach (var a in room.Amenities)
+            {
+                var icon = a.ToLowerInvariant() switch
+                {
+                    "proyektor" or "projector" => "/icon/icon_projector.svg",
+                    "ac" => "/icon/icon_ac.svg",
+                    "wifi" => "/icon/icon_wifi.svg",
+                    "konferensi video" or "video conference" or "video conf" => "/icon/icon_video_conf.svg",
+                    "papan tulis" or "whiteboard" => "/icon/icon_whiteboard.svg",
+                    "sistem audio" or "audio system" or "sound system" => "/icon/icon_audio.svg",
+                    "aksesibilitas" or "accessibility" => "/icon/icon_accessibility.svg",
+                    "tv" or "tv led" or "smart tv" => "/icon/icon_tv.svg",
+                    _ => "/icon/icon_check_circle.svg"
+                };
+                yield return new CheckinFacility(a, icon);
+            }
+        }
+        else
+        {
+            yield return new CheckinFacility("Proyektor 4K", "/icon/icon_projector.svg");
+            yield return new CheckinFacility("Video Conference", "/icon/icon_video_conf.svg");
+            yield return new CheckinFacility("High-Speed WiFi", "/icon/icon_wifi.svg");
+            yield return new CheckinFacility("Papan Tulis", "/icon/icon_whiteboard.svg");
+        }
+    }
 
     private double GetTimerOffset()
     {
@@ -426,7 +604,7 @@
         await ModalService.CloseTopAsync(ModalResult.Ok());
     }
 
-    // CASE 8b: Perpanjangan Waktu Tanpa Reload/Error
+    // CASE 6 (V66): Minta Waktu Tambahan dengan Modal Pemilihan Durasi & Alasan
     private void RequestExtraTime()
     {
         if (_extensionCount >= 2)
@@ -435,12 +613,23 @@
             return;
         }
 
-        TargetTime = TargetTime.AddMinutes(10);
-        _totalSeconds += 10 * 60;
+        _selectedExtendDuration = 10;
+        _extendReason = "";
+        _showExtendModal = true;
+    }
+
+    private void ConfirmExtendTime()
+    {
+        if (string.IsNullOrWhiteSpace(_extendReason) || _selectedExtendDuration == 0) return;
+        if (_extensionCount >= 2) return;
+
+        TargetTime = TargetTime.AddMinutes(_selectedExtendDuration);
+        _totalSeconds += _selectedExtendDuration * 60;
         _extensionCount++;
+        _showExtendModal = false;
         UpdateCountdown();
 
-        ToastService.Info("Waktu Tambahan Diberikan", "Waktu konfirmasi kehadiran berhasil diperpanjang 10 menit.");
+        ToastService.Info("Waktu Tambahan Diberikan", $"Waktu konfirmasi kehadiran berhasil diperpanjang {_selectedExtendDuration} menit.");
     }
 
     // CASE 8c: Buka Modal Pembatalan dengan Alasan Wajib (Reused CancelBookingModal)
