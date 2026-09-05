@@ -10,10 +10,10 @@
 <div class="boarding-viewport" id="boardingViewport">
     <!-- Background Slides Full-Bleed dengan Parallax -->
     <div class="boarding-bg-layer" id="boardingBgLayer">
-        <div class="boarding-bg-slide" id="boardingBg0">
+        <div class="boarding-bg-slide @(currentSlide == 0 ? "active" : "")" id="boardingBg0">
             <img src="/images/FOTO_GEDUNG_PERSADA.png" alt="Gedung Persada Eksterior" class="boarding-bg-img ken-burns" />
         </div>
-        <div class="boarding-bg-slide" id="boardingBg1">
+        <div class="boarding-bg-slide @(currentSlide == 1 ? "active" : "")" id="boardingBg1">
             <img src="/images/FOTO_GEDUNG_PERSADA (2).png" alt="Gedung Persada Sudut" class="boarding-bg-img ken-burns" />
         </div>
         <!-- Gradient Overlay Langsung ke Foto Latar -->
@@ -25,16 +25,16 @@
         <div class="boarding-logo-wrap">
             <img src="/icons/logoo_psd-removebg-preview.svg" alt="Persada Logo" class="boarding-brand-logo" />
         </div>
-        <button type="button" class="btn-boarding-skip" id="btnBoardingSkip" @onclick="SkipBoarding">
+        <button type="button" class="btn-boarding-skip" id="btnBoardingSkip" @onclick="SkipBoarding" @onclick:stopPropagation="true">
             Lewati
         </button>
     </header>
 
-    <!-- Main Content: Teks Hero Langsung di Atas Foto dengan Transisi Modern -->
+    <!-- Main Content: Teks Hero Langsung di Atas Foto dengan Transisi Modern & Tap-to-Advance -->
     <main class="boarding-hero-wrapper" id="boardingHeroWrapper">
         <div class="boarding-slides-track" id="boardingSlidesTrack">
             <!-- Slide 0 -->
-            <div class="boarding-hero-text" id="boardingSlide0">
+            <div class="boarding-hero-text @(currentSlide == 0 ? "active" : "")" id="boardingSlide0">
                 <div class="boarding-badge-solid">
                     KOLABORASI MODERN
                 </div>
@@ -47,7 +47,7 @@
             </div>
 
             <!-- Slide 1 -->
-            <div class="boarding-hero-text" id="boardingSlide1">
+            <div class="boarding-hero-text @(currentSlide == 1 ? "active" : "")" id="boardingSlide1">
                 <div class="boarding-badge-solid">
                     SISTEM MANAJEMEN RUANGAN
                 </div>
@@ -60,10 +60,10 @@
             </div>
         </div>
 
-        <!-- Indikator Titik Pagination (Murni Visual, Tanpa Tombol / Navigasi Klik) -->
+        <!-- Indikator Titik Pagination (Murni Visual, Terikat Langsung ke State) -->
         <div class="boarding-pagination" aria-label="Indikator posisi slide">
-            <span class="boarding-dot active" id="boardingDot0"></span>
-            <span class="boarding-dot" id="boardingDot1"></span>
+            <span class="boarding-dot @(currentSlide == 0 ? "active" : "")" id="boardingDot0"></span>
+            <span class="boarding-dot @(currentSlide == 1 ? "active" : "")" id="boardingDot1"></span>
         </div>
     </main>
 
@@ -106,10 +106,20 @@
         position: absolute;
         inset: 0;
         will-change: transform, opacity;
+        transition: transform 450ms cubic-bezier(0.22, 1, 0.36, 1), opacity 450ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .boarding-bg-slide.active {
+        opacity: 1;
         transform: translate3d(0, 0, 0);
     }
 
-    #boardingBg1 {
+    #boardingBg0:not(.active) {
+        opacity: 0;
+        transform: translate3d(-25%, 0, 0);
+    }
+
+    #boardingBg1:not(.active) {
         opacity: 0;
         transform: translate3d(25%, 0, 0);
     }
@@ -218,10 +228,22 @@
         gap: 16px;
         text-align: left;
         will-change: transform, opacity;
-        transform: translate3d(0, 0, 0) scale(1);
+        transition: transform 450ms cubic-bezier(0.22, 1, 0.36, 1), opacity 450ms cubic-bezier(0.22, 1, 0.36, 1);
     }
 
-    #boardingSlide1 {
+    .boarding-hero-text.active {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+        pointer-events: auto;
+    }
+
+    #boardingSlide0:not(.active) {
+        opacity: 0;
+        pointer-events: none;
+        transform: translate3d(-100vw, 0, 0) scale(0.96);
+    }
+
+    #boardingSlide1:not(.active) {
         opacity: 0;
         pointer-events: none;
         transform: translate3d(100vw, 0, 0) scale(0.96);
@@ -327,6 +349,7 @@
 
     private int currentSlide = 0;
     private DotNetObjectReference<Boarding>? _dotNetRef;
+    private bool _isAdvancing = false;
 
     protected override void OnParametersSet()
     {
@@ -350,15 +373,38 @@
     }
 
     [JSInvokable]
-    public void OnSlideChanged(int slide)
+    public async Task OnSlideChanged(int slide)
     {
         currentSlide = slide;
+        await InvokeAsync(StateHasChanged);
     }
 
     [JSInvokable]
     public async Task OnCompleteBoarding()
     {
         await CompleteBoarding();
+    }
+
+    private async Task HandleScreenTap()
+    {
+        if (_isAdvancing) return;
+        _isAdvancing = true;
+
+        if (currentSlide == 0)
+        {
+            currentSlide = 1;
+            await InvokeAsync(StateHasChanged);
+            try
+            {
+                await JS.InvokeVoidAsync("BoardingSlider.goToSlide", 1);
+            }
+            catch { }
+            _isAdvancing = false;
+        }
+        else
+        {
+            await CompleteBoarding();
+        }
     }
 
     private async Task SkipBoarding()
