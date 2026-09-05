@@ -1,0 +1,42 @@
+@code {
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private async Task Download()
+    {
+        await OnClose.InvokeAsync();
+    }
+}
+
+<div>
+    <h3 class="modal-title">Unduh Data Saya</h3>
+    <p class="modal-subtitle">Minta salinan data pribadi Anda. Tautan unduhan akan dikirim ke email Anda.</p>
+
+    <div class="info-box">
+        <p>Data yang disertakan:</p>
+        <ul>
+            <li>Informasi Profil</li>
+            <li>Riwayat Pemesanan</li>
+            <li>Log Aktivitas</li>
+            <li>Pengaturan Akun</li>
+        </ul>
+    </div>
+
+    <div class="modal-actions">
+        <button class="btn btn-secondary" @onclick="OnClose">Tutup</button>
+        <button class="btn btn-primary" @onclick="Download">Minta Data</button>
+    </div>
+</div>
+
+<style>
+    .modal-title { font-size: 1.25rem; font-weight: 600; color: #16305C; margin-bottom: 0.5rem; }
+    .modal-subtitle { font-size: 0.875rem; color: #6B7280; margin-bottom: 1.5rem; }
+    .info-box { background-color: var(--surface-card, #FFFFFF); border: 1px solid var(--divider-subtle, rgba(15, 23, 42, 0.08)); padding: 1rem; border-radius: 14px; font-size: 0.875rem; color: #374151; }
+    .info-box p { font-weight: 500; margin-bottom: 0.5rem; margin-top: 0; }
+    .info-box ul { margin: 0; padding-left: 1.5rem; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 2rem; }
+    .btn { padding: 0.5rem 1rem; border-radius: 999px; font-size: 0.875rem; font-weight: 500; cursor: pointer; border: none; transition: background-color 0.2s; }
+    .btn-secondary { background-color: #F3F4F6; color: #374151; }
+    .btn-secondary:hover { background-color: #E5E7EB; }
+    .btn-primary { background-color: #16305C; color: white; }
+    .btn-primary:hover { background-color: #0F2346; }
+</style>

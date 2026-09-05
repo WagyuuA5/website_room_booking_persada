@@ -1,9 +1,983 @@
 @page "/bookings"
-@inherits LayoutComponentBase
+@page "/pemesanan"
+@using booking_room.Components.Shared
+@using booking_room.Components.Models
+@using booking_room.Services
+@using System.Globalization
+@inject NavigationManager Navigation
+@inject booking_room.Services.LoadingStateService LoadingState
+@inject booking_room.Services.IToastService ToastService
+@implements IDisposable
 
-<PageTitle>Bookings - PADA Management</PageTitle>
+<PageTitle>@GetPageHeader().Title</PageTitle>
 
-<div class="hero-card">
-    <h1 class="hero-title">Pemesanan Ruangan</h1>
-    <p class="hero-subtitle">Fitur pemesanan ruangan akan segera tersedia.</p>
+<div class="bookings-page">
+    <!-- Header Halaman -->
+    <div class="bookings-page-header">
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <InlineSvg Src="@GetPageHeader().Icon" Class="bookings-header-icon" Style="width: 28px; height: 28px; stroke: currentColor; fill: none;" />
+            <h1 class="bookings-page-title mb-0">@GetPageHeader().Title</h1>
+        </div>
+        <p class="bookings-page-subtitle">@GetPageHeader().Subtitle</p>
+    </div>
+
+    <!-- TAB SWITCHER / SEGMENTED CONTROL (Requirement CASE 2: Tepat di bawah judul & subjudul) -->
+    <div class="booking-tabs-bar">
+        <div class="booking-segmented-control">
+            <button type="button" class="booking-tab-btn @(_activeTab == "ruangan" ? "active" : "")" @onclick='() => SwitchTab("ruangan")'>
+                <InlineSvg Src="/icons/icon_pemesanan.svg" Class="tab-icon" Style="width: 20px; height: 20px; stroke: currentColor; fill: none;" />
+                <span>Pemesanan Ruangan</span>
+            </button>
+            <button type="button" class="booking-tab-btn @(_activeTab == "kalender" ? "active" : "")" @onclick='() => SwitchTab("kalender")'>
+                <InlineSvg Src="/icons/icon_calendar_grid.svg" Class="tab-icon" Style="width: 20px; height: 20px; stroke: currentColor; fill: none;" />
+                <span>Kalender Pemesanan</span>
+            </button>
+            <button type="button" class="booking-tab-btn @(_activeTab == "fasilitas" ? "active" : "")" @onclick='() => SwitchTab("fasilitas")'>
+                <InlineSvg Src="/icons/icon_facility.svg" Class="tab-icon" Style="width: 20px; height: 20px; stroke: currentColor; fill: none;" />
+                <span>Permintaan Fasilitas</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Search Bar (HANYA tampil saat tab "ruangan" aktif - Requirement A.5) -->
+    @if (_activeTab == "ruangan")
+    {
+        @if (_isLoading)
+        {
+            <!-- SKELETON SEARCH CARD (FULL SYNCHRONIZED LOADING) -->
+            <div class="search-card skeleton-search-card">
+                <div class="skeleton-box" style="width: 140px; height: 14px; margin-bottom: 12px; border-radius: 4px;"></div>
+                <div class="skeleton-box" style="width: 100%; height: 46px; border-radius: 12px; margin-bottom: 20px;"></div>
+
+                <div class="search-filters">
+                    <div class="filter-group date-group">
+                        <div class="skeleton-box" style="width: 70px; height: 12px; margin-bottom: 8px; border-radius: 4px;"></div>
+                        <div class="skeleton-box" style="width: 100%; height: 44px; border-radius: 10px;"></div>
+                    </div>
+                    <div class="filter-group time-duration-group">
+                        <div class="skeleton-box" style="width: 120px; height: 12px; margin-bottom: 8px; border-radius: 4px;"></div>
+                        <div style="display: flex; gap: 8px;">
+                            <div class="skeleton-box" style="flex: 1; height: 44px; border-radius: 10px;"></div>
+                            <div class="skeleton-box" style="flex: 1; height: 44px; border-radius: 10px;"></div>
+                        </div>
+                    </div>
+                    <div class="filter-group attendees-group">
+                        <div class="skeleton-box" style="width: 60px; height: 12px; margin-bottom: 8px; border-radius: 4px;"></div>
+                        <div class="skeleton-box" style="width: 100%; height: 44px; border-radius: 10px;"></div>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="fade-in-content">
+                <!-- SEARCH ROOMS CARD -->
+                <div class="search-card">
+                    <label class="search-label">CARI RUANGAN</label>
+                    <div class="search-input-wrapper">
+                        <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" class="search-input" placeholder="Cari berdasarkan nama ruangan, gedung, atau lantai..." @bind="_searchQuery" @bind:event="oninput" @onkeyup="ApplyFilter" aria-label="Cari Ruangan" />
+                    </div>
+
+                    <div class="search-filters">
+                        <!-- FIELD TANGGAL -->
+                        <div class="filter-group date-group">
+                            <label class="search-label">TANGGAL</label>
+                            <div class="input-with-icon cursor-pointer clickable-field" @onclick="OpenDatePicker" role="button" tabindex="0" title="Klik untuk pilih tanggal">
+                                <svg class="input-icon interactive-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                                <input type="text" class="filter-input cursor-pointer" readonly value="@GetFormattedDateString()" tabindex="-1" style="pointer-events: none;" />
+                                <svg class="dropdown-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- FIELD WAKTU & DURASI -->
+                        <div class="filter-group time-duration-group">
+                            <label class="search-label">WAKTU & DURASI</label>
+                            <div class="time-duration-inputs">
+                                <div class="input-with-icon time-input cursor-pointer clickable-field" @onclick="OpenTimePicker" role="button" tabindex="0" title="Klik untuk pilih waktu">
+                                    <svg class="input-icon interactive-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <polyline points="12 6 12 12 16 14"></polyline>
+                                    </svg>
+                                    <input type="text" class="filter-input cursor-pointer" readonly value="@_selectedBookingTime" tabindex="-1" style="pointer-events: none;" />
+                                    <svg class="dropdown-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </div>
+                                <div class="duration-select-wrapper">
+                                    <select class="duration-select" @bind="_selectedDuration" aria-label="Durasi Pemesanan">
+                                        <option value="1">1 Jam</option>
+                                        <option value="2">2 Jam</option>
+                                        <option value="3">3 Jam</option>
+                                        <option value="4">4 Jam</option>
+                                        <option value="8">Seharian (8 Jam)</option>
+                                    </select>
+                                    <svg class="dropdown-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FIELD PESERTA -->
+                        <div class="filter-group attendees-group">
+                            <label class="search-label">PESERTA</label>
+                            <div class="input-with-icon">
+                                <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                                <input type="number" min="0" class="filter-input" placeholder="0 Orang" @bind="_filterCapacity" @bind:event="oninput" @onkeyup="ApplyFilter" aria-label="Jumlah Peserta" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+
+    <!-- KONTEN SESUAI TAB AKTIF -->
+    @if (_isTabSwitching)
+    {
+        <!-- SKELETON TRANSITION -->
+        <div class="tab-skeleton-container fade-in-content">
+            <div class="skeleton-shimmer" style="height: 38px; border-radius: 8px; width: 45%; margin-bottom: 18px;"></div>
+            <div class="rooms-grid">
+                @for (int i = 0; i < 4; i++)
+                {
+                    <div class="room-card skeleton-room-card" style="pointer-events: none;">
+                        <div class="skeleton-box" style="width: 100%; height: 180px; border-radius: 12px 12px 0 0;"></div>
+                        <div class="room-content" style="padding: 16px;">
+                            <div class="skeleton-box" style="width: 60%; height: 20px; margin-bottom: 12px;"></div>
+                            <div class="skeleton-box" style="width: 100%; height: 14px; margin-bottom: 8px;"></div>
+                            <div class="skeleton-box" style="width: 80%; height: 14px; margin-bottom: 16px;"></div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else if (_activeTab == "ruangan")
+    {
+        @if (_isLoading)
+        {
+            <!-- SKELETON ROOM CARDS GRID -->
+            <div class="rooms-grid">
+                @for (int i = 0; i < 6; i++)
+                {
+                    <div class="room-card skeleton-room-card" style="pointer-events: none;">
+                        <div class="skeleton-box" style="width: 100%; height: 180px; border-radius: 12px 12px 0 0;"></div>
+                        <div class="room-content" style="padding: 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <div class="skeleton-box" style="width: 55%; height: 20px;"></div>
+                                <div class="skeleton-box" style="width: 25%; height: 20px; border-radius: 6px;"></div>
+                            </div>
+                            <div class="skeleton-box" style="width: 100%; height: 13px; margin-bottom: 6px;"></div>
+                            <div class="skeleton-box" style="width: 75%; height: 13px; margin-bottom: 16px;"></div>
+                            <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                                <div class="skeleton-box" style="width: 60px; height: 22px; border-radius: 999px;"></div>
+                                <div class="skeleton-box" style="width: 60px; height: 22px; border-radius: 999px;"></div>
+                                <div class="skeleton-box" style="width: 60px; height: 22px; border-radius: 999px;"></div>
+                            </div>
+                            <div class="skeleton-box" style="width: 90px; height: 28px; border-radius: 999px; margin-left: auto;"></div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="fade-in-content">
+                <!-- ROOMS GRID -->
+                <div class="rooms-grid">
+                    @foreach (var room in _filteredRooms)
+                    {
+                        <div class="room-card" @onclick="() => ViewDetail(room)" role="button" tabindex="0">
+                            <div class="room-image-wrapper">
+                                <img src="@room.PhotoUrl" alt="@room.Name" />
+                                <div class="status-island-container">
+                                    <StatusIsland Status="@ParseRoomStatus(room.Status)" RemainingMinutes="@GetRoomRemainingMinutes(room.Id)" />
+                                </div>
+                            </div>
+                            <div class="room-content">
+                                <div class="room-title-row">
+                                    <h3>@room.Name</h3>
+                                    <div class="capacity-badge" title="Kapasitas Ruangan">
+                                        <InlineSvg Src="icons/icon_group.svg" Class="icon-xs" Style="stroke: currentColor; fill: none;" />
+                                        <span class="capacity-badge-text">@room.Capacity Orang</span>
+                                    </div>
+                                </div>
+                                <p class="room-desc">@room.Description</p>
+                                <div class="amenities-row">
+                                    @foreach (var am in room.Amenities.Take(4))
+                                    {
+                                        var amenityItem = RoomAmenity.Create(am);
+                                        <span class="amenity-pill">
+                                            <FacilityIcon Name="@amenityItem.Name" SvgPath="@amenityItem.IconSvgPath" Size="13" />
+                                            <span>@LocalizeAmenity(amenityItem.Name)</span>
+                                        </span>
+                                    }
+                                </div>
+                                <div class="room-footer">
+                                    <button type="button" class="view-details-btn" @onclick:stopPropagation="true" @onclick="() => ViewDetail(room)">
+                                        LIHAT DETAIL
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 4px;">
+                                            <polyline points="9 18 15 12 9 6"></polyline>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+    else if (_activeTab == "kalender")
+    {
+        <div class="fade-in-content">
+            <RoomCalendarView />
+        </div>
+    }
+    else if (_activeTab == "fasilitas")
+    {
+        <div class="fade-in-content">
+            <FacilityRequestsView HighlightRoomName="@HighlightRoom" HighlightId="@HighlightId" />
+        </div>
+    }
 </div>
+
+<!-- MODAL DIALOGS -->
+<DatePickerModal @bind-Visible="_isBookingDatePickerOpen" SelectedDate="_selectedBookingDate" OnDateSelected="HandleBookingDateSelected" />
+<TimePickerModal @bind-Visible="_isBookingTimePickerOpen" SelectedTime="_selectedBookingTime" OnTimeSelected="HandleBookingTimeSelected" />
+<RoomDetailsModal @bind-Visible="_isRoomDetailVisible" Room="_selectedRoomForDetail" OnBook="() => ProceedToBook(_selectedRoomForDetail)" />
+<ConfirmBookingModal @bind-Visible="_isConfirmBookingVisible" Room="_selectedRoomForBooking" />
+
+<style>
+    .bookings-page {
+        padding: 32px 40px;
+        background: #F8FAFC;
+        min-height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    body.dark-mode .bookings-page {
+        background: var(--color-neutral-900, #1D1D1F);
+    }
+
+    /* SEARCH CARD */
+    .search-card {
+        background: #FFFFFF;
+        border-radius: 16px;
+        padding: 28px 32px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+        margin-bottom: 32px;
+        border: 1px solid #F1F5F9;
+    }
+    body.dark-mode .search-card {
+        background: #252529;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .search-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #64748B;
+        letter-spacing: 0.6px;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        display: block;
+    }
+    body.dark-mode .search-label { color: #94A3B8; }
+
+    .search-input-wrapper {
+        display: flex;
+        align-items: center;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 10px;
+        padding: 0 16px;
+        height: 50px;
+        margin-bottom: 24px;
+        background: #FFFFFF;
+        transition: all 0.2s ease;
+    }
+    .search-input-wrapper:hover {
+        border-color: #CBD5E1;
+    }
+    .search-input-wrapper:focus-within {
+        border-color: #F59E0B;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+    }
+    body.dark-mode .search-input-wrapper { 
+        background: #1D1D1F; 
+        border-color: #374151; 
+    }
+    body.dark-mode .search-input-wrapper:focus-within {
+        border-color: #F59E0B;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+    }
+
+    .search-icon {
+        color: #94A3B8;
+        margin-right: 12px;
+        flex-shrink: 0;
+    }
+
+    .search-input {
+        border: none;
+        outline: none;
+        width: 100%;
+        font-size: 15px;
+        font-weight: 500;
+        color: #0F172A;
+        background: transparent;
+    }
+    .search-input::placeholder {
+        color: #94A3B8;
+    }
+    body.dark-mode .search-input { color: #F9FAFB; }
+
+    .search-filters {
+        display: flex;
+        gap: 20px;
+        align-items: flex-end;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+    }
+    .date-group { flex: 1.3; }
+    .time-duration-group { flex: 2; }
+    .attendees-group { flex: 1.1; }
+
+    .input-with-icon {
+        display: flex;
+        align-items: center;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 10px;
+        padding: 0 14px;
+        height: 48px;
+        background: #FFFFFF;
+        transition: all 0.2s ease;
+    }
+    .input-with-icon:hover {
+        border-color: #CBD5E1;
+    }
+    .input-with-icon:focus-within {
+        border-color: #F59E0B;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+    }
+    .clickable-field {
+        cursor: pointer;
+        user-select: none;
+    }
+    .clickable-field:hover {
+        border-color: #F59E0B;
+        background: #FFFBEB;
+    }
+    body.dark-mode .clickable-field:hover {
+        background: rgba(245, 158, 11, 0.08);
+        border-color: #F59E0B;
+    }
+    .cursor-pointer { cursor: pointer; }
+    body.dark-mode .input-with-icon { 
+        background: #1D1D1F; 
+        border-color: #374151; 
+    }
+    body.dark-mode .input-with-icon:focus-within {
+        border-color: #F59E0B;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+    }
+
+    .input-icon {
+        color: #64748B;
+        margin-right: 10px;
+        flex-shrink: 0;
+        transition: color 0.2s;
+    }
+    .clickable-field:hover .interactive-icon {
+        color: #F59E0B;
+    }
+    .dropdown-arrow-icon {
+        color: #94A3B8;
+        margin-left: 6px;
+        flex-shrink: 0;
+    }
+
+    .filter-input {
+        border: none;
+        outline: none;
+        width: 100%;
+        font-size: 14px;
+        font-weight: 600;
+        color: #0F172A;
+        background: transparent;
+    }
+    .filter-input::placeholder {
+        color: #94A3B8;
+        font-weight: 400;
+    }
+    body.dark-mode .filter-input { color: #F9FAFB; }
+
+    .time-duration-inputs {
+        display: flex;
+        gap: 12px;
+    }
+    .time-input {
+        flex: 1.3;
+    }
+
+    .duration-select-wrapper {
+        flex: 1;
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    .duration-select {
+        width: 100%;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 10px;
+        padding: 0 34px 0 14px;
+        height: 48px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #0F172A;
+        background: #FFFFFF;
+        appearance: none;
+        cursor: pointer;
+        outline: none;
+        transition: all 0.2s ease;
+    }
+    .duration-select:hover {
+        border-color: #CBD5E1;
+    }
+    .duration-select:focus {
+        border-color: #F59E0B;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+    }
+    body.dark-mode .duration-select { 
+        background: #1D1D1F; 
+        border-color: #374151; 
+        color: #F9FAFB;
+    }
+    body.dark-mode .duration-select:focus {
+        border-color: #F59E0B;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+    }
+    
+    .dropdown-icon {
+        position: absolute;
+        right: 12px;
+        color: #64748B;
+        pointer-events: none;
+    }
+
+    /* ROOM CARDS GRID */
+    .rooms-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 24px;
+    }
+
+    .room-card {
+        background: #FFFFFF;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+        border: 1px solid #F1F5F9;
+        display: flex;
+        flex-direction: column;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    .room-card:hover {
+        transform: scale(1.02);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+        border-color: #E2E8F0;
+    }
+    body.dark-mode .room-card {
+        background: #252529;
+        border-color: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+    body.dark-mode .room-card:hover {
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
+        border-color: rgba(255, 255, 255, 0.15);
+        transform: scale(1.02);
+    }
+
+    .room-image-wrapper {
+        position: relative;
+        width: 100%;
+        height: 200px;
+        overflow: hidden;
+    }
+    .room-image-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    .room-card:hover .room-image-wrapper img {
+        transform: scale(1.03);
+    }
+
+    .status-island-container {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        z-index: 2;
+    }
+
+    .room-content {
+        padding: 22px 24px;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    .room-title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 8px;
+        gap: 12px;
+    }
+    .room-title-row h3 {
+        font-size: 17px;
+        font-weight: 700;
+        color: #0F172A;
+        margin: 0;
+        line-height: 1.35;
+    }
+    body.dark-mode .room-title-row h3 { color: #F9FAFB; }
+
+    .capacity-badge {
+        background: #F1F5F9;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #475569;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+    body.dark-mode .capacity-badge {
+        background: #334155;
+        color: #E2E8F0;
+    }
+
+    .room-desc {
+        font-size: 13px;
+        color: #64748B;
+        line-height: 1.5;
+        margin: 0 0 16px 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    body.dark-mode .room-desc { color: #94A3B8; }
+
+    .amenities-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+    .amenity-pill {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #475569;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.15s;
+    }
+    .amenity-pill:hover {
+        background: #F1F5F9;
+        border-color: #CBD5E1;
+    }
+    body.dark-mode .amenity-pill {
+        background: #1D1D1F;
+        border-color: #374151;
+        color: #D1D5DB;
+    }
+    body.dark-mode .amenity-pill:hover {
+        background: #2D2D31;
+    }
+
+    .room-footer {
+        margin-top: auto;
+        border-top: 1px solid #F1F5F9;
+        padding-top: 14px;
+        display: flex;
+        justify-content: flex-end;
+    }
+    body.dark-mode .room-footer { border-color: rgba(255, 255, 255, 0.08); }
+
+    .view-details-btn {
+        background: none;
+        border: none;
+        font-size: 12px;
+        font-weight: 700;
+        color: #0F172A;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 6px 10px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        transition: all 0.2s;
+    }
+    .view-details-btn:hover {
+        color: #F59E0B;
+        background: #FEF3C7;
+    }
+    body.dark-mode .view-details-btn { color: #F59E0B; }
+    body.dark-mode .view-details-btn:hover { background: rgba(245, 158, 11, 0.15); }
+
+    /* PAGE HEADER */
+    .bookings-page-header {
+        margin-bottom: 20px;
+    }
+    .bookings-page-title {
+        font-size: 26px;
+        font-weight: 800;
+        color: var(--persada-navy-900, #0F1F3D);
+        margin: 0;
+        letter-spacing: -0.02em;
+    }
+    body.dark-mode .bookings-page-title {
+        color: #F8FAFC;
+    }
+    .bookings-page-subtitle {
+        font-size: 13.5px;
+        color: #64748B;
+        margin: 4px 0 0 0;
+    }
+    body.dark-mode .bookings-page-subtitle {
+        color: #94A3B8;
+    }
+
+    /* TAB SWITCHER */
+    .booking-tabs-bar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 0 24px 0;
+        width: 100%;
+    }
+    .booking-segmented-control {
+        display: inline-flex;
+        background: #F1F5F9;
+        padding: 6px;
+        border-radius: 999px;
+        border: 1.5px solid #E2E8F0;
+        gap: 6px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+        max-width: 100%;
+        overflow-x: auto;
+    }
+    body.dark-mode .booking-segmented-control {
+        background: #1E293B;
+        border-color: #334155;
+    }
+    .booking-tab-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 24px;
+        min-height: 44px;
+        border-radius: 999px;
+        border: none;
+        background: transparent;
+        font-size: 14.5px;
+        font-weight: 500;
+        color: #64748B;
+        cursor: pointer;
+        transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+        white-space: nowrap;
+        box-sizing: border-box;
+    }
+    body.dark-mode .booking-tab-btn {
+        color: #94A3B8;
+    }
+    .booking-tab-btn:hover {
+        color: #0F172A;
+        background: rgba(255, 255, 255, 0.5);
+    }
+    body.dark-mode .booking-tab-btn:hover {
+        color: #F8FAFC;
+        background: rgba(255, 255, 255, 0.05);
+    }
+    .booking-tab-btn.active {
+        background: #FFFFFF;
+        color: #0F1F3D;
+        font-weight: 700;
+        box-shadow: 0 4px 14px rgba(15, 31, 61, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+    body.dark-mode .booking-tab-btn.active {
+        background: #0F172A;
+        color: #F8FAFC;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    }
+    .tab-icon {
+        flex-shrink: 0;
+        width: 20px;
+        height: 20px;
+    }
+
+    /* Responsive */
+    @@media (max-width: 900px) {
+        .bookings-page {
+            padding: 20px 16px;
+        }
+        .search-filters {
+            flex-direction: column;
+            gap: 16px;
+            align-items: stretch;
+        }
+        .filter-group { flex: none; width: 100%; }
+        .rooms-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+@code {
+    [SupplyParameterFromQuery(Name = "tab")]
+    public string? TabParam { get; set; }
+
+    [SupplyParameterFromQuery(Name = "highlightRoom")]
+    public string? HighlightRoom { get; set; }
+
+    [SupplyParameterFromQuery(Name = "highlight")]
+    public string? HighlightId { get; set; }
+
+    private string _activeTab = "ruangan";
+    private bool _isTabSwitching = false;
+
+    private string _searchQuery = "";
+    private int? _filterCapacity = null;
+    private DateTime? _selectedBookingDate = DateTime.Today;
+    private string _selectedBookingTime = "09:00";
+    private string _selectedDuration = "1";
+
+    protected override void OnParametersSet()
+    {
+        var targetTab = string.IsNullOrWhiteSpace(TabParam) ? "ruangan" : TabParam.ToLowerInvariant();
+        if (targetTab != "ruangan" && targetTab != "kalender" && targetTab != "fasilitas")
+        {
+            targetTab = "ruangan";
+        }
+
+        if (targetTab != _activeTab)
+        {
+            _activeTab = targetTab;
+        }
+    }
+
+    private async Task SwitchTab(string tab)
+    {
+        if (_activeTab == tab) return;
+        _isTabSwitching = true;
+        _activeTab = tab;
+        Navigation.NavigateTo($"/pemesanan?tab={tab}", replace: false);
+        await Task.Delay(200);
+        _isTabSwitching = false;
+    }
+
+    private (string Title, string Subtitle, string Icon) GetPageHeader()
+    {
+        return _activeTab switch
+        {
+            "kalender" => ("Kalender Pemesanan", "Lihat dan kelola jadwal pemesanan ruangan Anda dalam tampilan kalender.", "/icons/icon_calendar_grid.svg"),
+            "fasilitas" => ("Permintaan Fasilitas", "Ajukan dan pantau permintaan fasilitas tambahan untuk ruangan Anda.", "/icons/icon_facility.svg"),
+            _ => ("Pemesanan Ruangan", "Pilih ruangan, kelola jadwal kalender, dan ajukan fasilitas tambahan di satu tempat.", "/icons/icon_pemesanan.svg")
+        };
+    }
+
+    private bool _isBookingDatePickerOpen = false;
+    private bool _isBookingTimePickerOpen = false;
+
+    private bool _isLoading = true;
+    private List<RoomItem> _allRooms = new();
+    private IEnumerable<RoomItem> _filteredRooms = Array.Empty<RoomItem>();
+
+    private bool _isRoomDetailVisible = false;
+    private RoomItem? _selectedRoomForDetail;
+
+    private bool _isConfirmBookingVisible = false;
+    private RoomItem? _selectedRoomForBooking;
+    
+    private bool _disposed;
+    private System.Threading.CancellationTokenSource? _cts;
+
+    private readonly CultureInfo _idCulture = new CultureInfo("id-ID");
+
+    protected override async Task OnInitializedAsync()
+    {
+        _cts = new System.Threading.CancellationTokenSource();
+        LoadingState.OnChange += SafeStateHasChanged;
+        
+        try {
+            await LoadDataAsync(_cts.Token);
+        } catch (TaskCanceledException) {}
+    }
+    
+    private async Task LoadDataAsync(System.Threading.CancellationToken token)
+    {
+        _isLoading = true;
+        LoadingState.SetLoading(true);
+        await Task.Delay(400, token);
+        
+        _allRooms = RoomDataProvider.GetRooms().ToList();
+        
+        ApplyFilter();
+        _isLoading = false;
+        LoadingState.SetLoading(false);
+    }
+
+    private void OnSearchInput(ChangeEventArgs e)
+    {
+        _searchQuery = e.Value?.ToString() ?? "";
+        ApplyFilter();
+    }
+
+    private void OpenDatePicker()
+    {
+        _isBookingDatePickerOpen = true;
+        _isBookingTimePickerOpen = false;
+    }
+
+    private void OpenTimePicker()
+    {
+        _isBookingTimePickerOpen = true;
+        _isBookingDatePickerOpen = false;
+    }
+
+    private void HandleBookingDateSelected(DateTime? date)
+    {
+        _selectedBookingDate = date;
+        _isBookingDatePickerOpen = false;
+        ApplyFilter();
+    }
+
+    private void HandleBookingTimeSelected(string timeStr)
+    {
+        _selectedBookingTime = timeStr;
+        _isBookingTimePickerOpen = false;
+    }
+
+    private string GetFormattedDateString()
+    {
+        if (_selectedBookingDate.HasValue)
+        {
+            return _selectedBookingDate.Value.ToString("dd MMMM yyyy", _idCulture);
+        }
+        return DateTime.Today.ToString("dd MMMM yyyy", _idCulture);
+    }
+
+    private void ApplyFilter()
+    {
+        var q = _allRooms.AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(_searchQuery))
+        {
+            q = q.Where(r => r.Name.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                             r.Floor.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                             r.Description.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (_filterCapacity.HasValue && _filterCapacity > 0)
+        {
+            q = q.Where(r => r.Capacity >= _filterCapacity.Value);
+        }
+
+        _filteredRooms = q.ToList();
+        StateHasChanged();
+    }
+
+    private void ViewDetail(RoomItem room)
+    {
+        _selectedRoomForDetail = room;
+        _isRoomDetailVisible = true;
+    }
+
+    private void CloseDetail()
+    {
+        _isRoomDetailVisible = false;
+        _selectedRoomForDetail = null;
+    }
+
+    private void ProceedToBook(RoomItem? room)
+    {
+        if (room == null) return;
+        CloseDetail();
+        _selectedRoomForBooking = room;
+        _isConfirmBookingVisible = true;
+    }
+
+    private RoomStatus ParseRoomStatus(string status) => status?.ToLowerInvariant() switch
+    {
+        "available" => RoomStatus.Tersedia,
+        "booked" => RoomStatus.Dipesan,
+        "unavailable" => RoomStatus.TidakTersedia,
+        "maintenance" or "pemeliharaan" => RoomStatus.Pemeliharaan,
+        _ => RoomStatus.Tersedia
+    };
+
+    private int GetRoomRemainingMinutes(string id) => id switch
+    {
+        "2" => 120, // 2 jam
+        "7" => 45,  // 45 menit
+        _ => 90
+    };
+
+    private string LocalizeAmenity(string amenity) => amenity?.Trim().ToLowerInvariant() switch
+    {
+        "projector" or "proyektor" => "Proyektor",
+        "video conf" or "video conference" or "konferensi video" => "Konferensi Video",
+        "whiteboard" or "papan tulis" => "Papan Tulis",
+        "audio system" or "sistem audio" => "Sistem Audio",
+        _ => amenity ?? ""
+    };
+
+    private void SafeStateHasChanged()
+    {
+        if (_disposed) return;
+        try {
+            InvokeAsync(StateHasChanged);
+        } catch {}
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        LoadingState.OnChange -= SafeStateHasChanged;
+        _cts?.Cancel();
+        _cts?.Dispose();
+    }
+}

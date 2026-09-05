@@ -1,0 +1,51 @@
+@code {
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private string ConfirmText { get; set; } = "";
+
+    private async Task Delete()
+    {
+        if (ConfirmText == "HAPUS")
+        {
+            await OnClose.InvokeAsync();
+        }
+    }
+}
+
+<div>
+    <h3 class="modal-title text-danger">Hapus Akun Permanen</h3>
+    <p class="modal-subtitle">Tindakan ini tidak dapat dibatalkan.</p>
+
+    <div class="danger-box">
+        <p>Semua data, riwayat pemesanan, dan profil Anda akan dihapus secara permanen dari sistem kami.</p>
+    </div>
+
+    <div class="form-group">
+        <label>Ketik "HAPUS" untuk mengonfirmasi</label>
+        <input type="text" @bind="ConfirmText" @bind:event="oninput" class="form-control" />
+    </div>
+
+    <div class="modal-actions">
+        <button class="btn btn-secondary" @onclick="OnClose">Tutup</button>
+        <button class="btn btn-danger" disabled="@(ConfirmText != "HAPUS")" @onclick="Delete">Hapus Akun</button>
+    </div>
+</div>
+
+<style>
+    .modal-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .text-danger { color: #DC2626 !important; }
+    .modal-subtitle { font-size: 0.875rem; color: #6B7280; margin-bottom: 1.5rem; }
+    .danger-box { background-color: #FEE2E2; color: #991B1B; padding: 1rem; border-radius: 14px; font-size: 0.875rem; margin-bottom: 1.5rem; }
+    .danger-box p { margin: 0; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 0.25rem; }
+    .form-control { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; box-sizing: border-box; }
+    .form-control:focus { outline: none; border-color: #DC2626; box-shadow: 0 0 0 1px #DC2626; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 2rem; }
+    .btn { padding: 0.5rem 1rem; border-radius: 999px; font-size: 0.875rem; font-weight: 500; cursor: pointer; border: none; transition: background-color 0.2s; }
+    .btn-secondary { background-color: #F3F4F6; color: #374151; }
+    .btn-secondary:hover { background-color: #E5E7EB; }
+    .btn-danger { background-color: #DC2626; color: white; }
+    .btn-danger:hover { background-color: #B91C1C; }
+    .btn-danger:disabled { background-color: #FCA5A5; cursor: not-allowed; }
+</style>

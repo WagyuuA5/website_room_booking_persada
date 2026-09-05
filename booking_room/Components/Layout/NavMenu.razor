@@ -1,56 +1,101 @@
-﻿<div class="d-flex flex-column h-100">
+@using Microsoft.AspNetCore.Components.Routing
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@implements IDisposable
+
+<div class="d-flex flex-column h-100">
     <div class="d-flex align-items-center justify-content-between p-4">
-        <a href="/" class="navbar-brand-persada text-decoration-none d-block">PERSADA</a>
-        <button class="sidebar-close d-lg-none" aria-label="Close sidebar">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        </button>
+        <InlineSvg Src="/icons/logoo_psd-removebg-preview.svg" Class="navbar-brand-logo" />
     </div>
 
     <nav class="nav flex-column flex-grow-1 px-2">
-        <a href="/" class="nav-menu-item active" Match="NavLinkMatch.All">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-            </svg>
-            Dashboard
+        <NavLink class="nav-menu-item" href="@_homeUrl" Match="NavLinkMatch.All" ActiveClass="nav-active">
+            <InlineSvg Src="/icons/icon_dashboard.svg" Class="sidebar-nav-icon" Style="width: 20px; height: 20px; fill: currentColor;" />
+            <span>Beranda</span>
+        </NavLink>
+
+        <a class="nav-menu-item @(IsPemesananActive ? "nav-active" : "")" href="/pemesanan">
+            <InlineSvg Src="/icons/icon_pemesanan.svg" Class="sidebar-nav-icon" Style="width: 20px; height: 20px; stroke: currentColor; fill: none;" />
+            <span>Pemesanan</span>
         </a>
 
-        <a href="/bookings" class="nav-menu-item">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-            </svg>
-            Bookings
-        </a>
+        <NavLink class="nav-menu-item" href="/status" ActiveClass="nav-active">
+            <InlineSvg Src="/icons/icon_status.svg" Class="sidebar-nav-icon" Style="width: 20px; height: 20px; fill: currentColor;" />
+            <span>Status</span>
+        </NavLink>
 
-        <a href="/status" class="nav-menu-item">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <NavLink class="nav-menu-item" href="/history" ActiveClass="nav-active">
+            <svg class="sidebar-nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
             </svg>
-            Status
-        </a>
+            <span>Riwayat</span>
+        </NavLink>
 
-        <a href="/history" class="nav-menu-item">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            History
-        </a>
-
-        <a href="/settings" class="nav-menu-item">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003 1.008c-.253.255-.427.577-.476.914l-.237 1.341c-.042.242.085.482.33.612.245.13.548.1.754-.053l1.102-.828c.315-.237.521-.592.561-.926l.213-1.281c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.09.542-.56.94-1.11.94h-2.593c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.09.542-.56.94-1.11.94h-2.593c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.09.542-.56.94-1.11.94h-2.593c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.09.542-.56.94-1.11.94h-2.593c-.55 0-1.02-.398-1.11-.94l-.213-1.281zM15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            Settings
-        </a>
+        <NavLink class="nav-menu-item" href="/pengaturan" ActiveClass="nav-active">
+            <InlineSvg Src="/icons/icon_setting.svg" Class="sidebar-nav-icon" Style="width: 20px; height: 20px; fill: currentColor;" />
+            <span>Pengaturan</span>
+        </NavLink>
     </nav>
 
-    <div class="p-3 mt-auto">
-        <a href="logout" class="nav-menu-item text-danger">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+    <div class="p-3 mt-auto d-flex flex-column gap-2">
+        <button @onclick="HandleLogout" class="nav-menu-item nav-menu-item-logout text-danger" style="background:none; border:none; width:100%; text-align:left; cursor:pointer;">
+            <svg class="sidebar-nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
             </svg>
-            Logout
-        </a>
+            <span>Keluar</span>
+        </button>
     </div>
 </div>
+
+@code {
+    private string _homeUrl = "/beranda";
+
+    private bool IsPemesananActive
+    {
+        get
+        {
+            var path = new Uri(Navigation.Uri).AbsolutePath.ToLowerInvariant();
+            return path.StartsWith("/pemesanan") || path.StartsWith("/bookings") || path.StartsWith("/kalender") || path.StartsWith("/fasilitas");
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                var role = await JS.InvokeAsync<string>("localStorage.getItem", "userRole");
+                if (role == "Admin")
+                {
+                    _homeUrl = "/dashboard";
+                    StateHasChanged();
+                }
+            }
+            catch { }
+        }
+    }
+
+    private async Task HandleLogout()
+    {
+        await JS.InvokeVoidAsync("localStorage.removeItem", "isLoggedIn");
+        await JS.InvokeVoidAsync("localStorage.removeItem", "userRole");
+        Navigation.NavigateTo("/login", forceLoad: true);
+    }
+}

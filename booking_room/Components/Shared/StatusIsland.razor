@@ -1,0 +1,177 @@
+﻿@namespace booking_room.Components.Shared
+@using booking_room.Components.Models
+@implements IDisposable
+
+<div class="status-island @GetContainerClass() @Class" style="@Style">
+    <span class="status-island__dot @GetDotColorClass() @(IsLive ? "status-island__dot--live" : "")"></span>
+    <span class="status-island__text">@DisplayText</span>
+</div>
+
+<style>
+    :root {
+        --island-bg: rgba(15, 15, 20, 0.82);
+        --island-blur: 20px;
+        --island-text: rgba(255, 255, 255, 0.95);
+        --island-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+
+        --island-dot-tersedia: #34D399;      /* hijau neon */
+        --island-dot-dipesan: #FBBF24;       /* amber neon */
+        --island-dot-tidak-tersedia: #F87171; /* merah neon */
+        --island-dot-pemeliharaan: #60A5FA;   /* biru neon */
+    }
+
+    .status-island {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--island-bg);
+        backdrop-filter: blur(var(--island-blur));
+        -webkit-backdrop-filter: blur(var(--island-blur));
+        color: var(--island-text);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 999px;
+        padding: 6px 14px;
+        box-shadow: var(--island-shadow);
+        width: fit-content;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        user-select: none;
+        transition: width 400ms cubic-bezier(0.4, 0, 0.2, 1),
+                    padding 400ms cubic-bezier(0.4, 0, 0.2, 1),
+                    background-color 300ms ease;
+    }
+
+    .status-island__dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .status-island__dot--tersedia {
+        background-color: var(--island-dot-tersedia);
+        box-shadow: 0 0 8px var(--island-dot-tersedia);
+    }
+
+    .status-island__dot--dipesan {
+        background-color: var(--island-dot-dipesan);
+        box-shadow: 0 0 8px var(--island-dot-dipesan);
+    }
+
+    .status-island__dot--tidak-tersedia {
+        background-color: var(--island-dot-tidak-tersedia);
+        box-shadow: 0 0 8px var(--island-dot-tidak-tersedia);
+    }
+
+    .status-island__dot--pemeliharaan {
+        background-color: var(--island-dot-pemeliharaan);
+        box-shadow: 0 0 8px var(--island-dot-pemeliharaan);
+    }
+
+    /* Animasi pulse khusus status yang live/berjalan */
+    .status-island__dot--live {
+        animation: island-pulse 1.6s ease-in-out infinite;
+    }
+
+    @@keyframes island-pulse {
+        0%   { transform: scale(1);    opacity: 1;   }
+        50%  { transform: scale(1.35); opacity: 0.55; }
+        100% { transform: scale(1);    opacity: 1;   }
+    }
+</style>
+
+@code {
+    [Parameter] public RoomStatus Status { get; set; } = RoomStatus.Tersedia;
+    [Parameter] public string? ExtraText { get; set; }
+    [Parameter] public int RemainingMinutes { get; set; } = 120; // Default 2 jam jika status Dipesan
+    [Parameter] public bool EnableCountdown { get; set; } = true;
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string? Style { get; set; }
+
+    private System.Threading.Timer? _timer;
+    private int _currentRemainingMinutes;
+
+    protected override void OnInitialized()
+    {
+        _currentRemainingMinutes = RemainingMinutes;
+
+        if (Status == RoomStatus.Dipesan && EnableCountdown)
+        {
+            // Update countdown timer setiap 30 detik untuk visual responsiveness
+            _timer = new System.Threading.Timer(OnTimerTick, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+        }
+    }
+
+    private void OnTimerTick(object? state)
+    {
+        if (_currentRemainingMinutes > 1)
+        {
+            _currentRemainingMinutes--;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private bool IsLive => Status == RoomStatus.Dipesan;
+
+    private string DisplayText
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(ExtraText))
+            {
+                return ExtraText.ToUpperInvariant();
+            }
+
+            return Status switch
+            {
+                RoomStatus.Tersedia => "TERSEDIA",
+                RoomStatus.Dipesan => FormatDipesanText(),
+                RoomStatus.TidakTersedia => "TIDAK TERSEDIA",
+                RoomStatus.Pemeliharaan => "PEMELIHARAAN",
+                _ => "TERSEDIA"
+            };
+        }
+    }
+
+    private string FormatDipesanText()
+    {
+        if (_currentRemainingMinutes >= 60)
+        {
+            int hours = _currentRemainingMinutes / 60;
+            int mins = _currentRemainingMinutes % 60;
+            if (mins > 0)
+                return $"DIPESAN ({hours}J {mins}M LAGI)";
+            return $"DIPESAN ({hours} JAM LAGI)";
+        }
+        else if (_currentRemainingMinutes > 0)
+        {
+            return $"DIPESAN ({_currentRemainingMinutes} MENIT LAGI)";
+        }
+        return "DIPESAN (SEGERA SELESAI)";
+    }
+
+    private string GetContainerClass() => Status switch
+    {
+        RoomStatus.Tersedia => "status-island--tersedia",
+        RoomStatus.Dipesan => "status-island--dipesan",
+        RoomStatus.TidakTersedia => "status-island--tidak-tersedia",
+        RoomStatus.Pemeliharaan => "status-island--pemeliharaan",
+        _ => ""
+    };
+
+    private string GetDotColorClass() => Status switch
+    {
+        RoomStatus.Tersedia => "status-island__dot--tersedia",
+        RoomStatus.Dipesan => "status-island__dot--dipesan",
+        RoomStatus.TidakTersedia => "status-island__dot--tidak-tersedia",
+        RoomStatus.Pemeliharaan => "status-island__dot--pemeliharaan",
+        _ => "status-island__dot--tersedia"
+    };
+
+    public void Dispose()
+    {
+        _timer?.Dispose();
+    }
+}

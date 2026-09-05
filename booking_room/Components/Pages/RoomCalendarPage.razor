@@ -1,0 +1,10 @@
+@page "/kalender"
+@page "/calendar"
+@inject NavigationManager Navigation
+
+@code {
+    protected override void OnInitialized()
+    {
+        Navigation.NavigateTo("/pemesanan?tab=kalender", replace: true);
+    }
+}

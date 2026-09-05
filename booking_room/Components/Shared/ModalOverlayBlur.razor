@@ -1,0 +1,38 @@
+@namespace booking_room.Components.Shared
+
+<Modal Visible="@Visible" 
+       VisibleChanged="@VisibleChanged" 
+       Size="@GetModalSize()" 
+       ShowCloseButton="@ShowCloseButton" 
+       ShowHeader="false" 
+       ShowFooter="false" 
+       BodyClass="modal-blur-body-custom"
+       OnClose="OnClose">
+    <BodyContent>
+        @ChildContent
+    </BodyContent>
+</Modal>
+
+<style>
+    .modal-blur-body-custom {
+        padding: 0 !important;
+    }
+</style>
+
+@code {
+    [Parameter] public string ModalKey { get; set; } = "";
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public string Size { get; set; } = "md"; // sm, default, md, lg
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public bool ShowCloseButton { get; set; } = false;
+
+    private string GetModalSize() => Size switch
+    {
+        "sm" => "sm",
+        "lg" => "lg",
+        "xl" => "xl",
+        _ => "md"
+    };
+}

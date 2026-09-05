@@ -1,0 +1,56 @@
+@namespace booking_room.Components.Shared
+
+<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Size="md" ShowHeader="false" ShowFooter="false" NoPadding="true">
+    <BodyContent>
+        <div class="schedule-detail-header">
+            <img src="https://images.unsplash.com/photo-1497366754888-5a456d4b3447?auto=format&fit=crop&w=600&q=80" alt="Room" class="schedule-img" />
+            <div class="schedule-overlay">
+                <span class="badge-status-green">Disetujui</span>
+            </div>
+        </div>
+        <div class="modal-body-pad">
+            <h2 class="schedule-title">@RoomName</h2>
+            <div class="schedule-meta-list">
+                <div class="meta-item">
+                    <span class="meta-label">Pemesan</span>
+                    <span class="meta-val">Andi Wijaya</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Waktu</span>
+                    <span class="meta-val">@Date, @Time</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Fasilitas</span>
+                    <span class="meta-val">AC, Proyektor, WiFi</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Keperluan</span>
+                    <span class="meta-val">Meeting Sinkronisasi Mingguan Tim IT</span>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer-2btn">
+            <div style="flex: 1;"></div>
+            <button class="btn-outline-pill" style="width: auto; padding: 0 32px;" @onclick="Close">Tutup</button>
+        </div>
+    </BodyContent>
+</AppModal>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public string RoomName { get; set; } = "Executive Boardroom A";
+    [Parameter] public string Date { get; set; } = "12 Okt 2023";
+    [Parameter] public string Time { get; set; } = "10:00 - 11:30";
+
+    private async Task HandleVisibleChanged(bool val)
+    {
+        Visible = val;
+        await VisibleChanged.InvokeAsync(val);
+    }
+
+    private async Task Close()
+    {
+        await HandleVisibleChanged(false);
+    }
+}

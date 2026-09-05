@@ -1,0 +1,373 @@
+@namespace booking_room.Components.Shared
+@inject IJSRuntime JS
+
+@if (Visible)
+{
+    <div class="modal-unified-backdrop @BackdropClass @GetLayoutModeClass()" @onclick="HandleBackdropClick">
+        <div class="modal-unified-dialog @GetSizeClass() @DialogClass @GetDialogModeClass()" @onclick:stopPropagation="true" role="dialog" aria-modal="true">
+            @if (ShowHeader && (HeaderContent != null || !string.IsNullOrEmpty(Title)))
+            {
+                <div class="modal-unified-header @GetHeaderModeClass()">
+                    @if (HeaderContent != null)
+                    {
+                        @HeaderContent
+                    }
+                    else
+                    {
+                        <div class="modal-unified-header-text">
+                            @if (!string.IsNullOrEmpty(Title))
+                            {
+                                <h3 class="modal-unified-title">@Title</h3>
+                            }
+                            @if (!string.IsNullOrEmpty(Subtitle))
+                            {
+                                <p class="modal-unified-subtitle">@Subtitle</p>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+
+            <div class="modal-unified-body @BodyClass">
+                @if (BodyContent != null)
+                {
+                    @BodyContent
+                }
+                else if (ChildContent != null)
+                {
+                    @ChildContent
+                }
+            </div>
+
+            @if (ShowFooter && (FooterContent != null || ShowCloseButton))
+            {
+                <div class="modal-unified-footer">
+                    @if (FooterContent != null)
+                    {
+                        @FooterContent
+                    }
+                    else if (ShowCloseButton)
+                    {
+                        <button class="btn-modal-outline" style="padding: 10px 24px; border-radius: 999px; font-weight: 600; cursor: pointer; border: 1px solid #CBD5E1; background: transparent; color: #475569;" @onclick="CloseAsync">
+                            Tutup
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<style>
+    .modal-unified-backdrop {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(15, 23, 42, 0.55);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1050;
+        padding: 16px;
+        box-sizing: border-box;
+        overflow: hidden;
+        animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .modal-unified-dialog {
+        position: relative;
+        background: var(--surface-card, #FFFFFF);
+        -webkit-backdrop-filter: blur(var(--glass-blur, 20px)) saturate(var(--glass-saturate, 160%));
+        backdrop-filter: blur(var(--glass-blur, 20px)) saturate(var(--glass-saturate, 160%));
+        border: 1px solid var(--glass-border-light, rgba(255, 255, 255, 0.5));
+        border-radius: var(--persada-border-radius-card, 20px);
+        box-shadow: var(--glass-shadow, 0 8px 32px rgba(15, 23, 42, 0.18));
+        width: min(92vw, 560px);
+        max-height: 85vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        margin: auto;
+        animation: modalScaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Size variants */
+    .modal-size-sm { width: min(92vw, 420px); max-width: 420px; }
+    .modal-size-md { width: min(92vw, 560px); max-width: 560px; }
+    .modal-size-lg { width: min(92vw, 760px); max-width: 760px; }
+    .modal-size-xl { width: min(92vw, 960px); max-width: 960px; }
+    .modal-size-auto { width: auto; max-width: min(92vw, 560px); }
+
+    /* Solid card variant */
+    .variant-solid-card,
+    .modal-mode-solid-card,
+    .modal-mode-solid-card .modal-unified-dialog {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        max-height: none !important;
+    }
+    .modal-mode-solid-card .modal-unified-body {
+        padding: 0 !important;
+        overflow: visible !important;
+    }
+
+    /* Layout mode: split-detail */
+    .modal-mode-split-detail .modal-unified-dialog {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        width: min(92vw, 960px);
+        max-width: 960px;
+    }
+
+    .modal-mode-split-detail .modal-unified-body {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+    }
+
+    .modal-mode-split-detail .modal-unified-header {
+        grid-column: 1 / -1;
+    }
+
+    .modal-mode-split-detail .modal-unified-footer {
+        grid-column: 1 / -1;
+    }
+
+    /* Layout mode: invitation */
+    .modal-mode-invitation .modal-unified-dialog {
+        overflow: visible;
+    }
+
+    .modal-mode-invitation .modal-unified-header {
+        background: var(--color-brand-navy-900, #0F1B3D);
+        color: #FFFFFF;
+        border-radius: 20px 20px 0 0;
+        border-bottom: none;
+        padding: 20px 24px;
+    }
+
+    .modal-mode-invitation .modal-unified-title {
+        color: #FFFFFF;
+    }
+
+    .modal-mode-invitation .modal-unified-subtitle {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .modal-mode-invitation .modal-unified-close-btn {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .modal-mode-invitation .modal-unified-close-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #FFFFFF;
+    }
+
+    /* Layout mode: solid-card */
+    .modal-mode-solid-card .modal-unified-dialog {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        width: auto !important;
+        max-width: none !important;
+    }
+    
+    .modal-mode-solid-card .modal-unified-body {
+        padding: 0 !important;
+    }
+
+    /* Layout mode: alert */
+    .modal-mode-alert .modal-unified-dialog {
+        width: min(92vw, 420px);
+        max-width: 420px;
+    }
+
+    .modal-unified-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: var(--persada-white, #FFFFFF);
+        padding: 18px 24px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        border-bottom: 1px solid var(--color-brand-gray-border, #E5E7EB);
+        flex-shrink: 0;
+    }
+
+    .modal-unified-header-text {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .modal-unified-title {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--color-brand-navy, #0F1F3D);
+        line-height: 1.3;
+    }
+
+    .modal-unified-subtitle {
+        margin: 4px 0 0 0;
+        font-size: 0.85rem;
+        color: var(--color-brand-text-muted, #6B7280);
+        line-height: 1.4;
+    }
+
+    .modal-unified-close-btn {
+        background: transparent;
+        border: none;
+        padding: 6px;
+        color: #9CA3AF;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+    }
+
+    .modal-unified-close-btn:hover {
+        background-color: #F3F4F6;
+        color: var(--color-brand-navy, #0F1F3D);
+    }
+
+    .modal-unified-body {
+        flex: 1 1 auto;
+        padding: 24px;
+        overflow: hidden;
+    }
+
+    .modal-unified-footer {
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
+        background: var(--persada-white, #FFFFFF);
+        padding: 16px 24px;
+        border-top: 1px solid var(--color-brand-gray-border, #E5E7EB);
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 12px;
+        flex-shrink: 0;
+    }
+
+    @@keyframes modalFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @@keyframes modalScaleUp {
+        from {
+            opacity: 0;
+            transform: scale(0.96) translateY(8px);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    @@media (max-width: 640px) {
+        .modal-unified-backdrop {
+            padding: 8px;
+        }
+        .modal-unified-dialog {
+            max-height: 94vh;
+            border-radius: 20px;
+        }
+        .modal-unified-header {
+            padding: 16px 20px;
+        }
+        .modal-unified-body {
+            padding: 20px;
+        }
+        .modal-unified-footer {
+            padding: 14px 20px;
+        }
+    }
+</style>
+
+@code {
+    [Parameter] public bool Visible { get; set; } = true;
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Subtitle { get; set; } = string.Empty;
+    [Parameter] public string Size { get; set; } = "md";
+    [Parameter] public string LayoutMode { get; set; } = "form";
+    [Parameter] public bool ShowHeader { get; set; } = true;
+    [Parameter] public bool ShowFooter { get; set; } = true;
+    [Parameter] public bool ShowCloseButton { get; set; } = false;
+    [Parameter] public bool CloseOnBackdropClick { get; set; } = true;
+    [Parameter] public string BackdropClass { get; set; } = string.Empty;
+    [Parameter] public string DialogClass { get; set; } = string.Empty;
+    [Parameter] public string BodyClass { get; set; } = string.Empty;
+
+    [Parameter] public RenderFragment? HeaderContent { get; set; }
+    [Parameter] public RenderFragment? BodyContent { get; set; }
+    [Parameter] public RenderFragment? FooterContent { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private string GetSizeClass() => Size switch
+    {
+        "sm" => "modal-size-sm",
+        "lg" => "modal-size-lg",
+        "xl" => "modal-size-xl",
+        _ => "modal-size-md"
+    };
+
+    private string GetLayoutModeClass() => LayoutMode switch
+    {
+        "list" => "modal-mode-list",
+        "split-detail" => "modal-mode-split-detail",
+        "alert" => "modal-mode-alert",
+        "invitation" => "modal-mode-invitation",
+        "solid-card" => "modal-mode-solid-card",
+        _ => "modal-mode-form"
+    };
+
+    private string GetDialogModeClass() => LayoutMode switch
+    {
+        "list" => "modal-mode-list",
+        "split-detail" => "modal-mode-split-detail",
+        "alert" => "modal-mode-alert",
+        "invitation" => "modal-mode-invitation",
+        "solid-card" => "modal-mode-solid-card",
+        _ => "modal-mode-form"
+    };
+
+    private string GetHeaderModeClass() => LayoutMode switch
+    {
+        "invitation" => "modal-mode-invitation",
+        _ => ""
+    };
+
+    private async Task HandleBackdropClick()
+    {
+        if (CloseOnBackdropClick)
+        {
+            await CloseAsync();
+        }
+    }
+
+    private async Task CloseAsync()
+    {
+        Visible = false;
+        await VisibleChanged.InvokeAsync(false);
+        if (OnClose.HasDelegate)
+        {
+            await OnClose.InvokeAsync();
+        }
+    }
+}

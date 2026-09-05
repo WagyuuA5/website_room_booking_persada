@@ -1,0 +1,28 @@
+@inject Microsoft.Extensions.FileProviders.IFileProvider FileProvider
+
+@if (_svgContent is not null)
+{
+    <span class="inline-svg-wrap @Class" style="@Style" @attributes="AdditionalAttributes">@((MarkupString)_svgContent)</span>
+}
+
+@code {
+    [Parameter] public string Src { get; set; } = string.Empty;
+    [Parameter] public string Class { get; set; } = string.Empty;
+    [Parameter] public string? Style { get; set; }
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+    
+    private string? _svgContent;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var path = Src.TrimStart('~', '/').Replace('/', Path.DirectorySeparatorChar);
+        var info = FileProvider.GetFileInfo(path);
+        if (info.Exists)
+        {
+            using var stream = info.CreateReadStream();
+            using var reader = new StreamReader(stream);
+            _svgContent = await reader.ReadToEndAsync();
+        }
+    }
+}

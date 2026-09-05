@@ -1,0 +1,98 @@
+@page "/pengaturan/bantuan"
+
+<PageTitle>Pusat Bantuan</PageTitle>
+
+<div class="subpage-container">
+    <div class="header">
+        <a href="/pengaturan" class="back-link">‹ Kembali ke Pengaturan</a>
+        <h1 class="page-title">Pusat Bantuan</h1>
+    </div>
+
+    <div class="search-box">
+        <input type="text" placeholder="Cari topik bantuan..." class="search-input" />
+        <button class="search-btn">🔍</button>
+    </div>
+
+    <div class="faq-section">
+        <h2 class="section-title">Pertanyaan Umum (FAQ)</h2>
+
+        <div class="faq-list">
+            <div class="faq-item">
+                <details>
+                    <summary>Bagaimana cara membatalkan pesanan?</summary>
+                    <div class="faq-content">
+                        Untuk membatalkan pesanan, buka halaman "Pemesanan Saya", temukan pesanan yang ingin dibatalkan, klik tombol aksi (titik tiga) di sebelah kanan, dan pilih "Batalkan Pesanan". Harap diperhatikan kebijakan pembatalan kami.
+                    </div>
+                </details>
+            </div>
+            
+            <div class="faq-item">
+                <details>
+                    <summary>Bagaimana jika fasilitas yang saya butuhkan tidak ada?</summary>
+                    <div class="faq-content">
+                        Jika fasilitas yang Anda butuhkan tidak terdaftar dalam detail ruangan, Anda dapat menambahkan catatan khusus saat melakukan pemesanan. Admin kami akan meninjau ketersediaan fasilitas tersebut.
+                    </div>
+                </details>
+            </div>
+
+            <div class="faq-item">
+                <details>
+                    <summary>Berapa lama proses persetujuan pesanan?</summary>
+                    <div class="faq-content">
+                        Persetujuan pesanan umumnya membutuhkan waktu 1x24 jam kerja. Pesanan untuk hari yang sama akan diproses secepatnya.
+                    </div>
+                </details>
+            </div>
+        </div>
+    </div>
+
+    <div class="contact-section">
+        <h2 class="section-title">Butuh Bantuan Lain?</h2>
+        <div class="contact-cards">
+            <div class="contact-card">
+                <div class="contact-icon">📧</div>
+                <div class="contact-info">
+                    <h3>Email Dukungan</h3>
+                    <p>support@bookingroom.com</p>
+                </div>
+            </div>
+            <div class="contact-card">
+                <div class="contact-icon">📞</div>
+                <div class="contact-info">
+                    <h3>Telepon (Jam Kerja)</h3>
+                    <p>+62 21 1234 5678</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .subpage-container { max-width: 800px; margin: 0 auto; padding: 2rem 1rem; }
+    .back-link { display: inline-block; color: #6B7280; text-decoration: none; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; transition: color 0.2s; }
+    .back-link:hover { color: #16305C; }
+    .page-title { font-size: 1.75rem; font-weight: 700; color: #16305C; margin-top: 0; margin-bottom: 2rem; }
+    
+    .search-box { display: flex; margin-bottom: 3rem; box-shadow: 0 4px 24px rgba(16, 48, 92, 0.08); border-radius: 999px; overflow: hidden; }
+    .search-input { flex: 1; padding: 1rem 1.5rem; border: none; font-size: 1rem; outline: none; }
+    .search-btn { background-color: white; border: none; padding: 0 1.5rem; cursor: pointer; font-size: 1.25rem; }
+    
+    .section-title { font-size: 1.25rem; font-weight: 600; color: #16305C; margin-bottom: 1.5rem; }
+    
+    .faq-section { margin-bottom: 3rem; }
+    .faq-list { display: flex; flex-direction: column; gap: 1rem; }
+    .faq-item details { background-color: white; border-radius: 14px; padding: 1.25rem; box-shadow: 0 4px 24px rgba(16, 48, 92, 0.04); }
+    .faq-item summary { font-weight: 600; color: #16305C; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary::after { content: '＋'; color: #6B7280; font-size: 1.25rem; }
+    .faq-item details[open] summary::after { content: '－'; }
+    .faq-content { margin-top: 1rem; color: #4B5563; font-size: 0.875rem; line-height: 1.6; padding-top: 1rem; border-top: 1px solid #F3F4F6; }
+    
+    .contact-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    @@media (max-width: 600px) { .contact-cards { grid-template-columns: 1fr; } }
+    
+    .contact-card { display: flex; align-items: center; gap: 1rem; background-color: white; border-radius: 14px; padding: 1.5rem; box-shadow: 0 4px 24px rgba(16, 48, 92, 0.04); }
+    .contact-icon { font-size: 2rem; }
+    .contact-info h3 { margin: 0 0 0.25rem 0; font-size: 1rem; color: #16305C; }
+    .contact-info p { margin: 0; color: #6B7280; font-size: 0.875rem; }
+</style>

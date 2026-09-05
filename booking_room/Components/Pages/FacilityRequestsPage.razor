@@ -1,0 +1,10 @@
+@page "/fasilitas"
+@page "/facility-requests"
+@inject NavigationManager Navigation
+
+@code {
+    protected override void OnInitialized()
+    {
+        Navigation.NavigateTo("/pemesanan?tab=fasilitas", replace: true);
+    }
+}

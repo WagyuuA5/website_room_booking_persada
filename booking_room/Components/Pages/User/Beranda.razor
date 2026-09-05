@@ -1,0 +1,2979 @@
+@page "/beranda"
+@page "/user/beranda"
+@rendermode InteractiveServer
+@using booking_room.Components.Models
+@using booking_room.Components.Shared
+@using booking_room.Services
+@inject NavigationManager Navigation
+@inject NotificationState NotificationState
+@inject IToastService ToastService
+@inject IModalService ModalService
+@inject IJSRuntime JS
+@implements IDisposable
+
+<PageTitle>Beranda — Persada Booking Ruangan</PageTitle>
+
+<div class="beranda-container">
+    @if (NotificationState.CurrentBannerType != NotificationState.BannerType.None)
+    {
+        <div style="margin-bottom: 24px;">
+            <NotificationBanner BannerType="@NotificationState.CurrentBannerType"
+                                TargetTime="@NotificationState.NextBookingTime"
+                                OnDismiss="() => NotificationState.DismissBanner()"
+                                OnCheckIn="HandleCheckInClick" />
+        </div>
+    }
+
+    <!-- CASE 1 & CASE 2: Ringkasan Statistik adalah section paling atas (Hero Banner dihapus total) -->
+    @if (isLoadingSummary)
+    {
+        <div class="skeleton" style="height: 120px; margin-top: 24px; margin-bottom: 32px;"></div>
+    }
+    else
+    {
+        <section class="summary-cards-grid content-fade-in" style="margin-top: 24px;">
+            <!-- Card 1: Ruangan Tersedia Sekarang -->
+            <div class="stat-card stat-card--success" @onclick="OpenAvailableRoomsModal" role="button" tabindex="0">
+                <div class="stat-card-icon-wrap stat-card-icon-wrap--success">
+                    <img src="/icon/icon_room_available.svg" class="icon-md" alt="Ruangan Tersedia" />
+                </div>
+                <div class="stat-card-body">
+                    <span class="stat-card-label">RUANGAN TERSEDIA SEKARANG</span>
+                    <span class="stat-card-value">@AvailableRoomsCount <span class="stat-card-value-sub">/ @TotalRoomsCount</span></span>
+                </div>
+            </div>
+
+            <!-- Card 2: Menunggu Persetujuan Admin (Case 2) -->
+            <div class="stat-card stat-card--warning" @onclick="OpenPendingApprovalModal" role="button" tabindex="0">
+                <div class="stat-card-icon-wrap stat-card-icon-wrap--warning">
+                    <img src="/icon/icon_alert_warning.svg" class="icon-md" alt="" />
+                </div>
+                <div class="stat-card-body">
+                    <span class="stat-card-label">MENUNGGU PERSETUJUAN ADMIN</span>
+                    <span class="stat-card-value">@PendingActionCount</span>
+                    <span class="stat-card-desc">Permintaan pemesanan Anda sedang menunggu persetujuan admin</span>
+                </div>
+            </div>
+
+            <!-- Card 3: Rapat Berikutnya (Case 3A) -->
+            <div class="stat-card stat-card--dark" @onclick="LihatDetailRapatBerikutnya" role="button" tabindex="0">
+                <div class="stat-card-dark-header">
+                    <img src="/icon/timer_dshbrd.svg" class="icon-sm icon-white" alt="" />
+                    <span class="stat-card-dark-badge">TERSEDIA DALAM @NextMeetingCountdown</span>
+                </div>
+                <span class="stat-card-dark-label">Rapat Berikutnya</span>
+                <span class="stat-card-dark-title">@NextMeeting.RoomName</span>
+                <button class="btn-stat-dark" @onclick:stopPropagation="true" @onclick="LihatDetailRapatBerikutnya">
+                    Lihat Detail
+                </button>
+            </div>
+        </section>
+    }
+
+    <!-- CASE 4 & CASE 5: Grid dua kolom: Jadwal Mendatang (kiri) + Rekomendasi Ruangan (kanan) -->
+    @if (isLoadingGrid)
+    {
+        <div class="skeleton" style="height: 290px; margin-bottom: 32px;"></div>
+    }
+    else
+    {
+        <section class="jadwal-mendatang-section content-fade-in">
+            <!-- Jadwal Pertemuan Mendatang (Case 4 - Redesign Zoom Meeting Card & Horizontal Scroll) -->
+            <div class="panel jadwal-mendatang-panel jadwal-mendatang-panel--full">
+                <div class="panel-header">
+                    <div>
+                        <h2 class="panel-title">Jadwal Pertemuan Mendatang</h2>
+                        <p class="panel-subtitle">Daftar agenda rapat dan reservasi terdekat Anda</p>
+                    </div>
+                    <div class="jadwal-header-actions">
+                        <div class="jadwal-filter-tabs">
+                            <button type="button" class="jadwal-filter-tab @(_jadwalFilter == "semua" ? "active" : "")" @onclick='() => SetJadwalFilter("semua")'>Semua</button>
+                            <button type="button" class="jadwal-filter-tab @(_jadwalFilter == "minggu" ? "active" : "")" @onclick='() => SetJadwalFilter("minggu")'>Minggu Ini</button>
+                            <button type="button" class="jadwal-filter-tab @(_jadwalFilter == "bulan" ? "active" : "")" @onclick='() => SetJadwalFilter("bulan")'>Bulan Ini</button>
+                        </div>
+                        <div class="jadwal-nav-arrows">
+                            <button type="button" class="jadwal-nav-btn" @onclick="ScrollJadwalLeft" aria-label="Geser ke kiri" title="Sebelumnya">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                            </button>
+                            <button type="button" class="jadwal-nav-btn" @onclick="ScrollJadwalRight" aria-label="Geser ke kanan" title="Berikutnya">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="jadwal-scroll-container" id="jadwalHorizontalTrack">
+                    @foreach (var meeting in FilteredUpcomingMeetings)
+                    {
+                        var isOwner = meeting.IsUserOwner;
+                        var authorName = isOwner ? "Anda (Pembuat)" : meeting.InvitedBy;
+                        var authorRole = isOwner ? "Penyelenggara" : meeting.InviterRole;
+                        var authorInitial = GetInitials(isOwner ? UserName : meeting.InvitedBy);
+                        var avatarBg = isOwner ? "linear-gradient(135deg, #F59E0B, #D97706)" : "linear-gradient(135deg, #3B82F6, #1D4ED8)";
+
+                        <div class="meeting-card-zoom @(isOwner ? "meeting-card-zoom--owner" : "meeting-card-zoom--invited")"
+                             @onclick="() => OpenMeetingDetailFromRow(meeting)"
+                             role="button" tabindex="0">
+                            
+                            <!-- Header: Avatar & Quick Action Menu -->
+                            <div class="meeting-card-zoom__header">
+                                <div class="meeting-card-zoom__author">
+                                    <div class="meeting-card-zoom__avatar" style="background: @avatarBg;">
+                                        <span>@authorInitial</span>
+                                    </div>
+                                    <div class="meeting-card-zoom__author-info">
+                                        <span class="meeting-card-zoom__author-name">@authorName</span>
+                                        <span class="meeting-card-zoom__author-role">@authorRole</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Body: Title & Meta Info -->
+                            <div class="meeting-card-zoom__body">
+                                <h4 class="meeting-card-zoom__title" title="@meeting.Title">@meeting.Title</h4>
+                                
+                                <div class="meeting-card-zoom__meta-item">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                        <circle cx="12" cy="10" r="3"></circle>
+                                    </svg>
+                                    <span>@meeting.RoomName (Lt. @meeting.Floor)</span>
+                                </div>
+                                
+                                <div class="meeting-card-zoom__meta-item">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                                    </svg>
+                                    <span>@meeting.Date.ToString("ddd, dd MMM yyyy")</span>
+                                </div>
+
+                                <div class="meeting-card-zoom__meta-item highlight-time">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <polyline points="12 6 12 12 16 14"></polyline>
+                                    </svg>
+                                    <span>@meeting.StartTime.ToString("HH:mm") - @meeting.EndTime.ToString("HH:mm") WIB</span>
+                                </div>
+                            </div>
+
+                            <!-- Footer: Badges -->
+                            <div class="meeting-card-zoom__footer">
+                                <span class="tag-badge tag-badge--@meeting.CategorySlug">@meeting.CategoryLabel</span>
+                                <span class="tag-badge @(meeting.Status == "Menunggu Persetujuan Admin" ? "tag-badge--warning" : "tag-badge--success")">
+                                    @(meeting.Status == "Menunggu Persetujuan Admin" ? "Menunggu Admin" : meeting.Status)
+                                </span>
+                            </div>
+
+                        </div>
+                    }
+                </div>
+            </div>
+        </section>
+    }
+
+    <!-- CASE 6: Aktivitas Terkini & Identitas Orang -->
+    @if (isLoadingActivities)
+    {
+        <div class="skeleton" style="height: 200px; margin-bottom: 32px;"></div>
+    }
+    else
+    {
+        <section class="panel aktivitas-terkini-panel content-fade-in">
+            <h2 class="panel-title">Aktivitas Terkini</h2>
+            <div class="aktivitas-timeline aktivitas-list">
+                @foreach (var activity in RecentActivities.Take(5))
+                {
+                    var accentClass = !string.IsNullOrEmpty(activity.PersonName)
+                        ? "aktivitas-item--person"
+                        : (activity.TypeSlug == "approved" || activity.TypeSlug == "confirmed" || activity.TypeSlug == "checkin"
+                            ? "aktivitas-item--success"
+                            : "aktivitas-item--warning");
+
+                    @if (!string.IsNullOrEmpty(activity.PersonName))
+                    {
+                        <!-- Item yang melibatkan orang spesifik (Clickable & Avatar Khusus) -->
+                        <div class="aktivitas-item @accentClass clickable-activity-row" @onclick="() => OpenContactModal(activity)" role="button" tabindex="0">
+                            <div class="aktivitas-item-avatar-initial" style="background-color: @activity.AvatarBg;">
+                                @GetInitials(activity.PersonName)
+                            </div>
+                            <div class="aktivitas-item-body">
+                                <span class="aktivitas-item-text">
+                                    <strong>@activity.PersonName</strong> @activity.Description
+                                </span>
+                                <span class="aktivitas-item-time">@activity.TimeAgo</span>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Item non-individu (System status icon) -->
+                        <div class="aktivitas-item @accentClass">
+                            <div class="aktivitas-item-icon aktivitas-item-icon--@activity.TypeSlug">
+                                <img src="@GetActivityIcon(activity.Type)" class="icon-sm" alt="" />
+                            </div>
+                            <div class="aktivitas-item-body">
+                                <span class="aktivitas-item-text">@activity.Description</span>
+                                <span class="aktivitas-item-time">@activity.TimeAgo</span>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </section>
+    }
+
+    <!-- CASE 8: Tren Pemesanan (grafik) -->
+    @if (isLoadingChart)
+    {
+        <div class="skeleton" style="height: 260px; margin-bottom: 32px;"></div>
+    }
+    else
+    {
+        <section class="tren-pemesanan-panel content-fade-in" style="padding: 0; background: transparent; box-shadow: none;">
+            <UserTrendChart />
+        </section>
+    }
+</div>
+
+<!-- B4: Smart Detail Modal (Varian 1: Diundang vs Varian 2: Pemilik/Pembuat) -->
+<AppModal Visible="@_isMeetingDetailOpen"
+          VisibleChanged="@(v => _isMeetingDetailOpen = v)"
+          Title="Detail Pertemuan"
+          Subtitle="@(_selectedMeeting?.IsUserOwner == true ? "Informasi lengkap reservasi ruangan rapat Anda" : "Undangan agenda pertemuan dari rekan kerja")"
+          Size="md"
+          ShowHeader="true"
+          ShowFooter="true">
+    <IconContent>
+        <div class="modal-header-icon--info" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #EFF6FF;">
+            <img src="/icon/timer_dshbrd.svg" class="icon-sm" style="filter: invert(36%) sepia(85%) saturate(1450%) hue-rotate(203deg);" alt="" />
+        </div>
+    </IconContent>
+    <BodyContent>
+        @if (_selectedMeeting != null)
+        {
+            <div style="display: flex; flex-direction: column; gap: 16px; padding: 4px 0;">
+                @if (!_selectedMeeting.IsUserOwner)
+                {
+                    <!-- Varian 1: Undangan dari Pihak Lain -->
+                    <div style="background: var(--color-bg-page); border: 1px solid var(--color-border); border-radius: 12px; padding: 14px; display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #3B82F6, #1D4ED8); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0;">
+                            @GetInitials(_selectedMeeting.InvitedBy)
+                        </div>
+                        <div style="display: flex; flex-direction: column; min-width: 0;">
+                            <span style="font-size: 11px; font-weight: 700; color: #3B82F6; text-transform: uppercase;">Undangan Pertemuan</span>
+                            <span style="font-size: 14px; font-weight: 700; color: var(--color-text-primary);">@_selectedMeeting.InvitedBy (@_selectedMeeting.InviterRole)</span>
+                            <span style="font-size: 12px; color: var(--color-text-secondary);">Mengundang Anda untuk menghadiri rapat ini</span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <!-- Varian 2: Reservasi Milik Sendiri -->
+                    <div class="status-info-strip" style="margin: 0;">
+                        <img src="/icon/icon_location.svg" class="icon-sm" alt="" />
+                        <div class="status-info-text">
+                            <span class="text-caption">ID Reservasi: #@_selectedMeeting.BookingId</span>
+                            <span class="text-body-secondary">Status: <strong class="@(_selectedMeeting.Status == "Menunggu Persetujuan Admin" ? "text-warning" : "text-success")">@_selectedMeeting.Status</strong></span>
+                        </div>
+                    </div>
+                }
+
+                <div style="background: var(--color-bg-page); border: 1px solid var(--color-border); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 6px;">
+                    <div style="font-size: 1.15rem; font-weight: 700; color: var(--color-text-primary);">@_selectedMeeting.Title</div>
+                    <div style="font-size: 0.875rem; color: var(--color-text-secondary); display: flex; align-items: center; gap: 6px;">
+                        <img src="/icon/icon_room.svg" class="icon-xs" alt="" />
+                        <span>@_selectedMeeting.RoomName (Lantai @_selectedMeeting.Floor)</span>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div style="background: var(--color-bg-page); border: 1px solid var(--color-border); border-radius: 12px; padding: 12px;">
+                        <span style="font-size: 11px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase;">Tanggal</span>
+                        <div style="font-size: 14px; font-weight: 600; color: var(--color-text-primary); margin-top: 2px;">@_selectedMeeting.Date.ToString("dd MMMM yyyy")</div>
+                    </div>
+                    <div style="background: var(--color-bg-page); border: 1px solid var(--color-border); border-radius: 12px; padding: 12px;">
+                        <span style="font-size: 11px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase;">Waktu</span>
+                        <div style="font-size: 14px; font-weight: 600; color: var(--color-text-primary); margin-top: 2px;">@_selectedMeeting.StartTime.ToString("HH:mm") - @_selectedMeeting.EndTime.ToString("HH:mm") WIB</div>
+                    </div>
+                </div>
+
+                <div class="meeting-popup-section">
+                    <span class="meeting-popup-label">Peserta & Kapasitas</span>
+                    <div class="attendees-overlap-wrap">
+                        <div class="attendees-avatars-row">
+                            <div class="attendee-avatar-circle" style="background: #3B82F6;" title="Wahyu Ravi">WR</div>
+                            <div class="attendee-avatar-circle" style="background: #10B981;" title="Ahmad Fauzi">AF</div>
+                            <div class="attendee-avatar-circle" style="background: #8B5CF6;" title="Sarah Jenkins">SJ</div>
+                            <div class="attendee-avatar-circle" style="background: #F59E0B;" title="Budi Santoso">BS</div>
+                            <div class="attendee-avatar-circle attendee-avatar-more" title="Lainnya">+@(_selectedMeeting.AttendeesCount > 4 ? _selectedMeeting.AttendeesCount - 4 : 2)</div>
+                        </div>
+                        <span class="attendees-text-summary">@_selectedMeeting.AttendeesCount Peserta Terdaftar (Kapasitas Maksimal @_selectedMeeting.Capacity Orang)</span>
+                    </div>
+                </div>
+
+                <div class="meeting-popup-section">
+                    <span class="meeting-popup-label">Agenda / Catatan Rapat</span>
+                    <div class="meeting-notes-box">
+                        @_selectedMeeting.Agenda
+                    </div>
+                </div>
+
+                <div class="meeting-popup-section">
+                    <span class="meeting-popup-label">Fasilitas Ruangan Tersedia</span>
+                    <div class="meeting-facilities-list">
+                        @foreach (var fac in _selectedMeeting.Facilities.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            <span class="facility-pill"><img src="/icon/icon_check_circle.svg" class="icon-xs" alt="" /> @fac</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </BodyContent>
+    <FooterContent>
+        @if (_selectedMeeting != null)
+        {
+            @if (_selectedMeeting.Status == "Menunggu Persetujuan Admin")
+            {
+                @if (_selectedMeeting.IsUserOwner)
+                {
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 10px;">
+                        <div style="display: flex; gap: 8px;">
+                            <AppButton Text="Ubah Jadwal" Variant="primary" OnClick="() => OpenRescheduleModal(_selectedMeeting)" />
+                            <AppButton Text="Batalkan" Variant="danger" OnClick="() => BatalkanRapat(_selectedMeeting.Id)" />
+                        </div>
+                        <AppButton Text="Tutup" Variant="secondary" OnClick="() => _isMeetingDetailOpen = false" />
+                    </div>
+                }
+                else
+                {
+                    <!-- Varian 1 Footer: Undangan (Tolak, Tutup, Terima) -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <AppButton Text="Tolak Undangan" Variant="danger" OnClick="() => TolakUndangan(_selectedMeeting)" />
+                        <div style="display: flex; gap: 10px;">
+                            <AppButton Text="Tutup" Variant="secondary" OnClick="() => _isMeetingDetailOpen = false" />
+                            <AppButton Text="Terima Undangan" Variant="primary" OnClick="() => TerimaUndangan(_selectedMeeting)" />
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <!-- Status Terkonfirmasi atau lainnya: HANYA SATU TOMBOL TUTUP PENUH -->
+                <button type="button" class="btn-secondary-full" @onclick="() => _isMeetingDetailOpen = false">Tutup</button>
+            }
+        }
+    </FooterContent>
+</AppModal>
+
+<!-- A2: In-Place Reschedule Modal (Jadwalkan Ulang tanpa Redirect) -->
+<AppModal Visible="@_isRescheduleModalOpen"
+          VisibleChanged="@(v => _isRescheduleModalOpen = v)"
+          Title="Jadwalkan Ulang Pertemuan"
+          Subtitle="Ubah tanggal dan waktu reservasi ruangan secara langsung"
+          Size="md"
+          ShowHeader="true"
+          ShowFooter="true">
+    <IconContent>
+        <div class="modal-header-icon--warning" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #FFFBEB;">
+            <img src="/icon/Icon_clndr.svg" class="icon-sm" alt="" />
+        </div>
+    </IconContent>
+    <BodyContent>
+        @if (_rescheduleMeeting != null)
+        {
+            <div class="reschedule-modal-content">
+                <!-- Info Read-Only Reservasi -->
+                <div class="reschedule-info-card">
+                    <div class="reschedule-info-row">
+                        <span class="reschedule-info-label">Ruangan</span>
+                        <strong class="reschedule-info-val">@_rescheduleMeeting.RoomName (Lantai @_rescheduleMeeting.Floor)</strong>
+                    </div>
+                    <div class="reschedule-info-row">
+                        <span class="reschedule-info-label">Agenda / Rapat</span>
+                        <strong class="reschedule-info-val">@_rescheduleMeeting.Title</strong>
+                    </div>
+                </div>
+
+                <!-- Input Tanggal Baru (Popup DatePickerModal) -->
+                <div class="form-group-reschedule">
+                    <label class="form-label-reschedule">Pilih Tanggal Baru</label>
+                    <div class="form-control-reschedule clickable-field" @onclick="() => _isRescheduleDatePickerOpen = true" role="button" tabindex="0" title="Klik untuk pilih tanggal" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+                        <span>@_rescheduleDate.ToString("dd MMMM yyyy", _culture)</span>
+                        <img src="/icon/Icon_clndr.svg" style="width: 18px; height: 18px; opacity: 0.7;" alt="" />
+                    </div>
+                </div>
+
+                <!-- Input Waktu & Durasi -->
+                <div class="form-row-reschedule">
+                    <div class="form-group-reschedule">
+                        <label class="form-label-reschedule">Waktu Mulai</label>
+                        <input type="time" class="form-control-reschedule"
+                               value="@_rescheduleStartTime"
+                               @onchange="@(e => { _rescheduleStartTime = e.Value?.ToString() ?? "10:00"; OnRescheduleTimeOrDateChanged(); })" />
+                    </div>
+                    <div class="form-group-reschedule">
+                        <label class="form-label-reschedule">Waktu Selesai</label>
+                        <input type="time" class="form-control-reschedule"
+                               value="@_rescheduleEndTime"
+                               @onchange="@(e => { _rescheduleEndTime = e.Value?.ToString() ?? "12:00"; OnRescheduleTimeOrDateChanged(); })" />
+                    </div>
+                </div>
+
+                <!-- Indikator Ketersediaan Slot Real-time -->
+                <div class="slot-status-box @(_isSlotAvailable ? "slot-status-box--available" : "slot-status-box--unavailable")">
+                    @if (_isSlotAvailable)
+                    {
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>@_slotStatusMessage</span>
+                    }
+                    else
+                    {
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="15" y1="9" x2="9" y2="15"></line>
+                            <line x1="9" y1="9" x2="15" y2="15"></line>
+                        </svg>
+                        <span>@_slotStatusMessage</span>
+                    }
+                </div>
+            </div>
+        }
+    </BodyContent>
+    <FooterContent>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; width: 100%;">
+            <AppButton Text="Tutup" Variant="secondary" OnClick="() => _isRescheduleModalOpen = false" />
+            <AppButton Text="Simpan Perubahan" Variant="primary" Disabled="@(!_isSlotAvailable)" OnClick="SaveReschedule" />
+        </div>
+    </FooterContent>
+</AppModal>
+
+<DatePickerModal @bind-Visible="_isRescheduleDatePickerOpen"
+                 SelectedDate="@_rescheduleDate"
+                 OriginalDate="@_rescheduleMeeting?.Date"
+                 OnDateSelected="@HandleRescheduleDateSelected" />
+
+<!-- CASE 4: Modal Detail Pengundang (Struktur & Tipografi Baru) -->
+<AppModal Visible="@_isContactModalOpen"
+          VisibleChanged="@(v => _isContactModalOpen = v)"
+          Title="Detail Pengundang"
+          Subtitle="Informasi kontak dan konteks aktivitas"
+          Size="sm"
+          ShowHeader="true"
+          ShowFooter="true">
+    <IconContent>
+        <div class="modal-header-icon--person" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #EEF2FF;">
+            <img src="/icon/icon_group.svg" class="icon-sm" alt="" />
+        </div>
+    </IconContent>
+    <BodyContent>
+        @if (_selectedContact != null)
+        {
+            <div class="detail-pengundang-modal">
+                <div class="pengundang-profile-block">
+                    <div class="pengundang-avatar-large" style="background-color: @(_selectedContact.AvatarBg ?? "#3B82F6");">
+                        @GetInitials(_selectedContact.PersonName ?? "")
+                    </div>
+                    <div class="pengundang-profile-text">
+                        <span class="text-card-title">@_selectedContact.PersonName</span>
+                        <span class="text-body-secondary">@_selectedContact.PersonTitle</span>
+                    </div>
+                </div>
+
+                <div class="pengundang-info-grid">
+                    <div class="pengundang-info-row">
+                        <span class="text-label-uppercase">Email Kantor</span>
+                        <span class="text-body">@_selectedContact.PersonEmail</span>
+                    </div>
+                    <div class="pengundang-info-row">
+                        <span class="text-label-uppercase">Aktivitas</span>
+                        <span class="text-body">@_selectedContact.Description</span>
+                    </div>
+                    <div class="pengundang-info-row">
+                        <span class="text-label-uppercase">Waktu</span>
+                        <span class="text-body">@_selectedContact.TimeAgo</span>
+                    </div>
+                </div>
+            </div>
+        }
+    </BodyContent>
+    <FooterContent>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; width: 100%;">
+            <button type="button" class="btn btn-secondary" style="border-radius: 999px; padding: 8px 18px; font-weight: 600; font-size: 13px;" @onclick="() => _isContactModalOpen = false">Tutup</button>
+            <button type="button" class="btn btn-primary" style="background: #F5A623; border: none; border-radius: 999px; padding: 8px 18px; font-weight: 700; font-size: 13px; color: #1A1A1A;" @onclick="CopyContactEmail">Salin Email</button>
+        </div>
+    </FooterContent>
+</AppModal>
+
+<!-- CASE 4: Reusable Cancel Confirmation Modal with Required Reason -->
+<AppModal Visible="@_isCancelModalOpen"
+          VisibleChanged="@(v => _isCancelModalOpen = v)"
+          Title="Batalkan Jadwal Pertemuan"
+          Subtitle="Tindakan ini tidak dapat dibatalkan setelah dikonfirmasi"
+          Size="md"
+          ShowHeader="true"
+          ShowFooter="true">
+    <IconContent>
+        <div class="modal-header-icon--danger" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #FEE2E2;">
+            <img src="/icon/icon_alert_danger.svg" class="icon-md" alt="" style="width: 20px; height: 20px;" />
+        </div>
+    </IconContent>
+    <BodyContent>
+        <div class="modal-konfirmasi-batal">
+            <div class="meeting-summary-strip">
+                <span class="text-card-title" style="font-weight: 700; font-size: 15px; color: var(--color-text-primary);">@_selectedMeeting?.Title</span>
+                <span class="text-body-secondary" style="font-size: 13px; color: var(--color-text-secondary);">@_selectedMeeting?.RoomName • @_selectedMeeting?.Date.ToString("dd MMM yyyy") • @_selectedMeeting?.StartTime.ToString("HH:mm")-@_selectedMeeting?.EndTime.ToString("HH:mm")</span>
+            </div>
+
+            <div class="form-group" style="margin-top: 14px;">
+                <label class="text-label-uppercase" style="display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--color-text-secondary); margin-bottom: 8px;">
+                    Alasan Pembatalan <span class="text-danger" style="color: #DC2626;">*</span>
+                </label>
+                <textarea class="textarea-modern" placeholder="Contoh: Rapat dijadwalkan ulang oleh pihak terkait, agenda tidak lagi diperlukan, dst."
+                          @bind="cancellationReason" @bind:event="oninput" rows="3"></textarea>
+                @if (showValidationError)
+                {
+                    <span class="text-danger text-caption" style="display: block; margin-top: 6px; font-size: 12px; color: #DC2626; font-weight: 500;">
+                        Alasan pembatalan wajib diisi sebelum melanjutkan.
+                    </span>
+                }
+            </div>
+        </div>
+    </BodyContent>
+    <FooterContent>
+        <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; width: 100%;">
+            <AnimatedButton Text="Kembali" Variant="secondary" OnClick="CloseCancelModal" />
+            <AnimatedButton Text="Ya, Batalkan Jadwal" Variant="danger" Disabled="@string.IsNullOrWhiteSpace(cancellationReason)" OnClick="ConfirmCancellation" />
+        </div>
+    </FooterContent>
+</AppModal>
+
+@if (isAvailableRoomsModalOpen)
+{
+    <div class="modal-overlay" @onclick="CloseAvailableRoomsModal">
+        <div class="modal-card modal-ruangan-tersedia" @onclick:stopPropagation="true">
+
+            <div class="modal-header">
+                <div class="modal-header-icon modal-header-icon--success">
+                    <img src="/icon/icon_dshboard.svg" class="icon-md" alt="" />
+                </div>
+                <div>
+                    <h3 class="text-section-title">Ruangan Tersedia Sekarang</h3>
+                    <p class="text-body-secondary">Pilih ruangan untuk rapat Anda saat ini</p>
+                </div>
+            </div>
+
+            @if (noVvipAvailable)
+            {
+                <div class="info-banner-subtle">
+                    <img src="/icon/icon_alert_info.svg" class="icon-xs" alt="" />
+                    <span>Tidak ada ruangan VVIP yang tersedia saat ini</span>
+                </div>
+            }
+
+            <div class="ruangan-tersedia-grid">
+                @foreach (var room in availableRooms)
+                {
+                    <div class="ruangan-tersedia-card" @onclick="() => OpenRoomDetailFromAvailable(room.Id)">
+                        <img src="@room.PhotoUrl" class="ruangan-tersedia-photo" alt="@room.Name" onerror="this.src='/images/poto 1.jpg'" />
+                        <div class="ruangan-tersedia-info">
+                            <span class="text-card-title">@room.Name</span>
+                            <span class="ruangan-tersedia-meta">
+                                <img src="/icon/icon_group.svg" class="icon-xs" alt="" /> @room.Capacity Orang
+                            </span>
+                            <div class="ruangan-tersedia-facilities">
+                                @foreach (var f in GetTopFacilities(room).Take(3))
+                                {
+                                    <span class="facility-chip"><img src="@f.IconPath" class="icon-xxs" alt="" /> @f.Name</span>
+                                }
+                            </div>
+                        </div>
+                        <button class="btn-pesan-small" @onclick:stopPropagation="true" @onclick="() => OpenRoomDetailFromAvailable(room.Id)">Pesan</button>
+                    </div>
+                }
+            </div>
+
+            <div class="modal-footer" style="margin-top: 20px; display: flex; justify-content: flex-end;">
+                <button type="button" class="btn-secondary-themed" @onclick="CloseAvailableRoomsModal" style="min-width: 100px;">
+                    Tutup
+                </button>
+            </div>
+
+        </div>
+    </div>
+}
+
+@if (isPendingApprovalModalOpen)
+{
+    <div class="modal-overlay" @onclick="ClosePendingApprovalModal">
+        <div class="modal-card modal-menunggu-persetujuan" @onclick:stopPropagation="true">
+
+            <div class="modal-header">
+                <div class="modal-header-icon modal-header-icon--warning">
+                    <img src="/icon/icon_alert_warning.svg" class="icon-md" alt="" />
+                </div>
+                <div>
+                    <h3 class="text-section-title">Menunggu Persetujuan Admin</h3>
+                    <p class="text-body-secondary">Permintaan pemesanan Anda yang masih menunggu persetujuan</p>
+                </div>
+            </div>
+            <hr class="modal-divider" />
+
+            <div class="pending-list">
+                @foreach (var item in pendingApprovalRequests)
+                {
+                    <div class="pending-item" @onclick="() => OpenDetailPermintaan(item.Id)" role="button" tabindex="0" title="Klik untuk melihat detail permintaan">
+                        <div class="pending-item-icon">
+                            <img src="/icon/icon_pemesanan.svg" class="icon-sm" alt="" />
+                        </div>
+                        <div class="pending-item-info">
+                            <span class="pending-item-title">@item.RoomName</span>
+                            <span class="pending-item-meta">@item.Date.ToString("dd MMM yyyy") • @item.StartTime.ToString("HH:mm")-@item.EndTime.ToString("HH:mm") WIB</span>
+                            <span class="pending-item-waiting">
+                                <img src="/icon/timer_dshbrd.svg" class="icon-xxs" alt="" /> Menunggu @item.WaitingSince
+                            </span>
+                        </div>
+                        <span class="badge-pending">Menunggu</span>
+                    </div>
+                }
+            </div>
+
+            <div class="modal-footer pending-modal-footer" style="margin-top: 20px; display: flex; justify-content: flex-end;">
+                <button type="button" class="btn-secondary-themed" @onclick="ClosePendingApprovalModal" style="min-width: 100px;">
+                    Tutup
+                </button>
+            </div>
+
+        </div>
+    </div>
+}
+
+<!-- CASE 1 (V67): Popup Detail Ruangan -->
+@if (_isRoomDetailModalOpen && _selectedRoomDetail != null)
+{
+    var room = _selectedRoomDetail;
+    <div class="modal-overlay" @onclick="CloseRoomDetailModal">
+        <div class="modal-card modal-room-detail" @onclick:stopPropagation="true">
+            <!-- Hero Photo Banner with Overlay (No Close Button - Backdrop or Kembali to exit) -->
+            <div class="room-detail-hero-wrapper">
+                <img src="@room.PhotoUrl" class="room-detail-hero-img" alt="@room.Name" onerror="this.src='/images/poto 1.jpg'" />
+                <div class="room-detail-hero-overlay"></div>
+            </div>
+
+            <div class="modal-body room-detail-body">
+                <div class="room-detail-header-badges">
+                    <span class="badge-status-pill badge-status-pill--@GetStatusSlug(room.Status)">
+                        <span class="status-dot"></span> @GetStatusLabel(room.Status)
+                    </span>
+                    <span class="badge-meta-pill">
+                        <img src="/icon/icon_group.svg" class="icon-xs" alt="" />
+                        <span>Kapasitas @room.Capacity Orang</span>
+                    </span>
+                </div>
+
+                <h3 class="room-detail-title">@room.Name</h3>
+                
+                <div class="room-detail-location">
+                    <img src="/icon/icon_location.svg" class="icon-xs" alt="" />
+                    <span>Lantai @room.Floor, Gedung Persada HQ</span>
+                </div>
+
+                <p class="room-detail-desc">@room.Description</p>
+
+                <div class="room-detail-section-header">
+                    <span class="text-label-uppercase">Fasilitas Ruangan</span>
+                </div>
+                <div class="room-detail-facilities">
+                    @foreach (var f in GetTopFacilities(room))
+                    {
+                        <span class="facility-chip-full"><img src="@f.IconPath" class="icon-xs" alt="" /> @f.Name</span>
+                    }
+                </div>
+            </div>
+
+            <!-- Footer Buttons: Secondary Themed & Primary Solid Orange -->
+            <div class="modal-footer room-detail-footer">
+                <button type="button" class="btn-secondary-themed" @onclick="BackToRoomList">Kembali</button>
+                @if (!_isRoomDetailViewOnly)
+                {
+                    <button type="button" class="btn-primary-hero" @onclick="() => LanjutkanPemesanan(room.Id)">Lanjutkan Pemesanan</button>
+                }
+                else
+                {
+                    <button type="button" class="btn-primary-hero" @onclick="CloseRoomDetailModal">Tutup</button>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+<!-- CASE 2 (V67): Popup Detail Permintaan Pemesanan -->
+@if (_isDetailPermintaanModalOpen && _selectedPendingRequest != null)
+{
+    var request = _selectedPendingRequest;
+    <div class="modal-overlay" @onclick="CloseDetailPermintaan">
+        <div class="modal-card modal-detail-permintaan" @onclick:stopPropagation="true">
+            <!-- 2b: Hero photo banner at top with gradient overlay (No close button - Backdrop or Tutup button to exit) -->
+            <div class="permintaan-hero-wrapper">
+                <img src="@GetRoomPhotoForPending(request.RoomName)" class="permintaan-hero-img" alt="@request.RoomName" onerror="this.src='/images/poto 1.jpg'" />
+                <div class="permintaan-hero-overlay"></div>
+            </div>
+
+            <!-- 2a: Safe Header with flexbox -->
+            <div class="modal-header modal-header--safe">
+                <div class="modal-header-icon modal-header-icon--warning">
+                    <img src="/icon/icon_pemesanan.svg" class="icon-md" alt="" />
+                </div>
+                <div class="modal-header-title-container">
+                    <h3 class="text-section-title modal-title-nowrap">Detail Permintaan Pemesanan</h3>
+                    <p class="text-body-secondary">ID Reservasi: #@request.BookingId</p>
+                </div>
+            </div>
+
+            <hr class="modal-divider" />
+
+            <!-- 2d: 2-column info grid with scannable icons -->
+            <div class="permintaan-info-grid-2col">
+                <div class="permintaan-info-card">
+                    <div class="info-card-header">
+                        <img src="/icon/icon_location.svg" class="icon-xs" alt="" />
+                        <span class="text-label-uppercase">Ruangan Diajukan</span>
+                    </div>
+                    <div class="info-card-body">
+                        <span class="info-card-value">@request.RoomName</span>
+                        <!-- 2c: Fitur Tombol/Link "Lihat Detail" -->
+                        <button type="button" class="btn-link-lihat-detail" @onclick="() => OpenRoomDetailFromPending(request.RoomName)" title="Lihat detail lengkap ruangan">
+                            <span>Lihat Detail Ruangan</span>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="permintaan-info-card">
+                    <div class="info-card-header">
+                        <img src="/icon/Icon_clndr.svg" class="icon-xs" alt="" />
+                        <span class="text-label-uppercase">Tanggal & Waktu</span>
+                    </div>
+                    <div class="info-card-body">
+                        <span class="info-card-value">@request.Date.ToString("dd MMM yyyy")</span>
+                        <span class="info-card-sub">@request.StartTime.ToString("HH:mm") - @request.EndTime.ToString("HH:mm") WIB</span>
+                    </div>
+                </div>
+
+                <div class="permintaan-info-card">
+                    <div class="info-card-header">
+                        <img src="/icon/timer_dshbrd.svg" class="icon-xs" alt="" />
+                        <span class="text-label-uppercase">Status Persetujuan</span>
+                    </div>
+                    <div class="info-card-body">
+                        <span class="badge-pending-pill">
+                            <span class="pending-dot"></span> Menunggu Persetujuan Admin
+                        </span>
+                    </div>
+                </div>
+
+                <div class="permintaan-info-card">
+                    <div class="info-card-header">
+                        <img src="/icon/timer_dshbrd.svg" class="icon-xs" alt="" />
+                        <span class="text-label-uppercase">Diajukan Sejak</span>
+                    </div>
+                    <div class="info-card-body">
+                        <span class="info-card-value">@request.WaitingSince</span>
+                    </div>
+                </div>
+
+                <div class="permintaan-info-card permintaan-info-card--full">
+                    <div class="info-card-header">
+                        <img src="/icon/icon_alert_info.svg" class="icon-xs" alt="" />
+                        <span class="text-label-uppercase">Estimasi Waktu Tinjau</span>
+                    </div>
+                    <div class="info-card-body">
+                        <span class="info-card-sub">Admin biasanya merespons dalam 1x24 jam kerja. Notifikasi akan dikirimkan otomatis setelah permohonan disetujui.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer: Destructive outline red & Secondary themed -->
+            <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+                <button type="button" class="btn-destructive-themed" @onclick="() => OpenKonfirmasiPembatalan(request.Id)">
+                    Batalkan Permintaan
+                </button>
+                <button type="button" class="btn-secondary-themed" @onclick="CloseDetailPermintaan">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- CASE 1 & CASE 7 (V66): Modal Konfirmasi Pemesanan Reusable -->
+<ConfirmBookingModal @bind-Visible="_isConfirmBookingVisible" Room="_selectedRoomForBooking" />
+
+<style>
+    .beranda-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 24px 32px;
+        display: flex;
+        flex-direction: column;
+    }
+    @@media (max-width: 768px) {
+        .beranda-container {
+            padding: 16px;
+        }
+    }
+
+    .beranda-container > section {
+        margin-bottom: 24px;
+    }
+
+    /* 2. RINGKASAN STATISTIK */
+    .summary-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+    }
+    @@media (max-width: 900px) {
+        .summary-cards-grid { grid-template-columns: 1fr; }
+    }
+    .stat-card {
+        background: var(--color-bg-card);
+        border-radius: var(--radius-lg);
+        padding: 20px 22px;
+        box-shadow: var(--shadow-card);
+        cursor: pointer;
+        transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        border-left: 4px solid transparent;
+        border-top: 1px solid var(--color-border);
+        border-right: 1px solid var(--color-border);
+        border-bottom: 1px solid var(--color-border);
+    }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-card-hover); }
+    .stat-card--success { border-left-color: var(--color-success); }
+    .stat-card--warning { border-left-color: var(--color-primary); }
+    .stat-card-icon-wrap {
+        width: 48px; height: 48px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        transition: transform 0.2s ease;
+    }
+    .stat-card-icon-wrap--success {
+        background: #DCFCE7;
+        border: 1px solid rgba(22, 163, 74, 0.22);
+    }
+    body.dark-mode .stat-card-icon-wrap--success {
+        background: rgba(34, 197, 94, 0.2);
+        border-color: rgba(34, 197, 94, 0.35);
+    }
+    .stat-card-icon-wrap--warning {
+        background: #FEF3C7;
+        border: 1px solid rgba(245, 166, 35, 0.25);
+    }
+    body.dark-mode .stat-card-icon-wrap--warning {
+        background: rgba(245, 166, 35, 0.2);
+        border-color: rgba(245, 166, 35, 0.35);
+    }
+    .stat-card-icon-wrap img {
+        width: 24px;
+        height: 24px;
+        object-fit: contain;
+    }
+    .stat-card-body { display: flex; flex-direction: column; gap: 2px; }
+    .stat-card-label {
+        font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+        color: var(--color-text-muted); text-transform: uppercase;
+    }
+    .stat-card-value { font-size: 28px; font-weight: 700; color: var(--color-text-primary); }
+    .stat-card-value-sub { font-size: 16px; font-weight: 500; color: var(--color-text-muted); }
+    .stat-card-desc { font-size: 12px; color: var(--color-text-secondary); }
+
+    /* CASE 3A: Stat Card Dark & Glass Button */
+    .stat-card--dark {
+        background: linear-gradient(160deg, #0F172A 0%, #1E3A5F 60%, #1E293B 100%);
+        border: 1px solid rgba(59, 130, 246, 0.15);
+        position: relative;
+        overflow: hidden;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        color: white;
+    }
+    .stat-card--dark::after {
+        content: '';
+        position: absolute;
+        top: -40%; right: -20%;
+        width: 200px; height: 200px;
+        background: radial-gradient(circle, rgba(74, 222, 128, 0.12) 0%, transparent 70%);
+        pointer-events: none;
+    }
+    .stat-card-dark-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; position: relative; z-index: 1; }
+    .stat-card-dark-badge {
+        background: rgba(22, 163, 74, 0.2);
+        color: #4ADE80;
+        font-size: 11px; font-weight: 600;
+        padding: 3px 10px;
+        border-radius: 999px;
+    }
+    .stat-card-dark-label { font-size: 12px; color: rgba(255,255,255,0.6); position: relative; z-index: 1; }
+    .stat-card-dark-title { font-size: 20px; font-weight: 700; margin-bottom: 10px; color: #FFFFFF; position: relative; z-index: 1; }
+    .btn-stat-dark {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        border-radius: 999px;
+        padding: 10px 18px; font-size: 13px; font-weight: 600;
+        cursor: pointer; width: 100%;
+        transition: background var(--transition-fast);
+        position: relative; z-index: 1;
+    }
+    .btn-stat-dark:hover { background: rgba(255, 255, 255, 0.18); }
+
+    /* 3. CONTENT GRID TWO COLUMN */
+    .content-grid-two-col {
+        display: grid;
+        grid-template-columns: 1.65fr 1fr;
+        gap: 24px;
+        align-items: start;
+    }
+    @@media (max-width: 1024px) {
+        .content-grid-two-col { grid-template-columns: 1fr; }
+    }
+    .panel {
+        background: var(--color-bg-card);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: 24px;
+        box-shadow: var(--shadow-card);
+        min-width: 0;
+    }
+    .jadwal-mendatang-panel {
+        min-width: 0;
+    }
+    .panel-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; }
+    .panel-title { font-size: 17px; font-weight: 700; color: var(--color-text-primary); margin: 0 0 4px 0; }
+    .panel-subtitle { font-size: 13px; color: var(--color-text-secondary); margin: 0; }
+
+    /* CASE 4: Jadwal Filter Tabs & Desktop Nav Arrows */
+    .jadwal-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .jadwal-filter-tabs {
+        display: flex;
+        background: var(--color-bg-page);
+        border-radius: 999px;
+        padding: 3px;
+        gap: 2px;
+    }
+    .jadwal-filter-tab {
+        border: none;
+        background: transparent;
+        padding: 5px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--color-text-secondary);
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .jadwal-filter-tab.active {
+        background: white;
+        color: var(--color-text-primary);
+        font-weight: 700;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+    body.dark-mode .jadwal-filter-tab.active {
+        background: #1E293B;
+        color: #F8FAFC;
+    }
+
+    .jadwal-nav-arrows {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .jadwal-nav-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--color-bg-card, #FFFFFF);
+        border: 1px solid var(--color-border, #CBD5E1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-text-primary, #0F172A);
+        cursor: pointer;
+        transition: all 180ms ease-in-out;
+    }
+    .jadwal-nav-btn:hover {
+        background: var(--color-bg-page, #F1F5F9);
+        border-color: #94A3B8;
+        transform: scale(1.05);
+    }
+    .jadwal-nav-btn:active {
+        transform: scale(0.95);
+    }
+    body.dark-mode .jadwal-nav-btn {
+        background: var(--color-bg-card);
+        border-color: var(--color-border);
+        color: var(--color-text-primary);
+    }
+
+    /* B1, B2 & B3: Horizontal Scroll Track & Modern Zoom Meeting Card */
+    .jadwal-scroll-container {
+        display: flex;
+        gap: 16px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scroll-behavior: smooth;
+        padding: 4px 4px 18px 4px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        scrollbar-color: var(--color-border) transparent;
+    }
+    .jadwal-scroll-container::-webkit-scrollbar {
+        height: 6px;
+    }
+    .jadwal-scroll-container::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .jadwal-scroll-container::-webkit-scrollbar-thumb {
+        background: var(--color-border);
+        border-radius: 999px;
+    }
+
+    .meeting-card-zoom {
+        background: var(--color-bg-card, #FFFFFF);
+        border: 1px solid var(--color-border, #E2E8F0);
+        border-radius: 14px;
+        padding: 16px;
+        min-width: 290px;
+        width: 300px;
+        flex: 0 0 auto;
+        scroll-snap-align: start;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 14px;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        position: relative;
+    }
+    .meeting-card-zoom:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+        border-color: #CBD5E1;
+    }
+    body.dark-mode .meeting-card-zoom:hover {
+        box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.5);
+        border-color: rgba(255, 255, 255, 0.25);
+    }
+    
+    /* Solid gradient / orange accent for meetings owned by user */
+    .meeting-card-zoom--owner {
+        border-left: 4px solid var(--persada-yellow-500, #F59E0B) !important;
+    }
+    .meeting-card-zoom--invited {
+        border-left: 4px solid var(--color-info, #3B82F6) !important;
+    }
+
+    .meeting-card-zoom__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+    }
+    .meeting-card-zoom__author {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+    .meeting-card-zoom__avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 13px;
+        color: #FFFFFF;
+        flex-shrink: 0;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .meeting-card-zoom__author-info {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+    .meeting-card-zoom__author-name {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .meeting-card-zoom__author-role {
+        font-size: 11px;
+        color: var(--color-text-secondary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .meeting-card-zoom__body {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .meeting-card-zoom__title {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        margin: 0;
+        line-height: 1.35;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .meeting-card-zoom__meta-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: var(--color-text-secondary);
+    }
+    .meeting-card-zoom__meta-item svg {
+        flex-shrink: 0;
+        color: var(--color-text-muted);
+    }
+    .meeting-card-zoom__meta-item.highlight-time {
+        font-weight: 600;
+        color: var(--color-text-primary);
+    }
+    .meeting-card-zoom__meta-item.highlight-time svg {
+        color: var(--persada-yellow-500, #F59E0B);
+    }
+
+    .meeting-card-zoom__footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 6px;
+        padding-top: 10px;
+        border-top: 1px solid var(--color-border);
+    }
+
+    .tag-badge { 
+        font-size: 11px; 
+        font-weight: 600; 
+        padding: 4px 10px; 
+        border-radius: 999px; 
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        line-height: 1.2;
+    }
+    .tag-badge--ruangrapat { background: #F1F5F9; color: #475569; border: 1px solid #E2E8F0; }
+    .tag-badge--areakolaborasi { background: var(--color-info-light, #DBEAFE); color: var(--color-info, #2563EB); border: 1px solid #BFDBFE; }
+    .tag-badge--fasilitaskhusus { background: var(--color-purple-light, #EDE9FE); color: var(--color-purple, #7C3AED); border: 1px solid #DDD6FE; }
+    .tag-badge--success { background: #ECFDF5; color: #059669; border: 1px solid #A7F3D0; }
+    .tag-badge--warning { background: #FFFBEB; color: #D97706; border: 1px solid #FDE68A; }
+    .tag-badge--danger { background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; }
+    body.dark-mode .tag-badge--success { background: rgba(16, 185, 129, 0.2); color: #34D399; border-color: rgba(16, 185, 129, 0.4); }
+    body.dark-mode .tag-badge--warning { background: rgba(245, 158, 11, 0.2); color: #FBBF24; border-color: rgba(245, 158, 11, 0.4); }
+    body.dark-mode .tag-badge--danger { background: rgba(239, 68, 68, 0.2); color: #F87171; border-color: rgba(239, 68, 68, 0.4); }
+
+    /* A1: Quick Menu Button & Dropdown Elevation Fix */
+    .btn-icon-round {
+        width: 32px; height: 32px; border-radius: 50%;
+        background: var(--color-bg-card, #FFFFFF); border: 1px solid var(--color-border, #CBD5E1);
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+        transition: background-color 150ms ease-in-out, border-color 150ms ease-in-out, transform 150ms ease-in-out;
+    }
+    .btn-icon-round:hover {
+        background: var(--color-bg-page, #F8FAFC);
+        border-color: #94A3B8;
+        transform: scale(1.05);
+    }
+    .btn-icon-round img {
+        filter: brightness(0) opacity(0.65);
+    }
+    body.dark-mode .btn-icon-round img {
+        filter: brightness(0) invert(1) opacity(0.85);
+    }
+    .btn-secondary-full {
+        width: 100%;
+        background: var(--color-bg-page, #F8FAFC);
+        border: 1px solid var(--color-border, #E2E8F0);
+        border-radius: 999px;
+        padding: 12px 20px;
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--color-text-primary, #1E293B);
+        cursor: pointer;
+        transition: background 150ms ease-in-out, border-color 150ms ease-in-out;
+        text-align: center;
+    }
+    .btn-secondary-full:hover {
+        background: #EEF1F5;
+    }
+    .menu-icon {
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+    }
+
+    /* A2: Reschedule Modal Styling */
+    .reschedule-modal-content {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        padding: 4px 0;
+    }
+    .reschedule-info-card {
+        background: var(--color-bg-page, #F8FAFC);
+        border: 1px solid var(--color-border, #E2E8F0);
+        border-radius: 10px;
+        padding: 12px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .reschedule-info-row {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    .reschedule-info-label {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--color-text-muted, #64748B);
+    }
+    .reschedule-info-val {
+        font-size: 14px;
+        color: var(--color-text-primary, #0F172A);
+    }
+    .form-row-reschedule {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+    .form-group-reschedule {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .form-label-reschedule {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--color-text-primary, #0F172A);
+    }
+    .form-control-reschedule {
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--color-border, #CBD5E1);
+        background: var(--color-bg-card, #FFFFFF);
+        color: var(--color-text-primary, #0F172A);
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .form-control-reschedule:focus {
+        border-color: var(--persada-yellow-500, #F59E0B);
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+    }
+    body.dark-mode .form-control-reschedule {
+        background: var(--color-bg-card);
+        border-color: var(--color-border);
+        color: var(--color-text-primary);
+    }
+    .slot-status-box {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+    .slot-status-box--available {
+        background: #ECFDF5;
+        border: 1px solid #A7F3D0;
+        color: #065F46;
+    }
+    .slot-status-box--unavailable {
+        background: #FEF2F2;
+        border: 1px solid #FECACA;
+        color: #991B1B;
+    }
+    body.dark-mode .slot-status-box--available {
+        background: rgba(16, 185, 129, 0.15);
+        border-color: rgba(16, 185, 129, 0.4);
+        color: #34D399;
+    }
+    body.dark-mode .slot-status-box--unavailable {
+        background: rgba(239, 68, 68, 0.15);
+        border-color: rgba(239, 68, 68, 0.4);
+        color: #F87171;
+    }
+
+    .rekomendasi-item { 
+        display: flex; align-items: center; gap: 10px; padding: 8px 4px; 
+        border-radius: var(--radius-md);
+        border-bottom: 1px solid var(--color-border); 
+        transition: background-color 150ms ease-in-out;
+    }
+    .rekomendasi-item:hover {
+        background-color: var(--color-bg-page, #F8FAFC);
+    }
+    body.dark-mode .rekomendasi-item:hover {
+        background-color: rgba(255, 255, 255, 0.04);
+    }
+    .rekomendasi-item:last-child { border-bottom: none; }
+    .rekomendasi-item-photo { width: 44px; height: 44px; border-radius: var(--radius-sm); object-fit: cover; flex-shrink: 0; }
+    .rekomendasi-item-info { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .rekomendasi-item-name { font-size: 13px; font-weight: 600; color: var(--color-text-primary); }
+    .rekomendasi-item-meta { font-size: 12px; color: var(--color-text-secondary); display: flex; align-items: center; gap: 4px; }
+    .btn-pesan-small {
+        background: var(--color-primary); color: #1A1A1A; border: none;
+        border-radius: 999px; padding: 5px 12px; font-size: 12px; font-weight: 600; cursor: pointer;
+        transition: background var(--transition-fast);
+        flex-shrink: 0;
+    }
+    .btn-pesan-small:hover { background: var(--color-primary-dark); }
+    .panel-link-text { display: block; text-align: center; margin-top: 12px; font-size: 13px; color: var(--color-primary); font-weight: 600; cursor: pointer; }
+    .panel-link-text:hover { text-decoration: underline; }
+
+    /* 4. AKTIVITAS TERKINI (Case 3 & 6) */
+    .aktivitas-list {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .aktivitas-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border-left: 3px solid transparent;
+        background: transparent;
+        transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+    }
+    .aktivitas-item:hover {
+        transform: translateX(2px);
+        background: var(--color-bg-page, #F8FAFC);
+    }
+    .aktivitas-item--person {
+        border-left-color: #3B82F6;
+    }
+    .aktivitas-item--person:hover {
+        border-left-color: #2563EB;
+        background: rgba(59, 130, 246, 0.05);
+    }
+    .aktivitas-item--success {
+        border-left-color: #10B981;
+    }
+    .aktivitas-item--success:hover {
+        border-left-color: #059669;
+        background: rgba(16, 185, 129, 0.05);
+    }
+    .aktivitas-item--warning {
+        border-left-color: #F59E0B;
+    }
+    .aktivitas-item--warning:hover {
+        border-left-color: #D97706;
+        background: rgba(245, 158, 11, 0.05);
+    }
+    .clickable-activity-row {
+        cursor: pointer;
+    }
+    .aktivitas-item-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .aktivitas-item-icon--approved { background: var(--color-success-light); }
+    .aktivitas-item-icon--rejected, .aktivitas-item-icon--warning { background: var(--color-danger-light); }
+    .aktivitas-item-icon--checkin { background: var(--color-success-light); }
+    .aktivitas-item-icon--invite { background: var(--color-info-light); }
+    .aktivitas-item-avatar-initial {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+        color: white;
+        flex-shrink: 0;
+    }
+    .aktivitas-item-body { display: flex; flex-direction: column; gap: 2px; }
+    .aktivitas-item-text { font-size: 13px; color: var(--color-text-primary); }
+    .aktivitas-item-time { font-size: 11px; color: var(--color-text-muted); }
+
+    /* Popup Detailing Styles (Case 3B) */
+    .meeting-popup-section {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .meeting-popup-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+    }
+    .attendees-overlap-wrap {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    .attendees-avatars-row {
+        display: flex;
+        align-items: center;
+    }
+    .attendee-avatar-circle {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+        color: white;
+        border: 2px solid white;
+        margin-left: -8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    .attendee-avatar-circle:first-child {
+        margin-left: 0;
+    }
+    .attendee-avatar-more {
+        background: #64748B;
+        color: #FFFFFF;
+        font-size: 10px;
+    }
+    .attendees-text-summary {
+        font-size: 12.5px;
+        color: var(--color-text-secondary);
+    }
+    .meeting-notes-box {
+        background: var(--color-bg-page);
+        border: 1px solid var(--color-border);
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 12.5px;
+        color: var(--color-text-secondary);
+        line-height: 1.5;
+    }
+    .meeting-facilities-list {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    .facility-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--color-bg-page);
+        border: 1px solid var(--color-border);
+        border-radius: 999px;
+        padding: 5px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--color-text-primary);
+    }
+
+    /* CASE 2: Status Info Strip */
+    .status-info-strip {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 14px;
+        background: rgba(245, 166, 35, 0.08);
+        border: 1px solid rgba(245, 166, 35, 0.25);
+        border-radius: 8px;
+        font-size: 12px;
+    }
+    .status-info-id {
+        font-weight: 700;
+        color: #D97706;
+    }
+    .status-info-text {
+        color: var(--color-text-secondary, #64748B);
+    }
+    .status-info-text strong {
+        color: var(--color-text-primary, #1E293B);
+    }
+
+    /* CASE 4: Detail Pengundang Modal */
+    .detail-pengundang-modal {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        padding: 4px 0;
+    }
+    .pengundang-profile-block {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 12px;
+    }
+    .pengundang-avatar-large {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: 700;
+        color: #FFFFFF;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+    }
+    .pengundang-profile-text {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .pengundang-profile-text .text-card-title {
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--color-text-primary);
+    }
+    .pengundang-profile-text .text-body-secondary {
+        font-size: 13px;
+        color: var(--color-text-secondary);
+    }
+    .pengundang-info-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        background: var(--color-bg-page, #F8FAFC);
+        border: 1px solid var(--color-border, #E2E8F0);
+        border-radius: 10px;
+        padding: 14px 16px;
+    }
+    .pengundang-info-row {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    .pengundang-info-row .text-label-uppercase {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        color: var(--color-text-muted, #94A3B8);
+        text-transform: uppercase;
+    }
+    .pengundang-info-row .text-body {
+        font-size: 13.5px;
+        font-weight: 500;
+        color: var(--color-text-primary, #1E293B);
+    }
+
+    /* Modal Detail Kontak (Legacy Fallback) */
+    .contact-modal-body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        text-align: center;
+        padding: 10px 0;
+    }
+    .contact-avatar-large {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        font-weight: 700;
+        color: white;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        margin: 0 auto;
+    }
+    .contact-name {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--color-text-primary);
+    }
+    .contact-title {
+        font-size: 13px;
+        color: var(--color-text-secondary);
+    }
+    .contact-info-card {
+        width: 100%;
+        background: var(--color-bg-page);
+        border: 1px solid var(--color-border);
+        border-radius: 10px;
+        padding: 12px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        text-align: left;
+    }
+    .contact-info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12.5px;
+    }
+    .contact-info-label {
+        font-weight: 600;
+        color: var(--color-text-muted);
+    }
+    .contact-info-val {
+        font-weight: 600;
+        color: var(--color-text-primary);
+    }
+
+    /* Dark Mode Adjustments */
+    body.dark-mode .panel {
+        background: var(--color-dark-bg-secondary);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    body.dark-mode .stat-card {
+        background: var(--color-dark-bg-secondary);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    body.dark-mode .panel-title,
+    body.dark-mode .stat-card-value,
+    body.dark-mode .jadwal-item-title,
+    body.dark-mode .rekomendasi-item-name,
+    body.dark-mode .aktivitas-item-text,
+    body.dark-mode .jadwal-item-date-day {
+        color: #F8FAFC;
+    }
+    body.dark-mode .jadwal-item {
+        background: rgba(15, 23, 42, 0.6);
+    }
+    body.dark-mode .meeting-card-zoom {
+        background: #1E293B !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    }
+    body.dark-mode .meeting-card-zoom__title {
+        color: #F8FAFC !important;
+    }
+    body.dark-mode .meeting-card-zoom__author-name {
+        color: #F8FAFC !important;
+    }
+    body.dark-mode .meeting-card-zoom__author-role {
+        color: #94A3B8 !important;
+    }
+    body.dark-mode .meeting-card-zoom__meta-item {
+        color: #94A3B8 !important;
+    }
+    body.dark-mode .meeting-card-zoom__meta-item.highlight-time {
+        color: #F8FAFC !important;
+    }
+    body.dark-mode .jadwal-item-date {
+        background: var(--color-dark-bg);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    body.dark-mode .btn-icon-round {
+        background: var(--color-dark-bg);
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+    body.dark-mode .btn-secondary-full {
+        background: var(--color-dark-bg, #0F172A);
+        border-color: rgba(255, 255, 255, 0.15);
+        color: #F8FAFC;
+    }
+    body.dark-mode .btn-secondary-full:hover {
+        background: rgba(255, 255, 255, 0.08);
+    }
+    body.dark-mode .pengundang-info-grid {
+        background: var(--color-dark-bg, #0F172A);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    body.dark-mode .pengundang-info-row .text-body {
+        color: #F8FAFC;
+    }
+    body.dark-mode .status-info-strip {
+        background: rgba(245, 166, 35, 0.12);
+        border-color: rgba(245, 166, 35, 0.3);
+    }
+    body.dark-mode .status-info-text strong {
+        color: #F8FAFC;
+    }
+    body.dark-mode .aktivitas-item:hover {
+        background: rgba(255, 255, 255, 0.04);
+    }
+    body.dark-mode .attendee-avatar-circle {
+        border-color: var(--color-dark-bg);
+    }
+
+    /* CASE 4: Modal Konfirmasi Batal Styles */
+    .modal-header-icon--danger {
+        background: var(--color-danger-light, #FEE2E2);
+    }
+    .meeting-summary-strip {
+        background: var(--color-bg-page, #F8FAFC);
+        border-radius: 12px;
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-bottom: 16px;
+        border: 1px solid var(--color-border, #E2E8F0);
+    }
+    body.dark-mode .meeting-summary-strip {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    .textarea-modern {
+        width: 100%;
+        border: 1px solid var(--color-border, #CBD5E1);
+        border-radius: 12px;
+        padding: 12px 14px;
+        font-family: var(--font-family-base, inherit);
+        font-size: 14px;
+        resize: vertical;
+        transition: border-color 150ms ease-in-out, box-shadow 150ms ease-in-out;
+        background: var(--color-bg-card, #FFFFFF);
+        color: var(--color-text-primary, #0F172A);
+        box-sizing: border-box;
+    }
+    body.dark-mode .textarea-modern {
+        background: #1E293B;
+        border-color: #334155;
+        color: #F8FAFC;
+    }
+    .textarea-modern:focus {
+        outline: none;
+        border-color: var(--color-primary, #F5A623);
+        box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.15);
+    }
+    .btn-danger {
+        background: var(--color-danger, #DC2626);
+        color: white;
+        border: none;
+        border-radius: 999px;
+        padding: 10px 20px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background 150ms ease-in-out;
+    }
+    .btn-danger:hover {
+        background: #B91C1C;
+    }
+    .btn-danger:disabled {
+        background: #FCA5A5;
+        cursor: not-allowed;
+    }
+    body.dark-mode .btn-danger:disabled {
+        background: #7F1D1D;
+        color: #9CA3AF;
+    }
+
+    /* CASE 2 & CASE 3 (V65): Redesign Modal Ruangan Tersedia & Menunggu Persetujuan */
+    .modal-ruangan-tersedia,
+    .modal-menunggu-persetujuan {
+        width: 520px;
+        max-width: 100%;
+        padding: 24px;
+        position: relative;
+    }
+    .modal-header-icon--success { background: var(--color-success-light, #DCFCE7); }
+    .modal-header-icon--warning { background: var(--color-primary-light, #FEF3C7); }
+    .modal-close-x {
+        position: absolute; top: 20px; right: 20px;
+        width: 32px; height: 32px; border-radius: 50%;
+        background: var(--color-bg-page, #F8FAFC); border: none;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; transition: background 150ms ease-in-out;
+    }
+    .modal-close-x:hover { background: #E2E8F0; }
+
+    .info-banner-subtle {
+        display: flex; align-items: center; gap: 8px;
+        background: var(--color-primary-light, #FEF3C7);
+        border-radius: 10px;
+        padding: 10px 14px;
+        margin-top: 14px;
+        margin-bottom: 16px;
+        font-size: 13px;
+        color: #92600A;
+    }
+
+    .ruangan-tersedia-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-height: 380px;
+        overflow-y: auto;
+        padding-right: 4px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--color-border, #E2E8F0) transparent;
+    }
+    .ruangan-tersedia-grid::-webkit-scrollbar { width: 5px; }
+    .ruangan-tersedia-grid::-webkit-scrollbar-thumb { background: var(--color-border, #E2E8F0); border-radius: 999px; }
+
+    .ruangan-tersedia-card {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        background: var(--color-bg-page, #F8FAFC);
+        border: 1px solid transparent;
+        border-radius: 14px;
+        padding: 12px;
+        cursor: pointer;
+        transition: all 200ms cubic-bezier(0.4,0,0.2,1);
+    }
+    .ruangan-tersedia-card:hover {
+        background: white;
+        border-color: var(--color-primary, #F5A623);
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+        transform: translateY(-2px);
+    }
+    .ruangan-tersedia-photo {
+        width: 64px; height: 64px;
+        border-radius: 10px;
+        object-fit: cover;
+        flex-shrink: 0;
+    }
+    .ruangan-tersedia-info { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; text-align: left; }
+    .ruangan-tersedia-meta { font-size: 12px; color: var(--color-text-secondary, #64748B); display: flex; align-items: center; gap: 4px; }
+    .ruangan-tersedia-facilities { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+    .facility-chip {
+        font-size: 10px; font-weight: 500;
+        background: #F1F5F9; color: #475569;
+        padding: 3px 8px; border-radius: 999px;
+        display: flex; align-items: center; gap: 3px;
+    }
+    .icon-xxs { width: 11px; height: 11px; }
+
+
+    .pending-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-height: 400px;
+        overflow-y: auto;
+        padding-right: 4px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--color-border, #E2E8F0) transparent;
+    }
+    .pending-list::-webkit-scrollbar { width: 5px; }
+    .pending-list::-webkit-scrollbar-thumb { background: var(--color-border, #E2E8F0); border-radius: 999px; }
+    .pending-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        background: #FFFFFF;
+        border: 1px solid var(--color-border, #E2E8F0);
+        border-left: 4px solid var(--color-primary, #F5A623);
+        border-radius: 14px;
+        padding: 15px 18px;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    }
+    .pending-item:hover {
+        background: #F8FAFC;
+        border-color: #CBD5E1;
+        border-left-color: #D97706;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    }
+    .pending-item-icon {
+        width: 44px; height: 44px; border-radius: 12px;
+        background: #FEF3C7;
+        border: 1px solid rgba(245, 166, 35, 0.25);
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .pending-item-icon img {
+        width: 22px; height: 22px;
+    }
+    .pending-item-info { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; text-align: left; }
+    .pending-item-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #0F172A;
+        line-height: 1.25;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .pending-item-meta {
+        font-size: 12.5px;
+        font-weight: 500;
+        color: #64748B;
+        line-height: 1.3;
+    }
+    .pending-item-waiting {
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #D97706;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 2px;
+    }
+    .badge-pending {
+        background: #FEF3C7;
+        color: #D97706;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 6px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(245, 166, 35, 0.3);
+        flex-shrink: 0;
+        align-self: center;
+        letter-spacing: 0.2px;
+    }
+
+    /* CASE 5 (V67): Jadwal Mendatang Full Width Section */
+    .jadwal-mendatang-section { margin-bottom: 32px; width: 100%; }
+    .jadwal-mendatang-panel--full { width: 100%; min-width: 0; }
+
+    /* CASE 1 (V67): Modal Room Detail */
+    .modal-room-detail {
+        width: 500px;
+        max-width: 95vw;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 24px;
+        position: relative;
+        text-align: left;
+        border-radius: 20px;
+    }
+    .room-detail-hero-wrapper {
+        position: relative;
+        width: calc(100% + 48px);
+        height: 180px;
+        border-radius: 20px 20px 0 0;
+        margin: -24px -24px 16px -24px;
+        overflow: hidden;
+    }
+    .room-detail-hero-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center 40%;
+        display: block;
+    }
+    .room-detail-hero-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(15,23,42,0.15) 0%, rgba(15,23,42,0.65) 100%);
+    }
+    .modal-close-x--on-hero {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        z-index: 10;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 150ms ease-in-out;
+    }
+    .modal-close-x--on-hero:hover {
+        background: rgba(15, 23, 42, 0.85);
+        transform: scale(1.08);
+    }
+    .modal-close-x--on-hero img {
+        filter: brightness(0) invert(1);
+    }
+    .room-detail-body { padding: 0 2px; }
+    .room-detail-header-badges {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+    .badge-status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .badge-status-pill--success { background: #DCFCE7; color: #166534; }
+    .badge-status-pill--warning { background: #FEF3C7; color: #92400E; }
+    .badge-meta-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #F1F5F9;
+        color: #475569;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 4px 12px;
+        border-radius: 999px;
+    }
+    .room-detail-title {
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--color-text-primary, #0F172A);
+        margin: 0 0 6px 0;
+    }
+    .room-detail-location {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: var(--color-text-secondary, #64748B);
+        margin-bottom: 14px;
+    }
+    .room-detail-desc {
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--color-text-secondary, #475569);
+        margin: 0 0 16px 0;
+    }
+    .room-detail-section-header {
+        margin: 16px 0 8px 0;
+    }
+    .room-detail-facilities {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .facility-chip-full {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--color-bg-page, #F8FAFC);
+        border: 1px solid var(--color-border, #E2E8F0);
+        padding: 7px 13px;
+        border-radius: 999px;
+        font-size: 12.5px;
+        color: var(--color-text-primary, #0F172A);
+        transition: all 150ms ease-in-out;
+    }
+    .facility-chip-full:hover {
+        background: #E2E8F0;
+        border-color: rgba(245, 166, 35, 0.4);
+        transform: translateY(-1px);
+    }
+    .room-detail-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 24px;
+        padding-top: 14px;
+        border-top: 1px solid var(--color-border, #E2E8F0);
+    }
+
+    /* CASE 2 (V67): Modal Detail Permintaan Pemesanan */
+    .modal-detail-permintaan {
+        width: 520px;
+        max-width: 95vw;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 24px;
+        position: relative;
+        text-align: left;
+        border-radius: 20px;
+    }
+    .permintaan-hero-wrapper {
+        position: relative;
+        width: calc(100% + 48px);
+        height: 160px;
+        border-radius: 20px 20px 0 0;
+        margin: -24px -24px 16px -24px;
+        overflow: hidden;
+    }
+    .permintaan-hero-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center 40%;
+        display: block;
+    }
+    .permintaan-hero-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(15,23,42,0.15) 0%, rgba(15,23,42,0.7) 100%);
+    }
+    .modal-header--safe {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        width: 100%;
+        padding-right: 8px;
+    }
+    .modal-header-title-container {
+        flex: 1;
+        min-width: 0;
+    }
+    .modal-title-nowrap {
+        font-size: 18px;
+        font-weight: 800;
+        color: var(--color-text-primary, #0F172A);
+        margin: 0 0 4px 0;
+        white-space: normal;
+        line-height: 1.3;
+    }
+    .permintaan-info-grid-2col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin: 16px 0;
+    }
+    @@media (max-width: 580px) {
+        .permintaan-info-grid-2col { grid-template-columns: 1fr; }
+    }
+    .permintaan-info-card {
+        background: var(--color-bg-page, #F8FAFC);
+        border: 1px solid var(--color-border, #E2E8F0);
+        border-radius: 12px;
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        text-align: left;
+    }
+    .permintaan-info-card--full {
+        grid-column: 1 / -1;
+    }
+    .info-card-header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .info-card-header .text-label-uppercase {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: #64748B;
+    }
+    .info-card-body {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        margin-top: 2px;
+    }
+    .info-card-value {
+        font-size: 13.5px;
+        font-weight: 700;
+        color: var(--color-text-primary, #0F172A);
+    }
+    .info-card-sub {
+        font-size: 12px;
+        color: var(--color-text-secondary, #64748B);
+        line-height: 1.4;
+    }
+    .badge-pending-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #FEF3C7;
+        color: #92400E;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 999px;
+        width: fit-content;
+    }
+    .pending-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #F59E0B;
+    }
+    .btn-link-lihat-detail {
+        background: none;
+        border: none;
+        padding: 0;
+        margin-top: 4px;
+        color: #D97706;
+        font-size: 12px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        cursor: pointer;
+        transition: color 150ms ease;
+    }
+    .btn-link-lihat-detail:hover {
+        color: #B45309;
+        text-decoration: underline;
+    }
+
+    /* GLOBAL BUTTON HIERARCHY (V67) */
+    .btn-secondary-themed {
+        background: #F1F5F9;
+        color: #334155;
+        border: 1px solid #E2E8F0;
+        border-radius: 999px;
+        padding: 10px 22px;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 150ms ease-in-out;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .btn-secondary-themed:hover {
+        background: #E2E8F0;
+        border-color: rgba(245, 166, 35, 0.4);
+        color: #0F172A;
+        transform: translateY(-1px);
+    }
+    .btn-secondary-themed:active { transform: translateY(0); }
+
+    .btn-destructive-themed {
+        background: rgba(239, 68, 68, 0.06);
+        border: 1.5px solid #EF4444;
+        color: #EF4444;
+        border-radius: 999px;
+        padding: 10px 20px;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 150ms ease-in-out;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .btn-destructive-themed:hover {
+        background: rgba(239, 68, 68, 0.12);
+        border-color: #DC2626;
+        color: #DC2626;
+        transform: translateY(-1px);
+    }
+    .btn-destructive-themed:active { transform: translateY(0); }
+
+    .btn-primary-hero {
+        background: linear-gradient(135deg, #F5A623 0%, #D97706 100%);
+        color: #FFFFFF;
+        border: none;
+        border-radius: 999px;
+        padding: 10px 24px;
+        font-weight: 700;
+        font-size: 13px;
+        box-shadow: 0 4px 14px rgba(245, 166, 35, 0.3);
+        cursor: pointer;
+        transition: all 150ms ease-in-out;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    .btn-primary-hero:hover {
+        background: linear-gradient(135deg, #E59819 0%, #B45309 100%);
+        box-shadow: 0 6px 18px rgba(245, 166, 35, 0.4);
+        transform: translateY(-1px);
+    }
+    .btn-primary-hero:active { transform: translateY(0); }
+
+    /* DARK MODE STYLES (V67) */
+    body.dark-mode .modal-room-detail,
+    body.dark-mode .modal-detail-permintaan {
+        background: #1E293B;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    body.dark-mode .room-detail-title,
+    body.dark-mode .modal-title-nowrap,
+    body.dark-mode .info-card-value {
+        color: #F8FAFC;
+    }
+    body.dark-mode .room-detail-location,
+    body.dark-mode .room-detail-desc,
+    body.dark-mode .info-card-sub {
+        color: #94A3B8;
+    }
+    body.dark-mode .facility-chip-full {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #F1F5F9;
+    }
+    body.dark-mode .facility-chip-full:hover {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(245, 166, 35, 0.5);
+    }
+    body.dark-mode .permintaan-info-card {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+    body.dark-mode .badge-meta-pill {
+        background: rgba(255, 255, 255, 0.08);
+        color: #CBD5E1;
+    }
+    body.dark-mode .badge-status-pill--success {
+        background: rgba(34, 197, 94, 0.2);
+        color: #4ADE80;
+    }
+    body.dark-mode .badge-status-pill--warning,
+    body.dark-mode .badge-pending-pill {
+        background: rgba(245, 166, 35, 0.2);
+        color: #FBBF24;
+    }
+    body.dark-mode .btn-secondary-themed {
+        background: rgba(255, 255, 255, 0.08);
+        color: #F1F5F9;
+        border-color: rgba(255, 255, 255, 0.14);
+    }
+    body.dark-mode .btn-secondary-themed:hover {
+        background: rgba(255, 255, 255, 0.14);
+        border-color: rgba(245, 166, 35, 0.4);
+    }
+    body.dark-mode .btn-destructive-themed {
+        background: rgba(239, 68, 68, 0.12);
+        border-color: #F87171;
+        color: #FCA5A5;
+    }
+    body.dark-mode .btn-link-lihat-detail {
+        color: #FBBF24;
+    }
+    body.dark-mode .room-detail-footer {
+        border-top-color: rgba(255, 255, 255, 0.1);
+    }
+    body.dark-mode .modal-close-x { background: rgba(255, 255, 255, 0.08); }
+    body.dark-mode .modal-close-x:hover { background: rgba(255, 255, 255, 0.16); }
+    body.dark-mode .info-banner-subtle { background: rgba(245, 166, 35, 0.15); color: #FBBF24; }
+    body.dark-mode .ruangan-tersedia-card { background: rgba(255, 255, 255, 0.04); }
+    body.dark-mode .ruangan-tersedia-card:hover { background: rgba(255, 255, 255, 0.08); border-color: var(--color-primary, #F5A623); }
+    body.dark-mode .facility-chip { background: rgba(255, 255, 255, 0.08); color: #CBD5E1; }
+    body.dark-mode .pending-item {
+        background: rgba(30, 41, 59, 0.6);
+        border-color: rgba(255, 255, 255, 0.08);
+        border-left-color: #F5A623;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+    body.dark-mode .pending-item:hover {
+        background: rgba(30, 41, 59, 0.95);
+        border-color: rgba(255, 255, 255, 0.16);
+        border-left-color: #FBBF24;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    }
+    body.dark-mode .pending-item-title { color: #F8FAFC; }
+    body.dark-mode .pending-item-meta { color: #94A3B8; }
+    body.dark-mode .pending-item-icon {
+        background: rgba(245, 166, 35, 0.15);
+        border-color: rgba(245, 166, 35, 0.3);
+    }
+    body.dark-mode .pending-item-waiting { color: #FBBF24; }
+    body.dark-mode .badge-pending {
+        background: rgba(245, 166, 35, 0.2);
+        color: #FBBF24;
+        border-color: rgba(245, 166, 35, 0.35);
+    }
+</style>
+
+@code {
+    public record UserMeeting(
+        string Id,
+        string Title,
+        string RoomName,
+        string Floor,
+        DateTime Date,
+        DateTime StartTime,
+        DateTime EndTime,
+        string CategorySlug,
+        string CategoryLabel,
+        string BookingId = "REQ-8942-BR",
+        string ApprovedBy = "General Affairs",
+        string Status = "Terkonfirmasi",
+        bool IsUserOwner = true,
+        string InvitedBy = "Wahyu Ravi",
+        string InviterRole = "Project Lead",
+        int AttendeesCount = 8,
+        int Capacity = 15,
+        string Facilities = "Proyektor 4K, High-Speed WiFi, AC Sentral",
+        string Agenda = "Evaluasi pencapaian KPI kuartal berjalan dan perencanaan strategi bisnis."
+    );
+    public record RecommendedRoom(string Id, string Name, int Capacity, string PhotoUrl, string ReasonType, string ReasonLabel);
+    public record ActivityItem(string Type, string TypeSlug, string Description, string TimeAgo, string? PersonName = null, string? PersonTitle = null, string? PersonEmail = null, string? AvatarBg = null);
+
+    private string UserName => string.IsNullOrEmpty(BookingDataStore.CurrentUser.FullName) ? "Wahyu Ravi" : BookingDataStore.CurrentUser.FullName;
+
+    private List<UserMeeting> UserMeetings = new();
+    private List<UserMeeting> UpcomingMeetings = new();
+    private List<RecommendedRoom> RecommendedRooms = new();
+    private List<ActivityItem> RecentActivities = new();
+
+    private int AvailableRoomsCount = 8;
+    private int TotalRoomsCount = 20;
+    private int PendingActionCount = 3;
+    private string NextMeetingCountdown = "45 MENIT";
+    private UserMeeting NextMeeting = new("1", "Rapat Strategi Q4", "Executive Boardroom A", "42", DateTime.Today, DateTime.Today.AddHours(10), DateTime.Today.AddHours(12), "ruangrapat", "Ruang Rapat", "REQ-8942-BR", "General Affairs", "Terkonfirmasi", true, "Wahyu Ravi", "Project Lead", 10, 15, "Proyektor 4K, Smart TV, Video Conference, Whiteboard", "Evaluasi pencapaian KPI kuartal berjalan dan alokasi sumber daya kuartal mendatang.");
+
+    private bool _isRescheduleDatePickerOpen = false;
+    private System.Globalization.CultureInfo _culture = new("id-ID");
+    private bool _isMeetingDetailOpen = false;
+    private bool _isCancelModalOpen = false;
+    private bool _isContactModalOpen = false;
+    private bool isAvailableRoomsModalOpen = false;
+    private bool isPendingApprovalModalOpen = false;
+
+    [SupplyParameterFromQuery]
+    public string? Modal { get; set; }
+
+    // A2: In-place Reschedule Modal State
+    private bool _isRescheduleModalOpen = false;
+    private UserMeeting? _rescheduleMeeting = null;
+    private DateTime _rescheduleDate = DateTime.Today;
+    private string _rescheduleStartTime = "10:00";
+    private string _rescheduleEndTime = "12:00";
+    private bool _isSlotAvailable = true;
+    private string _slotStatusMessage = "Slot Tersedia untuk Ruangan Ini";
+
+    public record RoomFacility(string Name, string IconPath);
+
+    private IEnumerable<RoomFacility> GetTopFacilities(RoomItem room)
+    {
+        if (room.Amenities == null) yield break;
+        foreach (var amenity in room.Amenities)
+        {
+            var iconPath = amenity.ToLowerInvariant() switch
+            {
+                "proyektor" or "projector" => "/icon/icon_projector.svg",
+                "ac" => "/icon/icon_ac.svg",
+                "wifi" => "/icon/icon_wifi.svg",
+                "konferensi video" or "video conference" or "video conf" => "/icon/icon_video_conf.svg",
+                "papan tulis" or "whiteboard" => "/icon/icon_whiteboard.svg",
+                "sistem audio" or "audio system" or "sound system" => "/icon/icon_audio.svg",
+                "aksesibilitas" or "accessibility" => "/icon/icon_accessibility.svg",
+                "tv" or "tv led" or "smart tv" => "/icon/icon_tv.svg",
+                _ => "/icon/icon_check_circle.svg"
+            };
+            yield return new RoomFacility(amenity, iconPath);
+        }
+    }
+
+    private bool noVvipAvailable => !availableRooms.Any(r => r.Description.Contains("VVIP", StringComparison.OrdinalIgnoreCase) || r.Name.Contains("VVIP", StringComparison.OrdinalIgnoreCase));
+
+    public record PendingApprovalRequest(string Id, string RoomName, DateTime Date, DateTime StartTime, DateTime EndTime, string BookingId = "REQ-7731-MR", DateTime? CreatedAt = null)
+    {
+        public string WaitingSince
+        {
+            get
+            {
+                var created = CreatedAt ?? DateTime.Now.AddHours(-2);
+                var diff = DateTime.Now - created;
+                if (diff.TotalMinutes < 60) return $"{(int)Math.Max(1, diff.TotalMinutes)} menit";
+                if (diff.TotalHours < 24) return $"{(int)diff.TotalHours} jam";
+                return $"{(int)diff.TotalDays} hari";
+            }
+        }
+    }
+    private List<PendingApprovalRequest> pendingApprovalRequests = new();
+    private List<RoomItem> availableRooms = new();
+
+    private bool _isRoomDetailModalOpen = false;
+    private RoomItem? _selectedRoomDetail = null;
+    private string _roomDetailSource = "available"; // "available" or "recommendation"
+    private bool _isConfirmBookingVisible = false;
+    private RoomItem? _selectedRoomForBooking = null;
+
+    private bool _isDetailPermintaanModalOpen = false;
+    private PendingApprovalRequest? _selectedPendingRequest = null;
+
+    private UserMeeting? _selectedMeeting = null;
+    private ActivityItem? _selectedContact = null;
+    private string cancellationReason = "";
+    private bool showValidationError = false;
+
+    private string _jadwalFilter = "semua";
+
+    // Independent skeleton loading flags
+    private bool isLoadingSummary = true;
+    private bool isLoadingGrid = true;
+    private bool isLoadingActivities = true;
+    private bool isLoadingChart = true;
+
+    private bool _disposed;
+
+    private IEnumerable<UserMeeting> FilteredUpcomingMeetings => _jadwalFilter switch
+    {
+        "minggu" => UpcomingMeetings.Where(m => m.Date <= DateTime.Today.AddDays(7)),
+        "bulan" => UpcomingMeetings.Where(m => m.Date.Month == DateTime.Today.Month),
+        _ => UpcomingMeetings
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        DashboardData.CurrentUserRole = "User";
+        NotificationState.OnChange += SafeStateHasChanged;
+
+        // Initialize mock user meetings (kombinasi rapat dibuat sendiri & undangan pihak lain)
+        var today = DateTime.Today;
+        UserMeetings = new List<UserMeeting>
+        {
+            new("1", "Rapat Evaluasi Eksekutif Q4", "Executive Boardroom A", "42", today, today.AddHours(10), today.AddHours(12), "ruangrapat", "Ruang Rapat", "REQ-8942-BR", "General Affairs", "Terkonfirmasi", true, "Wahyu Ravi", "Project Lead", 10, 15, "Proyektor 4K, Smart TV, Video Conference, Whiteboard", "Evaluasi pencapaian KPI kuartal berjalan dan alokasi sumber daya kuartal mendatang."),
+            new("2", "Workshop Orientasi Tim Baru", "Training Room B", "2", today.AddDays(1), today.AddDays(1).AddHours(13), today.AddDays(1).AddHours(16), "fasilitaskhusus", "Fasilitas Khusus", "REQ-7731-MR", "General Affairs", "Menunggu Persetujuan Admin", true, "Wahyu Ravi", "Project Lead", 18, 25, "Sound System, Flipchart, Dual Monitor, Coffee Station", "Sesi orientasi onboarding tim engineering dan produk angkatan Q4."),
+            new("3", "Review Desain Sprint Mobile UX", "Huddle Space C", "1", today.AddDays(2), today.AddDays(2).AddHours(14), today.AddDays(2).AddHours(15).AddMinutes(30), "areakolaborasi", "Area Kolaborasi", "REQ-6650-HS", "Budi Santoso", "Terkonfirmasi", false, "Budi Santoso", "UI/UX Lead", 6, 8, "Smart Display 65 Inch, Wireless Presentation, Whiteboard", "Review temuan riset usability testing dan finalisasi wireframe mobile dashboard."),
+            new("4", "Town Hall Divisi IT & Digital", "Presentation Hall", "3", today.AddDays(4), today.AddDays(4).AddHours(9), today.AddDays(4).AddHours(11), "fasilitaskhusus", "Fasilitas Khusus", "REQ-9902-TH", "General Affairs", "Terkonfirmasi", false, "Sarah Jenkins", "Lead Product Operations", 38, 45, "LED Wall 4K, Wireless Mic x4, Video Streaming, Sound System", "Sinkronisasi strategi roadmap kuartal mendatang seluruh divisi teknologi dan produk.")
+        };
+
+        UpcomingMeetings = UserMeetings.ToList();
+        NextMeeting = UserMeetings[0];
+
+        // CASE 5: Alasan Rekomendasi Ruangan
+        RecommendedRooms = new List<RecommendedRoom>
+        {
+            new("4", "Focus Room Alpha", 4, "/images/poto 1.jpg", "frequent", "Sering Anda Pakai"),
+            new("6", "Innovation Lab", 15, "/images/poto 2.jpg", "capacity", "Kapasitas Sesuai Kebiasaan Anda"),
+            new("1", "Executive Boardroom A", 15, "/images/poto 3.png", "default", "Direkomendasikan Admin")
+        };
+
+        // CASE 6: Aktivitas Terkini dengan Orang dan Status SVGs
+        RecentActivities = new List<ActivityItem>
+        {
+            new("approved", "approved", "Reservasi Executive Boardroom A telah disetujui oleh General Affairs", "5 menit lalu"),
+            new("invite", "invite", "mengundang Anda ke sesi Workshop Cloud di Training Room B", "35 menit lalu", "Ahmad Fauzi", "Koordinator IT", "ahmad.fauzi@persada.com", "#3B82F6"),
+            new("warning", "warning", "Permintaan reservasi Huddle Space C dialihkan karena perbaikan fasilitas", "2 jam lalu"),
+            new("checkin", "checkin", "Konfirmasi kehadiran berhasil untuk rapat di Focus Room Alpha", "1 hari lalu"),
+            new("invite", "invite", "membagikan dokumen agenda untuk Town Hall Q4", "2 hari lalu", "Sarah Jenkins", "Lead Product Operations", "sarah.jenkins@persada.com", "#8B5CF6")
+        };
+
+        availableRooms = RoomDataProvider.GetRooms().Where(r => r.Status == "available").ToList();
+        AvailableRoomsCount = availableRooms.Count;
+        pendingApprovalRequests = new List<PendingApprovalRequest>
+        {
+            new("1", "Training Room B", today.AddDays(1), today.AddDays(1).AddHours(13), today.AddDays(1).AddHours(16), "REQ-7731-MR", DateTime.Now.AddHours(-2)),
+            new("2", "Presentation Hall", today.AddDays(3), today.AddDays(3).AddHours(9), today.AddDays(3).AddHours(11), "REQ-9902-TH", DateTime.Now.AddHours(-5)),
+            new("3", "Executive Suite", today.AddDays(5), today.AddDays(5).AddHours(14), today.AddDays(5).AddHours(15).AddMinutes(30), "REQ-8942-BR", DateTime.Now.AddDays(-1))
+        };
+        PendingActionCount = pendingApprovalRequests.Count;
+
+        // Standard skeleton transition delay per V46/V50 requirement
+        var minDelay = Task.Delay(500);
+        var dataTask = LoadDashboardDataAsync();
+        await Task.WhenAll(minDelay, dataTask);
+
+        isLoadingSummary = false;
+        isLoadingGrid = false;
+        isLoadingActivities = false;
+        isLoadingChart = false;
+
+        if (Modal == "ruangan") isAvailableRoomsModalOpen = true;
+        else if (Modal == "pending") isPendingApprovalModalOpen = true;
+        else if (Modal == "checkin") _ = HandleCheckInClick();
+        else if (Modal == "checkinsuccess") _ = HandleCheckInSuccessClick();
+        else if (Modal == "detailruangan") OpenRoomDetailFromAvailable("1");
+        else if (Modal == "detailruanganalpha") OpenRoomDetailFromAvailable("4");
+        else if (Modal == "detailpending") OpenDetailPermintaan("1");
+        else if (Modal == "detailpendingroom") OpenRoomDetailFromPending("Executive Boardroom A");
+        else if (Modal == "konfirmasibooking") { _selectedRoomForBooking = availableRooms.FirstOrDefault(); _isConfirmBookingVisible = true; }
+    }
+
+    private async Task LoadDashboardDataAsync()
+    {
+        await Task.Delay(100);
+    }
+
+    private void OpenAvailableRoomsModal() => isAvailableRoomsModalOpen = true;
+    private void CloseAvailableRoomsModal() => isAvailableRoomsModalOpen = false;
+    private void OpenPendingApprovalModal() => isPendingApprovalModalOpen = true;
+    private void ClosePendingApprovalModal() => isPendingApprovalModalOpen = false;
+
+    private string GetActivityIcon(string type) => type.ToLowerInvariant() switch
+    {
+        "approved" => "/icon/icon_alert_success.svg",
+        "rejected" or "warning" => "/icon/icon_alert_warning.svg",
+        "checkin" => "/icon/icon_check_circle.svg",
+        "invite" => "/icon/icon_group.svg",
+        _ => "/icon/icon_alert_info.svg"
+    };
+
+    private string GetInitials(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "U";
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 1) return parts[0][0].ToString().ToUpperInvariant();
+        return $"{parts[0][0]}{parts[1][0]}".ToUpperInvariant();
+    }
+
+    private void SetJadwalFilter(string filter)
+    {
+        _jadwalFilter = filter;
+    }
+
+    private void GoToPemesanan() => Navigation.NavigateTo("/pemesanan");
+    private void GoToStatus() => Navigation.NavigateTo("/status");
+    private void GoToPemesananTersedia() => Navigation.NavigateTo("/pemesanan?filter=tersedia-sekarang");
+    private void GoToStatusPending() => Navigation.NavigateTo("/status?filter=menunggu-persetujuan");
+    private void GoToStatusFull()
+    {
+        isPendingApprovalModalOpen = false;
+        Navigation.NavigateTo("/status");
+    }
+    private void GoToRiwayat() => Navigation.NavigateTo("/history");
+
+    private void NavigateToStatusFromModal()
+    {
+        _isMeetingDetailOpen = false;
+        var bkgId = _selectedMeeting?.BookingId ?? "101";
+        Navigation.NavigateTo($"/status?highlight={bkgId}");
+    }
+
+    private void ShareInvitation()
+    {
+        ToastService.Success("Tautan Disalin", "Tautan undangan rapat berhasil disalin ke clipboard.");
+    }
+
+    private void PesanCepat(string roomId)
+    {
+        _selectedRoomForBooking = RoomDataProvider.GetRoomById(roomId) ?? availableRooms.FirstOrDefault(r => r.Id == roomId);
+        _isConfirmBookingVisible = true;
+    }
+
+    private bool _isRoomDetailViewOnly = false;
+
+    private string GetRoomPhotoForPending(string roomName)
+    {
+        var found = availableRooms.FirstOrDefault(r => r.Name.Equals(roomName, StringComparison.OrdinalIgnoreCase))
+                    ?? RoomDataProvider.GetRoomById(roomName);
+        if (found != null && !string.IsNullOrEmpty(found.PhotoUrl)) return found.PhotoUrl;
+        return RoomDataProvider.GetRoomPhoto(null, roomName);
+    }
+
+    private void OpenRoomDetailFromPending(string roomName)
+    {
+        _selectedRoomDetail = availableRooms.FirstOrDefault(r => r.Name.Equals(roomName, StringComparison.OrdinalIgnoreCase))
+                              ?? RoomDataProvider.GetRoomById(roomName);
+        if (_selectedRoomDetail == null)
+        {
+            _selectedRoomDetail = new RoomItem(
+                Guid.NewGuid().ToString(),
+                roomName,
+                15,
+                "Ruang pertemuan representatif dengan fasilitas lengkap dan teknologi terkini untuk mendukung kelancaran kolaborasi.",
+                "available",
+                new List<string> { "Proyektor", "WiFi", "AC", "Papan Tulis", "Sound System" },
+                "3",
+                GetRoomPhotoForPending(roomName)
+            );
+        }
+        _roomDetailSource = "pending";
+        _isRoomDetailViewOnly = true;
+        _isRoomDetailModalOpen = true;
+    }
+
+    private void OpenRoomDetailFromAvailable(string roomId)
+    {
+        _selectedRoomDetail = availableRooms.FirstOrDefault(r => r.Id == roomId) ?? RoomDataProvider.GetRoomById(roomId);
+        _roomDetailSource = "available";
+        _isRoomDetailViewOnly = false;
+        isAvailableRoomsModalOpen = false;
+        _isRoomDetailModalOpen = true;
+    }
+
+    private void OpenRoomDetailFromRecommendation(string roomId)
+    {
+        _selectedRoomDetail = RoomDataProvider.GetRoomById(roomId) ?? availableRooms.FirstOrDefault(r => r.Id == roomId);
+        if (_selectedRoomDetail == null)
+        {
+            var rec = RecommendedRooms.FirstOrDefault(r => r.Id == roomId);
+            if (rec != null)
+            {
+                _selectedRoomDetail = new RoomItem(rec.Id, rec.Name, rec.Capacity, "Ruang pertemuan modern dengan fasilitas lengkap untuk rapat produktif.", "available", new List<string> { "Proyektor", "AC", "WiFi", "Whiteboard" }, "2", rec.PhotoUrl);
+            }
+        }
+        _roomDetailSource = "recommendation";
+        _isRoomDetailViewOnly = false;
+        _isRoomDetailModalOpen = true;
+    }
+
+    private void BackToRoomList()
+    {
+        _isRoomDetailModalOpen = false;
+        if (_roomDetailSource == "available")
+        {
+            isAvailableRoomsModalOpen = true;
+        }
+    }
+
+    private void LanjutkanPemesanan(string roomId)
+    {
+        _isRoomDetailModalOpen = false;
+        isAvailableRoomsModalOpen = false;
+        _selectedRoomForBooking = _selectedRoomDetail ?? RoomDataProvider.GetRoomById(roomId);
+        _isConfirmBookingVisible = true;
+    }
+
+    private void CloseRoomDetailModal()
+    {
+        _isRoomDetailModalOpen = false;
+    }
+
+    private void OpenDetailPermintaan(string requestId)
+    {
+        _selectedPendingRequest = pendingApprovalRequests.FirstOrDefault(p => p.Id == requestId) ?? pendingApprovalRequests.FirstOrDefault();
+        _isDetailPermintaanModalOpen = true;
+    }
+
+    private void CloseDetailPermintaan()
+    {
+        _isDetailPermintaanModalOpen = false;
+    }
+
+    private void OpenKonfirmasiPembatalan(string requestId)
+    {
+        _isDetailPermintaanModalOpen = false;
+        _isCancelModalOpen = true;
+    }
+
+    private string GetStatusSlug(string? status) => status?.ToLowerInvariant() switch
+    {
+        "available" or "tersedia" => "success",
+        "booked" or "dipesan" => "warning",
+        _ => "info"
+    };
+
+    private string GetStatusLabel(string? status) => status?.ToLowerInvariant() switch
+    {
+        "available" or "tersedia" => "Tersedia",
+        "booked" or "dipesan" => "Terpakai",
+        _ => status ?? "Tersedia"
+    };
+
+    private void LihatDetailRapatBerikutnya()
+    {
+        _selectedMeeting = NextMeeting;
+        _isMeetingDetailOpen = true;
+    }
+
+    private void OpenMeetingDetailFromRow(UserMeeting meeting)
+    {
+        _selectedMeeting = meeting;
+        _isMeetingDetailOpen = true;
+    }
+
+    private void OpenContactModal(ActivityItem activity)
+    {
+        _selectedContact = activity;
+        _isContactModalOpen = true;
+    }
+
+    private void CopyContactEmail()
+    {
+        if (_selectedContact?.PersonEmail != null)
+        {
+            ToastService.Success("Email Disalin", $"Alamat email {_selectedContact.PersonEmail} telah disalin.");
+        }
+        _isContactModalOpen = false;
+    }
+
+    private async Task ScrollJadwalLeft()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("eval", "document.getElementById('jadwalHorizontalTrack')?.scrollBy({ left: -320, behavior: 'smooth' })");
+        }
+        catch { }
+    }
+
+    private async Task ScrollJadwalRight()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("eval", "document.getElementById('jadwalHorizontalTrack')?.scrollBy({ left: 320, behavior: 'smooth' })");
+        }
+        catch { }
+    }
+
+    private void HandleRescheduleDateSelected(DateTime? date)
+    {
+        if (date.HasValue)
+        {
+            _rescheduleDate = date.Value;
+            OnRescheduleTimeOrDateChanged();
+        }
+    }
+
+    private void OpenRescheduleModal(UserMeeting meeting)
+    {
+        _isMeetingDetailOpen = false;
+        _rescheduleMeeting = meeting;
+        _rescheduleDate = meeting.Date;
+        _rescheduleStartTime = meeting.StartTime.ToString("HH:mm");
+        _rescheduleEndTime = meeting.EndTime.ToString("HH:mm");
+        CheckSlotAvailability();
+        _isRescheduleModalOpen = true;
+    }
+
+    private void OnRescheduleTimeOrDateChanged()
+    {
+        CheckSlotAvailability();
+    }
+
+    private void CheckSlotAvailability()
+    {
+        if (TimeSpan.TryParse(_rescheduleStartTime, out var start) && TimeSpan.TryParse(_rescheduleEndTime, out var end))
+        {
+            if (end <= start)
+            {
+                _isSlotAvailable = false;
+                _slotStatusMessage = "Waktu selesai harus lebih besar dari waktu mulai";
+            }
+            else if (start.Hours == 13) // simulasi slot penuh pada pukul 13:00
+            {
+                _isSlotAvailable = false;
+                _slotStatusMessage = "Slot Penuh pada jam ini (bentrok dengan reservasi lain)";
+            }
+            else
+            {
+                _isSlotAvailable = true;
+                _slotStatusMessage = "Slot Tersedia untuk Ruangan Ini";
+            }
+        }
+        else
+        {
+            _isSlotAvailable = false;
+            _slotStatusMessage = "Format waktu tidak valid";
+        }
+    }
+
+    private void SaveReschedule()
+    {
+        if (!_isSlotAvailable || _rescheduleMeeting == null) return;
+
+        if (TimeSpan.TryParse(_rescheduleStartTime, out var start) && TimeSpan.TryParse(_rescheduleEndTime, out var end))
+        {
+            var newStart = _rescheduleDate.Date.Add(start);
+            var newEnd = _rescheduleDate.Date.Add(end);
+
+            var index = UpcomingMeetings.FindIndex(m => m.Id == _rescheduleMeeting.Id);
+            if (index >= 0)
+            {
+                var updated = _rescheduleMeeting with
+                {
+                    Date = _rescheduleDate.Date,
+                    StartTime = newStart,
+                    EndTime = newEnd
+                };
+                UpcomingMeetings[index] = updated;
+
+                var uIndex = UserMeetings.FindIndex(m => m.Id == _rescheduleMeeting.Id);
+                if (uIndex >= 0) UserMeetings[uIndex] = updated;
+
+                if (NextMeeting.Id == updated.Id)
+                {
+                    NextMeeting = updated;
+                }
+
+                ToastService.Success("Jadwal Berhasil Diperbarui", $"Pertemuan '{updated.Title}' berhasil dijadwalkan ulang ke {updated.Date:dd MMM yyyy}, {updated.StartTime:HH:mm} - {updated.EndTime:HH:mm} WIB.");
+                _isRescheduleModalOpen = false;
+                SafeStateHasChanged();
+            }
+        }
+    }
+
+    private void TerimaUndangan(UserMeeting meeting)
+    {
+        _isMeetingDetailOpen = false;
+        ToastService.Success("Undangan Diterima", $"Anda telah mengonfirmasi kehadiran untuk rapat '{meeting.Title}'.");
+    }
+
+    private void TolakUndangan(UserMeeting meeting)
+    {
+        _isMeetingDetailOpen = false;
+        UpcomingMeetings.RemoveAll(m => m.Id == meeting.Id);
+        ToastService.Warning("Undangan Ditolak", $"Anda telah menolak undangan rapat '{meeting.Title}'.");
+        SafeStateHasChanged();
+    }
+
+    private void BatalkanRapat(string meetingId)
+    {
+        _selectedMeeting = UpcomingMeetings.FirstOrDefault(m => m.Id == meetingId) ?? NextMeeting;
+        cancellationReason = "";
+        showValidationError = false;
+        _isCancelModalOpen = true;
+    }
+
+    private void CloseCancelModal()
+    {
+        _isCancelModalOpen = false;
+        cancellationReason = "";
+        showValidationError = false;
+    }
+
+    private void ConfirmCancellation()
+    {
+        if (string.IsNullOrWhiteSpace(cancellationReason))
+        {
+            showValidationError = true;
+            return;
+        }
+
+        if (_selectedMeeting != null)
+        {
+            UpcomingMeetings.RemoveAll(m => m.Id == _selectedMeeting.Id);
+            UserMeetings.RemoveAll(m => m.Id == _selectedMeeting.Id);
+            ToastService.Success("Jadwal Dibatalkan", $"Reservasi rapat di {_selectedMeeting.RoomName} telah dibatalkan.");
+        }
+        _isCancelModalOpen = false;
+        cancellationReason = "";
+        showValidationError = false;
+    }
+
+    private async Task HandleCheckInClick() => await OpenCheckInModal(false);
+    private async Task HandleCheckInSuccessClick() => await OpenCheckInModal(true);
+
+    private async Task OpenCheckInModal(bool initialSuccess)
+    {
+        var parameters = new Dictionary<string, object>
+        {
+            { "RoomName", "Executive Boardroom A" },
+            { "TimeSlot", "10:00 - 12:00" },
+            { "Location", "Lantai 42, Gedung Persada Tower" },
+            { "Capacity", 15 },
+            { "PhotoUrl", "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80" },
+            { "TargetTime", DateTime.Now.AddMinutes(15) },
+            { "InitialSuccess", initialSuccess }
+        };
+        await ModalService.ShowAsync<CheckInCountdownCard>(parameters);
+    }
+
+    private void SafeStateHasChanged()
+    {
+        if (_disposed) return;
+        try
+        {
+            InvokeAsync(StateHasChanged);
+        }
+        catch (ObjectDisposedException) { }
+        catch (InvalidOperationException) { }
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        NotificationState.OnChange -= SafeStateHasChanged;
+    }
+}

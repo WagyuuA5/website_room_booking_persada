@@ -1,0 +1,74 @@
+@namespace booking_room.Components.Shared
+@using booking_room.Components.Models
+@using booking_room.Services
+@inject IToastService ToastService
+
+<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Size="md" ShowHeader="false" ShowFooter="false">
+    <BodyContent>
+        <div class="custom-modal-header">
+            <div class="header-icon-wrap">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            </div>
+            <div class="header-titles">
+                <h3>Minta Tambahan Waktu</h3>
+                <span class="sub"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> @RoomName</span>
+            </div>
+        </div>
+
+        <div class="modal-body-pad">
+            <div class="info-box-amber">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                <p>Anda dapat memperpanjang batas waktu konfirmasi kehadiran selama tepat 10 menit. Aksi ini hanya bisa dilakukan sekali per pemesanan.</p>
+            </div>
+
+            <div class="form-group" style="margin-top: 16px;">
+                <label>Alasan perpanjangan <span class="text-danger">*</span></label>
+                <textarea class="filter-input" rows="3" placeholder="mis., Sedang dalam perjalanan, rapat sebelumnya molor" @bind="_reason" @bind:event="oninput"></textarea>
+            </div>
+        </div>
+
+        <div class="modal-footer-2btn">
+            <button class="btn-secondary" @onclick="Close">Tutup</button>
+            <button class="btn-primary" disabled="@string.IsNullOrWhiteSpace(_reason)" @onclick="Submit">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                Ajukan Perpanjangan
+            </button>
+        </div>
+    </BodyContent>
+</AppModal>
+
+@code {
+    [Parameter] public bool Visible { get; set; } = true;
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public string RoomName { get; set; } = "Ruangan";
+    [Parameter] public EventCallback OnSuccess { get; set; }
+    [Parameter] public EventCallback<string> OnRequestExtension { get; set; }
+
+    private string _reason = "";
+
+    private async Task HandleVisibleChanged(bool val)
+    {
+        Visible = val;
+        await VisibleChanged.InvokeAsync(val);
+    }
+
+    private async Task Close()
+    {
+        await HandleVisibleChanged(false);
+    }
+
+    private async Task Submit()
+    {
+        if (string.IsNullOrWhiteSpace(_reason)) return;
+        ToastService.Success("Waktu Tambahan Diberikan", "Batas waktu konfirmasi kehadiran berhasil diperpanjang 10 menit.");
+        if (OnRequestExtension.HasDelegate)
+        {
+            await OnRequestExtension.InvokeAsync(_reason);
+        }
+        if (OnSuccess.HasDelegate)
+        {
+            await OnSuccess.InvokeAsync();
+        }
+        await Close();
+    }
+}

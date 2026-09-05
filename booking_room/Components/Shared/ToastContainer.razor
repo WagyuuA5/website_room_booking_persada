@@ -1,0 +1,36 @@
+@using booking_room.Services
+@inject IToastService ToastService
+@implements IDisposable
+
+<div class="toast-container">
+    @foreach (var toast in ToastService.ActiveToasts)
+    {
+        <ToastItem @key="toast.Id" Toast="toast" OnClose="ToastService.Remove" />
+    }
+</div>
+
+@code {
+    private bool _disposed;
+
+    protected override void OnInitialized()
+    {
+        ToastService.OnChange += HandleToastChanged;
+    }
+
+    private void HandleToastChanged()
+    {
+        if (_disposed) return;
+        try
+        {
+            InvokeAsync(StateHasChanged);
+        }
+        catch (ObjectDisposedException) { }
+        catch { }
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        ToastService.OnChange -= HandleToastChanged;
+    }
+}

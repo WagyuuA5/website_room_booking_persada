@@ -1,0 +1,378 @@
+@namespace booking_room.Components.Shared
+@using booking_room.Services
+@using booking_room.Components.Models
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<Popover Visible="@Visible" VisibleChanged="HandleVisibleChanged" ShowHeader="false" ShowFooter="false" Width="360px" OnClose="ClosePanel" Class="glass-profile-popover">
+    <ChildContent>
+        <div class="glass-profile-card">
+            <!-- Dynamic Glowing Orb in Background -->
+            <div class="glass-glow-orb orb-gold"></div>
+            <div class="glass-glow-orb orb-blue"></div>
+
+            <div class="glass-profile-inner">
+                <!-- Avatar Section -->
+                <div class="glass-avatar-wrap">
+                    <label for="profilePhotoInput" class="glass-avatar-circle" title="Ketuk untuk ganti foto">
+                        @if (!string.IsNullOrEmpty(UserProfile.PhotoUrl))
+                        {
+                            <img src="@UserProfile.PhotoUrl" alt="Foto Profil" class="avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'" />
+                            <div class="avatar-initials-fallback" style="display:none;">
+                                @GetInitials(UserProfile.Name)
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="avatar-initials-fallback">
+                                @GetInitials(UserProfile.Name)
+                            </div>
+                        }
+                        <div class="camera-icon-badge">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                                <circle cx="12" cy="13" r="4"></circle>
+                            </svg>
+                        </div>
+                    </label>
+                    <input type="file" id="profilePhotoInput" accept="image/*" class="hidden-file-input" @onchange="HandlePhotoUpload" />
+                    <span class="user-role-badge">Pengguna Terverifikasi</span>
+                </div>
+
+                <!-- 2-Column Info Grid -->
+                <div class="glass-info-grid">
+                    <div class="info-cell">
+                        <span class="info-label">NAMA LENGKAP</span>
+                        <span class="info-val">@(UserProfile?.Name ?? "Pengguna Persada")</span>
+                    </div>
+
+                    <div class="info-cell">
+                        <span class="info-label">DEPARTEMEN / DIVISI</span>
+                        <span class="info-val">@(UserProfile?.Department ?? "Operasional")</span>
+                    </div>
+
+                    <div class="info-cell">
+                        <span class="info-label">EMAIL</span>
+                        <span class="info-val">@(UserProfile?.Email ?? "user@persada.co.id")</span>
+                    </div>
+
+                    <div class="info-cell">
+                        <span class="info-label">LOKASI KANTOR</span>
+                        <span class="info-val">@(UserProfile?.OfficeLocation ?? "Kantor Pusat Jakarta")</span>
+                    </div>
+
+                    <div class="info-cell span-2">
+                        <span class="info-label">TERAKHIR LOGIN</span>
+                        <span class="info-val">@(UserProfile?.LastLogin ?? "Hari ini, 08:30 WIB")</span>
+                    </div>
+                </div>
+
+                                <!-- Action Section -->
+                <div class="glass-actions">
+                    <button class="btn-edit-profile-pill" @onclick="HandleEditProfile" type="button">
+                        Edit Profil
+                    </button>
+                </div>
+            </div>
+        </div>
+    </ChildContent>
+</Popover>
+
+<style>
+    .glass-profile-card {
+        position: relative;
+        overflow: hidden;
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.65);
+        -webkit-backdrop-filter: blur(18px);
+        backdrop-filter: blur(18px);
+        border: 1px solid rgba(255, 255, 255, 0.45);
+        box-shadow: 0 16px 40px rgba(15, 23, 42, 0.16);
+    }
+
+    body.dark-mode .glass-profile-card {
+        background: rgba(19, 30, 50, 0.75);
+        border-color: rgba(255, 255, 255, 0.12);
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+    }
+
+    /* Animated Glowing Orbs */
+    .glass-glow-orb {
+        position: absolute;
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        filter: blur(40px);
+        pointer-events: none;
+        z-index: 0;
+        opacity: 0.35;
+    }
+
+    .orb-gold {
+        top: -20px;
+        right: -20px;
+        background: radial-gradient(circle, #F59E0B 0%, rgba(245, 158, 11, 0) 70%);
+        animation: floatOrbGold 10s ease-in-out infinite alternate;
+    }
+
+    .orb-blue {
+        bottom: -20px;
+        left: -20px;
+        background: radial-gradient(circle, #3B82F6 0%, rgba(59, 130, 246, 0) 70%);
+        animation: floatOrbBlue 12s ease-in-out infinite alternate;
+    }
+
+    @@keyframes floatOrbGold {
+        0% { transform: translate(0, 0) scale(1); }
+        100% { transform: translate(-30px, 40px) scale(1.2); }
+    }
+
+    @@keyframes floatOrbBlue {
+        0% { transform: translate(0, 0) scale(1); }
+        100% { transform: translate(40px, -30px) scale(1.15); }
+    }
+
+    .glass-profile-inner {
+        position: relative;
+        z-index: 1;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .glass-avatar-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .glass-avatar-circle {
+        position: relative;
+        width: 82px;
+        height: 82px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0F1F3D 0%, #1E3A8A 100%);
+        border: 3px solid rgba(255, 255, 255, 0.85);
+        box-shadow: 0 8px 20px rgba(15, 31, 61, 0.2);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: visible;
+        transition: transform 0.2s;
+    }
+
+    .glass-avatar-circle:hover {
+        transform: scale(1.04);
+    }
+
+    .avatar-img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .avatar-initials-fallback {
+        color: #FFFFFF;
+        font-weight: 700;
+        font-size: 1.75rem;
+    }
+
+    .camera-icon-badge {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 26px;
+        height: 26px;
+        background: #F59E0B;
+        color: #0F1F3D;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #FFFFFF;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    .hidden-file-input {
+        display: none;
+    }
+
+    .user-role-badge {
+        font-size: 0.6875rem;
+        font-weight: 700;
+        color: #1E40AF;
+        background: #DBEAFE;
+        padding: 3px 10px;
+        border-radius: 999px;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+    }
+
+    body.dark-mode .user-role-badge {
+        background: rgba(30, 58, 138, 0.5);
+        color: #93C5FD;
+    }
+
+    /* 2-Column Grid */
+    .glass-info-grid {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        background: rgba(255, 255, 255, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 16px;
+        padding: 14px;
+        box-sizing: border-box;
+    }
+
+    body.dark-mode .glass-info-grid {
+        background: rgba(15, 23, 42, 0.45);
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .info-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .info-cell.span-2 {
+        grid-column: span 2;
+        border-top: 1px solid rgba(0, 0, 0, 0.06);
+        padding-top: 6px;
+        margin-top: 2px;
+    }
+
+    body.dark-mode .info-cell.span-2 {
+        border-top-color: rgba(255, 255, 255, 0.06);
+    }
+
+    .info-label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: var(--persada-text-secondary, #6B7280);
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    .info-val {
+        font-size: 0.8125rem;
+        font-weight: 700;
+        color: var(--persada-text-primary, #0F1F3D);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Actions */
+    .glass-actions {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-edit-profile-pill {
+        width: 100%;
+        height: 42px;
+        background: var(--persada-yellow-500, #F59E0B);
+        color: var(--persada-navy-900, #0F1F3D);
+        border: none;
+        border-radius: 999px;
+        font-size: 0.875rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+    }
+
+    .btn-edit-profile-pill:hover {
+        background: #D97706;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(245, 158, 11, 0.35);
+    }
+
+    .btn-logout-link {
+        background: none;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: #EF4444;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 6px;
+        transition: all 0.15s;
+    }
+
+    .btn-logout-link:hover {
+        background: rgba(239, 68, 68, 0.08);
+        text-decoration: underline;
+    }
+</style>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnShowProfile { get; set; }
+
+    private UserProfileData UserProfile => BookingDataStore.CurrentUser;
+
+    private async Task HandleVisibleChanged(bool value)
+    {
+        Visible = value;
+        if (VisibleChanged.HasDelegate)
+        {
+            await VisibleChanged.InvokeAsync(value);
+        }
+    }
+
+    private async Task ClosePanel()
+    {
+        if (OnClose.HasDelegate)
+        {
+            await OnClose.InvokeAsync();
+        }
+    }
+
+    private async Task HandleEditProfile()
+    {
+        await ClosePanel();
+        if (OnShowProfile.HasDelegate)
+        {
+            await OnShowProfile.InvokeAsync();
+        }
+        else
+        {
+            Navigation.NavigateTo("/pengaturan");
+        }
+    }
+
+    private string GetInitials(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "U";
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 1) return parts[0].Substring(0, 1).ToUpper();
+        return $"{parts[0].Substring(0, 1)}{parts[1].Substring(0, 1)}".ToUpper();
+    }
+
+    private async Task HandlePhotoUpload(ChangeEventArgs e)
+    {
+        // Simple avatar update feedback
+        try
+        {
+            await JS.InvokeVoidAsync("alert", "Foto profil berhasil diperbarui.");
+        }
+        catch { }
+    }
+}

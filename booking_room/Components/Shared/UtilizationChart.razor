@@ -1,0 +1,342 @@
+@namespace booking_room.Components.Shared
+@using booking_room.Components.Models
+@using System.Globalization
+
+<div class="utilization-trend-container">
+    <div class="utilization-trend-chart-box" 
+         @onmousemove="HandleMouseMove" 
+         @onmouseleave="HandleMouseLeave"
+         @ontouchmove="HandleTouchMove"
+         @ontouchend="HandleTouchEnd">
+        <svg viewBox="0 0 600 300" class="trend-svg" preserveAspectRatio="none">
+            <defs>
+                <linearGradient id="persadaTrendGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.35" />
+                    <stop offset="80%" stop-color="#3B82F6" stop-opacity="0.08" />
+                    <stop offset="100%" stop-color="#3B82F6" stop-opacity="0.00" />
+                </linearGradient>
+            </defs>
+
+            <!-- 3 Horizontal dashed grid lines -->
+            <line x1="10" y1="45" x2="590" y2="45" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="5 5" />
+            <line x1="10" y1="150" x2="590" y2="150" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="5 5" />
+            <line x1="10" y1="255" x2="590" y2="255" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="5 5" />
+
+            <!-- Area fill -->
+            <path d="@_areaPath" fill="url(#persadaTrendGradient)" />
+
+            <!-- Line stroke -->
+            <path d="@_linePath" fill="none" stroke="#3B82F6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+
+            <!-- Circular data points -->
+            @foreach (var pt in _chartPoints)
+            {
+                <circle cx="@pt.X.ToString("F1", CultureInfo.InvariantCulture)"
+                        cy="@pt.Y.ToString("F1", CultureInfo.InvariantCulture)"
+                        r="@(_activePoint == pt ? "7" : "5")"
+                        fill="@(_activePoint == pt ? "#1D4ED8" : "#3B82F6")"
+                        stroke="#FFFFFF"
+                        stroke-width="2"
+                        class="trend-point-dot">
+                </circle>
+            }
+
+            <!-- Scrubbing vertical line and indicator -->
+            @if (_activePoint != null)
+            {
+                <line x1="@_activePoint.X.ToString("F1", CultureInfo.InvariantCulture)" 
+                      y1="25" 
+                      x2="@_activePoint.X.ToString("F1", CultureInfo.InvariantCulture)" 
+                      y2="275" 
+                      stroke="#3B82F6" 
+                      stroke-width="2" 
+                      stroke-dasharray="4 4" />
+                
+                <circle cx="@_activePoint.X.ToString("F1", CultureInfo.InvariantCulture)"
+                        cy="@_activePoint.Y.ToString("F1", CultureInfo.InvariantCulture)"
+                        r="8"
+                        fill="#1D4ED8"
+                        stroke="#FFFFFF"
+                        stroke-width="3" />
+            }
+        </svg>
+
+        <!-- Floating Tooltip -->
+        @if (_activePoint != null)
+        {
+            <div class="chart-scrub-tooltip" style="left: @((_activePoint.X / 600.0 * 100).ToString("F1", CultureInfo.InvariantCulture))%;">
+                <div class="tooltip-label">@_activePoint.Label</div>
+                <div class="tooltip-value">@_activePoint.Value jam</div>
+            </div>
+        }
+
+        <!-- X-axis Labels -->
+        <div class="trend-labels-row">
+            @foreach (var pt in _chartPoints)
+            {
+                <span class="trend-x-label @(_activePoint == pt ? "active-x-label" : "")">@pt.Label</span>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .utilization-trend-container {
+        width: 100%;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: var(--persada-border-radius-card, 20px);
+        padding: 20px 24px 16px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .utilization-trend-chart-box {
+        position: relative;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        cursor: crosshair;
+        touch-action: pan-y;
+    }
+
+    .trend-svg {
+        width: 100%;
+        height: 280px;
+        overflow: visible;
+    }
+
+    .trend-point-dot {
+        transition: r 0.2s ease, fill 0.2s ease;
+    }
+
+    .chart-scrub-tooltip {
+        position: absolute;
+        top: 10px;
+        transform: translateX(-50%);
+        background: var(--persada-navy-900, #0F1F3D);
+        color: #FFFFFF;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+        pointer-events: none;
+        z-index: 10;
+        text-align: center;
+        white-space: nowrap;
+        animation: tooltipPop 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .chart-scrub-tooltip::after {
+        content: '';
+        position: absolute;
+        bottom: -4px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+        border-top: 4px solid var(--persada-navy-900, #0F1F3D);
+    }
+
+    .tooltip-label {
+        font-weight: 500;
+        color: #94A3B8;
+        font-size: 0.7rem;
+    }
+
+    .tooltip-value {
+        font-weight: 700;
+        color: #60A5FA;
+        font-size: 0.85rem;
+    }
+
+    .trend-labels-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 10px 0;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #94A3B8;
+    }
+
+    .trend-x-label {
+        text-align: center;
+        min-width: 30px;
+        transition: color 0.2s ease, font-weight 0.2s ease;
+    }
+
+    .active-x-label {
+        color: #2563EB;
+        font-weight: 700;
+    }
+
+    @@keyframes tooltipPop {
+        from {
+            opacity: 0;
+            transform: translate(-50%, 4px);
+        }
+        to {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+    }
+
+    @@media (max-width: 640px) {
+        .utilization-trend-container {
+            padding: 16px;
+        }
+        .trend-svg {
+            height: 200px;
+        }
+        .trend-labels-row {
+            font-size: 0.6875rem;
+        }
+    }
+</style>
+
+@code {
+    [Parameter] public string SelectedPeriod { get; set; } = "Minggu";
+
+    private record ChartPt(double X, double Y, string Label, double Value);
+    private List<ChartPt> _chartPoints = new();
+    private string _linePath = "";
+    private string _areaPath = "";
+    private ChartPt? _activePoint = null;
+
+    protected override void OnParametersSet()
+    {
+        ComputeChartData();
+    }
+
+    private void ComputeChartData()
+    {
+        _chartPoints.Clear();
+
+        string[] labels;
+        double[] values;
+
+        if (SelectedPeriod == "Bulan")
+        {
+            labels = new[] { "M1", "M2", "M3", "M4" };
+            values = new double[] { 78, 42, 65, 88 };
+        }
+        else if (SelectedPeriod == "Tahun")
+        {
+            labels = new[] { "Q1", "Q2", "Q3", "Q4" };
+            values = new double[] { 310, 180, 260, 390 };
+        }
+        else
+        {
+            // Minggu: 7 data points matching the screenshot
+            labels = new[] { "Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min" };
+            values = new double[] { 85, 20, 20, 58, 25, 38, 92 };
+        }
+
+        double width = 600;
+        double height = 300;
+        double padLeft = 30;
+        double padRight = 30;
+        double padTop = 45;
+        double padBottom = 45;
+
+        double chartW = width - (padLeft + padRight);
+        double chartH = height - (padTop + padBottom);
+
+        double maxVal = values.Max();
+        double minVal = values.Min();
+        double valRange = maxVal - minVal;
+        if (valRange == 0) valRange = 1;
+
+        var pointsList = new List<string>();
+
+        for (int i = 0; i < values.Length; i++)
+        {
+            double x = padLeft + (i / (double)(values.Length - 1)) * chartW;
+            double norm = (values[i] - minVal) / valRange;
+            double y = (padTop + chartH) - (norm * chartH);
+
+            _chartPoints.Add(new ChartPt(x, y, labels[i], values[i]));
+            pointsList.Add($"{x.ToString("F1", CultureInfo.InvariantCulture)},{y.ToString("F1", CultureInfo.InvariantCulture)}");
+        }
+
+        if (_chartPoints.Count > 0)
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.Append($"M {_chartPoints[0].X.ToString("F1", CultureInfo.InvariantCulture)},{_chartPoints[0].Y.ToString("F1", CultureInfo.InvariantCulture)}");
+            
+            for (int i = 0; i < _chartPoints.Count - 1; i++)
+            {
+                var p0 = i > 0 ? _chartPoints[i - 1] : _chartPoints[i];
+                var p1 = _chartPoints[i];
+                var p2 = _chartPoints[i + 1];
+                var p3 = i < _chartPoints.Count - 2 ? _chartPoints[i + 2] : p2;
+
+                var cp1x = p1.X + (p2.X - p0.X) / 6.0;
+                var cp1y = p1.Y + (p2.Y - p0.Y) / 6.0;
+
+                var cp2x = p2.X - (p3.X - p1.X) / 6.0;
+                var cp2y = p2.Y - (p3.Y - p1.Y) / 6.0;
+
+                sb.Append($" C {cp1x.ToString("F1", CultureInfo.InvariantCulture)},{cp1y.ToString("F1", CultureInfo.InvariantCulture)} " +
+                          $"{cp2x.ToString("F1", CultureInfo.InvariantCulture)},{cp2y.ToString("F1", CultureInfo.InvariantCulture)} " +
+                          $"{p2.X.ToString("F1", CultureInfo.InvariantCulture)},{p2.Y.ToString("F1", CultureInfo.InvariantCulture)}");
+            }
+            _linePath = sb.ToString();
+
+            var firstX = _chartPoints[0].X.ToString("F1", CultureInfo.InvariantCulture);
+            var lastX = _chartPoints[^1].X.ToString("F1", CultureInfo.InvariantCulture);
+            var bottomY = (padTop + chartH).ToString("F1", CultureInfo.InvariantCulture);
+
+            _areaPath = $"{_linePath} L {lastX},{bottomY} L {firstX},{bottomY} Z";
+        }
+    }
+
+    private void HandleMouseMove(MouseEventArgs e)
+    {
+        UpdateScrubPosition(e.OffsetX);
+    }
+
+    private void HandleMouseLeave()
+    {
+        _activePoint = null;
+    }
+
+    private void HandleTouchMove(TouchEventArgs e)
+    {
+        if (e.Touches.Length > 0)
+        {
+            var touch = e.Touches[0];
+            UpdateScrubPosition(touch.ClientX);
+        }
+    }
+
+    private void HandleTouchEnd()
+    {
+        _activePoint = null;
+    }
+
+    private void UpdateScrubPosition(double currentCoord)
+    {
+        if (!_chartPoints.Any()) return;
+
+        // Find nearest point
+        // If currentCoord is ratio or offset:
+        ChartPt? nearest = null;
+        double minDistance = double.MaxValue;
+
+        // Normalizing coordinate
+        foreach (var pt in _chartPoints)
+        {
+            double dist = Math.Abs(pt.X - (currentCoord));
+            if (dist < minDistance)
+            {
+                minDistance = dist;
+                nearest = pt;
+            }
+        }
+
+        _activePoint = nearest;
+    }
+}

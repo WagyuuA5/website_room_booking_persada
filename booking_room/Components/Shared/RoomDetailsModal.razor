@@ -1,0 +1,620 @@
+@namespace booking_room.Components.Shared
+@using booking_room.Components.Models
+
+<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Size="xl" ShowHeader="false" ShowFooter="false" NoPadding="true" ZIndex="@(ZIndex ?? (IsViewOnly ? 100050 : (int?)null))">
+    @if (Room != null)
+    {
+        <div class="room-details-container">
+            <!-- Left Column -->
+            <div class="room-details-left">
+                <div class="photo-wrapper">
+                    <img src="@GetRoomPhoto(Room)" alt="@Room.Name" class="room-photo" />
+                    <div style="position: absolute; top: 16px; left: 16px; z-index: 2;">
+                        <StatusIsland Status="@ParseRoomStatus(Room.Status)" RemainingMinutes="120" />
+                    </div>
+                </div>
+                
+                <div class="floor-plan-panel">
+                    <div class="floor-plan-label">Lantai @Room.Floor, Sayap Utama</div>
+                    <div class="floor-plan-map">
+                        <svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+                            <!-- Background with faint grid -->
+                            <rect x="0" y="0" width="300" height="150" class="map-bg" rx="12" />
+                            <g class="map-grid">
+                                <line x1="0" y1="25" x2="300" y2="25" />
+                                <line x1="0" y1="50" x2="300" y2="50" />
+                                <line x1="0" y1="75" x2="300" y2="75" />
+                                <line x1="0" y1="100" x2="300" y2="100" />
+                                <line x1="0" y1="125" x2="300" y2="125" />
+                                <line x1="50" y1="0" x2="50" y2="150" />
+                                <line x1="100" y1="0" x2="100" y2="150" />
+                                <line x1="150" y1="0" x2="150" y2="150" />
+                                <line x1="200" y1="0" x2="200" y2="150" />
+                                <line x1="250" y1="0" x2="250" y2="150" />
+                            </g>
+                            
+                            <!-- Neighbor Room 1 -->
+                            <rect x="20" y="20" width="70" height="60" class="map-room" rx="6" />
+                            <path d="M45,45 h20 v10 h-20 z" fill="none" class="map-door" stroke-width="1.5" />
+                            <text x="55" y="40" font-size="10" font-weight="600" class="map-text" text-anchor="middle">R.101</text>
+                            
+                            <!-- Highlighted Room (Bounds: x=95, y=16, width=110, height=68) -->
+                            <rect x="95" y="16" width="110" height="68" class="map-room-active" rx="8" />
+                            
+                            <!-- Pin for Highlighted Room (Centered at x=150, y=34, safely inside rect) -->
+                            <g transform="translate(150, 34)">
+                                <path d="M0 -9 C-3.5 -9 -6 -6.5 -6 -3 C-6 1.5 0 8 0 8 C0 8 6 1.5 6 -3 C6 -6.5 3.5 -9 0 -9 Z" fill="var(--color-primary, #F59E0B)" />
+                                <circle cx="0" cy="-3" r="2.2" fill="#ffffff" />
+                            </g>
+                            
+                            @{
+                                var (mapLine1, mapLine2) = GetRoomNameLines(Room.Name);
+                                var hasLine2 = !string.IsNullOrEmpty(mapLine2);
+                                var fontSize = hasLine2 ? "8.5" : (mapLine1.Length > 11 ? "8.5" : "9.5");
+                                var textY = hasLine2 ? 55 : 60;
+                            }
+                            <text x="150" y="@textY" font-size="@fontSize" font-weight="700" class="map-text-active" text-anchor="middle">
+                                <tspan x="150">@mapLine1</tspan>
+                                @if (hasLine2)
+                                {
+                                    <tspan x="150" dy="11">@mapLine2</tspan>
+                                }
+                            </text>
+                            
+                            <!-- Neighbor Room 2 -->
+                            <rect x="210" y="20" width="70" height="60" class="map-room" rx="6" />
+                            <path d="M235,45 h20 v10 h-20 z" fill="none" class="map-door" stroke-width="1.5" />
+                            <text x="245" y="40" font-size="10" font-weight="600" class="map-text" text-anchor="middle">R.102</text>
+                            
+                            <!-- Corridor -->
+                            <line x1="20" y1="100" x2="90" y2="100" stroke-width="1" class="map-dash" stroke-dasharray="4 4" />
+                            <text x="150" y="104" font-size="10" font-weight="700" class="map-corridor-text" letter-spacing="3" text-anchor="middle">KORIDOR UTAMA</text>
+                            <line x1="210" y1="100" x2="280" y2="100" stroke-width="1" class="map-dash" stroke-dasharray="4 4" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="room-details-right">
+                <div class="room-info-header">
+                    <h2 class="room-title">@Room.Name</h2>
+                    <div class="room-location">
+                        <InlineSvg Src="icons/icon_location.svg" Class="icon-sm" Style="fill:currentColor;" />
+                        <span>Lantai @Room.Floor, Sayap Utama, Persada HQ</span>
+                    </div>
+                </div>
+
+                <div class="room-stats-row">
+                    <div class="stat-badge">
+                        <InlineSvg Src="icons/icon_group.svg" Class="icon-sm" Style="fill:currentColor;" />
+                        <span class="stat-badge-text">@Room.Capacity Orang</span>
+                    </div>
+                    <div class="stat-badge success">
+                        Sering Dipesan
+                    </div>
+                </div>
+
+                <hr class="details-divider" />
+
+                <div class="room-description">
+                    <p>@Room.Description</p>
+                </div>
+
+                <div class="amenities-section">
+                    <h3 class="amenities-label">FASILITAS TERMASUK</h3>
+                    <div class="amenities-grid">
+                        @{
+                            var amenitiesList = Room.Amenities != null && Room.Amenities.Any() 
+                                ? Room.Amenities 
+                                : new List<string> { "AC", "WiFi" };
+                                
+                            foreach (var am in amenitiesList)
+                            {
+                                var ai = RoomAmenity.Create(am);
+                                <div class="amenity-item">
+                                    <InlineSvg Src="@ai.IconSvgPath" Class="icon-sm" Style="fill:currentColor;" />
+                                    <span>@ai.Name</span>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+
+                <div class="room-details-footer @(IsViewOnly ? "view-only" : "")">
+                    <AnimatedButton Text="Tutup" Variant="secondary" OnClick="Close" />
+                    @if (!IsViewOnly)
+                    {
+                        <AnimatedButton Text="Pesan Sekarang" Variant="primary" IconPath="/icon/icon_pemesanan.svg" OnClick="Book" />
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</AppModal>
+
+<style>
+    .room-details-container {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        min-height: 500px;
+        background-color: var(--color-bg, #ffffff);
+        border-radius: var(--radius-lg, 24px);
+        overflow: hidden;
+    }
+
+    .room-details-left {
+        flex: 1.1;
+        display: flex;
+        flex-direction: column;
+        background-color: var(--color-surface, #f8fafc);
+        border-right: 1px solid var(--color-border, #e2e8f0);
+    }
+
+    .photo-wrapper {
+        position: relative;
+        width: 100%;
+        height: 300px;
+        border-radius: var(--radius-lg, 24px) 0 0 0;
+        overflow: hidden;
+    }
+
+    .room-photo {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .status-badge {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        padding: 6px 12px;
+        border-radius: var(--radius-full, 999px);
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .status-tersedia {
+        background-color: var(--color-success, #10b981);
+        color: white;
+    }
+
+    .status-dipesan {
+        background-color: var(--color-warning, #f59e0b);
+        color: white;
+    }
+
+    .status-tidak-tersedia {
+        background-color: var(--color-danger, #ef4444);
+        color: white;
+    }
+
+    .floor-plan-panel {
+        padding: 24px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .floor-plan-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--color-text-muted, #64748b);
+        margin-bottom: 12px;
+    }
+
+    .floor-plan-map {
+        background-color: var(--color-bg, #ffffff);
+        border: 1px solid var(--color-border, #e2e8f0);
+        border-radius: var(--radius-sm, 8px);
+        padding: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 160px;
+    }
+    
+    .map-bg { fill: #f8fafc; }
+    .map-grid { stroke: #e2e8f0; stroke-width: 0.5; opacity: 0.7; }
+    .map-room { fill: #e2e8f0; }
+    .map-door { stroke: #f8fafc; }
+    .map-text { fill: #64748b; }
+    .map-room-active { fill: #fef3c7; stroke: var(--color-primary, #F59E0B); stroke-width: 2px; }
+    .map-text-active { fill: #b45309; }
+    .map-dash { stroke: #cbd5e1; }
+    .map-corridor-text { fill: #94a3b8; }
+
+    .room-details-right {
+        flex: 1.2;
+        padding: 32px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .room-info-header {
+        margin-bottom: 16px;
+    }
+
+    .room-title {
+        font-size: 26px;
+        font-weight: 700;
+        color: var(--color-navy, #0F172A);
+        margin: 0 0 8px 0;
+    }
+
+    .room-location {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--color-text-muted, #64748b);
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .location-icon {
+        opacity: 0.8;
+    }
+    
+    .room-stats-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+    
+    .stat-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        background-color: var(--color-surface, #f1f5f9);
+        border-radius: var(--radius-sm, 6px);
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--color-navy, #334155);
+    }
+    
+    .stat-badge img, .stat-badge svg {
+        opacity: 0.7;
+    }
+    
+    .stat-badge.highlight {
+        background-color: #fffbeb;
+        color: #b45309;
+    }
+    .stat-badge.highlight svg {
+        color: #f59e0b;
+        opacity: 1;
+    }
+    
+    .stat-badge.success {
+        background-color: #ecfdf5;
+        color: #047857;
+    }
+    
+    .details-divider {
+        border: 0;
+        height: 1px;
+        background-color: var(--color-border, #e2e8f0);
+        margin: 0 0 20px 0;
+    }
+
+    .room-description {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: var(--color-text, #334155);
+        margin-bottom: 24px;
+    }
+
+    .capacity-info {
+        margin-top: 12px;
+        font-weight: 600;
+        color: var(--color-navy, #0F172A);
+    }
+
+    .amenities-section {
+        flex: 1;
+        margin-bottom: 24px;
+    }
+
+    .amenities-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--color-text-muted, #64748b);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin: 0 0 16px 0;
+    }
+
+    .amenities-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .amenity-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 0.875rem;
+        color: var(--color-text, #334155);
+        font-weight: 500;
+    }
+
+    .room-details-footer {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 16px;
+        margin-top: auto;
+        padding-top: 24px;
+        border-top: 1px solid var(--color-border, #e2e8f0);
+    }
+
+    .btn-cancel {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 44px;
+        padding: 0 24px;
+        border-radius: var(--radius-full, 999px);
+        border: 1.5px solid var(--color-neutral-300, #cbd5e1);
+        background-color: transparent;
+        color: var(--color-navy, #0F172A);
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-cancel:hover {
+        background-color: var(--color-surface, #f8fafc);
+    }
+
+    .btn-book {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        height: 44px;
+        padding: 0 24px;
+        border-radius: var(--radius-full, 999px);
+        border: none;
+        background-color: var(--color-primary, #F59E0B);
+        color: #0F172A;
+        font-weight: 700;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: transform 0.1s ease, box-shadow 0.2s ease;
+        box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.3);
+    }
+
+    .btn-book:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 8px -1px rgba(245, 158, 11, 0.4);
+    }
+
+    /* Dark Mode Support */
+    body.dark-mode .room-details-container {
+        background-color: var(--color-bg-dark, #1e293b);
+    }
+    
+    body.dark-mode .room-details-left {
+        background-color: var(--color-surface-dark, #0f172a);
+        border-color: var(--color-border-dark, #334155);
+    }
+
+    body.dark-mode .floor-plan-map {
+        background-color: var(--color-bg-dark, #1e293b);
+        border-color: var(--color-border-dark, #334155);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    }
+
+    body.dark-mode .room-title {
+        color: var(--color-text-dark, #f8fafc);
+    }
+
+    body.dark-mode .room-location,
+    body.dark-mode .floor-plan-label,
+    body.dark-mode .amenities-label {
+        color: var(--color-text-muted-dark, #94a3b8);
+    }
+
+    body.dark-mode .room-description,
+    body.dark-mode .amenity-item {
+        color: var(--color-text-dark, #f8fafc);
+    }
+    
+    body.dark-mode .capacity-info {
+        color: var(--color-text-dark, #f8fafc);
+    }
+
+    body.dark-mode .room-details-footer {
+        border-color: var(--color-border-dark, #334155);
+    }
+    
+    body.dark-mode .details-divider {
+        background-color: var(--color-border-dark, #334155);
+    }
+    
+    body.dark-mode .stat-badge {
+        background-color: var(--color-surface-dark, #334155);
+        color: var(--color-text-dark, #f8fafc);
+    }
+    
+    body.dark-mode .stat-badge.highlight {
+        background-color: #452e04;
+        color: #fcd34d;
+    }
+    
+    body.dark-mode .stat-badge.success {
+        background-color: #064e3b;
+        color: #34d399;
+    }
+
+    body.dark-mode .btn-cancel {
+        border-color: var(--color-border-dark, #475569);
+        color: var(--color-text-dark, #f8fafc);
+    }
+
+    body.dark-mode .btn-cancel:hover {
+        background-color: var(--color-surface-dark, #334155);
+    }
+    
+    /* Dark Mode SVG Map */
+    body.dark-mode .map-bg { fill: #0f172a; }
+    body.dark-mode .map-grid { stroke: #334155; }
+    body.dark-mode .map-room { fill: #1e293b; }
+    body.dark-mode .map-door { stroke: #0f172a; }
+    body.dark-mode .map-dash { stroke: #475569; }
+    body.dark-mode .map-corridor-text { fill: #64748b; }
+    body.dark-mode .map-text { fill: #94a3b8; }
+    body.dark-mode .map-room-active { fill: #452e04; }
+    body.dark-mode .map-text-active { fill: #fcd34d; }
+
+    /* Responsive */
+    @@media (max-width: 860px) {
+        .room-details-container {
+            flex-direction: column;
+        }
+
+        .room-details-left {
+            border-right: none;
+            border-bottom: 1px solid var(--color-border, #e2e8f0);
+        }
+        
+        body.dark-mode .room-details-left {
+            border-bottom-color: var(--color-border-dark, #334155);
+        }
+
+        .photo-wrapper {
+            border-radius: var(--radius-lg, 24px) var(--radius-lg, 24px) 0 0;
+            height: 200px;
+        }
+    }
+    .btn-cancel.btn-cancel-viewonly {
+        min-width: 130px;
+    }
+</style>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public RoomItem? Room { get; set; }
+    [Parameter] public DetailRuanganMode Mode { get; set; } = DetailRuanganMode.Booking;
+    [Parameter] public bool ViewOnly { get; set; }
+    [Parameter] public int? ZIndex { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnBook { get; set; }
+
+    private bool IsViewOnly => ViewOnly || Mode == DetailRuanganMode.ViewOnly;
+
+    private string GetRoomPhoto(RoomItem room)
+    {
+        return string.IsNullOrEmpty(room.PhotoUrl) ? $"/images/default-room.jpg" : room.PhotoUrl;
+    }
+
+    private RoomStatus ParseRoomStatus(string? status) => status?.ToLowerInvariant() switch
+    {
+        "available" => RoomStatus.Tersedia,
+        "booked" => RoomStatus.Dipesan,
+        "unavailable" => RoomStatus.TidakTersedia,
+        "maintenance" or "pemeliharaan" => RoomStatus.Pemeliharaan,
+        _ => RoomStatus.Tersedia
+    };
+
+    private string GetStatusText(string status)
+    {
+        return status?.ToLower() switch
+        {
+            "available" => "Tersedia Sekarang",
+            "booked" => "Dipesan (2j lagi)",
+            "unavailable" => "Tidak Tersedia",
+            _ => status ?? "Tidak Diketahui"
+        };
+    }
+
+    private string GetStatusBadgeClass(string status)
+    {
+        return status?.ToLower() switch
+        {
+            "available" => "status-tersedia",
+            "booked" => "status-dipesan",
+            "unavailable" => "status-tidak-tersedia",
+            _ => "status-tidak-tersedia"
+        };
+    }
+
+    private async Task HandleVisibleChanged(bool value)
+    {
+        Visible = value;
+        if (VisibleChanged.HasDelegate)
+        {
+            await VisibleChanged.InvokeAsync(value);
+        }
+    }
+
+    private async Task Close()
+    {
+        await HandleVisibleChanged(false);
+        if (OnClose.HasDelegate)
+        {
+            await OnClose.InvokeAsync();
+        }
+    }
+
+    private async Task Book()
+    {
+        await HandleVisibleChanged(false);
+        if (OnBook.HasDelegate)
+        {
+            await OnBook.InvokeAsync();
+        }
+    }
+
+    private (string line1, string line2) GetRoomNameLines(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return ("", "");
+        name = name.Trim();
+        if (name.Length <= 13 || !name.Contains(' '))
+        {
+            return (name, "");
+        }
+
+        var words = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (words.Length == 2)
+        {
+            return (words[0], words[1]);
+        }
+
+        int mid = name.Length / 2;
+        int bestSpace = -1;
+        int minDiff = int.MaxValue;
+        for (int i = 0; i < name.Length; i++)
+        {
+            if (name[i] == ' ')
+            {
+                int diff = Math.Abs(i - mid);
+                if (diff < minDiff)
+                {
+                    minDiff = diff;
+                    bestSpace = i;
+                }
+            }
+        }
+
+        if (bestSpace > 0)
+        {
+            return (name.Substring(0, bestSpace), name.Substring(bestSpace + 1));
+        }
+
+        return (name, "");
+    }
+}

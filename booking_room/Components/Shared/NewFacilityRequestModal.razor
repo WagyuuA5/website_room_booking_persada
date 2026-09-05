@@ -1,0 +1,669 @@
+@namespace booking_room.Components.Shared
+@using booking_room.Services
+@using booking_room.Components.Models
+@inject IJSRuntime JS
+@inject IFacilityRequestService FacilityService
+@inject IToastService ToastService
+
+@if (Visible)
+{
+    <AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Size="lg" Title="Permintaan Fasilitas Baru" Subtitle="Ajukan kebutuhan fasilitas tambahan untuk ruangan yang sudah dibooking" ShowFooter="true">
+        <ChildContent>
+            <div class="new-facility-modal-body custom-scrollbar">
+                <!-- Section 1: Data Pemesan & Divisi -->
+                <div class="form-section">
+                    <div class="grid-2-col">
+                        <div class="form-group">
+                            <label class="field-label">Nama Pemesan</label>
+                            <input type="text" class="form-input" @bind="_bookerName" placeholder="Masukkan nama pemesan..." />
+                        </div>
+                        <div class="form-group">
+                            <label class="field-label">Divisi</label>
+                            <div class="input-with-icon-left">
+                                <span class="input-icon-left">
+                                    <InlineSvg Src="icons/icon_building.svg" Class="icon-xs" Style="stroke:#64748B; fill:none;" />
+                                </span>
+                                <select class="form-select form-input-with-icon" @bind="_division">
+                                    <option value="Teknologi Informasi">Teknologi Informasi</option>
+                                    <option value="Operasional">Operasional</option>
+                                    <option value="Sumber Daya Manusia (SDM)">Sumber Daya Manusia (SDM)</option>
+                                    <option value="Keuangan & Akuntansi">Keuangan & Akuntansi</option>
+                                    <option value="Pemasaran & Komunikasi">Pemasaran & Komunikasi</option>
+                                    <option value="Pengembangan Bisnis">Pengembangan Bisnis</option>
+                                    <option value="Hukum & Kepatuhan">Hukum & Kepatuhan</option>
+                                    <option value="Manajemen Risiko & Mutu">Manajemen Risiko & Mutu</option>
+                                    <option value="Pelayanan & Dukungan Klien">Pelayanan & Dukungan Klien</option>
+                                    <option value="Pengadaan & Logistik">Pengadaan & Logistik</option>
+                                    <option value="Umum & Fasilitas (GA)">Umum & Fasilitas (GA)</option>
+                                    <option value="Sekretariat Perusahaan">Sekretariat Perusahaan</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Pilih Ruangan (Horizontal Landscape Scroll with Drag) -->
+                <div class="form-section">
+                    <PilihRuanganHorizontalScroll Rooms="_rooms" 
+                                                  SelectedRoom="_selectedRoom" 
+                                                  OnRoomSelected="SelectRoom" 
+                                                  CarouselId="facilityRoomCarousel" />
+                </div>
+
+                <!-- Section 3: Tanggal & Waktu Booking -->
+                <div class="form-section">
+                    <div class="grid-2-col">
+                        <div class="form-group">
+                            <label class="field-label">Tanggal</label>
+                            <input type="date" class="form-input" @bind="_bookingDate" />
+                        </div>
+                        <div class="form-group">
+                            <label class="field-label">Waktu (Mulai - Selesai)</label>
+                            <div class="time-range-row">
+                                <input type="time" class="form-input" @bind="_startTime" />
+                                <span class="time-sep">-</span>
+                                <input type="time" class="form-input" @bind="_endTime" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 4: Fasilitas Tambahan dengan Pencarian & Auto-Icon -->
+                <div class="form-section">
+                    <div class="section-header-flex">
+                        <label class="field-label" style="margin-bottom: 0;">Fasilitas Tambahan</label>
+                        <span class="notice-tag">Perlu diajukan minimal 24 jam sebelumnya</span>
+                    </div>
+
+                    <!-- Search / Quick Add Input -->
+                    <div class="facility-search-row">
+                        <div class="facility-search-box-wrap">
+                            <svg class="search-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            <input type="text" 
+                                   class="form-input facility-search-input" 
+                                   placeholder="Cari atau tambah fasilitas... (contoh: sound, proyektor, kabel HDMI)" 
+                                   @bind="_facilitySearchQuery" 
+                                   @bind:event="oninput" 
+                                   @onkeydown="HandleSearchKeyDown" />
+                        </div>
+                        <button type="button" class="btn-add-facility" @onclick="AddCustomFacility">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            <span>Tambah</span>
+                        </button>
+                    </div>
+
+                    <!-- Quick suggestions chips -->
+                    <div class="quick-chips-row">
+                        <span class="quick-chip-label">Saran cepat:</span>
+                        <button type="button" class="quick-chip" @onclick='() => AddSuggestedFacility("Catering Kopi & Snack", "catering")'>+ Catering</button>
+                        <button type="button" class="quick-chip" @onclick='() => AddSuggestedFacility("Kursi Tambahan", "chair")'>+ Kursi Tambahan</button>
+                        <button type="button" class="quick-chip" @onclick='() => AddSuggestedFacility("Unit AV Eksternal", "speaker")'>+ Unit AV Eksternal</button>
+                        <button type="button" class="quick-chip" @onclick='() => AddSuggestedFacility("Alat Presentasi", "projector")'>+ Alat Presentasi</button>
+                        <button type="button" class="quick-chip" @onclick='() => AddSuggestedFacility("Microphone Wireless", "mic")'>+ Mic Wireless</button>
+                    </div>
+
+                    <!-- Added Facilities List -->
+                    <div class="facilities-items-list">
+                        @if (!_requestedItems.Any())
+                        {
+                            <div class="empty-facility-hint">
+                                Belum ada fasilitas tambahan yang dipilih. Ketik nama fasilitas di atas atau pilih dari saran cepat.
+                            </div>
+                        }
+                        else
+                        {
+                            @foreach (var (item, index) in _requestedItems.Select((x, i) => (x, i)))
+                            {
+                                <div class="facility-item-card">
+                                    <div class="facility-card-icon-col">
+                                        @((MarkupString)FacilityIconMapper.GetSvgIcon(item.IconType))
+                                    </div>
+                                    <div class="facility-card-main-col">
+                                        <div class="facility-item-header">
+                                            <span class="facility-item-name">@item.Name</span>
+                                            <button type="button" class="btn-remove-item" @onclick="() => RemoveFacility(index)" title="Hapus">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                            </button>
+                                        </div>
+                                        <div class="facility-item-controls">
+                                            <div class="qty-stepper-wrap">
+                                                <span class="qty-label">Jumlah (Qty):</span>
+                                                <div class="stepper-box">
+                                                    <button type="button" class="stepper-btn" @onclick="() => DecrementQty(index)">-</button>
+                                                    <span class="stepper-val">@item.Quantity</span>
+                                                    <button type="button" class="stepper-btn" @onclick="() => IncrementQty(index)">+</button>
+                                                </div>
+                                            </div>
+                                            <input type="text" 
+                                                   class="form-input facility-note-input" 
+                                                   placeholder="Catatan tambahan..." 
+                                                   value="@item.Note" 
+                                                   @onchange="(e) => UpdateItemNote(index, e.Value?.ToString() ?? string.Empty)" />
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+
+                <!-- Section 5: Catatan / Permintaan Khusus -->
+                <div class="form-section">
+                    <label class="field-label">Catatan / Permintaan Khusus</label>
+                    <textarea class="form-input custom-textarea" rows="3" placeholder="Tuliskan catatan khusus atau instruksi tambahan untuk tim operasional..." @bind="_notes"></textarea>
+                </div>
+            </div>
+        </ChildContent>
+
+        <FooterContent>
+            <div class="confirm-footer-btns">
+                <button type="button" class="btn-cancel-modal" @onclick="Close">Tutup</button>
+                <button type="button" class="btn-confirm-modal" @onclick="SubmitRequest" disabled="@(!_requestedItems.Any())">
+                    <span>Konfirmasi Permintaan</span>
+                    <InlineSvg Src="icons/icon_check_circle.svg" Class="icon-sm" Style="color:#FFFFFF; stroke:#FFFFFF;" />
+                </button>
+            </div>
+        </FooterContent>
+    </AppModal>
+}
+
+<style>
+    .new-facility-modal-body {
+        padding: 4px 6px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .form-section {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .grid-2-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    @@media (max-width: 640px) {
+        .grid-2-col { grid-template-columns: 1fr; }
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .field-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 8px;
+        font-size: 13px;
+        color: #0F172A;
+        background: #FFFFFF;
+        box-sizing: border-box;
+        outline: none;
+        transition: border-color 0.15s;
+    }
+    .form-input:focus { border-color: #F59E0B; }
+    body.dark-mode .form-input { background: #1E293B; border-color: #334155; color: #F8FAFC; }
+
+    .input-with-icon-left { position: relative; display: flex; align-items: center; }
+    .input-icon-left {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+        color: #94A3B8;
+        width: 16px;
+        height: 16px;
+    }
+    .form-input-with-icon { padding-left: 42px !important; }
+
+    .time-range-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .time-sep { font-weight: 700; color: #94A3B8; }
+
+    /* Section header with notice */
+    .section-header-flex {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .notice-tag {
+        font-size: 11px;
+        font-weight: 600;
+        color: #92400E;
+        background: #FEF3C7;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        padding: 4px 10px;
+        border-radius: 6px;
+        white-space: normal;
+        line-height: 1.35;
+        box-sizing: border-box;
+    }
+
+    /* Facility search row */
+    .facility-search-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        width: 100%;
+    }
+
+    .facility-search-box-wrap {
+        flex: 1;
+        position: relative;
+        display: flex;
+        align-items: center;
+        height: 42px;
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .search-icon-svg {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94A3B8;
+        pointer-events: none;
+        width: 18px;
+        height: 18px;
+        z-index: 2;
+    }
+
+    .facility-search-input {
+        padding-left: 44px !important;
+        padding-right: 14px;
+        height: 42px;
+        border-radius: 10px;
+        border: 1.5px solid #E2E8F0 !important;
+        font-size: 13.5px;
+        box-sizing: border-box;
+        width: 100%;
+        line-height: normal;
+        background: #FFFFFF;
+        color: #0F172A;
+        outline: none !important;
+        box-shadow: none !important;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .facility-search-input:focus {
+        border-color: #F59E0B !important;
+        outline: none !important;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15) !important;
+    }
+    body.dark-mode .facility-search-input {
+        background: #1E293B;
+        border-color: #334155 !important;
+        color: #F8FAFC;
+    }
+    body.dark-mode .facility-search-input:focus {
+        border-color: #F59E0B !important;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25) !important;
+    }
+
+    .btn-add-facility {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        height: 42px;
+        padding: 0 18px;
+        background: #F59E0B;
+        color: #0F172A;
+        font-weight: 700;
+        font-size: 13.5px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.15s;
+        white-space: nowrap;
+        box-sizing: border-box;
+    }
+    .btn-add-facility:hover { background: #D97706; color: #FFFFFF; }
+
+    .quick-chips-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .quick-chip-label {
+        font-size: 11px;
+        color: #64748B;
+        font-weight: 600;
+    }
+
+    .quick-chip {
+        background: #F1F5F9;
+        border: 1px solid #E2E8F0;
+        border-radius: 999px;
+        padding: 3px 10px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #334155;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+    .quick-chip:hover {
+        background: #FEF3C7;
+        border-color: #F59E0B;
+        color: #92400E;
+    }
+    body.dark-mode .quick-chip { background: #334155; border-color: #475569; color: #CBD5E1; }
+
+    /* Facilities list */
+    .facilities-items-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 4px;
+    }
+
+    .empty-facility-hint {
+        padding: 18px;
+        text-align: center;
+        color: #94A3B8;
+        font-size: 12.5px;
+        border: 1px dashed #CBD5E1;
+        border-radius: 10px;
+        background: #FAFBFD;
+    }
+    body.dark-mode .empty-facility-hint { background: #162032; border-color: #334155; }
+
+    .facility-item-card {
+        display: flex;
+        gap: 12px;
+        padding: 10px 12px;
+        background: #FFFFFF;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 10px;
+        align-items: center;
+    }
+    body.dark-mode .facility-item-card { background: #1E293B; border-color: #334155; }
+
+    .facility-card-icon-col {
+        width: 38px;
+        height: 38px;
+        border-radius: 8px;
+        background: #FEF3C7;
+        color: #D97706;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    body.dark-mode .facility-card-icon-col { background: rgba(245, 158, 11, 0.2); color: #FBBF24; }
+
+    .facility-card-main-col {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .facility-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .facility-item-name {
+        font-size: 13px;
+        font-weight: 700;
+        color: #0F172A;
+    }
+    body.dark-mode .facility-item-name { color: #F8FAFC; }
+
+    .btn-remove-item {
+        background: transparent;
+        border: none;
+        color: #94A3B8;
+        cursor: pointer;
+        padding: 2px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .btn-remove-item:hover { background: #FEE2E2; color: #DC2626; }
+
+    .facility-item-controls {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .qty-stepper-wrap {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .qty-label { font-size: 11px; color: #64748B; }
+
+    .stepper-box {
+        display: flex;
+        align-items: center;
+        border: 1px solid #CBD5E1;
+        border-radius: 6px;
+        overflow: hidden;
+    }
+
+    .stepper-btn {
+        background: #F1F5F9;
+        border: none;
+        width: 24px;
+        height: 24px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+    .stepper-btn:hover { background: #E2E8F0; }
+    body.dark-mode .stepper-btn { background: #334155; color: #FFFFFF; }
+
+    .stepper-val {
+        padding: 0 8px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #0F172A;
+    }
+    body.dark-mode .stepper-val { color: #F8FAFC; }
+
+    .facility-note-input {
+        flex: 1;
+        min-width: 140px;
+        padding: 4px 8px;
+        font-size: 12px;
+        height: 26px;
+    }
+
+    .custom-textarea {
+        resize: vertical;
+        min-height: 60px;
+    }
+</style>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public EventCallback OnSubmitted { get; set; }
+
+    private string _bookerName = "Anggoro Ravi";
+    private string _division = "Teknologi Informasi";
+    private DateTime _bookingDate = DateTime.Today.AddDays(1);
+    private DateTime _startTime = DateTime.Today.AddHours(9);
+    private DateTime _endTime = DateTime.Today.AddHours(11);
+    private string _facilitySearchQuery = "";
+    private string _notes = "";
+
+    private List<RoomItem> _rooms = new();
+    private RoomItem? _selectedRoom;
+    private List<RequestedFacilityItem> _requestedItems = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _rooms = RoomDataProvider.GetRooms().ToList();
+        _selectedRoom = _rooms.FirstOrDefault();
+
+        // Preset 1 default suggestion
+        _requestedItems.Add(new RequestedFacilityItem("Proyektor 4K", 1, "Siapkan kabel HDMI", "projector"));
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Visible)
+        {
+            try
+            {
+                await JS.InvokeVoidAsync("initDragScroll", "facilityRoomCarousel");
+            }
+            catch { }
+        }
+    }
+
+    private void SelectRoom(RoomItem room)
+    {
+        _selectedRoom = room;
+    }
+
+    private async Task HandleVisibleChanged(bool val)
+    {
+        Visible = val;
+        await VisibleChanged.InvokeAsync(val);
+    }
+
+    private async Task Close()
+    {
+        await HandleVisibleChanged(false);
+    }
+
+    private void HandleSearchKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            AddCustomFacility();
+        }
+    }
+
+    private void AddCustomFacility()
+    {
+        if (string.IsNullOrWhiteSpace(_facilitySearchQuery)) return;
+
+        var name = _facilitySearchQuery.Trim();
+        var iconType = FacilityIconMapper.GetIconType(name);
+
+        _requestedItems.Add(new RequestedFacilityItem(name, 1, "", iconType));
+        _facilitySearchQuery = "";
+    }
+
+    private void AddSuggestedFacility(string name, string iconType)
+    {
+        if (_requestedItems.Any(i => i.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+        {
+            var idx = _requestedItems.FindIndex(i => i.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+            _requestedItems[idx] = _requestedItems[idx] with { Quantity = _requestedItems[idx].Quantity + 1 };
+        }
+        else
+        {
+            _requestedItems.Add(new RequestedFacilityItem(name, 1, "", iconType));
+        }
+    }
+
+    private void RemoveFacility(int index)
+    {
+        if (index >= 0 && index < _requestedItems.Count)
+        {
+            _requestedItems.RemoveAt(index);
+        }
+    }
+
+    private void IncrementQty(int index)
+    {
+        if (index >= 0 && index < _requestedItems.Count)
+        {
+            _requestedItems[index] = _requestedItems[index] with { Quantity = _requestedItems[index].Quantity + 1 };
+        }
+    }
+
+    private void DecrementQty(int index)
+    {
+        if (index >= 0 && index < _requestedItems.Count && _requestedItems[index].Quantity > 1)
+        {
+            _requestedItems[index] = _requestedItems[index] with { Quantity = _requestedItems[index].Quantity - 1 };
+        }
+    }
+
+    private void UpdateItemNote(int index, string note)
+    {
+        if (index >= 0 && index < _requestedItems.Count)
+        {
+            _requestedItems[index] = _requestedItems[index] with { Note = note };
+        }
+    }
+
+    private async Task SubmitRequest()
+    {
+        if (!_requestedItems.Any()) return;
+
+        var room = _selectedRoom ?? _rooms.First();
+        var newReq = new FacilityRequestItem
+        {
+            Id = $"FR-{Random.Shared.Next(100, 999)}",
+            RoomId = room.Id,
+            RoomName = room.Name,
+            RoomPhotoUrl = RoomDataProvider.GetRoomPhoto(room.PhotoUrl, room.Id),
+            BookerName = _bookerName,
+            Division = _division,
+            BookingDate = _bookingDate,
+            BookingTime = $"{_startTime:HH:mm} - {_endTime:HH:mm} WIB",
+            RequestedAt = DateTime.Now,
+            Status = "Sedang Disiapkan",
+            StatusUpdatedAt = DateTime.Now,
+            Items = new List<RequestedFacilityItem>(_requestedItems),
+            Notes = _notes
+        };
+
+        FacilityService.AddRequest(newReq);
+
+        await Close();
+
+        ToastService.Success(
+            "Permintaan Fasilitas Berhasil Diajukan",
+            $"Kebutuhan fasilitas tambahan untuk ruangan {room.Name} telah berhasil dicatat.",
+            4500
+        );
+
+        if (OnSubmitted.HasDelegate)
+        {
+            await OnSubmitted.InvokeAsync();
+        }
+    }
+}

@@ -1,0 +1,224 @@
+@namespace booking_room.Components.Shared
+@using System.Globalization
+
+<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Size="sm" ShowHeader="true" Title="Pilih Waktu" Subtitle="Tentukan jam mulai rapat Anda" ShowCloseButton="false" OnClose="HandleCancel">
+    <IconContent>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+    </IconContent>
+    <BodyContent>
+        <div class="time-picker-body">
+            <div class="time-presets-grid">
+                @foreach (var t in TimeSlots)
+                {
+                    var isSelected = string.Equals(_tempSelectedTime, t, StringComparison.OrdinalIgnoreCase);
+                    <button type="button" class="time-preset-btn @(isSelected ? "selected" : "")" @onclick="() => SelectTime(t)">
+                        @t
+                    </button>
+                }
+            </div>
+            <div class="custom-time-row">
+                <label class="custom-time-label">Atau Jam Khusus:</label>
+                <div class="custom-time-inputs">
+                    <input type="time" class="custom-time-input" @bind="_customTime" @bind:after="OnCustomTimeChanged" />
+                </div>
+            </div>
+        </div>
+    </BodyContent>
+    <FooterContent>
+        <div class="time-picker-footer">
+            <button type="button" class="btn-text-cancel" @onclick="HandleCancel">Tutup</button>
+            <button type="button" class="btn-picker-confirm" @onclick="ConfirmSelection">Pilih Waktu</button>
+        </div>
+    </FooterContent>
+</AppModal>
+
+<style>
+    .time-picker-body {
+        padding: 8px 4px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    .time-presets-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        max-height: 240px;
+        overflow-y: auto;
+        padding-right: 4px;
+    }
+    .time-preset-btn {
+        padding: 10px 8px;
+        border-radius: 8px;
+        border: 1px solid var(--color-neutral-200, #E2E8F0);
+        background: #FFFFFF;
+        color: #0F172A;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+    }
+    .time-preset-btn:hover {
+        background: #F8FAFC;
+        border-color: #CBD5E1;
+    }
+    .time-preset-btn.selected {
+        background: #0F172A !important;
+        color: #FFFFFF !important;
+        border-color: #0F172A !important;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+    }
+    body.dark-mode .time-preset-btn {
+        background: #1E293B;
+        color: #F8FAFC;
+        border-color: #334155;
+    }
+    body.dark-mode .time-preset-btn:hover {
+        background: #334155;
+    }
+    body.dark-mode .time-preset-btn.selected {
+        background: #F59E0B !important;
+        color: #0F172A !important;
+        border-color: #F59E0B !important;
+    }
+    .custom-time-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 12px;
+        border-top: 1px solid var(--color-neutral-200, #E2E8F0);
+    }
+    body.dark-mode .custom-time-row {
+        border-color: #334155;
+    }
+    .custom-time-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #64748B;
+    }
+    body.dark-mode .custom-time-label {
+        color: #94A3B8;
+    }
+    .custom-time-input {
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--color-neutral-200, #E2E8F0);
+        background: transparent;
+        font-weight: 600;
+        font-size: 14px;
+        color: inherit;
+        outline: none;
+    }
+    .custom-time-input:focus {
+        border-color: #F59E0B;
+    }
+    .time-picker-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+    .btn-text-cancel {
+        background: transparent;
+        border: none;
+        color: #EF4444;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 8px 12px;
+    }
+    .btn-text-cancel:hover {
+        text-decoration: underline;
+    }
+    .btn-picker-confirm {
+        background: #0F172A;
+        color: #FFFFFF;
+        border: none;
+        border-radius: 999px;
+        padding: 8px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+    .btn-picker-confirm:hover {
+        opacity: 0.9;
+    }
+    body.dark-mode .btn-picker-confirm {
+        background: #F59E0B;
+        color: #0F172A;
+    }
+</style>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public string? SelectedTime { get; set; }
+    [Parameter] public EventCallback<string> OnTimeSelected { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private string _tempSelectedTime = "09:00";
+    private TimeOnly _customTime = new TimeOnly(9, 0);
+
+    private static readonly string[] TimeSlots = new[]
+    {
+        "07:00", "07:30", "08:00", "08:30", "09:00", "09:30",
+        "10:00", "10:30", "11:00", "11:30", "12:00", "12:30",
+        "13:00", "13:30", "14:00", "14:30", "15:00", "15:30",
+        "16:00", "16:30", "17:00", "17:30", "18:00", "18:30"
+    };
+
+    protected override void OnParametersSet()
+    {
+        if (!string.IsNullOrWhiteSpace(SelectedTime))
+        {
+            _tempSelectedTime = SelectedTime.Trim();
+            if (TimeOnly.TryParse(_tempSelectedTime, out var parsed))
+            {
+                _customTime = parsed;
+            }
+        }
+    }
+
+    private void SelectTime(string timeStr)
+    {
+        _tempSelectedTime = timeStr;
+        if (TimeOnly.TryParse(timeStr, out var parsed))
+        {
+            _customTime = parsed;
+        }
+    }
+
+    private void OnCustomTimeChanged()
+    {
+        _tempSelectedTime = _customTime.ToString("HH:mm");
+    }
+
+    private async Task HandleVisibleChanged(bool val)
+    {
+        Visible = val;
+        await VisibleChanged.InvokeAsync(val);
+        if (!val)
+        {
+            await OnCancel.InvokeAsync();
+        }
+    }
+
+    private async Task HandleCancel()
+    {
+        Visible = false;
+        await VisibleChanged.InvokeAsync(false);
+        await OnCancel.InvokeAsync();
+    }
+
+    private async Task ConfirmSelection()
+    {
+        Visible = false;
+        await VisibleChanged.InvokeAsync(false);
+        await OnTimeSelected.InvokeAsync(_tempSelectedTime);
+    }
+}

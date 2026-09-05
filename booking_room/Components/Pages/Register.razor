@@ -1,0 +1,267 @@
+@page "/register"
+@layout booking_room.Components.Layout.AuthLayout
+@inject NavigationManager Navigation
+@using System.ComponentModel.DataAnnotations
+
+<PageTitle>Daftar — Persada Ruangan</PageTitle>
+
+<div class="auth-container">
+    <!-- Panel Kiri: Form Pendaftaran -->
+    <div class="auth-form-panel register-panel">
+        <div class="auth-form-content" style="max-width: 450px;">
+            <div class="brand-header">
+                <img src="/icons/logoo_psd-removebg-preview.svg" alt="Persada Logo" class="brand-logo" />
+            </div>
+            
+            <h1 class="auth-title">Buat Akun</h1>
+            <p class="auth-subtitle">Silakan isi detail di bawah ini untuk bergabung dengan Sistem Manajemen Pemesanan.</p>
+
+            <EditForm Model="@registerModel" OnValidSubmit="HandleRegister">
+                <DataAnnotationsValidator />
+                
+                @if (registerSuccess)
+                {
+                    <div class="alert-success-custom" style="margin-bottom: 20px;">
+                        Akun berhasil dibuat, silakan masuk. Mengarahkan...
+                    </div>
+                }
+
+                <div class="form-row">
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">Nama Lengkap</label>
+                        <InputText @bind-Value="registerModel.FullName" class="form-control-standard" placeholder="cth. Wahyu Ravi" />
+                        <ValidationMessage For="@(() => registerModel.FullName)" class="validation-msg" />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">Departemen</label>
+                        <InputSelect @bind-Value="registerModel.Department" class="form-control-standard">
+                            <option value="">Pilih departemen Anda</option>
+                            <option value="SDM">Sumber Daya Manusia</option>
+                            <option value="Operasional">Operasional</option>
+                            <option value="Keuangan">Keuangan</option>
+                            <option value="IT">IT & Digital</option>
+                            <option value="Pemasaran">Pemasaran & Penjualan</option>
+                            <option value="Pengadaan">Pengadaan</option>
+                            <option value="Umum">Umum</option>
+                        </InputSelect>
+                        <ValidationMessage For="@(() => registerModel.Department)" class="validation-msg" />
+                    </div>
+                    
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">Nomor Telepon</label>
+                        <InputText @bind-Value="registerModel.Phone" class="form-control-standard" placeholder="+62 812-3456-7890" />
+                        <ValidationMessage For="@(() => registerModel.Phone)" class="validation-msg" />
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label class="form-label">Alamat Email</label>
+                    <p class="form-hint">Gunakan alamat email profesional Anda.</p>
+                    <InputText @bind-Value="registerModel.Email" class="form-control-standard" placeholder="nama@perusahaan.com" />
+                    <ValidationMessage For="@(() => registerModel.Email)" class="validation-msg" />
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">Kata Sandi</label>
+                        <div class="input-with-icon">
+                            @if (showPassword)
+                            {
+                                <InputText @bind-Value="registerModel.Password" class="form-control-standard pr-30" placeholder="••••••••" />
+                            }
+                            else
+                            {
+                                <InputText type="password" @bind-Value="registerModel.Password" class="form-control-standard pr-30" placeholder="••••••••" />
+                            }
+                            <button type="button" class="btn-toggle-password-inline" @onclick="TogglePassword">
+                                @if (showPassword)
+                                {
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                                }
+                                else
+                                {
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                }
+                            </button>
+                        </div>
+                        <ValidationMessage For="@(() => registerModel.Password)" class="validation-msg" />
+                    </div>
+                    
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">Konfirmasi Kata Sandi</label>
+                        <div class="input-with-icon">
+                            @if (showConfirmPassword)
+                            {
+                                <InputText @bind-Value="registerModel.ConfirmPassword" class="form-control-standard pr-30" placeholder="••••••••" />
+                            }
+                            else
+                            {
+                                <InputText type="password" @bind-Value="registerModel.ConfirmPassword" class="form-control-standard pr-30" placeholder="••••••••" />
+                            }
+                            <button type="button" class="btn-toggle-password-inline" @onclick="ToggleConfirmPassword">
+                                @if (showConfirmPassword)
+                                {
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                                }
+                                else
+                                {
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                }
+                            </button>
+                        </div>
+                        <ValidationMessage For="@(() => registerModel.ConfirmPassword)" class="validation-msg" />
+                    </div>
+                </div>
+
+                <div class="form-group form-check-group" style="margin-top: 10px;">
+                    <label class="custom-checkbox">
+                        <InputCheckbox @bind-Value="registerModel.AgreeTerms" />
+                        <span class="checkmark"></span>
+                        <span>Saya menyetujui <a href="javascript:void(0)" class="link-forgot">Syarat & Ketentuan</a> dan <a href="javascript:void(0)" class="link-forgot">Kebijakan Privasi</a>.</span>
+                    </label>
+                    <ValidationMessage For="@(() => registerModel.AgreeTerms)" class="validation-msg" style="margin-left:24px;" />
+                </div>
+
+                <button type="submit" class="btn-auth-primary" disabled="@(!registerModel.AgreeTerms)">
+                    DAFTAR
+                </button>
+                
+                <div class="auth-divider">
+                    <span>ATAU</span>
+                </div>
+                
+                <div class="auth-register-link">
+                    Sudah punya akun? <a href="/login">Masuk di sini.</a>
+                </div>
+            </EditForm>
+        </div>
+        
+        <div class="auth-footer">
+             &copy; 2026 PT Personel Alih Daya Tbk. Sistem Manajemen Pemesanan.
+        </div>
+    </div>
+    
+    <!-- Panel Kanan: Branding Langsung di Atas Foto (Tanpa Glass Box) -->
+    <div class="auth-brand-panel brand-register">
+        <div class="brand-overlay"></div>
+        <div class="brand-hero-content">
+            <span class="brand-badge-solid">KANTOR PUSAT</span>
+            <h2 class="brand-title">Infrastruktur Perusahaan Terkemuka.</h2>
+            <p class="brand-desc">Bergabunglah dan kelola pemesanan ruangan serta akses fasilitas dengan mudah dan terintegrasi secara profesional.</p>
+        </div>
+        <div class="brand-logo-large-container">
+            <img src="/icons/logoo_psd-removebg-preview.svg" alt="Persada" class="brand-logo-large" />
+            <div class="brand-tagline">Helping Your Business Grow</div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .register-panel { padding-top: 20px; padding-bottom: 20px; }
+    .form-row { display: flex; gap: 16px; margin-bottom: 20px; }
+    
+    @@media (max-width: 600px) {
+        .form-row { flex-direction: column; gap: 0; }
+        .form-row .form-group { margin-bottom: 20px; }
+    }
+    
+    .form-control-standard { width: 100%; padding: 10px 14px; border: 1px solid #E5E7EB; border-radius: 8px; font-size: 0.95rem; transition: all 0.2s; }
+    .form-control-standard:focus { outline: none; border-color: var(--persada-accent-blue); box-shadow: 0 0 0 3px rgba(31, 93, 154, 0.1); }
+    .pr-30 { padding-right: 36px; }
+    .btn-toggle-password-inline { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #9CA3AF; cursor: pointer; padding: 0; display: flex; }
+    .form-hint { font-size: 0.75rem; color: #6B7280; margin-top: -4px; margin-bottom: 8px; }
+    .brand-register { background-image: url('/images/poto 1.jpg'); }
+    
+    .auth-container { display: flex; min-height: 100vh; width: 100%; }
+    .auth-form-panel { flex: 1; display: flex; flex-direction: column; justify-content: space-between; background-color: var(--persada-white); padding: 40px; max-width: 500px; min-width: 320px; }
+    .auth-form-content { margin: auto 0; width: 100%; max-width: 400px; align-self: center; }
+    .brand-header { margin-bottom: 30px; }
+    .brand-logo { height: 40px; width: auto; }
+    .auth-title { font-size: 1.8rem; font-weight: 800; color: var(--persada-accent-blue); margin-bottom: 8px; }
+    .auth-subtitle { color: var(--persada-text-secondary); font-size: 0.9rem; margin-bottom: 24px; line-height: 1.5; }
+    .form-group { margin-bottom: 0; }
+    .form-label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--persada-navy-900); margin-bottom: 6px; }
+    .input-with-icon { position: relative; display: flex; align-items: center; width: 100%; }
+    .link-forgot { font-size: 0.8rem; color: var(--persada-accent-blue); text-decoration: none; font-weight: 600; }
+    .link-forgot:hover { text-decoration: underline; }
+    .custom-checkbox { display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; color: var(--persada-text-secondary); cursor: pointer; line-height: 1.4; }
+    .btn-auth-primary { width: 100%; padding: 14px; background: linear-gradient(135deg, #F5A623 0%, #E09010 100%); color: #0F172A; border: none; border-radius: 999px; font-weight: 700; font-size: 1rem; margin-top: 12px; cursor: pointer; transition: all 0.2s; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 14px rgba(245, 166, 35, 0.3); }
+    .btn-auth-primary:hover:not(:disabled) { background: linear-gradient(135deg, #FFB834 0%, #F5A623 100%); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(245, 166, 35, 0.45); }
+    .btn-auth-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .auth-divider { display: flex; align-items: center; text-align: center; margin: 20px 0; }
+    .auth-divider::before, .auth-divider::after { content: ''; flex: 1; border-bottom: 1px solid #E5E7EB; }
+    .auth-divider span { padding: 0 16px; color: #9CA3AF; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px; }
+    .auth-register-link { text-align: center; font-size: 0.9rem; color: var(--persada-text-secondary); }
+    .auth-register-link a { color: var(--persada-accent-blue); font-weight: 600; text-decoration: none; }
+    .auth-register-link a:hover { text-decoration: underline; }
+    .auth-footer { text-align: center; font-size: 0.75rem; color: #9CA3AF; margin-top: 20px; }
+    .auth-brand-panel { flex: 1.2; background-size: cover; background-position: center; position: relative; display: flex; flex-direction: column; justify-content: space-between; padding: 56px 60px; overflow: hidden; }
+    .brand-register { background-image: url('/images/poto 1.jpg'); }
+    .brand-overlay { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(10, 15, 29, 0.45) 0%, rgba(10, 15, 29, 0.82) 100%); pointer-events: none; }
+    .brand-hero-content { position: relative; z-index: 2; color: white; max-width: 520px; }
+    .brand-badge-solid { display: inline-block; background: #F5A623; color: #0F172A; padding: 6px 14px; border-radius: 999px; font-size: 0.75rem; font-weight: 800; letter-spacing: 1.2px; margin-bottom: 24px; text-transform: uppercase; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); }
+    .brand-title { font-size: 2.8rem; font-weight: 800; line-height: 1.18; margin-bottom: 18px; letter-spacing: -0.025em; text-shadow: 0 2px 14px rgba(0, 0, 0, 0.65); }
+    .brand-desc { font-size: 1.1rem; line-height: 1.65; color: rgba(255, 255, 255, 0.9); margin: 0; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5); }
+    .brand-logo-large-container { position: relative; z-index: 2; align-self: flex-end; text-align: right; }
+    .brand-logo-large { height: 52px; width: auto; margin-bottom: 4px; filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.5)); }
+    .brand-tagline { color: rgba(255, 255, 255, 0.85); font-size: 0.85rem; font-weight: 600; letter-spacing: 0.8px; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5); }
+    .validation-msg { color: #EF4444; font-size: 0.75rem; margin-top: 4px; display: block; }
+    .alert-success-custom { background-color: #F0FDF4; border-left: 4px solid #166534; color: #166534; padding: 12px 16px; border-radius: 6px; font-size: 0.85rem; }
+    
+    @@media (max-width: 992px) {
+        .auth-brand-panel { display: none; }
+        .auth-form-panel { max-width: 100%; padding: 24px; }
+        .auth-form-content { margin: 0 auto; }
+    }
+</style>
+
+@code {
+    private RegisterModel registerModel = new();
+    private bool showPassword = false;
+    private bool showConfirmPassword = false;
+    private bool registerSuccess = false;
+
+    private void TogglePassword() => showPassword = !showPassword;
+    private void ToggleConfirmPassword() => showConfirmPassword = !showConfirmPassword;
+
+    private async Task HandleRegister()
+    {
+        if (registerModel.AgreeTerms)
+        {
+            registerSuccess = true;
+            await Task.Delay(1500); // Simulate network request
+            Navigation.NavigateTo("/login");
+        }
+    }
+
+    public class RegisterModel
+    {
+        [Required(ErrorMessage = "Nama Lengkap wajib diisi.")]
+        public string FullName { get; set; } = "";
+
+        [Required(ErrorMessage = "Departemen wajib dipilih.")]
+        public string Department { get; set; } = "";
+
+        [Required(ErrorMessage = "Nomor Telepon wajib diisi.")]
+        [RegularExpression(@"^\+?[0-9\-\s]+$", ErrorMessage = "Format nomor telepon tidak valid.")]
+        public string Phone { get; set; } = "";
+
+        [Required(ErrorMessage = "Alamat email wajib diisi.")]
+        [EmailAddress(ErrorMessage = "Format email tidak valid.")]
+        public string Email { get; set; } = "";
+
+        [Required(ErrorMessage = "Kata sandi wajib diisi.")]
+        [MinLength(6, ErrorMessage = "Kata sandi minimal 6 karakter.")]
+        public string Password { get; set; } = "";
+
+        [Required(ErrorMessage = "Konfirmasi kata sandi wajib diisi.")]
+        [Compare(nameof(Password), ErrorMessage = "Kata sandi tidak cocok.")]
+        public string ConfirmPassword { get; set; } = "";
+
+        [Range(typeof(bool), "true", "true", ErrorMessage = "Anda harus menyetujui Syarat & Ketentuan.")]
+        public bool AgreeTerms { get; set; }
+    }
+}

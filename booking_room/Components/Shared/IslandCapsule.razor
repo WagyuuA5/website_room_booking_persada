@@ -1,0 +1,180 @@
+@namespace booking_room.Components.Shared
+@inject IJSRuntime JS
+@implements IDisposable
+
+<div class="island-container @(IsToast ? "island-toast-mode" : "") @Class @GetModeClass()" style="@Style">
+    <div class="island-capsule @(IsExpanded ? "island-expanded" : "island-compact")"
+         @onclick="ToggleExpand"
+         role="@(Clickable ? "button" : null)"
+         tabindex="@(Clickable ? 0 : -1)">
+         
+         <div class="island-content-wrapper">
+             @if (Mode == "toast")
+             {
+                 <div class="island-toast-view animate-fade-scale-in">
+                     <div class="island-toast-icon-wrap">
+                         <div class="island-toast-status-icon">
+                             @if (!string.IsNullOrEmpty(ToastIcon))
+                             {
+                                 @((MarkupString)ToastIcon)
+                             }
+                         </div>
+                     </div>
+                     <div class="island-toast-text">
+                         <span class="island-toast-title">@Title</span>
+                         @if (!string.IsNullOrEmpty(Subtitle))
+                         {
+                             <span class="island-toast-subtitle">@Subtitle</span>
+                         }
+                     </div>
+                     @if (ShowCloseButton)
+                     {
+                         <button class="island-toast-close-btn" @onclick="HandleClose" @onclick:stopPropagation="true" type="button" aria-label="Tutup">
+                             Tutup
+                         </button>
+                     }
+                 </div>
+             }
+             else if (ChildContent != null)
+             {
+                 @ChildContent
+             }
+             else
+             {
+                 <div class="island-compact-view">
+                     <span class="island-compact-text">@(string.IsNullOrEmpty(CompactText) ? Title : CompactText)</span>
+                 </div>
+             }
+         </div>
+    </div>
+</div>
+
+<style>
+    .island-container {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .island-container.island-toast-mode {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 2000;
+        pointer-events: auto;
+    }
+    .island-capsule {
+        position: relative;
+        background-color: var(--island-bg, #0B0B0C);
+        color: #FFFFFF;
+        border: 1px solid var(--island-border, rgba(255, 255, 255, 0.12));
+        border-radius: 28px;
+        overflow: hidden;
+        user-select: none;
+    }
+    .island-toast-view {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        padding: 16px 20px;
+        text-align: center;
+        min-width: 260px;
+    }
+    .island-toast-status-icon {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .island-toast-title {
+        font-size: 0.9375rem;
+        font-weight: 700;
+        color: #FFFFFF;
+    }
+    .island-toast-subtitle {
+        font-size: 0.8125rem;
+        color: #9CA3AF;
+    }
+    .island-toast-close-btn {
+        padding: 4px 14px;
+        border-radius: 999px;
+        background: #F59E0B;
+        color: #0F1F3D;
+        font-size: 0.75rem;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        margin-top: 4px;
+    }
+</style>
+
+@code {
+    [Parameter] public string State { get; set; } = "compact";
+    [Parameter] public bool IsExpanded { get; set; } = false;
+    [Parameter] public EventCallback<bool> IsExpandedChanged { get; set; }
+    [Parameter] public string AccentColor { get; set; } = "#10B981";
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Subtitle { get; set; } = string.Empty;
+    [Parameter] public string CompactText { get; set; } = string.Empty;
+    [Parameter] public bool Clickable { get; set; } = true;
+    [Parameter] public bool ShowCloseButton { get; set; } = false;
+    [Parameter] public bool IsToast { get; set; } = false;
+    [Parameter] public int AutoDismissMs { get; set; } = 0;
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string? Style { get; set; }
+    [Parameter] public string Mode { get; set; } = string.Empty;
+    [Parameter] public string ToastIcon { get; set; } = string.Empty;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private System.Threading.Timer? _dismissTimer;
+    private bool _disposed;
+
+    protected override void OnParametersSet()
+    {
+        if (!string.IsNullOrEmpty(Mode))
+        {
+            IsToast = Mode == "toast";
+        }
+
+        if (AutoDismissMs > 0 && _dismissTimer == null && !_disposed)
+        {
+            _dismissTimer = new System.Threading.Timer(_ =>
+            {
+                if (_disposed) return;
+                try
+                {
+                    InvokeAsync(HandleClose);
+                }
+                catch (ObjectDisposedException) { }
+                catch (InvalidOperationException) { }
+            }, null, AutoDismissMs, System.Threading.Timeout.Infinite);
+        }
+    }
+
+    private string GetModeClass() => string.IsNullOrEmpty(Mode) ? string.Empty : $"island-mode-{Mode}";
+
+    private async Task ToggleExpand()
+    {
+        if (!Clickable) return;
+        IsExpanded = !IsExpanded;
+        State = IsExpanded ? "expanded" : "compact";
+        await IsExpandedChanged.InvokeAsync(IsExpanded);
+    }
+
+    private async Task HandleClose()
+    {
+        if (OnClose.HasDelegate)
+        {
+            await OnClose.InvokeAsync();
+        }
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        _dismissTimer?.Dispose();
+    }
+}

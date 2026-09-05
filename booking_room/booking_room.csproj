@@ -7,4 +7,13 @@
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Blazor-ApexCharts" Version="7.0.0" />
+    <PackageReference Include="ClosedXML" Version="0.105.1" />
+  </ItemGroup>
+
+  <Target Name="KillLockedProcess" BeforeTargets="Build">
+    <Exec Command="taskkill /F /IM booking_room.exe &gt;nul 2&gt;&amp;1 &amp; exit /b 0" />
+  </Target>
+
 </Project>

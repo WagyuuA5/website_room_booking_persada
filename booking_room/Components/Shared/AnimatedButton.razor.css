@@ -1,0 +1,160 @@
+/* ==========================================================================
+   BAGIAN C (V63): Standardisasi Animasi Tombol Global (Teks Polos, Rata Tengah)
+   ========================================================================== */
+.animated-btn,
+.app-btn {
+    position: relative !important;
+    border-radius: 999px !important;
+    padding: 10px 22px !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    cursor: pointer !important;
+    border: 1px solid transparent !important;
+    min-width: 100px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    text-decoration: none !important;
+    line-height: 1.2 !important;
+    transition: all 180ms ease-in-out !important;
+    box-sizing: border-box !important;
+    user-select: none !important;
+    transform: scale(1) !important;
+}
+
+.animated-btn:active:not(:disabled),
+.app-btn:active:not(:disabled) {
+    transform: scale(0.97) !important;
+}
+
+.animated-btn:focus-visible,
+.app-btn:focus-visible {
+    outline: 2px solid var(--color-primary, #F5A623) !important;
+    outline-offset: 2px !important;
+}
+
+.animated-btn:disabled,
+.app-btn:disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+    transform: none !important;
+}
+
+.animated-btn__label-default,
+.app-btn__label {
+    position: relative !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    width: 100% !important;
+    white-space: nowrap !important;
+    transition: color 180ms ease-in-out !important;
+}
+
+/* Hide legacy inner artifacts if any exist */
+.animated-btn__circle,
+.animated-btn__arrow,
+.animated-btn__label-hover {
+    display: none !important;
+}
+
+/* Variants */
+.animated-btn--primary,
+.app-btn--primary {
+    background: #F59E0B !important;
+    color: #FFFFFF !important;
+    border-color: #F59E0B !important;
+    box-shadow: 0 2px 6px rgba(245, 158, 11, 0.25) !important;
+}
+.animated-btn--primary:hover:not(:disabled),
+.app-btn--primary:hover:not(:disabled) {
+    background: #D97706 !important;
+    border-color: #D97706 !important;
+    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.35) !important;
+}
+
+.animated-btn--secondary,
+.app-btn--secondary {
+    background: #FFFFFF !important;
+    color: #0F172A !important;
+    border-color: #E2E8F0 !important;
+}
+.animated-btn--secondary:hover:not(:disabled),
+.app-btn--secondary:hover:not(:disabled) {
+    background: #F1F5F9 !important;
+    border-color: #CBD5E1 !important;
+    color: #0F172A !important;
+}
+
+.animated-btn--danger,
+.app-btn--danger {
+    background: #DC2626 !important;
+    color: #FFFFFF !important;
+    border-color: #DC2626 !important;
+    box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25) !important;
+}
+.animated-btn--danger:hover:not(:disabled),
+.app-btn--danger:hover:not(:disabled) {
+    background: #B91C1C !important;
+    border-color: #B91C1C !important;
+    box-shadow: 0 4px 10px rgba(220, 38, 38, 0.35) !important;
+}
+
+.animated-btn--dark,
+.app-btn--dark {
+    background: #0F172A !important;
+    color: #FFFFFF !important;
+    border-color: #0F172A !important;
+}
+.animated-btn--dark:hover:not(:disabled),
+.app-btn--dark:hover:not(:disabled) {
+    background: #1E293B !important;
+    border-color: #1E293B !important;
+}
+
+.animated-btn--ghost,
+.app-btn--ghost {
+    background: transparent !important;
+    color: var(--color-text-primary, #0F172A) !important;
+    border-color: transparent !important;
+}
+.animated-btn--ghost:hover:not(:disabled),
+.app-btn--ghost:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.05) !important;
+}
+
+.animated-btn--blue,
+.app-btn--blue {
+    background: #1F5D9A !important;
+    color: #FFFFFF !important;
+    border-color: #1F5D9A !important;
+}
+.animated-btn--blue:hover:not(:disabled),
+.app-btn--blue:hover:not(:disabled) {
+    background: #164675 !important;
+    border-color: #164675 !important;
+}
+
+/* Dark Mode Overrides */
+:global(body.dark-mode) .animated-btn--secondary,
+:global(body.dark-mode) .app-btn--secondary {
+    background: #27272A !important;
+    color: #F8FAFC !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+}
+:global(body.dark-mode) .animated-btn--secondary:hover:not(:disabled),
+:global(body.dark-mode) .app-btn--secondary:hover:not(:disabled) {
+    background: #3F3F46 !important;
+    border-color: rgba(255, 255, 255, 0.25) !important;
+}
+:global(body.dark-mode) .animated-btn--ghost,
+:global(body.dark-mode) .app-btn--ghost {
+    color: #F8FAFC !important;
+}
+:global(body.dark-mode) .animated-btn--ghost:hover:not(:disabled),
+:global(body.dark-mode) .app-btn--ghost:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.08) !important;
+}

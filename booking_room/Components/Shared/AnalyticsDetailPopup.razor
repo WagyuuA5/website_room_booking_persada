@@ -1,0 +1,163 @@
+@namespace booking_room.Components.Shared
+@using booking_room.Components.Models
+@inject NavigationManager Navigation
+
+<AppModal Visible="@Visible" Size="lg" Title="Detail Analitik Penggunaan Ruangan" ShowCloseButton="true" OnClose="CloseModal">
+    <BodyContent>
+        <div class="analytics-detail-container">
+            <div class="analytics-summary-strip">
+                <div class="analytics-stat-card">
+                    <span class="stat-label">TOTAL JAM DIGUNAKAN</span>
+                    <h3 class="stat-num">@_animatedTotalHours Jam</h3>
+                </div>
+                <div class="analytics-stat-card">
+                    <span class="stat-label">RATA-RATA UTILISASI</span>
+                    <h3 class="stat-num">@_animatedAvgUtilization%</h3>
+                </div>
+                <div class="analytics-stat-card">
+                    <span class="stat-label">RUANGAN TERPANTAU</span>
+                    <h3 class="stat-num">@_animatedRoomCount Ruangan</h3>
+                </div>
+            </div>
+
+            <div class="analytics-chart-box">
+                <div class="chart-header">
+                    <h4 class="chart-title">Tren Jam Penggunaan per Ruangan</h4>
+                </div>
+                <div class="chart-bars-list">
+                    @foreach (var room in DashboardData.AllRooms.Take(5))
+                    {
+                        <div class="chart-bar-row">
+                            <span class="bar-room-name">@room.RoomName</span>
+                            <div class="bar-track">
+                                <div class="bar-fill @(_barsAnimated ? "animated" : "")" style="width: @(room.Capacity * 3)%;"></div>
+                            </div>
+                            <span class="bar-val">@(room.Capacity * 2) Jam</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </BodyContent>
+</AppModal>
+
+<style>
+    .analytics-detail-container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .analytics-summary-strip {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+
+    .analytics-stat-card {
+        background: #F8FAFC;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 14px;
+        text-align: center;
+    }
+    body.dark-mode .analytics-stat-card {
+        background: rgba(15, 23, 42, 0.4);
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+    .stat-label {
+        font-size: 0.625rem;
+        font-weight: 700;
+        color: #94A3B8;
+        letter-spacing: 0.05em;
+        display: block;
+        margin-bottom: 4px;
+    }
+    .stat-num {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--persada-navy-900, #0F1F3D);
+        margin: 0;
+    }
+    body.dark-mode .stat-num { color: #F8FAFC; }
+
+    .analytics-chart-box {
+        background: #F8FAFC;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 14px;
+        padding: 16px;
+    }
+    body.dark-mode .analytics-chart-box {
+        background: rgba(15, 23, 42, 0.4);
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+    .chart-title {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: var(--persada-navy-900, #0F1F3D);
+        margin: 0 0 12px 0;
+    }
+    body.dark-mode .chart-title { color: #F8FAFC; }
+
+    .chart-bars-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .chart-bar-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .bar-room-name {
+        width: 140px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--persada-text-primary, #374151);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    body.dark-mode .bar-room-name { color: #F8FAFC; }
+    .bar-track {
+        flex: 1;
+        height: 8px;
+        background: #E2E8F0;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+    body.dark-mode .bar-track { background: #334155; }
+    .bar-fill {
+        height: 100%;
+        background: #1F5D9A;
+        border-radius: 999px;
+        transition: width 0.6s ease;
+    }
+    .bar-val {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #64748B;
+        min-width: 50px;
+        text-align: right;
+    }
+</style>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private int _animatedTotalHours = 128;
+    private int _animatedAvgUtilization = 74;
+    private int _animatedRoomCount = 6;
+    private bool _barsAnimated = true;
+
+    private async Task CloseModal()
+    {
+        if (OnClose.HasDelegate)
+        {
+            await OnClose.InvokeAsync();
+        }
+    }
+}
+
+

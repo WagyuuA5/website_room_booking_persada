@@ -1,0 +1,67 @@
+@namespace booking_room.Components.Shared
+@using booking_room.Components.Models
+@inject NavigationManager Nav
+
+<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Size="md" ShowHeader="false" ShowFooter="false">
+    <BodyContent>
+        <div class="modal-body-pad text-center">
+            <div class="warning-icon-large">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            </div>
+            <span class="label-system-warning">PERINGATAN SISTEM</span>
+            <h2 class="auto-release-title">Pemesanan Otomatis Dilepas</h2>
+            
+            <div class="badge-no-show">
+                <div class="status-dot-red"></div>
+                Tidak Hadir
+            </div>
+
+            <p class="auto-release-desc">
+                Pemesanan Anda untuk <strong>@RoomName</strong> telah dibatalkan secara otomatis karena batas waktu konfirmasi kehadiran telah berakhir. Ruangan kini tersedia untuk pengguna lain.
+            </p>
+
+            <div class="key-value-box">
+                <div class="kv-row">
+                    <span class="kv-key">Ruangan</span>
+                    <span class="kv-value">@RoomName</span>
+                </div>
+                <div class="kv-row">
+                    <span class="kv-key">Waktu Awal</span>
+                    <span class="kv-value">@Time</span>
+                </div>
+                <div class="kv-row">
+                    <span class="kv-key">Tanggal</span>
+                    <span class="kv-value">Hari ini, @Date</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer-2btn">
+            <button class="btn-outline-pill" style="width: 100%;" @onclick="GoToHistory">Lihat Riwayat</button>
+        </div>
+    </BodyContent>
+</AppModal>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public string RoomName { get; set; } = "Alpha Boardroom";
+    [Parameter] public string Time { get; set; } = "09:00 - 11:30";
+    [Parameter] public string Date { get; set; } = "12 Mei 2024";
+
+    private async Task HandleVisibleChanged(bool val)
+    {
+        Visible = val;
+        await VisibleChanged.InvokeAsync(val);
+    }
+
+    private void GoToHistory()
+    {
+        Nav.NavigateTo("/history");
+    }
+
+    private void NewBooking()
+    {
+        Nav.NavigateTo("/bookings");
+    }
+}

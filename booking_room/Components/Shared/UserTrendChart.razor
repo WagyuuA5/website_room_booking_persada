@@ -1,0 +1,634 @@
+@namespace booking_room.Components.Shared
+@using System.Globalization
+@using ApexCharts
+@inject booking_room.Services.IToastService ToastService
+
+<div class="user-trend-card">
+    <div class="user-trend-header">
+        <div>
+            <h3 class="trend-title">Tren Pemesanan Ruangan Saya</h3>
+            <p class="trend-subtitle">Statistik frekuensi dan utilisasi reservasi ruangan kerja Anda</p>
+        </div>
+        <div class="trend-header-actions">
+            <div class="chart-period-toggle">
+                <button type="button" class="@(_selectedPeriod == "minggu" ? "active" : "")" @onclick='() => ChangePeriod("minggu")'>Mingguan</button>
+                <button type="button" class="@(_selectedPeriod == "bulan" ? "active" : "")" @onclick='() => ChangePeriod("bulan")'>Bulanan</button>
+                <button type="button" class="@(_selectedPeriod == "tahun" ? "active" : "")" @onclick='() => ChangePeriod("tahun")'>Tahunan</button>
+            </div>
+            <button type="button" class="btn-export-pill" @onclick="ExportData">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span>Ekspor Data</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- KPI Summary Pills -->
+    <div class="trend-kpi-grid">
+        <div class="trend-kpi-item">
+            <span class="trend-kpi-label">TOTAL PEMESANAN</span>
+            <div class="trend-kpi-value-row">
+                <span class="trend-kpi-num">@TotalBookings Sesi</span>
+                <span class="trend-kpi-badge positive">+14% YoY</span>
+            </div>
+        </div>
+        <div class="trend-kpi-item">
+            <span class="trend-kpi-label">RATA-RATA @GetAverageLabel()</span>
+            <div class="trend-kpi-value-row">
+                <span class="trend-kpi-num">@AverageBookings Sesi</span>
+                <span class="trend-kpi-badge neutral">Stabil</span>
+            </div>
+        </div>
+        <div class="trend-kpi-item">
+            <span class="trend-kpi-label">RUANGAN FAVORIT</span>
+            <div class="trend-kpi-value-row">
+                <span class="trend-kpi-num-text">Focus Room Alpha</span>
+            </div>
+        </div>
+        <div class="trend-kpi-item">
+            <span class="trend-kpi-label">STATUS TINGKAT KEHADIRAN</span>
+            <div class="trend-kpi-value-row">
+                <span class="trend-kpi-num">96.4%</span>
+                <span class="trend-kpi-badge positive">Tepat Waktu</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="user-trend-chart-box clickable-chart" @onclick="OpenDetailModal" title="Klik area grafik untuk melihat breakdown detail" style="min-height: 250px;">
+        <ApexChart @key="_selectedPeriod"
+                   @ref="_chart"
+                   TItem="TrendPoint"
+                   Options="options"
+                   Height="@("250")">
+            
+            <ApexPointSeries TItem="TrendPoint"
+                             Items="_chartPoints"
+                             Name="Pemesanan"
+                             SeriesType="SeriesType.Area"
+                             XValue="e => e.Label"
+                             YAggregate="e => e.Sum(e => e.Value)" />
+        </ApexChart>
+    </div>
+</div>
+
+<!-- Modal Detail Tren Pemesanan (Case 8C) -->
+<AppModal Visible="@_showDetailModal"
+          VisibleChanged="@(v => _showDetailModal = v)"
+          Title="Detail Tren Pemesanan"
+          Subtitle="@($"Breakdown statistik reservasi periode {GetPeriodLabel()}")"
+          Size="md"
+          ShowHeader="true"
+          ShowFooter="true">
+    <IconContent>
+        <div class="modal-header-icon--warning" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #FFFBEB;">
+            <img src="/icon/Icon_clndr.svg" class="icon-sm" alt="" />
+        </div>
+    </IconContent>
+    <BodyContent>
+        <div class="trend-modal-content">
+            <div class="trend-modal-summary">
+                <div class="trend-summary-box">
+                    <span class="trend-box-label">Total Pemesanan</span>
+                    <span class="trend-box-val">@TotalBookings Sesi</span>
+                </div>
+                <div class="trend-summary-box">
+                    <span class="trend-box-label">Rata-rata</span>
+                    <span class="trend-box-val">@AverageBookings Sesi</span>
+                </div>
+                <div class="trend-summary-box">
+                    <span class="trend-box-label">Periode</span>
+                    <span class="trend-box-val">@GetPeriodLabel()</span>
+                </div>
+            </div>
+
+            <div class="trend-table-wrap">
+                <table class="trend-breakdown-table">
+                    <thead>
+                        <tr>
+                            <th>@GetTableColumnHeader()</th>
+                            <th>Jumlah Pemesanan</th>
+                            <th>Kontribusi</th>
+                            <th>Status Utilisasi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in _chartPoints)
+                        {
+                            var pct = TotalBookings > 0 ? (int)Math.Round((double)p.Value / TotalBookings * 100) : 0;
+                            <tr>
+                                <td><strong>@p.Label</strong></td>
+                                <td>@p.Value Sesi</td>
+                                <td>
+                                    <div class="trend-bar-track">
+                                        <div class="trend-bar-fill" style="width: @(Math.Max(pct, 5))%;"></div>
+                                        <span class="trend-bar-pct">@(pct)%</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (p.Value > AverageBookings * 1.3)
+                                    {
+                                        <span class="badge-status-high">Sangat Padat</span>
+                                    }
+                                    else if (p.Value < AverageBookings * 0.5)
+                                    {
+                                        <span class="badge-status-low">Renggang</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge-status-med">Optimal</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </BodyContent>
+    <FooterContent>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; width: 100%;">
+            <AnimatedButton Text="Tutup" Variant="secondary" OnClick="() => _showDetailModal = false" />
+            <AnimatedButton Text="Ekspor Data" Variant="secondary" IconPath="/icon/icon_download.svg" OnClick="ExportData" />
+        </div>
+    </FooterContent>
+</AppModal>
+
+<style>
+    .user-trend-card {
+        background: var(--color-white, #FFFFFF);
+        border: 1px solid var(--color-neutral-200, #E8E8ED);
+        border-radius: var(--radius-md, 14px);
+        padding: 24px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.02);
+        margin-top: 20px;
+    }
+    body.dark-mode .user-trend-card {
+        background: var(--color-neutral-900, #1D1D1F);
+        border-color: rgba(255,255,255,0.1);
+    }
+
+    .user-trend-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+    .trend-title {
+        font-size: var(--fs-h3, 20px);
+        font-weight: var(--fw-bold, 700);
+        color: var(--color-navy, #0F172A);
+        margin: 0 0 4px 0;
+    }
+    body.dark-mode .trend-title { color: var(--color-white, #FFFFFF); }
+
+    .trend-subtitle {
+        font-size: var(--fs-sm, 14px);
+        color: var(--color-neutral-600, #6E6E73);
+        margin: 0;
+    }
+
+    .trend-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .trend-period-tabs,
+    .chart-period-toggle {
+        display: flex;
+        background: #F1F5F9;
+        border-radius: 999px;
+        padding: 3px;
+        gap: 2px;
+    }
+    body.dark-mode .trend-period-tabs,
+    body.dark-mode .chart-period-toggle { background: #1E293B; }
+
+    .trend-tab-btn,
+    .chart-period-toggle button {
+        border: none;
+        background: transparent;
+        padding: 5px 14px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748B;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .trend-tab-btn.active,
+    .chart-period-toggle button.active {
+        background: #FFFFFF;
+        color: #0F172A;
+        font-weight: 700;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+    body.dark-mode .trend-tab-btn.active,
+    body.dark-mode .chart-period-toggle button.active {
+        background: #334155;
+        color: #F8FAFC;
+    }
+
+    /* Case 5: Chart Typography & Axis/Tooltip Styling */
+    .chart-axis-label,
+    .apexcharts-text {
+        font-family: var(--font-family-base, 'Plus Jakarta Sans', sans-serif) !important;
+        font-size: 11px !important;
+        font-weight: 600 !important;
+    }
+    .apexcharts-tooltip {
+        font-family: var(--font-family-base, 'Plus Jakarta Sans', sans-serif) !important;
+        border-radius: 8px !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
+    }
+    .chart-tooltip,
+    .chart-tooltip-label,
+    .chart-tooltip-value {
+        font-family: var(--font-family-base, 'Plus Jakarta Sans', sans-serif) !important;
+    }
+
+    .btn-export-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        background: #EFF6FF;
+        color: #2563EB;
+        border: 1px solid #BFDBFE;
+        border-radius: var(--radius-full, 999px);
+        font-size: var(--fs-xs, 12px);
+        font-weight: var(--fw-semibold, 600);
+        cursor: pointer;
+        transition: var(--motion-fast);
+    }
+    .btn-export-pill:hover {
+        background: #DBEAFE;
+    }
+    body.dark-mode .btn-export-pill {
+        background: rgba(37, 99, 235, 0.2);
+        color: #93C5FD;
+        border-color: rgba(147, 197, 253, 0.3);
+    }
+
+    /* KPI Summary Pills */
+    .trend-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 14px;
+        margin-bottom: 24px;
+    }
+    .trend-kpi-item {
+        background: #F8FAFC;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 12px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    body.dark-mode .trend-kpi-item {
+        background: rgba(15, 23, 42, 0.4);
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+    .trend-kpi-label {
+        font-size: 10.5px;
+        font-weight: 700;
+        color: #64748B;
+        letter-spacing: 0.04em;
+    }
+    body.dark-mode .trend-kpi-label { color: #94A3B8; }
+    .trend-kpi-value-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .trend-kpi-num {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #0F172A;
+    }
+    body.dark-mode .trend-kpi-num { color: #F8FAFC; }
+    .trend-kpi-num-text {
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: #1F5D9A;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    body.dark-mode .trend-kpi-num-text { color: #60A5FA; }
+    .trend-kpi-badge {
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 999px;
+    }
+    .trend-kpi-badge.positive {
+        background: #DCFCE7;
+        color: #166534;
+    }
+    .trend-kpi-badge.neutral {
+        background: #E2E8F0;
+        color: #475569;
+    }
+
+    .user-trend-chart-box {
+        position: relative;
+        width: 100%;
+    }
+
+    .clickable-chart {
+        cursor: pointer;
+        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, filter 0.2s ease;
+        border-radius: 12px;
+        padding: 6px;
+    }
+    .clickable-chart:hover {
+        opacity: 0.96;
+        filter: drop-shadow(0 4px 12px rgba(245, 166, 35, 0.15));
+        background: rgba(245, 166, 35, 0.02);
+    }
+
+    /* Modal Breakdown Styles */
+    .trend-modal-content {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+    .trend-modal-summary {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+    .trend-summary-box {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 10px;
+        padding: 10px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    body.dark-mode .trend-summary-box {
+        background: rgba(15, 23, 42, 0.5);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    .trend-box-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: #64748B;
+    }
+    .trend-box-val {
+        font-size: 14px;
+        font-weight: 700;
+        color: #0F172A;
+    }
+    body.dark-mode .trend-box-val { color: #F8FAFC; }
+
+    .trend-table-wrap {
+        overflow-x: auto;
+        border: 1px solid #E2E8F0;
+        border-radius: 10px;
+    }
+    body.dark-mode .trend-table-wrap {
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    .trend-breakdown-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        text-align: left;
+    }
+    .trend-breakdown-table th {
+        background: #F1F5F9;
+        padding: 10px 14px;
+        font-weight: 700;
+        color: #475569;
+        border-bottom: 1px solid #E2E8F0;
+    }
+    body.dark-mode .trend-breakdown-table th {
+        background: #1E293B;
+        color: #CBD5E1;
+        border-bottom-color: rgba(255, 255, 255, 0.1);
+    }
+    .trend-breakdown-table td {
+        padding: 10px 14px;
+        border-bottom: 1px solid #F1F5F9;
+        color: #334155;
+    }
+    .trend-breakdown-table tbody tr {
+        transition: background-color 150ms ease-in-out;
+    }
+    .trend-breakdown-table tbody tr:hover {
+        background-color: #F8FAFC;
+    }
+    body.dark-mode .trend-breakdown-table td {
+        border-bottom-color: rgba(255, 255, 255, 0.05);
+        color: #E2E8F0;
+    }
+    body.dark-mode .trend-breakdown-table tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.04);
+    }
+    .trend-bar-track {
+        background: #E2E8F0;
+        border-radius: 999px;
+        height: 8px;
+        width: 100px;
+        display: inline-block;
+        position: relative;
+        vertical-align: middle;
+        margin-right: 8px;
+        overflow: hidden;
+    }
+    body.dark-mode .trend-bar-track {
+        background: rgba(255, 255, 255, 0.15);
+    }
+    .trend-bar-fill {
+        background: #F5A623;
+        height: 100%;
+        border-radius: 999px;
+    }
+    .trend-bar-pct {
+        font-size: 11px;
+        font-weight: 600;
+        color: #64748B;
+    }
+    .badge-status-high {
+        background: #FEE2E2;
+        color: #DC2626;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+    .badge-status-med {
+        background: #DCFCE7;
+        color: #16A34A;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+    .badge-status-low {
+        background: #EFF6FF;
+        color: #2563EB;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+</style>
+
+@code {
+    private record TrendPoint(int Order, string Label, int Value);
+    private ApexChart<TrendPoint>? _chart;
+    private List<TrendPoint> _chartPoints = new();
+    private ApexChartOptions<TrendPoint> options = new();
+    private string _selectedPeriod = "bulan";
+    private bool _showDetailModal = false;
+
+    private int TotalBookings => _chartPoints.Sum(p => p.Value);
+    private double AverageBookings => _chartPoints.Any() ? Math.Round((double)TotalBookings / _chartPoints.Count, 1) : 0;
+
+    protected override void OnInitialized()
+    {
+        SetPeriod("bulan");
+    }
+
+    private async Task ChangePeriod(string period)
+    {
+        SetPeriod(period);
+        StateHasChanged();
+        if (_chart != null)
+        {
+            await _chart.RenderAsync();
+        }
+    }
+
+    private void OpenDetailModal()
+    {
+        _showDetailModal = true;
+    }
+
+    private string GetAverageLabel() => _selectedPeriod switch
+    {
+        "minggu" => "HARIAN",
+        "bulan" => "MINGGUAN",
+        "tahun" => "BULANAN",
+        _ => "BULANAN"
+    };
+
+    private string GetPeriodLabel() => _selectedPeriod switch
+    {
+        "minggu" => "Minggu Ini (Per-Hari)",
+        "bulan" => "Bulan Ini (Per-Minggu)",
+        "tahun" => $"Tahun {DateTime.Now.Year} (Per-Bulan)",
+        _ => "Bulan Ini (Per-Minggu)"
+    };
+
+    private string GetTableColumnHeader() => _selectedPeriod switch
+    {
+        "minggu" => "Hari",
+        "bulan" => "Minggu Ke",
+        "tahun" => "Bulan",
+        _ => "Periode"
+    };
+
+    private void SetPeriod(string period)
+    {
+        _selectedPeriod = period;
+        List<TrendPoint> rawData;
+
+        if (period == "minggu")
+        {
+            rawData = new List<TrendPoint>
+            {
+                new TrendPoint(1, "Senin", 2),
+                new TrendPoint(2, "Selasa", 4),
+                new TrendPoint(3, "Rabu", 3),
+                new TrendPoint(4, "Kamis", 5),
+                new TrendPoint(5, "Jumat", 4),
+                new TrendPoint(6, "Sabtu", 1),
+                new TrendPoint(7, "Minggu", 0)
+            };
+        }
+        else if (period == "tahun")
+        {
+            rawData = new List<TrendPoint>
+            {
+                new TrendPoint(1, "Jan", 6),
+                new TrendPoint(2, "Feb", 5),
+                new TrendPoint(3, "Mar", 9),
+                new TrendPoint(4, "Apr", 7),
+                new TrendPoint(5, "Mei", 4),
+                new TrendPoint(6, "Jun", 8),
+                new TrendPoint(7, "Jul", 5),
+                new TrendPoint(8, "Ags", 12),
+                new TrendPoint(9, "Sep", 9),
+                new TrendPoint(10, "Okt", 15),
+                new TrendPoint(11, "Nov", 11),
+                new TrendPoint(12, "Des", 8)
+            };
+        }
+        else // "bulan"
+        {
+            rawData = new List<TrendPoint>
+            {
+                new TrendPoint(1, "Minggu 1", 6),
+                new TrendPoint(2, "Minggu 2", 9),
+                new TrendPoint(3, "Minggu 3", 7),
+                new TrendPoint(4, "Minggu 4", 11)
+            };
+        }
+
+        // KRONOLOGIS PALING LAMA KE PALING BARU (kiri ke kanan berdasarkan Order)
+        _chartPoints = rawData.OrderBy(x => x.Order).ToList();
+        Console.WriteLine($"[UserTrendChart] Period: {period} | Points: {string.Join(" -> ", _chartPoints.Select(p => $"{p.Label}:{p.Value}"))}");
+
+        options = new ApexChartOptions<TrendPoint>
+        {
+            Chart = new Chart
+            {
+                Toolbar = new Toolbar { Show = false },
+                Animations = new Animations { Enabled = true, Easing = Easing.Easeinout, Speed = 800 },
+                FontFamily = "var(--font-family-base, 'Plus Jakarta Sans', sans-serif)"
+            },
+            Colors = new List<string> { "#F5A623" },
+            Stroke = new Stroke { Curve = Curve.Smooth, Width = 3 },
+            DataLabels = new DataLabels { Enabled = false },
+            Xaxis = new XAxis 
+            { 
+                Labels = new XAxisLabels 
+                { 
+                    Style = new AxisLabelStyle { Colors = "#86868B", FontWeight = "600" } 
+                } 
+            },
+            Grid = new Grid { StrokeDashArray = 4, BorderColor = "#E8E8ED" },
+            Fill = new Fill 
+            { 
+                Type = new List<FillType> { FillType.Gradient }, 
+                Gradient = new FillGradient 
+                { 
+                    ShadeIntensity = 1, 
+                    OpacityFrom = 0.35, 
+                    OpacityTo = 0, 
+                    Stops = new List<double> { 0, 100 } 
+                } 
+            },
+            Tooltip = new Tooltip
+            {
+                Theme = Mode.Dark
+            }
+        };
+    }
+
+    private void ExportData()
+    {
+        ToastService.Success("Ekspor Berhasil", "Data tren pemesanan berhasil diekspor.");
+    }
+}

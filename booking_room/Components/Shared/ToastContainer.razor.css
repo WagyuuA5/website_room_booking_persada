@@ -1,0 +1,97 @@
+.toast-container {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    pointer-events: none;
+}
+
+::deep .toast-item {
+    pointer-events: auto;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: var(--persada-white, #FFFFFF);
+    padding: 16px;
+    border-radius: var(--persada-border-radius-card, 16px);
+    box-shadow: var(--shadow-modal, 0 20px 60px rgba(0, 0, 0, 0.25));
+    border-left: 4px solid transparent;
+    min-width: 300px;
+    max-width: 400px;
+    animation: toastSlideInRight 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+::deep .toast-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 25px 65px rgba(0, 0, 0, 0.3);
+}
+
+::deep .toast-success { border-left-color: var(--persada-accent-green, #10B981); }
+::deep .toast-warning { border-left-color: var(--persada-accent-yellow, #F59E0B); }
+::deep .toast-info { border-left-color: var(--persada-accent-blue, #3B82F6); }
+::deep .toast-error { border-left-color: var(--persada-accent-red, #EF4444); }
+
+::deep .toast-success .toast-icon { color: var(--persada-accent-green, #10B981); }
+::deep .toast-warning .toast-icon { color: var(--persada-accent-yellow, #F59E0B); }
+::deep .toast-info .toast-icon { color: var(--persada-accent-blue, #3B82F6); }
+::deep .toast-error .toast-icon { color: var(--persada-accent-red, #EF4444); }
+
+::deep .toast-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+::deep .toast-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+::deep .toast-title {
+    font-weight: 700;
+    color: var(--persada-navy-900, #0A1930);
+    font-size: 0.95rem;
+}
+
+::deep .toast-message {
+    color: var(--persada-gray-500, #64748B);
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+::deep .toast-close {
+    background: transparent;
+    border: none;
+    color: var(--persada-gray-400, #94A3B8);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+    border-radius: 4px;
+}
+
+::deep .toast-close:hover {
+    color: var(--persada-navy-900, #0A1930);
+    background: var(--persada-gray-100, #F1F5F9);
+}
+
+@keyframes toastSlideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}

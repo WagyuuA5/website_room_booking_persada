@@ -1,0 +1,223 @@
+<div class="filter-popup">
+    @if (ShowHeader)
+    {
+        <div class="filter-header">
+            <h3>Filter Berdasarkan Status</h3>
+        </div>
+    }
+
+    <div class="filter-list">
+        <label class="filter-option @(_tempStatus == "Semua Status" ? "selected" : "")">
+            <input type="radio" name="statusFilter" value="Semua Status" checked="@(_tempStatus == "Semua Status")" @onchange='() => _tempStatus = "Semua Status"' class="d-none" />
+            <div class="filter-option-content">
+                <span class="filter-icon">≡</span>
+                <span class="filter-label">Semua Status</span>
+                @if (_tempStatus == "Semua Status")
+                {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="check-icon"><path d="M20 6L9 17l-5-5" stroke="#16305C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                }
+            </div>
+        </label>
+        
+        <label class="filter-option @(_tempStatus == "pending" ? "selected" : "")">
+            <input type="radio" name="statusFilter" value="pending" checked="@(_tempStatus == "pending")" @onchange='() => _tempStatus = "pending"' class="d-none" />
+            <div class="filter-option-content">
+                <span class="status-dot-sm bg-pending"></span>
+                <span class="filter-label">Menunggu</span>
+                @if (_tempStatus == "pending")
+                {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="check-icon"><path d="M20 6L9 17l-5-5" stroke="#16305C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                }
+            </div>
+        </label>
+
+        <label class="filter-option @(_tempStatus == "approved" ? "selected" : "")">
+            <input type="radio" name="statusFilter" value="approved" checked="@(_tempStatus == "approved")" @onchange='() => _tempStatus = "approved"' class="d-none" />
+            <div class="filter-option-content">
+                <span class="status-dot-sm bg-approved"></span>
+                <span class="filter-label">Disetujui</span>
+                @if (_tempStatus == "approved")
+                {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="check-icon"><path d="M20 6L9 17l-5-5" stroke="#16305C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                }
+            </div>
+        </label>
+
+        <label class="filter-option @(_tempStatus == "rejected" ? "selected" : "")">
+            <input type="radio" name="statusFilter" value="rejected" checked="@(_tempStatus == "rejected")" @onchange='() => _tempStatus = "rejected"' class="d-none" />
+            <div class="filter-option-content">
+                <span class="status-dot-sm bg-rejected"></span>
+                <span class="filter-label">Ditolak</span>
+                @if (_tempStatus == "rejected")
+                {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="check-icon"><path d="M20 6L9 17l-5-5" stroke="#16305C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                }
+            </div>
+        </label>
+
+        <label class="filter-option @(_tempStatus == "completed" ? "selected" : "")">
+            <input type="radio" name="statusFilter" value="completed" checked="@(_tempStatus == "completed")" @onchange='() => _tempStatus = "completed"' class="d-none" />
+            <div class="filter-option-content">
+                <span class="status-dot-sm bg-completed"></span>
+                <span class="filter-label">Selesai</span>
+                @if (_tempStatus == "completed")
+                {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="check-icon"><path d="M20 6L9 17l-5-5" stroke="#16305C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                }
+            </div>
+        </label>
+    </div>
+
+    <div class="filter-footer">
+        <button class="btn-apply-filter" @onclick="SubmitFilter">Terapkan Filter</button>
+        <button class="btn-reset-filter" @onclick="ResetFilter">Atur Ulang</button>
+    </div>
+</div>
+
+<style>
+    .filter-popup {
+        width: 340px;
+        background: #FFFFFF;
+        border-radius: 24px;
+        box-shadow: 0 4px 24px rgba(16,48,92,0.08);
+        border: 1px solid #E5E7EB;
+        font-family: 'Inter', sans-serif;
+        overflow: hidden;
+    }
+    .filter-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        border-bottom: 1px solid #F3F4F6;
+    }
+    .filter-header h3 {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 700;
+        color: #16305C;
+    }
+    .btn-close-sm {
+        background: none;
+        border: none;
+        color: #9CA3AF;
+        cursor: pointer;
+        padding: 4px;
+        display: flex;
+        border-radius: 50%;
+    }
+    .btn-close-sm:hover {
+        background-color: #F3F4F6;
+        color: #4B5563;
+    }
+    .filter-list {
+        padding: 12px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .filter-option {
+        cursor: pointer;
+        border-radius: 14px;
+        transition: background-color 0.2s;
+    }
+    .filter-option:hover {
+        background-color: #F9FAFB;
+    }
+    .filter-option.selected {
+        background-color: #EEF2FF;
+    }
+    .filter-option-content {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        position: relative;
+    }
+    .filter-icon {
+        color: #6B7280;
+        margin-right: 12px;
+        font-size: 16px;
+        width: 16px;
+        text-align: center;
+    }
+    .status-dot-sm {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 12px;
+        margin-left: 3px;
+    }
+    .bg-pending { background-color: #D97706; }
+    .bg-approved { background-color: #10B981; }
+    .bg-rejected { background-color: #EF4444; }
+    .bg-completed { background-color: #3B82F6; }
+    
+    .filter-label {
+        color: #374151;
+        font-size: 14px;
+        font-weight: 500;
+        flex-grow: 1;
+    }
+    .check-icon {
+        position: absolute;
+        right: 12px;
+    }
+    .filter-footer {
+        padding: 16px 20px 20px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .btn-apply-filter {
+        width: 100%;
+        background-color: #16305C;
+        color: white;
+        border: none;
+        border-radius: 999px;
+        padding: 12px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+    .btn-apply-filter:hover {
+        opacity: 0.9;
+    }
+    .btn-reset-filter {
+        width: 100%;
+        background: none;
+        border: none;
+        color: #16305C;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+    }
+    .btn-reset-filter:hover {
+        text-decoration: underline;
+    }
+    .d-none { display: none; }
+</style>
+
+@code {
+    [Parameter] public string CurrentStatus { get; set; } = "Semua Status";
+    [Parameter] public bool ShowHeader { get; set; } = false;
+    [Parameter] public EventCallback<string> OnApply { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private string _tempStatus = "Semua Status";
+
+    protected override void OnInitialized()
+    {
+        _tempStatus = CurrentStatus == "Semua Status" ? "Semua Status" : CurrentStatus;
+    }
+
+    private async Task SubmitFilter()
+    {
+        await OnApply.InvokeAsync(_tempStatus);
+    }
+
+    private void ResetFilter()
+    {
+        _tempStatus = "Semua Status";
+    }
+}

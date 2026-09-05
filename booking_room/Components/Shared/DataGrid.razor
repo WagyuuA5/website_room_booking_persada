@@ -1,0 +1,501 @@
+@typeparam TItem
+@inject booking_room.Services.DataExportService ExportService
+@inject IJSRuntime JS
+
+<div class="data-grid-container" style="--app-accent: var(--accent-color, #16305C); --app-accent-strong: var(--accent-strong, #0f1f3d);">
+    <div class="data-grid-toolbar">
+        <div class="toolbar-left">
+            @if (ShowSearch)
+            {
+                <div class="search-bar-grid">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.134 17 3 13.866 3 10C3 6.134 6.134 3 10 3C13.866 3 17 6.134 17 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <input type="text" placeholder="@SearchPlaceholder" @bind="SearchQuery" @bind:event="oninput" />
+                </div>
+            }
+        </div>
+        <div class="toolbar-right">
+            @ToolbarRightContent
+            @if (ShowExport)
+            {
+                <div class="export-dropdown">
+                    <button class="btn-toolbar-grid" @onclick="ToggleExportDropdown">
+                        Export <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    @if (isExportDropdownOpen)
+                    {
+                        <div class="export-menu" @onclick:stopPropagation="true">
+                            <div class="export-menu-header">Export CSV</div>
+                            <button class="export-menu-item" @onclick='() => ExportData("csv", "view")'>Tampilan Saat Ini</button>
+                            <button class="export-menu-item" @onclick='() => ExportData("csv", "selected")' disabled="@(!selectedItems.Any())">Baris Terpilih</button>
+                            <button class="export-menu-item" @onclick='() => ExportData("csv", "all")'>Semua Data</button>
+                            <div class="export-menu-header">Export Excel</div>
+                            <button class="export-menu-item" @onclick='() => ExportData("excel", "view")'>Tampilan Saat Ini</button>
+                            <button class="export-menu-item" @onclick='() => ExportData("excel", "selected")' disabled="@(!selectedItems.Any())">Baris Terpilih</button>
+                            <button class="export-menu-item" @onclick='() => ExportData("excel", "all")'>Semua Data</button>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    @if (EnableSelection)
+                    {
+                        <th class="selection-cell">
+                            <input type="checkbox" checked="@IsAllSelected" @onchange="ToggleSelectAll" />
+                        </th>
+                    }
+                    @foreach (var col in Columns)
+                    {
+                        <th style="text-align: @col.Align;" class="@(col.Sortable ? "sortable-header" : "")" @onclick="() => HandleSort(col)">
+                            <div class="header-content" style="justify-content: @(col.Align == "right" ? "flex-end" : "flex-start")">
+                                @col.Title
+                                @if (col.Sortable && currentSortColumn == col.PropertyName)
+                                {
+                                    <svg class="sort-icon @(sortAscending ? "asc" : "desc")" width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M7 15l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                }
+                            </div>
+                        </th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @if (IsLoading)
+                {
+                    <tr>
+                        <td colspan="@(Columns.Count + (EnableSelection ? 1 : 0))" class="text-center p-4">Loading...</td>
+                    </tr>
+                }
+                else if (!PagedData.Any())
+                {
+                    <tr>
+                        <td colspan="@(Columns.Count + (EnableSelection ? 1 : 0))" class="empty-row p-4 text-center">Tidak ada data ditemukan.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in PagedData)
+                    {
+                        <tr class="@(selectedItems.Contains(item) ? "selected-row" : "")" @onclick="() => HandleRowClick(item)">
+                            @if (EnableSelection)
+                            {
+                                <td class="selection-cell" @onclick:stopPropagation="true">
+                                    <input type="checkbox" checked="@selectedItems.Contains(item)" @onchange="(e) => ToggleRowSelection(item, e.Value)" />
+                                </td>
+                            }
+                            @foreach (var col in Columns)
+                            {
+                                <td style="text-align: @col.Align;">
+                                    @if (col.CellTemplate != null)
+                                    {
+                                        @col.CellTemplate(item)
+                                    }
+                                    else if (col.ValueFunc != null)
+                                    {
+                                        @col.ValueFunc(item)?.ToString()
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (EnablePagination && TotalPages > 1)
+    {
+        <div class="pagination-bar-grid">
+            <span class="page-info">Menampilkan @((CurrentPage - 1) * PageSize + 1)–@Math.Min(CurrentPage * PageSize, ProcessedData.Count()) dari @ProcessedData.Count()</span>
+            <div class="page-buttons">
+                <button class="page-btn" disabled="@(CurrentPage <= 1)" @onclick="PrevPage">←</button>
+                @for (int i = 1; i <= TotalPages; i++)
+                {
+                    var pg = i;
+                    if (pg == 1 || pg == TotalPages || Math.Abs(pg - CurrentPage) <= 1)
+                    {
+                        <button class="page-btn @(pg == CurrentPage ? "active" : "")" @onclick="() => GoToPage(pg)">@pg</button>
+                    }
+                    else if (pg == 2 && CurrentPage > 3 || pg == TotalPages - 1 && CurrentPage < TotalPages - 2)
+                    {
+                        <span class="page-ellipsis">...</span>
+                    }
+                }
+                <button class="page-btn" disabled="@(CurrentPage >= TotalPages)" @onclick="NextPage">→</button>
+            </div>
+        </div>
+    }
+</div>
+
+@if (isExportDropdownOpen)
+{
+    <div class="overlay-transparent" @onclick="CloseExportDropdown"></div>
+}
+
+<style>
+    .data-grid-container {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        background: var(--bg-surface, #ffffff);
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        border: 1px solid var(--border-color, #e2e8f0);
+        overflow: hidden;
+    }
+    .data-grid-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px;
+        border-bottom: 1px solid var(--border-color, #e2e8f0);
+        background: var(--bg-surface, #ffffff);
+    }
+    .toolbar-left, .toolbar-right {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+    .search-bar-grid {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    .search-bar-grid svg {
+        position: absolute;
+        left: 12px;
+        color: #94a3b8;
+    }
+    .search-bar-grid input {
+        padding: 8px 12px 8px 36px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        font-size: 14px;
+        width: 260px;
+        transition: border-color 0.2s;
+        background: transparent;
+        color: inherit;
+    }
+    .search-bar-grid input:focus {
+        outline: none;
+        border-color: var(--app-accent);
+    }
+    .btn-toolbar-grid {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        background: transparent;
+        color: inherit;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .btn-toolbar-grid:hover {
+        background: var(--bg-hover, #f8fafc);
+        border-color: #94a3b8;
+    }
+    .export-dropdown {
+        position: relative;
+    }
+    .export-menu {
+        position: absolute;
+        right: 0;
+        top: calc(100% + 4px);
+        background: var(--bg-surface, #ffffff);
+        border: 1px solid var(--border-color, #e2e8f0);
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        width: 200px;
+        z-index: 100;
+        padding: 8px 0;
+    }
+    .export-menu-header {
+        padding: 8px 16px 4px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .export-menu-item {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 8px 16px;
+        background: none;
+        border: none;
+        font-size: 14px;
+        color: var(--text-main, #334155);
+        cursor: pointer;
+    }
+    .export-menu-item:hover:not(:disabled) {
+        background: var(--bg-hover, #f1f5f9);
+        color: var(--app-accent);
+    }
+    .export-menu-item:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .overlay-transparent {
+        position: fixed;
+        inset: 0;
+        z-index: 99;
+    }
+    
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+    }
+    .styled-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+    .styled-table thead tr {
+        background-color: var(--bg-hover, #f8fafc);
+        border-bottom: 2px solid var(--border-color, #e2e8f0);
+    }
+    .styled-table th {
+        padding: 12px 16px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        white-space: nowrap;
+    }
+    .styled-table td {
+        padding: 16px;
+        border-bottom: 1px solid var(--border-color, #f1f5f9);
+        vertical-align: middle;
+        font-size: 14px;
+        color: var(--text-main, #334155);
+    }
+    .styled-table tbody tr:hover {
+        background-color: var(--bg-hover, #f8fafc);
+    }
+    .styled-table tbody tr.selected-row {
+        background-color: var(--app-accent)10; /* Adds 10% opacity in theory, but better to use a solid color or rgb */
+    }
+    .sortable-header {
+        cursor: pointer;
+        user-select: none;
+    }
+    .sortable-header:hover {
+        color: var(--app-accent);
+    }
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .sort-icon {
+        transition: transform 0.2s;
+    }
+    .sort-icon.desc {
+        transform: rotate(180deg);
+    }
+    .selection-cell {
+        width: 48px;
+        text-align: center;
+    }
+    
+    .pagination-bar-grid {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px;
+        background: var(--bg-surface, #ffffff);
+    }
+    .page-buttons {
+        display: flex;
+        gap: 4px;
+    }
+    .page-btn {
+        padding: 6px 12px;
+        border: 1px solid var(--border-color, #e2e8f0);
+        background: var(--bg-surface, #ffffff);
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        color: inherit;
+    }
+    .page-btn:hover:not(:disabled):not(.active) {
+        background: var(--bg-hover, #f1f5f9);
+    }
+    .page-btn.active {
+        background: var(--app-accent);
+        color: #ffffff;
+        border-color: var(--app-accent);
+    }
+    .page-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .page-ellipsis {
+        padding: 6px 4px;
+        color: #94a3b8;
+    }
+</style>
+
+@code {
+    [Parameter] public IEnumerable<TItem> Data { get; set; } = Array.Empty<TItem>();
+    [Parameter] public List<GridColumn<TItem>> Columns { get; set; } = new();
+    [Parameter] public bool IsLoading { get; set; } = false;
+    [Parameter] public bool EnableSelection { get; set; } = true;
+    [Parameter] public bool ShowExport { get; set; } = true;
+    [Parameter] public bool ShowSearch { get; set; } = true;
+    [Parameter] public string SearchPlaceholder { get; set; } = "Cari...";
+    [Parameter] public string FileNamePrefix { get; set; } = "export";
+    [Parameter] public bool EnablePagination { get; set; } = true;
+    [Parameter] public int PageSize { get; set; } = 10;
+    [Parameter] public RenderFragment? ToolbarRightContent { get; set; }
+    [Parameter] public EventCallback<TItem> OnRowClick { get; set; }
+
+    private string _searchQuery = "";
+    private string SearchQuery
+    {
+        get => _searchQuery;
+        set
+        {
+            if (_searchQuery != value)
+            {
+                _searchQuery = value;
+                CurrentPage = 1;
+            }
+        }
+    }
+
+    private string currentSortColumn = "";
+    private bool sortAscending = true;
+    private HashSet<TItem> selectedItems = new();
+    private bool isExportDropdownOpen = false;
+    private int CurrentPage = 1;
+
+    private IEnumerable<TItem> ProcessedData
+    {
+        get
+        {
+            var query = Data;
+
+            // Simple search across all columns that have ValueFunc
+            if (!string.IsNullOrWhiteSpace(SearchQuery))
+            {
+                var q = SearchQuery.ToLower();
+                query = query.Where(item => 
+                    Columns.Any(c => c.ValueFunc != null && c.ValueFunc(item)?.ToString()?.ToLower().Contains(q) == true)
+                );
+            }
+
+            if (!string.IsNullOrEmpty(currentSortColumn))
+            {
+                var col = Columns.FirstOrDefault(c => c.PropertyName == currentSortColumn);
+                if (col != null && col.ValueFunc != null)
+                {
+                    if (sortAscending)
+                        query = query.OrderBy(item => col.ValueFunc(item));
+                    else
+                        query = query.OrderByDescending(item => col.ValueFunc(item));
+                }
+            }
+
+            return query.ToList();
+        }
+    }
+
+    private IEnumerable<TItem> PagedData => EnablePagination ? ProcessedData.Skip((CurrentPage - 1) * PageSize).Take(PageSize) : ProcessedData;
+    private int TotalPages => EnablePagination ? Math.Max(1, (int)Math.Ceiling((double)ProcessedData.Count() / PageSize)) : 1;
+
+    private bool IsAllSelected => PagedData.Any() && PagedData.All(i => selectedItems.Contains(i));
+
+    private void ToggleSelectAll(ChangeEventArgs e)
+    {
+        bool isChecked = (bool)(e.Value ?? false);
+        if (isChecked)
+        {
+            foreach (var item in PagedData) selectedItems.Add(item);
+        }
+        else
+        {
+            foreach (var item in PagedData) selectedItems.Remove(item);
+        }
+    }
+
+    private void ToggleRowSelection(TItem item, object? checkedValue)
+    {
+        bool isChecked = (bool)(checkedValue ?? false);
+        if (isChecked)
+            selectedItems.Add(item);
+        else
+            selectedItems.Remove(item);
+    }
+
+    private void HandleSort(GridColumn<TItem> col)
+    {
+        if (!col.Sortable) return;
+
+        if (currentSortColumn == col.PropertyName)
+        {
+            sortAscending = !sortAscending;
+        }
+        else
+        {
+            currentSortColumn = col.PropertyName;
+            sortAscending = true;
+        }
+    }
+
+    private void PrevPage() { if (CurrentPage > 1) CurrentPage--; }
+    private void NextPage() { if (CurrentPage < TotalPages) CurrentPage++; }
+    private void GoToPage(int page) { CurrentPage = page; }
+
+    private async Task HandleRowClick(TItem item)
+    {
+        if (OnRowClick.HasDelegate)
+        {
+            await OnRowClick.InvokeAsync(item);
+        }
+    }
+
+    private void ToggleExportDropdown() => isExportDropdownOpen = !isExportDropdownOpen;
+    private void CloseExportDropdown() => isExportDropdownOpen = false;
+
+    private async Task ExportData(string format, string mode)
+    {
+        CloseExportDropdown();
+        
+        IEnumerable<TItem> dataToExport = mode switch
+        {
+            "selected" => selectedItems,
+            "all" => Data,
+            _ => ProcessedData
+        };
+
+        if (!dataToExport.Any()) return;
+
+        var timestamp = DateTime.Now.ToString("dd-MM-yyyy");
+        string fileName = $"{FileNamePrefix}_{timestamp}";
+        byte[] bytes;
+
+        if (format == "csv")
+        {
+            bytes = ExportService.ExportToCsv(dataToExport);
+            fileName += ".csv";
+        }
+        else
+        {
+            bytes = ExportService.ExportToExcel(dataToExport, "Data");
+            fileName += ".xlsx";
+        }
+
+        await JS.InvokeVoidAsync("triggerFileDownload", fileName, bytes);
+    }
+}

@@ -1,0 +1,240 @@
+@namespace booking_room.Components.Shared
+@using booking_room.Services
+@inject IJSRuntime JS
+@inject IModalService ModalService
+
+@if (Visible)
+{
+    <div class="modal-overlay @OverlayClass @(IsSolidCard ? "solid-card-overlay" : "")" @onclick="HandleBackdropClick">
+        <div class="modal-content glass-surface @SizeClass @ContentClass @(IsSolidCard ? "solid-card tone-dark" : "")" @onclick:stopPropagation="true" role="dialog" aria-modal="true">
+            @if (HeaderContent != null && !IsSolidCard)
+            {
+                <div class="modal-base-header @HeaderClass">
+                    @HeaderContent
+                </div>
+            }
+
+            <div class="modal-base-body @BodyClass">
+                @if (ChildContent != null)
+                {
+                    @ChildContent
+                }
+            </div>
+
+            @if (!IsSolidCard && (FooterContent != null || ShowCloseButton))
+            {
+                <div class="modal-base-footer @FooterClass">
+                    @if (FooterContent != null)
+                    {
+                        @FooterContent
+                    }
+                    else if (ShowCloseButton)
+                    {
+                        <button class="btn-modal-outline" style="padding: 10px 24px; border-radius: 999px; font-weight: 600; cursor: pointer; border: 1px solid #CBD5E1; background: transparent; color: #475569;" @onclick="CloseAsync">
+                            Tutup
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<style>
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(15, 23, 42, 0.55);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: var(--layer-z-index, 1050);
+        padding: 16px;
+        box-sizing: border-box;
+        overflow: hidden;
+        animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .modal-content {
+        position: relative;
+        background: var(--surface-card, #FFFFFF);
+        -webkit-backdrop-filter: blur(var(--glass-blur, 20px)) saturate(var(--glass-saturate, 160%));
+        backdrop-filter: blur(var(--glass-blur, 20px)) saturate(var(--glass-saturate, 160%));
+        border: 1px solid var(--glass-border-light, rgba(255, 255, 255, 0.5));
+        border-radius: var(--persada-border-radius-card, 20px);
+        box-shadow: var(--glass-shadow, 0 8px 32px rgba(15, 23, 42, 0.18));
+        width: min(92vw, 560px);
+        max-height: 85vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        margin: auto;
+        animation: modalScaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Size variants */
+    .modal-content.modal-sm { width: min(92vw, 420px); max-width: 420px; }
+    .modal-content.modal-md { width: min(92vw, 560px); max-width: 560px; }
+    .modal-content.modal-lg { width: min(92vw, 760px); max-width: 760px; }
+    .modal-content.modal-xl { width: min(92vw, 960px); max-width: 960px; }
+
+    /* Solid card - single dark glass layer */
+    .modal-content.solid-card {
+        background: var(--glass-bg-dark, rgba(11, 26, 61, 0.9)) !important;
+        -webkit-backdrop-filter: blur(var(--glass-blur, 20px)) saturate(var(--glass-saturate, 160%)) !important;
+        backdrop-filter: blur(var(--glass-blur, 20px)) saturate(var(--glass-saturate, 160%)) !important;
+        border: 1px solid var(--glass-border-dark, rgba(255, 255, 255, 0.14)) !important;
+        box-shadow: var(--glass-shadow-dark, 0 8px 32px rgba(0, 0, 0, 0.35)) !important;
+        color: #FFFFFF !important;
+        border-radius: var(--persada-border-radius-card, 20px) !important;
+        width: min(92vw, 400px) !important;
+        max-width: 400px !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+    }
+
+    .modal-base-close-btn {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        z-index: 20;
+        background: transparent;
+        border: none;
+        padding: 6px;
+        color: #9CA3AF;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .modal-base-close-btn:hover {
+        background-color: #F3F4F6;
+        color: var(--persada-navy-900, #0F1F3D);
+    }
+
+    .modal-base-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        padding: 20px 24px 16px;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+        flex-shrink: 0;
+    }
+
+    .modal-base-body {
+        flex: 1 1 auto;
+        padding: 24px;
+    }
+
+    .modal-content.solid-card .modal-base-body {
+        padding: 0 !important;
+    }
+
+    .modal-base-footer {
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        padding: 16px 24px;
+        border-top: 1px solid rgba(226, 232, 240, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 12px;
+        flex-shrink: 0;
+    }
+
+    @@keyframes modalFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @@keyframes modalScaleUp {
+        from {
+            opacity: 0;
+            transform: scale(0.96) translateY(8px);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    @@media (max-width: 640px) {
+        .modal-overlay {
+            padding: 8px;
+        }
+        .modal-content {
+            max-height: 94vh;
+            border-radius: 20px;
+        }
+        .modal-base-header {
+            padding: 16px 20px 12px;
+        }
+        .modal-base-body {
+            padding: 16px 20px;
+        }
+        .modal-base-footer {
+            padding: 12px 20px;
+        }
+    }
+</style>
+
+@code {
+    [Parameter] public bool Visible { get; set; } = true;
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public string Size { get; set; } = "md"; // sm, md, lg, xl
+    [Parameter] public bool IsSolidCard { get; set; } = false;
+    [Parameter] public bool ShowCloseButton { get; set; } = false;
+    [Parameter] public bool CloseOnBackdropClick { get; set; } = true;
+
+    [Parameter] public string OverlayClass { get; set; } = "";
+    [Parameter] public string ContentClass { get; set; } = "";
+    [Parameter] public string HeaderClass { get; set; } = "";
+    [Parameter] public string BodyClass { get; set; } = "";
+    [Parameter] public string FooterClass { get; set; } = "";
+
+    [Parameter] public RenderFragment? HeaderContent { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? FooterContent { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private string SizeClass => Size switch
+    {
+        "sm" => "modal-sm",
+        "lg" => "modal-lg",
+        "xl" => "modal-xl",
+        _ => "modal-md"
+    };
+
+    private async Task HandleBackdropClick()
+    {
+        if (CloseOnBackdropClick)
+        {
+            await CloseAsync();
+        }
+    }
+
+    public async Task CloseAsync()
+    {
+        Visible = false;
+        await VisibleChanged.InvokeAsync(false);
+        if (OnClose.HasDelegate)
+        {
+            await OnClose.InvokeAsync();
+        }
+        await ModalService.CloseTopAsync(ModalResult.Cancel());
+    }
+}

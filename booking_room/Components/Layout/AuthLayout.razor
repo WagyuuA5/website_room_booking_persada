@@ -1,0 +1,67 @@
+@inherits LayoutComponentBase
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+@implements IDisposable
+
+@if (_isNavigating)
+{
+    <div class="top-progress-bar">
+        <div class="top-progress-bar-inner"></div>
+    </div>
+}
+
+<div class="auth-layout-wrapper">
+    @Body
+</div>
+
+<style>
+    .auth-layout-wrapper {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background-color: var(--persada-bg-neutral);
+    }
+</style>
+
+@code {
+    private bool _isNavigating = false;
+    private bool _disposed;
+    private CancellationTokenSource? _cts;
+
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        if (_disposed) return;
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _cts = new CancellationTokenSource();
+        var token = _cts.Token;
+
+        _isNavigating = true;
+        try
+        {
+            if (!_disposed) await InvokeAsync(StateHasChanged);
+            await Task.Delay(300, token);
+            if (!_disposed && !token.IsCancellationRequested)
+            {
+                _isNavigating = false;
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (OperationCanceledException) { }
+        catch (ObjectDisposedException) { }
+        catch (InvalidOperationException) { }
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        Navigation.LocationChanged -= OnLocationChanged;
+        _cts?.Cancel();
+        _cts?.Dispose();
+    }
+}

@@ -1,0 +1,1251 @@
+@page "/settings"
+@page "/pengaturan"
+@using booking_room.Components.Shared
+@using booking_room.Services
+@inject IJSRuntime JS
+@inject IToastService ToastService
+@implements IDisposable
+
+<PageTitle>Pengaturan — Persada Room Booking</PageTitle>
+
+<div class="content-fade-in settings-container">
+    <!-- Page Header -->
+    <div class="settings-page-header">
+        <div class="settings-title-group">
+            <h1 class="settings-main-title">Pengaturan</h1>
+            <p class="settings-main-subtitle">Kelola preferensi akun, keamanan personal, dan integrasi jadwal Anda.</p>
+        </div>
+    </div>
+
+    <!-- Main Two-Column Layout -->
+    <div class="settings-grid-layout">
+        <!-- Kolom Kiri: Sidebar Kategori Pengaturan -->
+        <aside class="settings-nav-card">
+            <!-- Kategori 1: KEAMANAN -->
+            <div class="nav-category-group">
+                <div class="nav-category-label">KEAMANAN</div>
+                <div class="nav-category-list">
+                    <button type="button" class="settings-nav-btn @(activeTab == "ubah-password" ? "active" : "")" @onclick='() => SelectTab("ubah-password")'>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        <span>Ubah Kata Sandi</span>
+                    </button>
+
+                    <button type="button" class="settings-nav-btn @(activeTab == "verifikasi-2fa" ? "active" : "")" @onclick='() => SelectTab("verifikasi-2fa")'>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            <polyline points="9 12 11 14 15 10"></polyline>
+                        </svg>
+                        <span>PIN / Verifikasi 2 Langkah</span>
+                    </button>
+
+                    <button type="button" class="settings-nav-btn @(activeTab == "sesi-perangkat" ? "active" : "")" @onclick='() => SelectTab("sesi-perangkat")'>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                            <line x1="8" y1="21" x2="16" y2="21"></line>
+                            <line x1="12" y1="17" x2="12" y2="21"></line>
+                        </svg>
+                        <span>Sesi & Perangkat Aktif</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="nav-category-divider"></div>
+
+            <!-- Kategori 2: PREFERENSI -->
+            <div class="nav-category-group">
+                <div class="nav-category-label">PREFERENSI</div>
+                <div class="nav-category-list">
+                    <button type="button" class="settings-nav-btn @(activeTab == "notifikasi" ? "active" : "")" @onclick='() => SelectTab("notifikasi")'>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                        <span>Notifikasi</span>
+                    </button>
+
+                    <button type="button" class="settings-nav-btn @(activeTab == "bahasa-zonawaktu" ? "active" : "")" @onclick='() => SelectTab("bahasa-zonawaktu")'>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                        </svg>
+                        <span>Bahasa & Zona Waktu</span>
+                    </button>
+
+                    <button type="button" class="settings-nav-btn @(activeTab == "integrasi" ? "active" : "")" @onclick='() => SelectTab("integrasi")'>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        <span>Integrasi Kalender & Email</span>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Kolom Kanan: Panel Konten Pengaturan -->
+        <main class="settings-content-card">
+            @if (_isLoadingTab)
+            {
+                <!-- Skeleton Transition (V46 standard) -->
+                <div class="settings-skeleton-box">
+                    <div class="skeleton-line skeleton-title"></div>
+                    <div class="skeleton-line skeleton-sub"></div>
+                    <div class="skeleton-card-block"></div>
+                    <div class="skeleton-card-block"></div>
+                    <div class="skeleton-card-block"></div>
+                </div>
+            }
+            else
+            {
+                @switch (activeTab)
+                {
+                    case "notifikasi":
+                        <!-- 1. NOTIFIKASI (Default) -->
+                        <div class="content-panel-fade">
+                            <div class="panel-header-row">
+                                <div>
+                                    <h2 class="panel-title">Pengaturan Notifikasi</h2>
+                                    <p class="panel-subtitle">Tentukan peristiwa penting apa saja yang ingin Anda terima pemberitahuannya.</p>
+                                </div>
+                                <span class="badge-accent-user">Preferensi Personal</span>
+                            </div>
+
+                            <div class="settings-items-list">
+                                <!-- 1. Konfirmasi Pemesanan -->
+                                <div class="toggle-card">
+                                    <div class="toggle-info">
+                                        <div class="toggle-name">Konfirmasi Pemesanan</div>
+                                        <div class="toggle-desc">Kirim pemberitahuan instan saat pengajuan reservasi ruangan Anda telah disetujui atau dikonfirmasi.</div>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" @bind="_notifBookingConfirmation" />
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+
+                                <!-- 2. Pengingat Jadwal H-1 -->
+                                <div class="toggle-card">
+                                    <div class="toggle-info">
+                                        <div class="toggle-name">Pengingat Jadwal H-1</div>
+                                        <div class="toggle-desc">Peringatan otomatis 24 jam sebelum waktu penggunaan ruangan agar agenda rapat Anda tetap terorganisir.</div>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" @bind="_notifReminderH1" />
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+
+                                <!-- 3. Pembatalan & Penolakan -->
+                                <div class="toggle-card">
+                                    <div class="toggle-info">
+                                        <div class="toggle-name">Pembatalan & Penolakan</div>
+                                        <div class="toggle-desc">Pemberitahuan cepat jika jadwal dibatalkan atau pengajuan pemesanan ditolak oleh pengelola gedung.</div>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" @bind="_notifCancellation" />
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+
+                                <!-- 4. Pembatalan Terlambat / Tidak Hadir -->
+                                <div class="toggle-card">
+                                    <div class="toggle-info">
+                                        <div class="toggle-name">Pembatalan Terlambat / Tidak Hadir</div>
+                                        <div class="toggle-desc">Peringatan sistem jika Anda belum melakukan konfirmasi kehadiran setelah 15 menit waktu rapat berjalan (Auto-release SOP).</div>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" @bind="_notifNoShowLate" />
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+
+                                <!-- 5. Notifikasi Dalam Aplikasi -->
+                                <div class="toggle-card">
+                                    <div class="toggle-info">
+                                        <div class="toggle-name">Notifikasi Dalam Aplikasi</div>
+                                        <div class="toggle-desc">Tampilkan tanda lonceng notifikasi dan popup peringatan langsung di dalam antarmuka sistem web.</div>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" @bind="_notifInApp" />
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="panel-action-footer">
+                                <button type="button" class="btn-save-user" @onclick="SaveNotificationSettings">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                    <span>Simpan Pengaturan Notifikasi</span>
+                                </button>
+                            </div>
+                        </div>
+                        break;
+
+                    case "ubah-password":
+                        <!-- 2. UBAH KATA SANDI -->
+                        <div class="content-panel-fade">
+                            <div class="panel-header-row">
+                                <div>
+                                    <h2 class="panel-title">Ubah Kata Sandi</h2>
+                                    <p class="panel-subtitle">Perbarui kata sandi Anda secara teratur untuk menjaga keamanan akun dan reservasi.</p>
+                                </div>
+                            </div>
+
+                            <div class="form-container-card">
+                                <div class="form-group-field">
+                                    <label>Kata Sandi Saat Ini <span class="text-danger">*</span></label>
+                                    <input type="password" @bind="_oldPassword" class="user-input-control" placeholder="Masukkan kata sandi lama Anda" />
+                                </div>
+
+                                <div class="form-group-field">
+                                    <label>Kata Sandi Baru <span class="text-danger">*</span></label>
+                                    <input type="password" @bind="_newPassword" class="user-input-control" placeholder="Minimal 8 karakter kombinasi huruf dan angka" />
+                                </div>
+
+                                <div class="form-group-field">
+                                    <label>Konfirmasi Kata Sandi Baru <span class="text-danger">*</span></label>
+                                    <input type="password" @bind="_confirmPassword" class="user-input-control" placeholder="Ketik ulang kata sandi baru" />
+                                </div>
+
+                                <div class="password-guideline-box">
+                                    <div class="guideline-header">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                        </svg>
+                                        <span>Ketentuan Keamanan Sandi:</span>
+                                    </div>
+                                    <ul class="guideline-list">
+                                        <li>Minimal 8 karakter.</li>
+                                        <li>Gunakan campuran huruf kapital, huruf kecil, dan angka.</li>
+                                        <li>Hindari menggunakan tanggal lahir atau nama yang mudah ditebak.</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="panel-action-footer">
+                                <button type="button" class="btn-save-user" @onclick="SavePasswordSettings">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                    <span>Simpan Kata Sandi Baru</span>
+                                </button>
+                            </div>
+                        </div>
+                        break;
+
+                    case "verifikasi-2fa":
+                        <!-- 3. PIN / VERIFIKASI 2 LANGKAH -->
+                        <div class="content-panel-fade">
+                            <div class="panel-header-row">
+                                <div>
+                                    <h2 class="panel-title">PIN / Verifikasi 2 Langkah</h2>
+                                    <p class="panel-subtitle">Tambahkan perlindungan ekstra saat melakukan pemesanan ruangan penting.</p>
+                                </div>
+                            </div>
+
+                            <div class="settings-items-list">
+                                <div class="toggle-card">
+                                    <div class="toggle-info">
+                                        <div class="toggle-name">Autentikasi Dua Faktor (2FA)</div>
+                                        <div class="toggle-desc">Wajibkan kode verifikasi setiap kali masuk dari perangkat atau peramban yang belum dikenali.</div>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" @bind="_is2faActive" />
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+
+                                <div class="toggle-card">
+                                    <div class="toggle-info">
+                                        <div class="toggle-name">PIN Reservasi Cepat</div>
+                                        <div class="toggle-desc">Konfirmasi reservasi ruangan eksekutif menggunakan 6-digit PIN keamanan pribadi tanpa login berulang.</div>
+                                    </div>
+                                    <button type="button" class="btn-outline-pill-sm" @onclick='() => ToastService.Info("Konfigurasi PIN", "Form konfigurasi PIN 6-digit siap digunakan.")'>
+                                        Atur PIN
+                                    </button>
+                                </div>
+
+                                <div class="toggle-card">
+                                    <div class="toggle-info">
+                                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 2px;">
+                                            <span class="toggle-name" style="margin: 0;">Kode Verifikasi via Email</span>
+                                            <span class="badge-email-verified">
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                                Terverifikasi
+                                            </span>
+                                        </div>
+                                        <div class="toggle-desc">whyuravi.2008@gmail.com • Menerima kode verifikasi login darurat saat autentikasi utama tidak tersedia.</div>
+                                    </div>
+                                    <span class="badge-status-pill-active">Aktif</span>
+                                </div>
+                            </div>
+
+                            <div class="panel-action-footer">
+                                <button type="button" class="btn-save-user" @onclick='() => ToastService.Success("Keamanan Diperbarui", "Pengaturan autentikasi 2 langkah berhasil disimpan.")'>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                    <span>Simpan Pengaturan Keamanan</span>
+                                </button>
+                            </div>
+                        </div>
+                        break;
+
+                    case "sesi-perangkat":
+                        <!-- 4. SESI & PERANGKAT AKTIF -->
+                        <div class="content-panel-fade">
+                            <div class="panel-header-row">
+                                <div>
+                                    <h2 class="panel-title">Sesi & Perangkat Aktif</h2>
+                                    <p class="panel-subtitle">Daftar perangkat yang saat ini memiliki akses aktif ke akun pemesanan ruangan Anda.</p>
+                                </div>
+                            </div>
+
+                            <div class="devices-list">
+                                @foreach (var dev in _devices)
+                                {
+                                    <div class="device-item @(dev.IsCurrent ? "current" : "") @(dev.IsRemoving ? "removing" : "")">
+                                        <div class="device-icon-box">
+                                            @if (dev.IconType == "mobile")
+                                            {
+                                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                                                    <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                                                </svg>
+                                            }
+                                            else
+                                            {
+                                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                                    <line x1="8" y1="21" x2="16" y2="21"></line>
+                                                    <line x1="12" y1="17" x2="12" y2="21"></line>
+                                                </svg>
+                                            }
+                                        </div>
+                                        <div class="device-details">
+                                            <div class="device-name-row">
+                                                <span class="device-name">@dev.Name</span>
+                                                @if (dev.IsCurrent)
+                                                {
+                                                    <span class="badge-this-device">Perangkat Ini</span>
+                                                }
+                                            </div>
+                                            <div class="device-meta">@dev.Meta</div>
+                                        </div>
+                                        @if (!dev.IsCurrent)
+                                        {
+                                            <button type="button" class="btn-logout-device" @onclick="() => LogoutDevice(dev)" disabled="@dev.IsRemoving">
+                                                Logout
+                                            </button>
+                                        }
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="panel-action-footer">
+                                <button type="button" class="btn-danger-outline" @onclick="LogoutAllOtherDevices">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                        <polyline points="16 17 21 12 16 7"></polyline>
+                                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                                    </svg>
+                                    <span>Keluar Dari Semua Sesi Lain</span>
+                                </button>
+                            </div>
+                        </div>
+                        break;
+
+                    case "bahasa-zonawaktu":
+                        <!-- 5. BAHASA & ZONA WAKTU -->
+                        <div class="content-panel-fade">
+                            <div class="panel-header-row">
+                                <div>
+                                    <h2 class="panel-title">Bahasa & Zona Waktu</h2>
+                                    <p class="panel-subtitle">Sesuaikan bahasa sistem dan pengaturan zona waktu untuk agenda reservasi ruangan Anda.</p>
+                                </div>
+                            </div>
+
+                            <div class="form-container-card">
+                                <div class="form-group-field">
+                                    <label>Bahasa Tampilan</label>
+                                    <select class="user-input-control" @bind="_selectedLanguage">
+                                        <option value="id">Bahasa Indonesia (ID)</option>
+                                        <option value="en">English (US)</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group-field">
+                                    <label>Zona Waktu Kerja</label>
+                                    <select class="user-input-control" @bind="_selectedTimezone">
+                                        <option value="WIB">Waktu Indonesia Barat (WIB) — UTC+07:00 (Jakarta, Medan, Surabaya)</option>
+                                        <option value="WITA">Waktu Indonesia Tengah (WITA) — UTC+08:00 (Denpasar, Makassar)</option>
+                                        <option value="WIT">Waktu Indonesia Timur (WIT) — UTC+09:00 (Jayapura, Ambon)</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group-field">
+                                    <label>Format Waktu Tampilan</label>
+                                    <div class="radio-pill-group">
+                                        <label class="radio-pill-label @(_timeFormat == "24" ? "selected" : "")">
+                                            <input type="radio" name="timeformat" value="24" checked="@(_timeFormat == "24")" @onchange='() => _timeFormat = "24"' />
+                                            <span>24 Jam (mis. 14:00 WIB)</span>
+                                        </label>
+                                        <label class="radio-pill-label @(_timeFormat == "12" ? "selected" : "")">
+                                            <input type="radio" name="timeformat" value="12" checked="@(_timeFormat == "12")" @onchange='() => _timeFormat = "12"' />
+                                            <span>12 Jam (mis. 02:00 PM)</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="panel-action-footer">
+                                <button type="button" class="btn-save-user" @onclick='() => ToastService.Success("Pengaturan Disimpan", "Preferensi bahasa dan zona waktu berhasil diperbarui.")'>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                    <span>Simpan Pengaturan Regional</span>
+                                </button>
+                            </div>
+                        </div>
+                        break;
+
+                    case "integrasi":
+                        <!-- 6. INTEGRASI KALENDER & EMAIL (Moved from Admin to User Preference) -->
+                        <div class="content-panel-fade">
+                            <div class="panel-header-row">
+                                <div>
+                                    <h2 class="panel-title">Integrasi Kalender & Email</h2>
+                                    <p class="panel-subtitle">Sinkronisasikan booking ruangan secara real-time dengan aplikasi kalender kerja pribadi Anda.</p>
+                                </div>
+                            </div>
+
+                            <div class="settings-items-list">
+                                <!-- Google Calendar -->
+                                <div class="integration-item-card">
+                                    <div class="integration-brand">
+                                        <div class="integration-logo-badge google">
+                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                                                <rect x="3" y="4" width="18" height="18" rx="2" stroke="#EA4335" stroke-width="2"></rect>
+                                                <line x1="16" y1="2" x2="16" y2="6" stroke="#4285F4" stroke-width="2"></line>
+                                                <line x1="8" y1="2" x2="8" y2="6" stroke="#FBBC05" stroke-width="2"></line>
+                                                <line x1="3" y1="10" x2="21" y2="10" stroke="#34A853" stroke-width="2"></line>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div class="integration-title">Google Calendar</div>
+                                            <div class="integration-desc">whyuravi.2008@gmail.com • Terhubung & Sinkron Otomatis</div>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn-outline-pill-sm danger" @onclick='() => ToastService.Info("Integrasi", "Koneksi Google Calendar dikelola.")'>
+                                        Putuskan
+                                    </button>
+                                </div>
+
+                                <!-- Microsoft Outlook -->
+                                <div class="integration-item-card">
+                                    <div class="integration-brand">
+                                        <div class="integration-logo-badge outlook">
+                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                                                <rect x="3" y="3" width="18" height="18" rx="3" stroke="#0078D4" stroke-width="2"></rect>
+                                                <path d="M8 8h8v8H8z" fill="#0078D4"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div class="integration-title">Microsoft Outlook / 365</div>
+                                            <div class="integration-desc">Sinkronisasi kalender rapat dengan akun kerja Microsoft Anda.</div>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn-outline-pill-sm primary" @onclick='() => ToastService.Success("Integrasi Outlook", "Mengarahkan ke otentikasi Microsoft 365.")'>
+                                        Hubungkan
+                                    </button>
+                                </div>
+
+                                <div class="toggle-card" style="margin-top: 6px;">
+                                    <div class="toggle-info">
+                                        <div class="toggle-name">Sinkronisasi Otomatis Reservasi</div>
+                                        <div class="toggle-desc">Setiap pemesanan yang disetujui akan langsung ditambahkan ke jadwal kalender kerja Anda.</div>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" @bind="_autoSyncCalendar" />
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="panel-action-footer">
+                                <button type="button" class="btn-save-user" @onclick='() => ToastService.Success("Integrasi Tersimpan", "Konfigurasi sinkronisasi kalender telah diperbarui.")'>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                    <span>Simpan Pengaturan Integrasi</span>
+                                </button>
+                            </div>
+                        </div>
+                        break;
+                }
+            }
+        </main>
+    </div>
+</div>
+
+<style>
+    .settings-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .settings-page-header {
+        margin-bottom: 4px;
+    }
+    .settings-main-title {
+        font-size: 1.875rem;
+        font-weight: 800;
+        color: var(--persada-navy-900, #0F1F3D);
+        margin: 0 0 4px 0;
+        letter-spacing: -0.02em;
+    }
+    body.dark-mode .settings-main-title { color: #FFFFFF; }
+
+    .settings-main-subtitle {
+        color: var(--persada-text-secondary, #64748B);
+        font-size: 0.95rem;
+        margin: 0;
+    }
+    body.dark-mode .settings-main-subtitle { color: #94A3B8; }
+
+    /* Grid Layout: Sidebar Kiri + Panel Kanan */
+    .settings-grid-layout {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 24px;
+        align-items: start;
+    }
+    @@media (max-width: 860px) {
+        .settings-grid-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Sidebar Kategori Kiri (Card terpisah) */
+    .settings-nav-card {
+        background: #FFFFFF;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 18px;
+        padding: 16px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    }
+    body.dark-mode .settings-nav-card {
+        background: #1E293B;
+        border-color: #334155;
+    }
+
+    .nav-category-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .nav-category-label {
+        font-size: 0.6875rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: #94A3B8;
+        padding: 0 12px 4px 12px;
+        text-transform: uppercase;
+    }
+    body.dark-mode .nav-category-label { color: #64748B; }
+
+    .nav-category-list {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .settings-nav-btn {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: none;
+        background: transparent;
+        color: #475569;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-align: left;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        position: relative;
+    }
+    body.dark-mode .settings-nav-btn { color: #CBD5E1; }
+
+    .settings-nav-btn:hover {
+        background: #F8FAFC;
+        color: #0F1F3D;
+    }
+    body.dark-mode .settings-nav-btn:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: #FFFFFF;
+    }
+
+    /* Active Item Highlighted with User Yellow/Gold Theme */
+    .settings-nav-btn.active {
+        background: #FEF3C7;
+        color: #92400E;
+        font-weight: 700;
+        border-left: 3.5px solid #F59E0B;
+        border-top-left-radius: 4px;
+        border-bottom-left-radius: 4px;
+    }
+    body.dark-mode .settings-nav-btn.active {
+        background: rgba(245, 158, 11, 0.15);
+        color: #FDE68A;
+        border-color: #F59E0B;
+    }
+
+    .nav-category-divider {
+        height: 1px;
+        background: #E2E8F0;
+        margin: 2px 10px;
+    }
+    body.dark-mode .nav-category-divider { background: #334155; }
+
+    /* Panel Konten Kanan (Card lebih besar) */
+    .settings-content-card {
+        background: #FFFFFF;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 20px;
+        padding: 28px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+        min-height: 480px;
+        display: flex;
+        flex-direction: column;
+    }
+    body.dark-mode .settings-content-card {
+        background: #1E293B;
+        border-color: #334155;
+    }
+
+    .panel-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #E2E8F0;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+    body.dark-mode .panel-header-row { border-color: #334155; }
+
+    .panel-title {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: var(--persada-navy-900, #0F1F3D);
+        margin: 0 0 4px 0;
+    }
+    body.dark-mode .panel-title { color: #FFFFFF; }
+
+    .panel-subtitle {
+        color: #64748B;
+        font-size: 0.875rem;
+        margin: 0;
+    }
+    body.dark-mode .panel-subtitle { color: #94A3B8; }
+
+    .badge-accent-user {
+        padding: 5px 12px;
+        background: #FEF3C7;
+        color: #92400E;
+        font-size: 0.75rem;
+        font-weight: 700;
+        border-radius: 999px;
+        border: 1px solid #FDE68A;
+    }
+    body.dark-mode .badge-accent-user {
+        background: rgba(245, 158, 11, 0.15);
+        color: #FDE68A;
+        border-color: rgba(245, 158, 11, 0.3);
+    }
+
+    /* Toggle Cards List */
+    .settings-items-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .toggle-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 14px;
+        gap: 16px;
+        transition: border-color 0.2s ease;
+    }
+    body.dark-mode .toggle-card {
+        background: rgba(15, 23, 42, 0.4);
+        border-color: #334155;
+    }
+    .toggle-card:hover {
+        border-color: #CBD5E1;
+    }
+
+    .toggle-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .toggle-name {
+        font-size: 0.9375rem;
+        font-weight: 700;
+        color: #0F172A;
+    }
+    body.dark-mode .toggle-name { color: #F8FAFC; }
+
+    .toggle-desc {
+        font-size: 0.8125rem;
+        color: #64748B;
+        line-height: 1.4;
+    }
+    body.dark-mode .toggle-desc { color: #94A3B8; }
+
+    /* Modern Switch Component (User Amber Color) */
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 46px;
+        height: 26px;
+        flex-shrink: 0;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+        position: absolute; cursor: pointer; inset: 0;
+        background-color: #CBD5E1;
+        transition: 0.25s;
+        border-radius: 34px;
+    }
+    body.dark-mode .slider { background-color: #475569; }
+    .slider:before {
+        position: absolute; content: ""; height: 20px; width: 20px;
+        left: 3px; bottom: 3px;
+        background-color: white;
+        transition: 0.25s;
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    input:checked + .slider {
+        background-color: #F59E0B; /* Amber Theme for User */
+    }
+    input:checked + .slider:before {
+        transform: translateX(20px);
+    }
+
+    /* Form Fields */
+    .form-container-card {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        max-width: 600px;
+    }
+
+    .form-group-field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .form-group-field label {
+        font-size: 0.8125rem;
+        font-weight: 700;
+        color: #334155;
+    }
+    body.dark-mode .form-group-field label { color: #CBD5E1; }
+    .text-danger { color: #EF4444; }
+
+    .user-input-control {
+        width: 100%;
+        height: 42px;
+        padding: 0 14px;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 10px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #0F172A;
+        background: #FFFFFF;
+        outline: none;
+        transition: border-color 0.2s ease;
+    }
+    body.dark-mode .user-input-control {
+        background: #0F172A;
+        border-color: #334155;
+        color: #FFFFFF;
+    }
+    .user-input-control:focus {
+        border-color: #F59E0B;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+    }
+
+    .password-guideline-box {
+        padding: 12px 16px;
+        background: #FEF3C7;
+        border: 1px solid #FDE68A;
+        border-radius: 12px;
+        font-size: 0.8125rem;
+        color: #92400E;
+    }
+    body.dark-mode .password-guideline-box {
+        background: rgba(245, 158, 11, 0.12);
+        border-color: rgba(245, 158, 11, 0.25);
+        color: #FDE68A;
+    }
+    .guideline-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+    .guideline-list {
+        margin: 0;
+        padding-left: 20px;
+        line-height: 1.5;
+    }
+
+    /* Buttons */
+    .panel-action-footer {
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid #E2E8F0;
+        display: flex;
+        justify-content: flex-end;
+    }
+    body.dark-mode .panel-action-footer { border-color: #334155; }
+
+    .btn-save-user {
+        height: 44px;
+        padding: 0 24px;
+        border-radius: 999px;
+        background: #F59E0B;
+        color: #0F172A;
+        font-size: 0.875rem;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 6px rgba(245, 158, 11, 0.25);
+    }
+    .btn-save-user:hover {
+        background: #D97706;
+        color: #FFFFFF;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(245, 158, 11, 0.35);
+    }
+
+    .btn-outline-pill-sm {
+        padding: 6px 14px;
+        border-radius: 999px;
+        border: 1.5px solid #CBD5E1;
+        background: transparent;
+        color: #475569;
+        font-size: 0.75rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+    .btn-outline-pill-sm:hover { background: #F1F5F9; color: #0F172A; }
+    .btn-outline-pill-sm.primary { border-color: #F59E0B; color: #B45309; }
+    .btn-outline-pill-sm.primary:hover { background: #FEF3C7; }
+    .btn-outline-pill-sm.danger { border-color: #EF4444; color: #DC2626; }
+    .btn-outline-pill-sm.danger:hover { background: #FEE2E2; }
+
+    .btn-danger-outline {
+        height: 42px;
+        padding: 0 20px;
+        border-radius: 999px;
+        border: 1.5px solid #EF4444;
+        background: transparent;
+        color: #DC2626;
+        font-size: 0.875rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.15s;
+    }
+    .btn-danger-outline:hover { background: #FEE2E2; }
+
+    /* Devices */
+    .devices-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .badge-email-verified {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: #D1FAE5;
+        color: #065F46;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        border: 1px solid #A7F3D0;
+    }
+    body.dark-mode .badge-email-verified {
+        background: rgba(16, 185, 129, 0.15);
+        color: #34D399;
+        border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-status-pill-active {
+        padding: 4px 12px;
+        background: #D1FAE5;
+        color: #065F46;
+        font-size: 0.75rem;
+        font-weight: 700;
+        border-radius: 999px;
+        border: 1px solid #A7F3D0;
+    }
+    body.dark-mode .badge-status-pill-active {
+        background: rgba(16, 185, 129, 0.15);
+        color: #34D399;
+        border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .device-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 16px;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 14px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        opacity: 1;
+        transform: scale(1);
+        max-height: 120px;
+        overflow: hidden;
+    }
+    body.dark-mode .device-item {
+        background: rgba(15, 23, 42, 0.4);
+        border-color: #334155;
+    }
+    .device-item.removing {
+        opacity: 0;
+        transform: scale(0.95) translateY(-8px);
+        max-height: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+        margin-top: -6px;
+        border-width: 0;
+    }
+    .device-icon-box {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #1F5D9A;
+        flex-shrink: 0;
+    }
+    body.dark-mode .device-icon-box {
+        background: #0F172A;
+        border-color: #334155;
+        color: #60A5FA;
+    }
+    .device-details { flex: 1; }
+    .device-name-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    .device-name { font-size: 0.9375rem; font-weight: 700; color: #0F172A; }
+    body.dark-mode .device-name { color: #F8FAFC; }
+    .badge-this-device {
+        font-size: 0.6875rem;
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 999px;
+        background: #D1FAE5;
+        color: #065F46;
+    }
+    .device-meta { font-size: 0.75rem; color: #64748B; margin-top: 2px; }
+    .btn-logout-device {
+        background: none; border: none; color: #DC2626; font-size: 0.8125rem; font-weight: 700; cursor: pointer; padding: 6px 10px; border-radius: 6px;
+        transition: background 0.15s;
+    }
+    .btn-logout-device:hover:not(:disabled) { background: #FEE2E2; }
+    .btn-logout-device:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Integration Items */
+    .integration-item-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 14px;
+        gap: 16px;
+    }
+    body.dark-mode .integration-item-card {
+        background: rgba(15, 23, 42, 0.4);
+        border-color: #334155;
+    }
+    .integration-brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+    .integration-logo-badge {
+        width: 44px; height: 44px; border-radius: 12px; background: #FFFFFF; border: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    body.dark-mode .integration-logo-badge { background: #0F172A; border-color: #334155; }
+    .integration-title { font-size: 0.9375rem; font-weight: 700; color: #0F172A; }
+    body.dark-mode .integration-title { color: #FFFFFF; }
+    .integration-desc { font-size: 0.8125rem; color: #64748B; margin-top: 2px; }
+    body.dark-mode .integration-desc { color: #94A3B8; }
+
+    /* Radio Pill Group */
+    .radio-pill-group {
+        display: flex;
+        gap: 10px;
+    }
+    .radio-pill-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background: #F8FAFC;
+        border: 1.5px solid #CBD5E1;
+        border-radius: 999px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: #334155;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+    .radio-pill-label.selected {
+        background: #FEF3C7;
+        border-color: #F59E0B;
+        color: #92400E;
+    }
+
+    /* Skeleton Loading Animation */
+    .settings-skeleton-box {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        animation: pulse 2s infinite ease-in-out;
+    }
+    .skeleton-line {
+        background: #E2E8F0;
+        border-radius: 6px;
+    }
+    body.dark-mode .skeleton-line { background: #334155; }
+    .skeleton-title { height: 24px; width: 220px; }
+    .skeleton-sub { height: 16px; width: 340px; margin-bottom: 8px; }
+    .skeleton-card-block {
+        height: 72px;
+        background: #F1F5F9;
+        border-radius: 14px;
+        width: 100%;
+    }
+    body.dark-mode .skeleton-card-block { background: rgba(255, 255, 255, 0.05); }
+    @@keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.45; }
+    }
+
+    .content-panel-fade {
+        animation: fadeIn 0.2s ease;
+    }
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(3px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+@code {
+    // Default active item per specification: "notifikasi"
+    private string activeTab = "notifikasi";
+    private bool _isLoadingTab = false;
+    private bool _disposed;
+
+    // Notification Toggles
+    private bool _notifBookingConfirmation = true;
+    private bool _notifReminderH1 = true;
+    private bool _notifCancellation = true;
+    private bool _notifNoShowLate = true;
+    private bool _notifInApp = true;
+
+    // Password Form
+    private string _oldPassword = "";
+    private string _newPassword = "";
+    private string _confirmPassword = "";
+
+    // 2FA & PIN
+    private bool _is2faActive = true;
+
+    // Language & Timezone
+    private string _selectedLanguage = "id";
+    private string _selectedTimezone = "WIB";
+    private string _timeFormat = "24";
+
+    // Calendar Integration
+    private bool _autoSyncCalendar = true;
+
+    private async Task SelectTab(string tabKey)
+    {
+        if (activeTab == tabKey) return;
+        
+        _isLoadingTab = true;
+        activeTab = tabKey;
+        StateHasChanged();
+
+        // Skeleton transition duration (~650ms per V46 standard)
+        await Task.Delay(650);
+        
+        if (!_disposed)
+        {
+            _isLoadingTab = false;
+            StateHasChanged();
+        }
+    }
+
+    private void SaveNotificationSettings()
+    {
+        ToastService.Success("Preferensi Notifikasi Disimpan", "Pengaturan saluran dan jenis notifikasi Anda berhasil diperbarui.");
+    }
+
+    private void SavePasswordSettings()
+    {
+        if (string.IsNullOrWhiteSpace(_oldPassword))
+        {
+            ToastService.Error("Gagal Memperbarui", "Kata sandi saat ini wajib diisi.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_newPassword) || _newPassword.Length < 8)
+        {
+            ToastService.Error("Gagal Memperbarui", "Kata sandi baru minimal 8 karakter.");
+            return;
+        }
+
+        if (_newPassword != _confirmPassword)
+        {
+            ToastService.Error("Gagal Memperbarui", "Konfirmasi kata sandi baru tidak sesuai.");
+            return;
+        }
+
+        _oldPassword = "";
+        _newPassword = "";
+        _confirmPassword = "";
+        ToastService.Success("Kata Sandi Diperbarui", "Kata sandi baru Anda berhasil disimpan.");
+    }
+
+    private class UserDeviceSession
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Meta { get; set; } = "";
+        public bool IsCurrent { get; set; }
+        public string IconType { get; set; } = "desktop";
+        public bool IsRemoving { get; set; }
+    }
+
+    private List<UserDeviceSession> _devices = new()
+    {
+        new UserDeviceSession
+        {
+            Id = "dev-1",
+            Name = "Windows PC — Google Chrome",
+            Meta = "Jakarta, Indonesia • Aktif Sekarang (IP: 182.253.xx.xx)",
+            IsCurrent = true,
+            IconType = "desktop"
+        },
+        new UserDeviceSession
+        {
+            Id = "dev-2",
+            Name = "iPhone 14 Pro — Safari Mobile",
+            Meta = "Jakarta, Indonesia • Terakhir aktif 2 jam yang lalu",
+            IsCurrent = false,
+            IconType = "mobile"
+        },
+        new UserDeviceSession
+        {
+            Id = "dev-3",
+            Name = "MacBook Air — Mozilla Firefox",
+            Meta = "Bandung, Indonesia • Terakhir aktif 3 hari yang lalu",
+            IsCurrent = false,
+            IconType = "desktop"
+        }
+    };
+
+    private async Task LogoutDevice(UserDeviceSession dev)
+    {
+        if (dev.IsCurrent || dev.IsRemoving) return;
+        dev.IsRemoving = true;
+        StateHasChanged();
+        await Task.Delay(300);
+        _devices.Remove(dev);
+        ToastService.Success("Sesi Dikeluarkan", $"Akses dari {dev.Name} telah dihentikan.");
+        StateHasChanged();
+    }
+
+    private async Task LogoutAllOtherDevices()
+    {
+        var others = _devices.Where(d => !d.IsCurrent).ToList();
+        if (!others.Any())
+        {
+            ToastService.Info("Info Sesi", "Tidak ada sesi perangkat lain yang aktif.");
+            return;
+        }
+        foreach (var d in others)
+        {
+            d.IsRemoving = true;
+        }
+        StateHasChanged();
+        await Task.Delay(300);
+        _devices.RemoveAll(d => !d.IsCurrent);
+        ToastService.Success("Semua Sesi Dikeluarkan", "Semua perangkat lain telah berhasil di-logout.");
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+    }
+}

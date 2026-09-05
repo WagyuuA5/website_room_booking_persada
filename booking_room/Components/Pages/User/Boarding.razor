@@ -1,0 +1,496 @@
+@page "/"
+@page "/boarding"
+@layout booking_room.Components.Layout.AuthLayout
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<PageTitle>Pengenalan — Persada Ruangan</PageTitle>
+
+<div class="boarding-viewport" id="boardingViewport">
+    <!-- Background Slides Full-Bleed dengan Parallax -->
+    <div class="boarding-bg-layer" id="boardingBgLayer">
+        <div class="boarding-bg-slide @(currentSlide == 0 ? "active" : "")" id="boardingBg0">
+            <img src="/images/FOTO_GEDUNG_PERSADA.png" alt="Gedung Persada Eksterior" class="boarding-bg-img ken-burns" />
+        </div>
+        <div class="boarding-bg-slide @(currentSlide == 1 ? "active" : "")" id="boardingBg1">
+            <img src="/images/FOTO_GEDUNG_PERSADA (2).png" alt="Gedung Persada Sudut" class="boarding-bg-img ken-burns" />
+        </div>
+        <!-- Gradient Overlay Langsung ke Foto Latar -->
+        <div class="boarding-overlay"></div>
+    </div>
+
+    <!-- Visual Feedback: Container Ripple & Zone Flash -->
+    <div class="boarding-ripple-container" id="boardingRippleContainer"></div>
+    <div class="boarding-zone-flash left" id="zoneFlashLeft"></div>
+    <div class="boarding-zone-flash right" id="zoneFlashRight"></div>
+
+    <!-- Top Bar: Logo PERSADA di Kiri & Tombol Lewati di Kanan -->
+    <header class="boarding-topbar">
+        <div class="boarding-logo-wrap">
+            <img src="/icons/logoo_psd-removebg-preview.svg" alt="Persada Logo" class="boarding-brand-logo" />
+        </div>
+        <button type="button" class="btn-boarding-skip" id="btnBoardingSkip" @onclick="SkipBoarding" @onclick:stopPropagation="true">
+            Lewati
+        </button>
+    </header>
+
+    <!-- Main Content: Teks Hero Langsung di Atas Foto dengan Transisi Modern & Tap-to-Advance -->
+    <main class="boarding-hero-wrapper" id="boardingHeroWrapper">
+        <div class="boarding-slides-track" id="boardingSlidesTrack">
+            <!-- Slide 0 -->
+            <div class="boarding-hero-text @(currentSlide == 0 ? "active" : "")" id="boardingSlide0">
+                <div class="boarding-badge-solid">
+                    KOLABORASI MODERN
+                </div>
+                <h1 class="boarding-title-hero">
+                    Satu Sistem, Semua Kebutuhan Ruangan
+                </h1>
+                <p class="boarding-desc-hero">
+                    Kemudahan reservasi cepat, persetujuan admin real-time, dan pemantauan ketersediaan fasilitas dalam satu platform terpadu.
+                </p>
+            </div>
+
+            <!-- Slide 1 -->
+            <div class="boarding-hero-text @(currentSlide == 1 ? "active" : "")" id="boardingSlide1">
+                <div class="boarding-badge-solid">
+                    SISTEM MANAJEMEN RUANGAN
+                </div>
+                <h1 class="boarding-title-hero">
+                    Kelola Ruang Rapat Perusahaan Anda
+                </h1>
+                <p class="boarding-desc-hero">
+                    Solusi cerdas manajemen ruang rapat yang terstruktur, efisien, dan siap mendukung produktivitas kolaborasi bisnis Anda.
+                </p>
+            </div>
+        </div>
+
+        <!-- Indikator Titik Pagination (Murni Visual, Terikat Langsung ke State) -->
+        <div class="boarding-pagination" aria-label="Indikator posisi slide">
+            <span class="boarding-dot @(currentSlide == 0 ? "active" : "")" id="boardingDot0"></span>
+            <span class="boarding-dot @(currentSlide == 1 ? "active" : "")" id="boardingDot1"></span>
+        </div>
+    </main>
+
+    <!-- Footer Copyright -->
+    <footer class="boarding-footer">
+        &copy; 2026 PT Personel Alih Daya Tbk. Sistem Manajemen Pemesanan Ruangan.
+    </footer>
+</div><style>
+    /* Viewport Utama Full Bleed & Gesture Touch-Action */
+    .boarding-viewport {
+        position: relative;
+        width: 100vw;
+        min-height: 100vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: pan-y;
+        cursor: grab;
+        background-color: #0A0F1D;
+        font-family: inherit;
+    }
+
+    .boarding-viewport:active {
+        cursor: grabbing;
+    }
+
+    /* Background Full Bleed Layers dengan Parallax */
+    .boarding-bg-layer {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        overflow: hidden;
+        pointer-events: none;
+    }
+
+    .boarding-bg-slide {
+        position: absolute;
+        inset: 0;
+        will-change: transform, opacity;
+        transition: transform 450ms cubic-bezier(0.22, 1, 0.36, 1), opacity 450ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .boarding-bg-slide.active {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+
+    #boardingBg0:not(.active) {
+        opacity: 0;
+        transform: translate3d(-25%, 0, 0);
+    }
+
+    #boardingBg1:not(.active) {
+        opacity: 0;
+        transform: translate3d(25%, 0, 0);
+    }
+
+    .boarding-bg-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        transform: scale(1);
+    }
+
+    /* Efek Ken Burns / Zoom Dinamis Halus */
+    .ken-burns {
+        animation: kenBurnsZoom 24s infinite alternate ease-in-out;
+    }
+
+    @@keyframes kenBurnsZoom {
+        0% { transform: scale(1); }
+        100% { transform: scale(1.08); }
+    }
+
+    /* Gradient Overlay Gelap ke Terang untuk Keterbacaan Teks */
+    .boarding-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+            to bottom,
+            rgba(10, 15, 29, 0.28) 0%,
+            rgba(10, 15, 29, 0.38) 35%,
+            rgba(10, 15, 29, 0.74) 68%,
+            rgba(10, 15, 29, 0.94) 100%
+        );
+        pointer-events: none;
+    }
+
+    /* Feedback Visual: Ripple & Zone Flash */
+    .boarding-ripple-container {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        pointer-events: none;
+        z-index: 6;
+    }
+
+    .boarding-tap-ripple {
+        position: absolute;
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.06) 45%, transparent 70%);
+        transform: translate(-50%, -50%) scale(0.2);
+        animation: tapRippleAnim 280ms cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+        pointer-events: none;
+    }
+
+    @@keyframes tapRippleAnim {
+        0% {
+            transform: translate(-50%, -50%) scale(0.2);
+            opacity: 1;
+        }
+        100% {
+            transform: translate(-50%, -50%) scale(2.6);
+            opacity: 0;
+        }
+    }
+
+    .boarding-zone-flash {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 50%;
+        pointer-events: none;
+        z-index: 5;
+        opacity: 0;
+        transition: opacity 200ms ease;
+    }
+
+    .boarding-zone-flash.left {
+        left: 0;
+        background: linear-gradient(to right, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 60%, transparent 100%);
+    }
+
+    .boarding-zone-flash.right {
+        right: 0;
+        background: linear-gradient(to left, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 60%, transparent 100%);
+    }
+
+    .boarding-zone-flash.flash {
+        opacity: 1;
+    }
+
+    /* Top Bar */
+    .boarding-topbar {
+        position: relative;
+        z-index: 10;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 32px 56px;
+    }
+
+    .boarding-logo-wrap {
+        display: flex;
+        align-items: center;
+    }
+
+    .boarding-brand-logo {
+        height: 52px;
+        width: auto;
+        filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.45));
+    }
+
+    /* Tombol Lewati di Pojok Kanan Atas */
+    .btn-boarding-skip {
+        background: rgba(255, 255, 255, 0.16);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: #FFFFFF;
+        font-size: 0.9rem;
+        font-weight: 600;
+        padding: 8px 22px;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    }
+
+    .btn-boarding-skip:hover {
+        background: rgba(255, 255, 255, 0.26);
+        border-color: rgba(255, 255, 255, 0.5);
+        transform: translateY(-1px);
+    }
+
+    /* Kontainer Hero: Teks Langsung di Atas Foto */
+    .boarding-hero-wrapper {
+        position: relative;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 0 56px 40px;
+        width: 100%;
+        max-width: 900px;
+    }
+
+    /* CSS Grid Track untuk Layering Slide Teks */
+    .boarding-slides-track {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr;
+        width: 100%;
+        position: relative;
+    }
+
+    .boarding-hero-text {
+        grid-column: 1;
+        grid-row: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        text-align: left;
+        will-change: transform, opacity;
+        transition: transform 450ms cubic-bezier(0.22, 1, 0.36, 1), opacity 450ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .boarding-hero-text.active {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+        pointer-events: auto;
+    }
+
+    #boardingSlide0:not(.active) {
+        opacity: 0;
+        pointer-events: none;
+        transform: translate3d(-100vw, 0, 0) scale(0.96);
+    }
+
+    #boardingSlide1:not(.active) {
+        opacity: 0;
+        pointer-events: none;
+        transform: translate3d(100vw, 0, 0) scale(0.96);
+    }
+
+    /* Badge Solid Berdiri Sendiri Langsung di Atas Foto (Tanpa Blur) */
+    .boarding-badge-solid {
+        display: inline-block;
+        align-self: flex-start;
+        background: #F5A623;
+        color: #0F172A;
+        font-size: 0.75rem;
+        font-weight: 800;
+        letter-spacing: 1.2px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        text-transform: uppercase;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Judul Besar Hero dengan Text Shadow */
+    .boarding-title-hero {
+        font-size: 3rem;
+        font-weight: 800;
+        color: #FFFFFF;
+        line-height: 1.15;
+        margin: 0;
+        letter-spacing: -0.025em;
+        text-shadow: 0 2px 14px rgba(0, 0, 0, 0.65);
+        max-width: 740px;
+    }
+
+    /* Deskripsi Teks Hero */
+    .boarding-desc-hero {
+        font-size: 1.15rem;
+        color: rgba(255, 255, 255, 0.92);
+        line-height: 1.65;
+        margin: 0;
+        text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+        max-width: 640px;
+    }
+
+    /* Indikator Titik Pagination (Murni Indikator Visual, Tanpa Tombol) */
+    .boarding-pagination {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 18px;
+        pointer-events: none;
+    }
+
+    .boarding-dot {
+        height: 8px;
+        width: 8px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.4);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+        transition: all 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .boarding-dot.active {
+        width: 32px;
+        background: #F5A623;
+        box-shadow: 0 0 12px rgba(245, 166, 35, 0.7);
+    }
+
+    /* Footer Copyright Bawah */
+    .boarding-footer {
+        position: relative;
+        z-index: 10;
+        text-align: left;
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.55);
+        padding: 16px 56px 28px;
+    }
+
+    /* Responsif Mobile & Tablet */
+    @@media (max-width: 768px) {
+        .boarding-topbar {
+            padding: 20px 24px;
+        }
+        .boarding-brand-logo {
+            height: 42px;
+        }
+        .boarding-hero-wrapper {
+            padding: 0 24px 28px;
+        }
+        .boarding-title-hero {
+            font-size: 2rem;
+        }
+        .boarding-desc-hero {
+            font-size: 1rem;
+        }
+        .boarding-footer {
+            padding: 12px 24px 20px;
+        }
+    }
+</style>
+
+@code {
+    [SupplyParameterFromQuery]
+    public int? Slide { get; set; }
+
+    private int currentSlide = 0;
+    private DotNetObjectReference<Boarding>? _dotNetRef;
+    private bool _isAdvancing = false;
+
+    protected override void OnParametersSet()
+    {
+        if (Slide.HasValue && Slide.Value >= 0 && Slide.Value <= 1)
+        {
+            currentSlide = Slide.Value;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                _dotNetRef = DotNetObjectReference.Create(this);
+                await JS.InvokeVoidAsync("BoardingSlider.init", _dotNetRef, currentSlide);
+            }
+            catch { }
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnSlideChanged(int slide)
+    {
+        currentSlide = slide;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable]
+    public async Task OnCompleteBoarding()
+    {
+        await CompleteBoarding();
+    }
+
+    private async Task HandleScreenTap()
+    {
+        if (_isAdvancing) return;
+        _isAdvancing = true;
+
+        if (currentSlide == 0)
+        {
+            currentSlide = 1;
+            await InvokeAsync(StateHasChanged);
+            try
+            {
+                await JS.InvokeVoidAsync("BoardingSlider.goToSlide", 1);
+            }
+            catch { }
+            _isAdvancing = false;
+        }
+        else
+        {
+            await CompleteBoarding();
+        }
+    }
+
+    private async Task SkipBoarding()
+    {
+        await CompleteBoarding();
+    }
+
+    private async Task CompleteBoarding()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("localStorage.setItem", "persada-onboarding-seen", "true");
+            await JS.InvokeVoidAsync("localStorage.setItem", "hasSeenBoarding", "true");
+        }
+        catch { }
+        Navigation.NavigateTo("/login");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("BoardingSlider.destroy");
+        }
+        catch { }
+        _dotNetRef?.Dispose();
+    }
+}

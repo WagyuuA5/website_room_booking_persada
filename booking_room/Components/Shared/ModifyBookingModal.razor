@@ -1,0 +1,266 @@
+@namespace booking_room.Components.Shared
+@using booking_room.Components.Models
+
+<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Size="md" Title="Modifikasi Pemesanan" Subtitle="Sesuaikan jadwal reservasi ruangan Anda" ShowCloseButton="false" ShowFooter="true" OnClose="Close">
+    <IconContent>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+        </svg>
+    </IconContent>
+    <BodyContent>
+        <div class="mbm-body">
+            <!-- Room & Request Info Header Pill -->
+            <div class="mbm-info-pill">
+                <span class="mbm-info-room">@(string.IsNullOrEmpty(Booking?.RoomName) ? "Executive Boardroom A" : Booking.RoomName)</span>
+                @if (!string.IsNullOrEmpty(Booking?.RequestId))
+                {
+                    <span class="mbm-info-id">#@Booking.RequestId</span>
+                }
+            </div>
+
+            <!-- Detail Pemohon -->
+            <div class="mbm-section">
+                <h4 class="mbm-section-heading">Detail Pemohon</h4>
+                <div class="mbm-grid-2">
+                    <div class="mbm-form-group">
+                        <label class="mbm-label">Nama Pemohon</label>
+                        <input type="text" class="mbm-input" @bind="_borrowerName" placeholder="Nama Pemohon" />
+                    </div>
+                    <div class="mbm-form-group">
+                        <label class="mbm-label">Divisi / Departemen</label>
+                        <select class="mbm-select" @bind="_division">
+                            <option value="IT / Engineering">IT / Engineering</option>
+                            <option value="Operasional">Operasional</option>
+                            <option value="HR / SDM">HR / SDM</option>
+                            <option value="Keuangan & Akuntansi">Keuangan & Akuntansi</option>
+                            <option value="Pemasaran & Bisnis">Pemasaran & Bisnis</option>
+                            <option value="Eksekutif">Eksekutif</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Jadwal Reservasi -->
+            <div class="mbm-section">
+                <h4 class="mbm-section-heading">Jadwal Reservasi</h4>
+                <div class="mbm-grid-2">
+                    <div class="mbm-form-group">
+                        <label class="mbm-label">Tanggal Reservasi</label>
+                        <input type="text" class="mbm-input" @bind="_date" placeholder="Contoh: 28 Agustus 2026" />
+                    </div>
+                    <div class="mbm-form-group">
+                        <label class="mbm-label">Durasi Rapat</label>
+                        <select class="mbm-select" @bind="_duration">
+                            <option value="1 Jam">1 Jam</option>
+                            <option value="1.5 Jam">1.5 Jam</option>
+                            <option value="2 Jam">2 Jam</option>
+                            <option value="3 Jam">3 Jam</option>
+                            <option value="4 Jam">4 Jam</option>
+                            <option value="Seharian Penuh">Seharian Penuh</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Catatan Tambahan -->
+            <div class="mbm-section">
+                <label class="mbm-label">Catatan Modifikasi</label>
+                <textarea class="mbm-textarea" rows="3" @bind="_notes" placeholder="Tuliskan catatan perubahan jadwal, fasilitas, atau jumlah peserta..."></textarea>
+            </div>
+        </div>
+    </BodyContent>
+    <FooterContent>
+        <div class="mbm-footer-actions">
+            <button type="button" class="btn-secondary-app" @onclick="Close">
+                Batal
+            </button>
+            <button type="button" class="btn-primary-app" @onclick="SubmitUpdate">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Simpan Perubahan</span>
+            </button>
+        </div>
+    </FooterContent>
+</AppModal>
+
+<style>
+    .mbm-body {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+    .mbm-info-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #F1F5F9;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #334155;
+        width: fit-content;
+    }
+    body.dark-mode .mbm-info-pill {
+        background: #334155;
+        color: #CBD5E1;
+    }
+    .mbm-info-room { font-weight: 700; color: #0F172A; }
+    body.dark-mode .mbm-info-room { color: #F8FAFC; }
+    .mbm-info-id { color: #64748B; font-weight: 500; }
+    
+    .mbm-section {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .mbm-section-heading {
+        margin: 0;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    body.dark-mode .mbm-section-heading { color: #94A3B8; }
+
+    .mbm-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+    @@media (max-width: 600px) {
+        .mbm-grid-2 { grid-template-columns: 1fr; }
+    }
+
+    .mbm-form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .mbm-label {
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #475569;
+    }
+    body.dark-mode .mbm-label { color: #CBD5E1; }
+
+    .mbm-input, .mbm-select {
+        width: 100%;
+        height: 40px;
+        padding: 0 12px;
+        border-radius: 10px;
+        border: 1.5px solid #CBD5E1;
+        font-size: 13.5px;
+        background: #FFFFFF;
+        color: #0F172A;
+        box-sizing: border-box;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .mbm-input:focus, .mbm-select:focus {
+        border-color: #F59E0B;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+    }
+    body.dark-mode .mbm-input, body.dark-mode .mbm-select {
+        background: #1E293B;
+        border-color: #334155;
+        color: #F8FAFC;
+    }
+    .mbm-textarea {
+        width: 100%;
+        min-height: 75px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1.5px solid #CBD5E1;
+        font-size: 13.5px;
+        font-family: inherit;
+        background: #FFFFFF;
+        color: #0F172A;
+        box-sizing: border-box;
+        resize: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        line-height: 1.45;
+    }
+    .mbm-textarea:focus {
+        border-color: #F59E0B;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+    }
+    body.dark-mode .mbm-textarea {
+        background: #1E293B;
+        border-color: #334155;
+        color: #F8FAFC;
+    }
+    .mbm-footer-actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+    }
+</style>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public BookingItem? Booking { get; set; }
+    [Parameter] public EventCallback<BookingItem> OnUpdate { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private string _borrowerName = "";
+    private string _division = "IT / Engineering";
+    private string _date = "";
+    private string _duration = "2 Jam";
+    private string _notes = "";
+
+    protected override void OnParametersSet()
+    {
+        if (Booking != null)
+        {
+            _borrowerName = string.IsNullOrEmpty(Booking.RequestedBy) ? "Budi Santoso" : Booking.RequestedBy;
+            _division = string.IsNullOrEmpty(Booking.RequestedByTitle) ? "IT / Engineering" : Booking.RequestedByTitle;
+            _date = string.IsNullOrEmpty(Booking.Date) ? DateTime.Today.ToString("dd MMMM yyyy") : Booking.Date;
+            _duration = string.IsNullOrEmpty(Booking.Duration) ? "2 Jam" : Booking.Duration;
+            _notes = "";
+        }
+    }
+
+    private async Task HandleVisibleChanged(bool val)
+    {
+        Visible = val;
+        if (VisibleChanged.HasDelegate)
+        {
+            await VisibleChanged.InvokeAsync(val);
+        }
+    }
+
+    private async Task Close()
+    {
+        await HandleVisibleChanged(false);
+        if (OnClose.HasDelegate)
+        {
+            await OnClose.InvokeAsync();
+        }
+    }
+
+    private async Task SubmitUpdate()
+    {
+        if (Booking != null)
+        {
+            var updated = Booking with
+            {
+                RequestedBy = _borrowerName,
+                RequestedByTitle = _division,
+                Date = _date,
+                Duration = _duration
+            };
+
+            await HandleVisibleChanged(false);
+            if (OnUpdate.HasDelegate)
+            {
+                await OnUpdate.InvokeAsync(updated);
+            }
+        }
+    }
+}

@@ -1,0 +1,358 @@
+@namespace booking_room.Components.Shared
+@using booking_room.Components.Models
+@inject NavigationManager Navigation
+
+<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Size="lg" ShowCloseButton="false"
+          Title="Ruangan Tersedia" Subtitle="Pilih ruangan untuk rapat Anda berikutnya.">
+    <IconContent>
+        <div class="modal-icon-building">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+        </div>
+    </IconContent>
+
+    <BodyContent>
+        <div class="available-rooms-modal-body">
+            <!-- 2. Baris Filter Pill Buttons (UI-09) -->
+            <div class="filter-pills-bar">
+                <button type="button" class="filter-pill-toggle active-navy">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <span>Hari Ini</span>
+                </button>
+
+                <button type="button" class="filter-pill-toggle active-gold" @onclick="ToggleCapacityFilter">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                    </svg>
+                    <span>@(_selectedCapacity == 0 ? "Semua Kapasitas" : $"> {_selectedCapacity} Orang")</span>
+                </button>
+            </div>
+
+            <!-- 3. Grid Daftar Ruangan 2 Kolom (UI-09) -->
+            <div class="rooms-grid-2col">
+                @foreach (var room in DisplayedRooms)
+                {
+                    <div class="available-room-card" @onclick="() => BookRoom(room)">
+                        <div class="card-thumb-wrap">
+                            <img src="@room.PhotoUrl" alt="@room.Name" class="card-thumb-img" onerror="this.src='https://images.unsplash.com/photo-1497215842964-222b430dc094?auto=format&fit=crop&w=400&q=80'" />
+                            @if (room.IsPremium)
+                            {
+                                <span class="badge-premium">Premium</span>
+                            }
+                        </div>
+                        <div class="card-content-col">
+                            <div class="room-name-row">
+                                <h4 class="room-title">@room.Name</h4>
+                                <span class="capacity-tag">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="9" cy="7" r="4"></circle>
+                                    </svg>
+                                    Kapasitas: @room.Capacity Orang
+                                </span>
+                            </div>
+
+                            <div class="room-amenities-row">
+                                @foreach (var am in room.Amenities.Take(3))
+                                {
+                                    <span class="amenity-mini-chip">
+                                        <FacilityIcon Name="@am" Size="12" />
+                                        <span>@am</span>
+                                    </span>
+                                }
+                            </div>
+
+                            <div class="availability-badge-row">
+                                @if (room.IsAvailableNow)
+                                {
+                                    <span class="badge-avail-now">
+                                        <span class="dot-green"></span>
+                                        Tersedia Sekarang
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge-avail-time">
+                                        <span class="dot-amber"></span>
+                                        Tersedia: @room.AvailableAt
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </BodyContent>
+
+    <FooterContent>
+        <!-- 4. Footer: satu tombol 'Tutup' rata kanan (UI-09, UI-04 no X icon) -->
+        <div class="modal-footer-end">
+            <button type="button" class="btn-dark-pill" @onclick="Close">Tutup</button>
+        </div>
+    </FooterContent>
+</AppModal>
+
+<style>
+    .modal-icon-building {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-sm, 8px);
+        background: rgba(52, 211, 153, 0.15);
+        color: var(--color-success, #34D399);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .available-rooms-modal-body {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .filter-pills-bar {
+        display: flex;
+        gap: 12px;
+    }
+    .filter-pill-toggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: var(--radius-full, 999px);
+        font-size: var(--fs-sm, 14px);
+        font-weight: var(--fw-semibold, 600);
+        cursor: pointer;
+        border: none;
+        transition: var(--motion-fast);
+    }
+    .active-navy {
+        background: var(--color-navy, #0F172A);
+        color: var(--color-white, #FFFFFF);
+    }
+    .active-gold {
+        background: var(--color-primary, #F5A623);
+        color: var(--color-navy, #0F172A);
+    }
+
+    .rooms-grid-2col {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+    @@media (max-width: 680px) {
+        .rooms-grid-2col { grid-template-columns: 1fr; }
+    }
+
+    .available-room-card {
+        background: var(--color-white, #FFFFFF);
+        border: 1px solid var(--color-neutral-200, #E8E8ED);
+        border-radius: var(--radius-md, 14px);
+        overflow: hidden;
+        display: flex;
+        gap: 12px;
+        padding: 12px;
+        cursor: pointer;
+        transition: var(--motion-fast);
+    }
+    .available-room-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+        border-color: var(--color-primary, #F5A623);
+    }
+    body.dark-mode .available-room-card {
+        background: rgba(255,255,255,0.04);
+        border-color: rgba(255,255,255,0.08);
+    }
+
+    .card-thumb-wrap {
+        width: 100px;
+        height: 90px;
+        position: relative;
+        border-radius: var(--radius-sm, 8px);
+        overflow: hidden;
+        flex-shrink: 0;
+        background: var(--color-neutral-100, #F5F5F7);
+    }
+    .card-thumb-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .badge-premium {
+        position: absolute;
+        top: 6px;
+        left: 6px;
+        background: linear-gradient(135deg, #F59E0B, #D97706);
+        color: #FFFFFF;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: var(--radius-full, 999px);
+        text-transform: uppercase;
+    }
+
+    .card-content-col {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-width: 0;
+    }
+    .room-name-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 6px;
+    }
+    .room-title {
+        margin: 0;
+        font-size: var(--fs-base, 15px);
+        font-weight: var(--fw-bold, 700);
+        color: var(--color-navy, #0F172A);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    body.dark-mode .room-title { color: var(--color-white, #FFFFFF); }
+
+    .capacity-tag {
+        font-size: 11px;
+        font-weight: var(--fw-semibold, 600);
+        color: var(--color-neutral-600, #6E6E73);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex-shrink: 0;
+    }
+
+    .room-amenities-row {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+        margin: 4px 0;
+    }
+    .amenity-mini-chip {
+        font-size: 10px;
+        color: var(--color-neutral-600, #6E6E73);
+        background: var(--color-neutral-100, #F5F5F7);
+        padding: 2px 6px;
+        border-radius: 4px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+    body.dark-mode .amenity-mini-chip {
+        background: rgba(255,255,255,0.08);
+        color: var(--color-neutral-400, #86868B);
+    }
+
+    .availability-badge-row {
+        margin-top: 2px;
+    }
+    .badge-avail-now {
+        font-size: 11px;
+        font-weight: var(--fw-semibold, 600);
+        color: #059669;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(52, 211, 153, 0.15);
+        padding: 2px 8px;
+        border-radius: var(--radius-full, 999px);
+    }
+    .badge-avail-time {
+        font-size: 11px;
+        font-weight: var(--fw-semibold, 600);
+        color: #D97706;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(245, 158, 11, 0.15);
+        padding: 2px 8px;
+        border-radius: var(--radius-full, 999px);
+    }
+    .dot-green { width: 6px; height: 6px; border-radius: 50%; background: #059669; }
+    .dot-amber { width: 6px; height: 6px; border-radius: 50%; background: #D97706; }
+
+    .modal-footer-end {
+        display: flex;
+        justify-content: flex-end;
+        width: 100%;
+    }
+    .btn-dark-pill {
+        padding: 8px 24px;
+        border-radius: var(--radius-full, 999px);
+        background: var(--color-navy, #0F172A);
+        color: var(--color-white, #FFFFFF);
+        font-size: var(--fs-sm, 14px);
+        font-weight: var(--fw-semibold, 600);
+        border: none;
+        cursor: pointer;
+        transition: var(--motion-fast);
+    }
+    .btn-dark-pill:hover {
+        opacity: 0.9;
+    }
+</style>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+
+    private int _selectedCapacity = 0;
+
+    private record ModalRoom(string Name, int Capacity, List<string> Amenities, bool IsPremium, bool IsAvailableNow, string AvailableAt, string PhotoUrl);
+
+    private List<ModalRoom> _allModalRooms = new()
+    {
+        new("Alpha Boardroom", 12, new List<string>{"Proyektor", "Konferensi Video", "AC"}, true, true, "Sekarang", "https://images.unsplash.com/photo-1497215842964-222b430dc094?auto=format&fit=crop&w=400&q=80"),
+        new("Delta Studio", 20, new List<string>{"Audio System", "Proyektor", "WiFi"}, true, true, "Sekarang", "https://images.unsplash.com/photo-1462826303086-329426d1aef5?auto=format&fit=crop&w=400&q=80"),
+        new("Beta Meeting Room", 8, new List<string>{"TV LED", "WiFi", "AC"}, false, false, "14:00", "https://images.unsplash.com/photo-1431540015160-0295aaa24f7f?auto=format&fit=crop&w=400&q=80"),
+        new("Creative Pod C", 6, new List<string>{"TV LED", "Papan Tulis", "WiFi"}, false, true, "Sekarang", "https://images.unsplash.com/photo-1527192491265-7e15c55b1ed2?auto=format&fit=crop&w=400&q=80"),
+        new("Focus Room Alpha", 2, new List<string>{"AC", "WiFi"}, false, true, "Sekarang", "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=400&q=80"),
+        new("Innovation Lab", 15, new List<string>{"Papan Tulis", "Proyektor", "WiFi"}, true, false, "15:30", "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=400&q=80")
+    };
+
+    private IEnumerable<ModalRoom> DisplayedRooms => _selectedCapacity switch
+    {
+        > 0 => _allModalRooms.Where(r => r.Capacity >= _selectedCapacity),
+        _ => _allModalRooms
+    };
+
+    private void ToggleCapacityFilter()
+    {
+        _selectedCapacity = _selectedCapacity switch
+        {
+            0 => 8,
+            8 => 12,
+            _ => 0
+        };
+    }
+
+    private async Task HandleVisibleChanged(bool val)
+    {
+        Visible = val;
+        await VisibleChanged.InvokeAsync(val);
+    }
+
+    private async Task Close()
+    {
+        await HandleVisibleChanged(false);
+    }
+
+    private async Task BookRoom(ModalRoom room)
+    {
+        await HandleVisibleChanged(false);
+        Navigation.NavigateTo("/bookings");
+    }
+}

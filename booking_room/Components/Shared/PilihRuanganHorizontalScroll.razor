@@ -1,0 +1,115 @@
+@namespace booking_room.Components.Shared
+@using booking_room.Components.Models
+@using booking_room.Services
+@inject IJSRuntime JS
+
+<div class="pilih-ruangan-wrapper">
+    <div class="pilih-ruangan-header">
+        <label class="pilih-ruangan-label">Pilih Ruangan</label>
+        <span class="pilih-ruangan-hint">Geser untuk memilih ruangan lain &rarr;</span>
+    </div>
+
+    <div class="pilih-ruangan-track" id="@CarouselId">
+        @if (IsLoading)
+        {
+            @for (int i = 0; i < 4; i++)
+            {
+                <LandscapeRoomCardSkeleton />
+            }
+        }
+        else
+        {
+            @foreach (var r in DisplayRooms)
+            {
+                bool isActive = SelectedRoom != null && r.Id == SelectedRoom.Id;
+                <LandscapeRoomCard Room="r" IsActive="isActive" OnSelect="HandleSelectRoom" />
+            }
+        }
+    </div>
+</div>
+
+<style>
+    .pilih-ruangan-wrapper {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .pilih-ruangan-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2px;
+    }
+
+    .pilih-ruangan-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin: 0;
+    }
+
+    .pilih-ruangan-hint {
+        font-size: 11px;
+        color: #94A3B8;
+        user-select: none;
+    }
+
+    .pilih-ruangan-track {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap !important;
+        gap: 12px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-behavior: smooth;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        padding: 4px 2px 10px 2px;
+        cursor: grab;
+        user-select: none;
+        -webkit-user-select: none;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .pilih-ruangan-track::-webkit-scrollbar {
+        display: none;
+    }
+
+    .pilih-ruangan-track.grabbing {
+        cursor: grabbing !important;
+        scroll-behavior: auto !important;
+    }
+</style>
+
+@code {
+    [Parameter] public IEnumerable<RoomItem>? Rooms { get; set; }
+    [Parameter] public RoomItem? SelectedRoom { get; set; }
+    [Parameter] public EventCallback<RoomItem> OnRoomSelected { get; set; }
+    [Parameter] public bool IsLoading { get; set; } = false;
+    [Parameter] public string CarouselId { get; set; } = "pilihRuanganTrack_" + Guid.NewGuid().ToString("N").Substring(0, 8);
+
+    private IEnumerable<RoomItem> DisplayRooms => Rooms ?? RoomDataProvider.GetRooms();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("initDragScroll", CarouselId);
+        }
+        catch { }
+    }
+
+    private async Task HandleSelectRoom(RoomItem room)
+    {
+        SelectedRoom = room;
+        if (OnRoomSelected.HasDelegate)
+        {
+            await OnRoomSelected.InvokeAsync(room);
+        }
+    }
+}

@@ -1,99 +1,189 @@
-.page {
+.app-shell {
     display: flex;
     min-height: 100vh;
+    position: relative;
 }
 
 .sidebar {
-    width: 260px;
-    background-color: var(--sidebar-bg);
+    width: var(--sidebar-width, 260px);
+    min-width: var(--sidebar-width, 260px);
+    background-color: var(--sidebar-bg, #0F1F3D);
     height: 100vh;
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
+    bottom: 0;
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
-    z-index: 20;
+    z-index: var(--z-sidebar, 100);
     overflow-y: auto;
+    overflow-x: hidden;
+    transition: width var(--duration-base, 0.35s) var(--ease-snap, cubic-bezier(0.34, 1.56, 0.64, 1)),
+                min-width var(--duration-base, 0.35s) var(--ease-snap, cubic-bezier(0.34, 1.56, 0.64, 1));
 }
 
-.sidebar-toggle {
-    background: none;
-    border: none;
-    color: var(--text-navy);
-    padding: 0.5rem;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    display: none;
-}
-
-.sidebar-toggle:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-}
-
-.sidebar-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background-color: rgba(0, 0, 0, 0.4);
-    z-index: 15;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.sidebar-overlay.show {
-    display: block;
-    opacity: 1;
-}
-
-.main-content {
+.main-area {
     flex: 1;
     display: flex;
     flex-direction: column;
     min-width: 0;
+    margin-left: var(--sidebar-width, 260px);
+    width: calc(100% - var(--sidebar-width, 260px));
+    min-height: 100vh;
+    transition: margin-left var(--duration-base, 0.35s) var(--ease-snap, cubic-bezier(0.34, 1.56, 0.64, 1));
 }
 
-.dashboard-header {
-    background-color: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(8px);
+.navbar {
+    background-color: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(226, 232, 240, 0.8);
     position: sticky;
     top: 0;
-    z-index: 5;
+    z-index: var(--z-navbar, 50);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 32px;
 }
 
-.dashboard-body {
+.notif-bell-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    color: var(--persada-navy-900, #0F1F3D);
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    padding: 0;
+}
+
+.notif-bell-btn:hover {
+    background: rgba(15, 31, 61, 0.06);
+    color: var(--persada-navy-900, #0F1F3D);
+}
+
+body.dark-mode .notif-bell-btn {
+    color: #F8FAFC !important;
+}
+
+body.dark-mode .notif-bell-btn:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
+    color: #FFFFFF !important;
+}
+
+.notif-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    background: #EF4444;
+    color: #FFFFFF;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #FFFFFF;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.25);
+    line-height: 1;
+}
+
+body.dark-mode .notif-badge {
+    border-color: #1E293B;
+}
+
+.page-content {
     flex: 1;
+    padding: 24px 32px;
 }
 
-@media (max-width: 991.98px) {
-    .sidebar {
-        width: 260px;
-        position: fixed;
-        left: -260px;
-        top: 0;
-        height: 100vh;
-        transition: left 0.3s ease;
-    }
-
-    .sidebar.show {
-        left: 0;
-    }
-
-    .sidebar-toggle {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
+/* ============================================ */
+/* SIDEBAR DRAG HANDLE                          */
+/* ============================================ */
+.sidebar-drag-handle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 8px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
 }
 
-@media (max-width: 640.98px) {
-    .dashboard-header {
-        padding: 0.75rem 1rem;
-    }
+.sidebar-drag-handle:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
 
-    .dashboard-body {
-        padding: 0 1rem 1.5rem 1rem;
-    }
+.drag-handle-strip {
+    width: 4px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.drag-handle-indicator {
+    width: 3px;
+    height: 24px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.15);
+    transition: all 0.2s ease;
+}
+
+.sidebar-drag-handle:hover .drag-handle-indicator {
+    background: rgba(255, 255, 255, 0.35);
+    height: 40px;
+}
+
+/* ============================================ */
+/* SPLIT SCREEN TRANSITION OVERLAY              */
+/* ============================================ */
+.split-transition-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+}
+
+.split-panel {
+    flex: 1;
+    background-color: var(--persada-navy-900);
+    transition: transform 0.6s cubic-bezier(0.7, 0, 0.3, 1);
+}
+
+.split-panel.top {
+    transform-origin: top;
+    transform: translateY(0);
+}
+
+.split-panel.bottom {
+    transform-origin: bottom;
+    transform: translateY(0);
+}
+
+.split-transition-overlay.opening .split-panel.top {
+    transform: translateY(-100%);
+}
+
+.split-transition-overlay.opening .split-panel.bottom {
+    transform: translateY(100%);
 }
 
 #blazor-error-ui {
@@ -110,9 +200,19 @@
     z-index: 1000;
 }
 
-    #blazor-error-ui .dismiss {
-        cursor: pointer;
-        position: absolute;
-        right: 0.75rem;
-        top: 0.5rem;
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
+}
+
+@media (max-width: 640.98px) {
+    .dashboard-header {
+        padding: 0.75rem 1rem;
     }
+
+    .dashboard-body {
+        padding: 0 1rem 1.5rem 1rem;
+    }
+}

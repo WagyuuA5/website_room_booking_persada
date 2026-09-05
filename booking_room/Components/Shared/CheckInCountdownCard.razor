@@ -1,0 +1,1018 @@
+@implements IDisposable
+@namespace booking_room.Components.Shared
+@using System.Globalization
+@using booking_room.Components.Models
+@using booking_room.Services
+@inject IToastService ToastService
+@inject IModalService ModalService
+
+<AppModal Visible="true" ShowHeader="false" ShowCloseButton="false" ShowFooter="false" LayoutMode="solid-card" Size="md" OnClose="HandleCancelClose">
+    <BodyContent>
+        @if (_isConfirmedSuccess)
+        {
+            <!-- CASE 3 (V67): Tampilan Popup Sukses Konfirmasi Kehadiran Modern -->
+            <div class="checkin-success-view">
+                <div class="celebratory-check-wrapper">
+                    <div class="success-check-circle-celebratory">
+                        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                    </div>
+                </div>
+                
+                <h2 class="checkin-success-title">Konfirmasi Kehadiran Berhasil</h2>
+                
+                <p class="checkin-success-desc">
+                    Kehadiran Anda telah terverifikasi untuk agenda rapat di:
+                </p>
+
+                <div class="checkin-room-chip">
+                    <img src="/icon/icon_pemesanan.svg" class="icon-xs" alt="" />
+                    <span>@RoomName</span>
+                </div>
+
+                <div class="checkin-success-badge">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    <span>Dikonfirmasi pada @DateTime.Now.ToString("HH:mm") WIB</span>
+                </div>
+
+                <button type="button" class="btn-primary-hero btn-full-width" style="margin-top: 24px;" @onclick="DismissSuccess">
+                    Selesai
+                </button>
+            </div>
+        }
+        else
+        {
+            <div class="modal-checkin">
+                <div class="checkin-hero checkin-hero--clickable" @onclick="OpenRoomDetail" role="button" tabindex="0" title="Ketuk untuk melihat detail ruangan">
+                    <img src="@(RoomDataProvider.GetRoomPhoto(PhotoUrl, RoomName))" class="checkin-hero-bg" alt="@RoomName" onerror="this.src='/images/poto 1.jpg'" />
+                    <div class="checkin-hero-overlay"></div>
+                    <div class="checkin-hero-content">
+                        <span class="badge-success-glass">
+                            <span class="status-dot"></span> Konfirmasi Kehadiran Dibuka
+                        </span>
+                        <div class="checkin-room-name-row">
+                            <h3 class="checkin-room-name">@RoomName</h3>
+                            <span class="checkin-hero-tag">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                                Detail
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="checkin-timer-section">
+                    <svg class="checkin-timer-ring" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="44" fill="none" stroke="var(--color-border, #E2E8F0)" stroke-width="6" />
+                        <circle cx="50" cy="50" r="44" fill="none" stroke="var(--color-success, #16A34A)" stroke-width="6"
+                                stroke-linecap="round"
+                                stroke-dasharray="276.5"
+                                stroke-dashoffset="@GetTimerOffset()"
+                                style="transition: stroke-dashoffset 1s linear;" />
+                    </svg>
+                    <div class="checkin-timer-text">
+                        <span class="checkin-timer-value">@RemainingTimeFormatted</span>
+                        <span class="text-caption">WAKTU TERSISA</span>
+                    </div>
+                </div>
+
+                <div class="checkin-info-grid">
+                    <div class="checkin-info-item">
+                        <img src="/icon/Icon_clndr.svg" class="icon-sm" alt="" />
+                        <div><span class="text-label-uppercase">Waktu</span><span class="text-body">@TimeSlot</span></div>
+                    </div>
+                    <div class="checkin-info-item">
+                        <img src="/icon/icon_location.svg" class="icon-sm" alt="" />
+                        <div><span class="text-label-uppercase">Lokasi</span><span class="text-body">@Location</span></div>
+                    </div>
+                    <div class="checkin-info-item checkin-info-item--full">
+                        <img src="/icon/icon_group.svg" class="icon-sm" alt="" />
+                        <div><span class="text-label-uppercase">Kapasitas</span><span class="text-body">@Capacity peserta diperkirakan hadir</span></div>
+                    </div>
+                </div>
+
+                <div class="checkin-facilities-section">
+                    <span class="text-label-uppercase">Fasilitas Ruangan</span>
+                    <div class="room-detail-facilities">
+                        @foreach (var f in GetRoomFacilities())
+                        {
+                            <span class="facility-chip-full"><img src="@f.IconPath" class="icon-xs" alt="" /> @f.Name</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="checkin-actions">
+                    <button class="btn-primary-hero btn-full-width" @onclick="ConfirmCheckIn">
+                        <img src="/icon/icon_check_circle.svg" class="icon-sm icon-white" alt="" /> Konfirmasi Kehadiran
+                    </button>
+                    @if (_extensionCount < 2)
+                    {
+                        <button class="btn-secondary-outline" @onclick="RequestExtraTime">
+                            <img src="/icon/timer_dshbrd.svg" class="icon-sm" alt="" /> Saya Butuh Waktu Tambahan @(_extensionCount > 0 ? "(+10m)" : "")
+                        </button>
+                    }
+                    else
+                    {
+                        <div class="extension-limit-notice">
+                            <span>Batas waktu tambahan maksimum (2x) telah tercapai</span>
+                        </div>
+                    }
+                    <button class="btn-text-danger" @onclick="OpenCancelModal">
+                        Batalkan Pemesanan
+                    </button>
+                </div>
+            </div>
+        }
+    </BodyContent>
+</AppModal>
+
+@if (_showExtendModal)
+{
+    <div class="modal-overlay modal-extend-time-overlay" @onclick="() => _showExtendModal = false">
+        <div class="modal-card modal-extend-time" @onclick:stopPropagation="true">
+            <div class="modal-header modal-header--safe">
+                <div class="modal-header-icon modal-header-icon--warning">
+                    <img src="/icon/timer_dshbrd.svg" class="icon-md" alt="" />
+                </div>
+                <div class="modal-header-title-container">
+                    <h3 class="text-section-title">Minta Waktu Tambahan</h3>
+                    <p class="text-body-secondary">Perpanjang batas konfirmasi kehadiran untuk @RoomName</p>
+                </div>
+            </div>
+            <hr class="modal-divider" />
+
+            <div class="extend-section" style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
+                    <label class="text-label-uppercase" style="margin-bottom: 0;">Pilih Durasi Tambahan</label>
+                    <span class="extend-unit-hint" style="font-size: 11px; font-weight: 600; color: var(--color-text-secondary, #64748B);">Durasi (menit)</span>
+                </div>
+                <div class="duration-chip-group">
+                    <button type="button" class="duration-chip @(_selectedExtendDuration == 10 ? "active" : "")" @onclick="() => _selectedExtendDuration = 10">
+                        @if (_selectedExtendDuration == 10) { <span class="chip-check-icon">✓</span> } 10
+                    </button>
+                    <button type="button" class="duration-chip @(_selectedExtendDuration == 15 ? "active" : "")" @onclick="() => _selectedExtendDuration = 15">
+                        @if (_selectedExtendDuration == 15) { <span class="chip-check-icon">✓</span> } 15
+                    </button>
+                    <button type="button" class="duration-chip @(_selectedExtendDuration == 30 ? "active" : "")" @onclick="() => _selectedExtendDuration = 30">
+                        @if (_selectedExtendDuration == 30) { <span class="chip-check-icon">✓</span> } 30
+                    </button>
+                </div>
+            </div>
+
+            <div class="extend-section" style="margin-bottom: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <label class="text-label-uppercase" style="margin-bottom: 0;">Alasan Penambahan Waktu <span class="text-danger" style="color: #EF4444;">*</span></label>
+                    <span class="char-counter">@(_extendReason?.Length ?? 0)/150</span>
+                </div>
+                <textarea class="textarea-modern textarea-extend" 
+                          placeholder="Contoh: Masih dalam perjalanan menuju ruangan, rapat sebelumnya molor, dst."
+                          maxlength="150"
+                          @bind="_extendReason" 
+                          @bind:event="oninput" 
+                          rows="3"></textarea>
+            </div>
+
+            <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+                <button type="button" class="btn-secondary-themed" @onclick="() => _showExtendModal = false">Kembali</button>
+                <button type="button" class="btn-primary-hero" @onclick="ConfirmExtendTime" disabled="@(string.IsNullOrWhiteSpace(_extendReason) || _selectedExtendDuration == 0)">
+                    Ajukan Penambahan Waktu
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (_showRoomDetailModal)
+{
+    var currentRoom = RoomDataProvider.GetRooms().FirstOrDefault(r => r.Name.Equals(RoomName, StringComparison.OrdinalIgnoreCase));
+    <div class="modal-overlay modal-room-detail-overlay" @onclick="() => _showRoomDetailModal = false">
+        <div class="modal-card modal-room-detail" @onclick:stopPropagation="true">
+            <!-- Hero Photo Banner with Overlay (No X Button - Backdrop or Kembali to exit) -->
+            <div class="room-detail-hero-wrapper">
+                <img src="@(RoomDataProvider.GetRoomPhoto(PhotoUrl, RoomName))" class="room-detail-hero-img" alt="@RoomName" onerror="this.src='/images/poto 1.jpg'" />
+                <div class="room-detail-hero-overlay"></div>
+            </div>
+
+            <div class="modal-body room-detail-body">
+                <div class="room-detail-header-badges">
+                    <span class="badge-status-pill badge-status-pill--success">
+                        <span class="status-dot"></span> Siap Digunakan
+                    </span>
+                    <span class="badge-meta-pill">
+                        <img src="/icon/icon_group.svg" class="icon-xs" alt="" />
+                        <span>Kapasitas @Capacity Orang</span>
+                    </span>
+                </div>
+
+                <h3 class="room-detail-title">@RoomName</h3>
+                
+                <div class="room-detail-location">
+                    <img src="/icon/icon_location.svg" class="icon-xs" alt="" />
+                    <span>@(currentRoom?.Floor != null ? $"Lantai {currentRoom.Floor}, Gedung Persada HQ" : Location)</span>
+                </div>
+
+                <p class="room-detail-desc">
+                    @(currentRoom?.Description ?? $"Ruangan pertemuan representatif dan profesional dengan fasilitas lengkap untuk mendukung agenda kolaborasi bisnis Anda di {Location}.")
+                </p>
+
+                <div class="room-detail-section-header">
+                    <span class="text-label-uppercase">Fasilitas Ruangan</span>
+                </div>
+                <div class="room-detail-facilities">
+                    @foreach (var f in GetRoomFacilities())
+                    {
+                        <span class="facility-chip-full"><img src="@f.IconPath" class="icon-xs" alt="" /> @f.Name</span>
+                    }
+                </div>
+            </div>
+
+            <!-- Footer Button: Secondary Themed "Kembali" -->
+            <div class="modal-footer room-detail-footer" style="margin-top: 20px;">
+                <button type="button" class="btn-secondary-themed btn-full-width" @onclick="() => _showRoomDetailModal = false">
+                    Kembali
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- CASE 8c: Reuse Modal Konfirmasi Pembatalan (V49/V50) dengan Alasan Wajib -->
+<CancelBookingModal Visible="@_showCancelModal"
+                    VisibleChanged="@(v => _showCancelModal = v)"
+                    OnClose="@(() => _showCancelModal = false)"
+                    Title="Batalkan Pemesanan?"
+                    RoomName="@RoomName"
+                    WarningMessage="@($"Apakah Anda yakin ingin membatalkan pemesanan <strong>{RoomName}</strong>? Ruangan akan dibebaskan untuk dipesan orang lain.")"
+                    OnConfirmCancel="HandleConfirmReleaseWithReason" />
+
+<style>
+    .checkin-confirmation-modal {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 4px;
+        gap: 16px;
+    }
+
+    /* CASE 3 (V67): Celebratory Success State Inside Modal */
+    .checkin-success-view {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 24px 16px 8px;
+        gap: 10px;
+    }
+    .celebratory-check-wrapper {
+        margin-bottom: 6px;
+    }
+    .success-check-circle-celebratory {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: #DCFCE7;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 0 10px rgba(34, 197, 94, 0.15), 0 8px 24px rgba(22, 163, 74, 0.25);
+        animation: celebratoryPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+    }
+    body.dark-mode .success-check-circle-celebratory {
+        background: rgba(34, 197, 94, 0.2);
+        box-shadow: 0 0 0 10px rgba(34, 197, 94, 0.1), 0 8px 24px rgba(22, 163, 74, 0.3);
+    }
+    @@keyframes celebratoryPop {
+        0% { transform: scale(0.6); opacity: 0; }
+        70% { transform: scale(1.1); }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    .checkin-success-title {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: #0F172A;
+        margin: 6px 0 0;
+        letter-spacing: -0.01em;
+    }
+    body.dark-mode .checkin-success-title { color: #F8FAFC; }
+    .checkin-success-desc {
+        font-size: 0.9rem;
+        color: #64748B;
+        line-height: 1.5;
+        margin: 0;
+        max-width: 320px;
+    }
+    body.dark-mode .checkin-success-desc { color: #94A3B8; }
+    .checkin-room-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #FEF3C7;
+        color: #92400E;
+        font-size: 0.95rem;
+        font-weight: 700;
+        padding: 6px 16px;
+        border-radius: 999px;
+        margin: 4px 0 6px;
+        border: 1px solid rgba(245, 166, 35, 0.25);
+    }
+    body.dark-mode .checkin-room-chip {
+        background: rgba(245, 166, 35, 0.2);
+        color: #FBBF24;
+    }
+    .checkin-success-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #F1F5F9;
+        color: #475569;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        padding: 6px 14px;
+        border-radius: 999px;
+        margin-top: 4px;
+    }
+    body.dark-mode .checkin-success-badge {
+        background: rgba(255, 255, 255, 0.08);
+        color: #CBD5E1;
+    }
+
+    /* CASE 4 (V65): Redesign Total Popup Konfirmasi Kehadiran */
+    .modal-checkin {
+        width: 100%;
+    }
+    .checkin-hero {
+        position: relative;
+        height: 160px;
+        border-radius: 20px 20px 0 0;
+        overflow: hidden;
+        margin: -24px -28px 0 -28px; /* full-bleed di dalam modal padding standar */
+    }
+    .checkin-hero--clickable {
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+    }
+    .checkin-hero--clickable:hover .checkin-hero-bg {
+        transform: scale(1.05);
+    }
+    .checkin-hero-bg {
+        width: 100%; height: 100%; object-fit: cover; object-position: center 40%;
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .checkin-room-name-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        width: 100%;
+    }
+    .checkin-hero-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #FFFFFF;
+        background: rgba(255, 255, 255, 0.22);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        padding: 4px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        flex-shrink: 0;
+        transition: all 0.2s ease;
+    }
+    .checkin-hero--clickable:hover .checkin-hero-tag {
+        background: rgba(255, 255, 255, 0.35);
+        transform: scale(1.03);
+    }
+    .checkin-hero-overlay {
+        position: absolute; inset: 0;
+        background: linear-gradient(180deg, rgba(15,23,42,0.1) 0%, rgba(15,23,42,0.78) 100%);
+    }
+    .checkin-hero-content {
+        position: absolute; bottom: 16px; left: 20px; right: 20px;
+        display: flex; flex-direction: column; gap: 6px;
+        text-align: left;
+    }
+    .badge-success-glass {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,0.25);
+        color: white; font-size: 11px; font-weight: 700;
+        padding: 5px 12px; border-radius: 999px; width: fit-content;
+        text-transform: uppercase; letter-spacing: 0.4px;
+    }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #4ADE80; box-shadow: 0 0 6px #4ADE80; }
+    .checkin-room-name { color: white; font-size: 20px; font-weight: 700; margin: 0; }
+
+    .checkin-timer-section {
+        position: relative;
+        width: 130px; height: 130px;
+        margin: 24px auto 20px auto;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .checkin-timer-ring { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .checkin-timer-text {
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+        display: flex; flex-direction: column; align-items: center; gap: 2px;
+    }
+    .checkin-timer-value { font-size: 24px; font-weight: 700; color: var(--color-text-primary, #0F172A); font-variant-numeric: tabular-nums; }
+    body.dark-mode .checkin-timer-value { color: #FFFFFF; }
+    .text-caption { font-size: 10px; font-weight: 700; color: var(--color-text-secondary, #64748B); letter-spacing: 0.05em; }
+    body.dark-mode .text-caption { color: #94A3B8; }
+
+    .checkin-info-grid {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+        background: var(--color-bg-page, #F8FAFC); border-radius: 14px; padding: 16px; margin-bottom: 20px;
+        text-align: left;
+    }
+    body.dark-mode .checkin-info-grid {
+        background: rgba(255, 255, 255, 0.04);
+    }
+    .checkin-info-item { display: flex; align-items: flex-start; gap: 10px; }
+    .checkin-info-item--full { grid-column: 1 / -1; }
+    .text-label-uppercase { font-size: 10px; font-weight: 700; color: var(--color-text-secondary, #64748B); text-transform: uppercase; display: block; margin-bottom: 2px; }
+    body.dark-mode .text-label-uppercase { color: #94A3B8; }
+    .text-body { font-size: 13px; font-weight: 600; color: var(--color-text-primary, #0F172A); display: block; }
+    body.dark-mode .text-body { color: #F1F5F9; }
+
+    .checkin-actions { display: flex; flex-direction: column; gap: 10px; }
+    .btn-full-width { width: 100%; justify-content: center; }
+
+    .btn-primary-hero {
+        background: linear-gradient(135deg, #F5A623 0%, #D97706 100%);
+        color: #FFFFFF;
+        border: none;
+        border-radius: 999px;
+        padding: 12px 24px;
+        font-weight: 600;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(245, 166, 35, 0.3);
+        transition: all 150ms ease-in-out;
+    }
+    .btn-primary-hero:hover {
+        background: linear-gradient(135deg, #E59819 0%, #B45309 100%);
+        box-shadow: 0 6px 18px rgba(245, 166, 35, 0.4);
+        transform: translateY(-1px);
+    }
+    .btn-primary-hero:active {
+        transform: translateY(0);
+    }
+
+    .btn-secondary-outline {
+        width: 100%; background: white; border: 1px solid var(--color-border, #E2E8F0);
+        border-radius: 999px; padding: 12px; font-weight: 600; font-size: 14px;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        cursor: pointer; transition: background 150ms ease-in-out;
+        color: var(--color-text-primary, #0F172A);
+    }
+    .btn-secondary-outline:hover { background: var(--color-bg-page, #F8FAFC); }
+    body.dark-mode .btn-secondary-outline {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 255, 255, 0.12);
+        color: #F8FAFC;
+    }
+    body.dark-mode .btn-secondary-outline:hover {
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .btn-text-danger {
+        background: none; border: none; color: var(--color-danger, #EF4444);
+        font-size: 13px; font-weight: 600; padding: 8px; cursor: pointer;
+        text-align: center;
+    }
+    .btn-text-danger:hover { text-decoration: underline; }
+
+    .checkin-facilities-section {
+        text-align: left;
+        margin-bottom: 20px;
+    }
+    .room-detail-facilities {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 8px;
+    }
+    .facility-chip-full {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--color-bg-page, #F8FAFC);
+        padding: 8px 14px;
+        border-radius: 999px;
+        font-size: 13px;
+        color: var(--color-text-primary, #0F172A);
+    }
+    body.dark-mode .facility-chip-full {
+        background: rgba(255, 255, 255, 0.06);
+        color: #F1F5F9;
+    }
+    .modal-extend-time-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 1050;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        animation: fadeIn 200ms ease;
+    }
+    .modal-extend-time {
+        background: #FFFFFF;
+        border-radius: 20px;
+        padding: 24px;
+        max-width: 440px;
+        width: 100%;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        text-align: left;
+        animation: modalScaleIn 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    body.dark-mode .modal-extend-time {
+        background: #1E293B;
+        color: #FFFFFF;
+    }
+    .duration-chip-group {
+        display: flex;
+        gap: 8px;
+        margin-top: 6px;
+    }
+    .duration-chip {
+        flex: 1;
+        padding: 11px 8px;
+        border-radius: 12px;
+        border: 1.5px solid var(--color-border, #E2E8F0);
+        background: #F8FAFC;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 150ms ease-in-out;
+        color: var(--color-text-primary, #0F172A);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+    }
+    .duration-chip:hover {
+        background: #F1F5F9;
+        border-color: #CBD5E1;
+    }
+    .duration-chip.active {
+        background: #FEF3C7;
+        border-color: #F5A623;
+        color: #92400E;
+        font-weight: 700;
+        box-shadow: 0 2px 8px rgba(245, 166, 35, 0.25);
+    }
+    .chip-check-icon {
+        font-size: 12px;
+        font-weight: 800;
+        color: #D97706;
+        margin-right: 2px;
+    }
+    .textarea-extend {
+        width: 100%;
+        border-radius: 12px;
+        border: 1.5px solid var(--color-border, #E2E8F0);
+        padding: 12px 14px;
+        font-size: 13.5px;
+        font-family: inherit;
+        resize: vertical;
+        outline: none;
+        margin-top: 6px;
+        box-sizing: border-box;
+        transition: all 150ms ease-in-out;
+    }
+    .textarea-extend:focus {
+        border-color: #F5A623;
+        box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.18);
+    }
+    .char-counter {
+        font-size: 11px;
+        color: var(--color-text-secondary, #64748B);
+        font-weight: 600;
+    }
+    .btn-secondary-themed {
+        background: #F1F5F9;
+        color: #334155;
+        border: 1px solid #E2E8F0;
+        border-radius: 999px;
+        padding: 10px 22px;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 150ms ease-in-out;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .btn-secondary-themed:hover {
+        background: #E2E8F0;
+        border-color: rgba(245, 166, 35, 0.4);
+        color: #0F172A;
+        transform: translateY(-1px);
+    }
+    .btn-secondary-themed:active { transform: translateY(0); }
+
+    body.dark-mode .duration-chip {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 255, 255, 0.12);
+        color: #F1F5F9;
+    }
+    body.dark-mode .duration-chip:hover {
+        background: rgba(255, 255, 255, 0.08);
+    }
+    body.dark-mode .duration-chip.active {
+        background: rgba(245, 166, 35, 0.25);
+        border-color: #F5A623;
+        color: #FDE68A;
+    }
+    body.dark-mode .duration-chip.active .chip-check-icon {
+        color: #FBBF24;
+    }
+    body.dark-mode .textarea-extend {
+        background: #0F172A;
+        border-color: #334155;
+        color: #F8FAFC;
+    }
+    body.dark-mode .textarea-extend:focus {
+        border-color: #F5A623;
+        box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.25);
+    }
+    body.dark-mode .btn-secondary-themed {
+        background: rgba(255, 255, 255, 0.08);
+        color: #F1F5F9;
+        border-color: rgba(255, 255, 255, 0.14);
+    }
+    body.dark-mode .btn-secondary-themed:hover {
+        background: rgba(255, 255, 255, 0.14);
+        border-color: rgba(245, 166, 35, 0.4);
+    }
+
+    /* Modal Room Detail Popup (Case 5) */
+    .modal-room-detail-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.65);
+        backdrop-filter: blur(4px);
+        z-index: 1100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        animation: fadeIn 200ms ease;
+    }
+    .modal-room-detail {
+        background: #FFFFFF;
+        width: 500px;
+        max-width: 95vw;
+        padding: 24px;
+        position: relative;
+        text-align: left;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+        animation: modalScaleIn 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .room-detail-hero-wrapper {
+        position: relative;
+        width: calc(100% + 48px);
+        height: 180px;
+        border-radius: 20px 20px 0 0;
+        margin: -24px -24px 16px -24px;
+        overflow: hidden;
+    }
+    .room-detail-hero-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center 40%;
+        display: block;
+    }
+    .room-detail-hero-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(15,23,42,0.15) 0%, rgba(15,23,42,0.65) 100%);
+    }
+    .room-detail-body { padding: 0 2px; }
+    .room-detail-header-badges {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+    .badge-status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .badge-status-pill--success { background: #DCFCE7; color: #166534; }
+    .badge-meta-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #F1F5F9;
+        color: #475569;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 4px 12px;
+        border-radius: 999px;
+    }
+    .room-detail-title {
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--color-text-primary, #0F172A);
+        margin: 0 0 6px 0;
+    }
+    .room-detail-location {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: var(--color-text-secondary, #64748B);
+        margin-bottom: 14px;
+    }
+    .room-detail-desc {
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--color-text-secondary, #475569);
+        margin: 0 0 16px 0;
+    }
+    .room-detail-section-header {
+        margin: 16px 0 8px 0;
+    }
+
+    body.dark-mode .modal-room-detail {
+        background: #1E293B;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+    body.dark-mode .room-detail-title { color: #FFFFFF; }
+    body.dark-mode .room-detail-desc { color: #CBD5E1; }
+    body.dark-mode .room-detail-location { color: #94A3B8; }
+    body.dark-mode .badge-meta-pill {
+        background: rgba(255, 255, 255, 0.08);
+        color: #CBD5E1;
+    }
+    body.dark-mode .badge-status-pill--success {
+        background: rgba(34, 197, 94, 0.2);
+        color: #4ADE80;
+    }
+</style>
+
+@code {
+    [Parameter] public string RoomName { get; set; } = "Ruang Rapat Utama";
+    [Parameter] public string TimeSlot { get; set; } = "10:00 - 11:30";
+    [Parameter] public string Location { get; set; } = "Lantai 3, Gedung A";
+    [Parameter] public int Capacity { get; set; } = 12;
+    [Parameter] public string? PhotoUrl { get; set; }
+    [Parameter] public DateTime TargetTime { get; set; } = DateTime.Now.AddMinutes(15);
+    [Parameter] public EventCallback OnConfirm { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback OnAutoReleased { get; set; }
+    [Parameter] public bool InitialSuccess { get; set; }
+
+    private PeriodicTimer? _timer;
+    private CancellationTokenSource? _cts;
+    private bool _disposed;
+    private string RemainingTimeFormatted = "15:00";
+    private double _remainingPercentage = 100;
+    private double _totalSeconds = 15 * 60;
+    private int _extensionCount = 0;
+    private bool _isConfirmedSuccess = false;
+    private bool _showCancelModal = false;
+    private bool _showExtendModal = false;
+    private bool _showRoomDetailModal = false;
+    private int _selectedExtendDuration = 10;
+    private string _extendReason = "";
+
+    private void OpenRoomDetail()
+    {
+        _showRoomDetailModal = true;
+    }
+
+    public record CheckinFacility(string Name, string IconPath);
+
+    private IEnumerable<CheckinFacility> GetRoomFacilities()
+    {
+        var room = RoomDataProvider.GetRooms().FirstOrDefault(r => r.Name.Equals(RoomName, StringComparison.OrdinalIgnoreCase));
+        if (room != null && room.Amenities != null && room.Amenities.Any())
+        {
+            foreach (var a in room.Amenities)
+            {
+                var icon = a.ToLowerInvariant() switch
+                {
+                    "proyektor" or "projector" => "/icon/icon_projector.svg",
+                    "ac" => "/icon/icon_ac.svg",
+                    "wifi" => "/icon/icon_wifi.svg",
+                    "konferensi video" or "video conference" or "video conf" => "/icon/icon_video_conf.svg",
+                    "papan tulis" or "whiteboard" => "/icon/icon_whiteboard.svg",
+                    "sistem audio" or "audio system" or "sound system" => "/icon/icon_audio.svg",
+                    "aksesibilitas" or "accessibility" => "/icon/icon_accessibility.svg",
+                    "tv" or "tv led" or "smart tv" => "/icon/icon_tv.svg",
+                    _ => "/icon/icon_check_circle.svg"
+                };
+                yield return new CheckinFacility(a, icon);
+            }
+        }
+        else
+        {
+            yield return new CheckinFacility("Proyektor 4K", "/icon/icon_projector.svg");
+            yield return new CheckinFacility("Video Conference", "/icon/icon_video_conf.svg");
+            yield return new CheckinFacility("High-Speed WiFi", "/icon/icon_wifi.svg");
+            yield return new CheckinFacility("Papan Tulis", "/icon/icon_whiteboard.svg");
+        }
+    }
+
+    private double GetTimerOffset()
+    {
+        const double circumference = 276.5; // 2 * PI * 44
+        var totalSeconds = _totalSeconds;
+        var remainingSeconds = Math.Max(0, (TargetTime - DateTime.Now).TotalSeconds);
+        var progress = remainingSeconds / totalSeconds;
+        progress = Math.Max(0, Math.Min(1, progress));
+        return circumference * (1 - progress);
+    }
+
+    private string RingColorClass => _remainingPercentage switch
+    {
+        > 50 => "#22C55E",
+        >= 20 => "#F59E0B",
+        _ => "#EF4444"
+    };
+
+    protected override void OnInitialized()
+    {
+        _totalSeconds = 15 * 60;
+        if (InitialSuccess)
+        {
+            _isConfirmedSuccess = true;
+        }
+        UpdateCountdown();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_disposed)
+        {
+            _cts = new CancellationTokenSource();
+            _timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+            try
+            {
+                while (!_disposed && await _timer.WaitForNextTickAsync(_cts.Token))
+                {
+                    if (_disposed) break;
+                    UpdateCountdown();
+                    try
+                    {
+                        await InvokeAsync(StateHasChanged);
+                    }
+                    catch (ObjectDisposedException) { break; }
+                    catch (InvalidOperationException) { break; }
+                }
+            }
+            catch (OperationCanceledException) { }
+            catch (ObjectDisposedException) { }
+        }
+    }
+
+    private void UpdateCountdown()
+    {
+        var remaining = TargetTime - DateTime.Now;
+        if (remaining <= TimeSpan.Zero)
+        {
+            remaining = TimeSpan.Zero;
+            _timer?.Dispose();
+            if (!_disposed)
+            {
+                try
+                {
+                    InvokeAsync(() => OnAutoReleased.InvokeAsync());
+                }
+                catch { }
+            }
+        }
+
+        RemainingTimeFormatted = remaining.ToString(@"mm\:ss");
+        double progress = remaining.TotalSeconds / _totalSeconds;
+        progress = Math.Max(0, Math.Min(1, progress));
+        _remainingPercentage = progress * 100;
+    }
+
+    // CASE 8a: Konfirmasi dengan Popup Sukses + Toast
+    private async Task ConfirmCheckIn()
+    {
+        _timer?.Dispose();
+        _cts?.Cancel();
+        _isConfirmedSuccess = true;
+
+        ToastService.Success("Konfirmasi Kehadiran Berhasil", $"Kehadiran Anda telah dikonfirmasi untuk rapat di {RoomName}.");
+
+        if (OnConfirm.HasDelegate)
+        {
+            await OnConfirm.InvokeAsync();
+        }
+
+        // Auto close after 2.5 seconds
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(2500);
+            if (!_disposed)
+            {
+                await InvokeAsync(async () =>
+                {
+                    await DismissSuccess();
+                });
+            }
+        });
+    }
+
+    private async Task DismissSuccess()
+    {
+        await ModalService.CloseTopAsync(ModalResult.Ok());
+    }
+
+    // CASE 6 (V66): Minta Waktu Tambahan dengan Modal Pemilihan Durasi & Alasan
+    private void RequestExtraTime()
+    {
+        if (_extensionCount >= 2)
+        {
+            ToastService.Warning("Batas Maksimum", "Batas waktu tambahan konfirmasi kehadiran telah tercapai (maks. 2 kali).");
+            return;
+        }
+
+        _selectedExtendDuration = 10;
+        _extendReason = "";
+        _showExtendModal = true;
+    }
+
+    private void ConfirmExtendTime()
+    {
+        if (string.IsNullOrWhiteSpace(_extendReason) || _selectedExtendDuration == 0) return;
+        if (_extensionCount >= 2) return;
+
+        TargetTime = TargetTime.AddMinutes(_selectedExtendDuration);
+        _totalSeconds += _selectedExtendDuration * 60;
+        _extensionCount++;
+        _showExtendModal = false;
+        UpdateCountdown();
+
+        ToastService.Info("Waktu Tambahan Diberikan", $"Waktu konfirmasi kehadiran berhasil diperpanjang {_selectedExtendDuration} menit.");
+    }
+
+    // CASE 8c: Buka Modal Pembatalan dengan Alasan Wajib (Reused CancelBookingModal)
+    private void OpenCancelModal()
+    {
+        _showCancelModal = true;
+    }
+
+    private async Task HandleConfirmReleaseWithReason(string reason)
+    {
+        _timer?.Dispose();
+        _cts?.Cancel();
+        _showCancelModal = false;
+
+        ToastService.Success("Pemesanan Dibatalkan", $"Pemesanan {RoomName} berhasil dibatalkan dan ruangan telah dilepas.");
+
+        if (OnCancel.HasDelegate)
+        {
+            await OnCancel.InvokeAsync();
+        }
+        await ModalService.CloseTopAsync(ModalResult.Cancel());
+    }
+
+    private async Task HandleCancelClose()
+    {
+        _timer?.Dispose();
+        _cts?.Cancel();
+        if (OnCancel.HasDelegate)
+        {
+            await OnCancel.InvokeAsync();
+        }
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _timer?.Dispose();
+    }
+}

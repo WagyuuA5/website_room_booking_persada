@@ -1,60 +1,397 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
+@using booking_room.Services
+@using booking_room.Components.Models
 @inject NavigationManager Navigation
+@inject INotificationService NotificationService
+@inject booking_room.Services.LoadingStateService LoadingState
+@inject booking_room.Services.IToastService ToastService
+@inject IJSRuntime JS
+@implements IDisposable
 
-<div class="page d-flex">
-    <aside class="sidebar @(_sidebarOpen ? "show" : "")">
+<div class="app-shell">
+    <booking_room.Components.Shared.Toast />
+    @if (_showSplitAnimation)
+    {
+        <div class="split-transition-overlay @(_splitOpening ? "opening" : "")">
+            <div class="split-panel top"></div>
+            <div class="split-panel bottom"></div>
+        </div>
+    }
+
+    @if (_isNavigating)
+    {
+        <div class="top-progress-bar">
+            <div class="top-progress-bar-inner"></div>
+        </div>
+    }
+
+    <aside class="sidebar">
+        <SidebarDragHandle />
         <NavMenu />
     </aside>
 
-    <main class="main-content flex-grow-1">
-        <header class="dashboard-header">
+    <div class="main-area">
+        <header class="navbar">
             <div class="d-flex align-items-center gap-2">
-                <button class="sidebar-toggle d-lg-none" @onclick="ToggleSidebar" aria-label="Toggle sidebar">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                    </svg>
-                </button>
             </div>
             <div class="dashboard-header-right">
-                <div class="notification-bell">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-                    </svg>
-                    <span class="notification-dot"></span>
+                @if (IsBerandaPage)
+                {
+                    <button class="nav-datepicker-btn" @onclick="ToggleDatePickerModal" aria-label="Pilih Tanggal" title="Pilih Tanggal">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                    </button>
+                }
+                <button class="dark-mode-toggle" @onclick="ToggleDarkMode" aria-label="Ganti Mode Gelap" title="Ganti Mode Gelap">
+                    @if (_isDarkMode)
+                    {
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="12" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    }
+                    else
+                    {
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    }
+                </button>
+                <div class="notification-wrapper">
+                    <button class="notif-bell-btn" @onclick="ToggleNotificationPanel" aria-label="Notifikasi" title="Notifikasi">
+                        <booking_room.Components.Shared.InlineSvg Src="icons/icon_bell.svg" Class="icon-md" Style="stroke: currentColor; fill: none;" />
+                        @if (NotificationService.UnreadCount > 0)
+                        {
+                            <span class="notif-badge">@(NotificationService.UnreadCount > 9 ? "9+" : NotificationService.UnreadCount.ToString())</span>
+                        }
+                    </button>
+                    <booking_room.Components.Shared.NotificationPanel Visible="@_showNotificationPanel" OnClose="CloseNotificationPanel" />
                 </div>
-                <img src="https://ui-avatars.com/api/?name=Admin+User&background=0f1f3d&color=fff" alt="Profil Pengguna" class="profile-avatar" />
+                <div class="profile-avatar-wrapper" @onclick="ToggleProfilePanel" style="cursor: pointer; position: relative;" title="Profil Pengguna" aria-label="Profil Pengguna">
+                    @if (!string.IsNullOrEmpty(BookingDataStore.CurrentUser.PhotoUrl))
+                    {
+                        <img src="@BookingDataStore.CurrentUser.PhotoUrl" alt="Profil Pengguna" class="profile-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'" />
+                        <img src="https://ui-avatars.com/api/?name=Admin+User&background=0f1f3d&color=fff" alt="Profil Pengguna" class="profile-avatar" style="display:none; position:absolute; inset:0;" />
+                    }
+                    else
+                    {
+                        <img src="https://ui-avatars.com/api/?name=Admin+User&background=0f1f3d&color=fff" alt="Profil Pengguna" class="profile-avatar" />
+                    }
+                    <booking_room.Components.Shared.ProfilePanel Visible="@_showProfilePanel" OnClose="CloseProfilePanel" OnShowProfile="ShowUserProfileModal" />
+                </div>
             </div>
         </header>
 
-        <div class="dashboard-body">
-            @Body
-        </div>
-    </main>
-</div>
+        <booking_room.Components.Shared.UserProfilePopup @bind-Visible="_showUserProfileModal" OnClose="() => _showUserProfileModal = false" />
 
-<div class="sidebar-overlay @(_sidebarOpen ? "show" : "")" @onclick="CloseSidebar"></div>
+        <main class="page-content">
+            <ErrorBoundary>
+                <ChildContent>
+                    @Body
+                </ChildContent>
+                <ErrorContent>
+                    <div class="app-error-fallback" style="padding: 24px; text-align: center; border-radius: var(--persada-border-radius-card, 20px); background: #FFFFFF; box-shadow: var(--shadow-sm); margin: 24px auto; max-width: 400px;">
+                        <div style="color: #EF4444; margin-bottom: 16px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        </div>
+                        <p style="color: var(--persada-navy-900, #0F1F3D); font-weight: 600; margin-bottom: 16px;">Terjadi kesalahan saat memuat halaman ini.</p>
+                        <button class="btn btn-primary" style="background: var(--persada-yellow-500, #F59E0B); border: none; padding: 10px 20px; border-radius: 999px; font-weight: 700; color: #0F1F3D;" @onclick="() => Navigation.NavigateTo(Navigation.Uri, forceLoad: true)">
+                            Muat Ulang Halaman
+                        </button>
+                    </div>
+                </ErrorContent>
+            </ErrorBoundary>
+        </main>
+    </div>
+</div>
 
 <div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
-    <span class="dismiss">🗙</span>
+    Terjadi kesalahan yang tidak terduga.
+    <a href="." class="reload">Muat Ulang</a>
+    <span class="dismiss">??</span>
 </div>
 
-@code {
-    private bool _sidebarOpen = false;
+<booking_room.Components.Shared.ModalHost />
 
-    private void ToggleSidebar()
+<!-- Reusable Popup Riwayat Pemesanan Ringkas (Case 8B) -->
+<booking_room.Components.Shared.AppModal Visible="@_showCalendarHistoryModal"
+          VisibleChanged="@(v => _showCalendarHistoryModal = v)"
+          Title="Riwayat Pemesanan Ringkas"
+          Subtitle="Ringkasan frekuensi reservasi ruangan Anda 6 bulan terakhir"
+          Size="sm"
+          ShowHeader="true"
+          ShowFooter="true">
+    <IconContent>
+        <div class="modal-header-icon--warning" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #FFFBEB;">
+            <img src="/icon/Icon_clndr.svg" class="icon-sm" alt="" />
+        </div>
+    </IconContent>
+    <BodyContent>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div class="calendar-history-item" style="display: flex; justify-content: space-between; align-items: center; padding: 9px 12px; background: #F8FAFC; border-radius: 8px; border: 1px solid #E2E8F0;">
+                <span style="font-weight: 600; font-size: 13px; color: #0F172A;">Oktober 2026</span>
+                <span style="font-weight: 700; font-size: 12px; color: #F5A623; background: #FEF6EC; padding: 2px 10px; border-radius: 999px;">15 pemesanan</span>
+            </div>
+            <div class="calendar-history-item" style="display: flex; justify-content: space-between; align-items: center; padding: 9px 12px; background: #F8FAFC; border-radius: 8px; border: 1px solid #E2E8F0;">
+                <span style="font-weight: 600; font-size: 13px; color: #0F172A;">September 2026</span>
+                <span style="font-weight: 700; font-size: 12px; color: #F5A623; background: #FEF6EC; padding: 2px 10px; border-radius: 999px;">9 pemesanan</span>
+            </div>
+            <div class="calendar-history-item" style="display: flex; justify-content: space-between; align-items: center; padding: 9px 12px; background: #F8FAFC; border-radius: 8px; border: 1px solid #E2E8F0;">
+                <span style="font-weight: 600; font-size: 13px; color: #0F172A;">Agustus 2026</span>
+                <span style="font-weight: 700; font-size: 12px; color: #F5A623; background: #FEF6EC; padding: 2px 10px; border-radius: 999px;">12 pemesanan</span>
+            </div>
+            <div class="calendar-history-item" style="display: flex; justify-content: space-between; align-items: center; padding: 9px 12px; background: #F8FAFC; border-radius: 8px; border: 1px solid #E2E8F0;">
+                <span style="font-weight: 600; font-size: 13px; color: #0F172A;">Juli 2026</span>
+                <span style="font-weight: 700; font-size: 12px; color: #F5A623; background: #FEF6EC; padding: 2px 10px; border-radius: 999px;">5 pemesanan</span>
+            </div>
+            <div class="calendar-history-item" style="display: flex; justify-content: space-between; align-items: center; padding: 9px 12px; background: #F8FAFC; border-radius: 8px; border: 1px solid #E2E8F0;">
+                <span style="font-weight: 600; font-size: 13px; color: #0F172A;">Juni 2026</span>
+                <span style="font-weight: 700; font-size: 12px; color: #F5A623; background: #FEF6EC; padding: 2px 10px; border-radius: 999px;">8 pemesanan</span>
+            </div>
+            <div class="calendar-history-item" style="display: flex; justify-content: space-between; align-items: center; padding: 9px 12px; background: #F8FAFC; border-radius: 8px; border: 1px solid #E2E8F0;">
+                <span style="font-weight: 600; font-size: 13px; color: #0F172A;">Mei 2026</span>
+                <span style="font-weight: 700; font-size: 12px; color: #F5A623; background: #FEF6EC; padding: 2px 10px; border-radius: 999px;">4 pemesanan</span>
+            </div>
+        </div>
+    </BodyContent>
+    <FooterContent>
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <booking_room.Components.Shared.AnimatedButton Text="Lihat Riwayat Lengkap" Variant="primary" OnClick="GoToHistory" />
+            <booking_room.Components.Shared.AnimatedButton Text="Tutup" Variant="secondary" OnClick="() => _showCalendarHistoryModal = false" />
+        </div>
+    </FooterContent>
+</booking_room.Components.Shared.AppModal>
+
+<!-- CASE 1 (V60): DateRangePicker Modal (Pilih Tanggal Modern) -->
+<booking_room.Components.Shared.DateRangePickerModal Visible="@_showDatePickerModal"
+                                                     VisibleChanged="@(v => _showDatePickerModal = v)"
+                                                     StartDate="@_selectedStartDate"
+                                                     EndDate="@_selectedEndDate"
+                                                     OnConfirm="HandleDateRangeConfirmed"
+                                                     OnClose="() => _showDatePickerModal = false" />
+
+@code {
+    private bool _showNotificationPanel = false;
+    private bool _showProfilePanel = false;
+    private bool _showCalendarHistoryModal = false;
+    private bool _showDatePickerModal = false;
+    private DateTime? _selectedStartDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 4);
+    private DateTime? _selectedEndDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 17);
+    private bool _isDarkMode = false;
+    private bool _isNavigating = false;
+    
+    private bool _showSplitAnimation = false;
+    private bool _splitOpening = false;
+    private bool _isSidebarCollapsed = false;
+
+    private bool _showUserProfileModal = false;
+    
+    private bool _disposed;
+    private CancellationTokenSource? _cts;
+
+    private void ToggleDatePickerModal()
     {
-        _sidebarOpen = !_sidebarOpen;
+        _showDatePickerModal = !_showDatePickerModal;
+        if (_showDatePickerModal)
+        {
+            _showNotificationPanel = false;
+            _showProfilePanel = false;
+        }
     }
 
-    private void CloseSidebar()
+    private void HandleDateRangeConfirmed((DateTime? Start, DateTime? End) range)
     {
-        _sidebarOpen = false;
+        _selectedStartDate = range.Start;
+        _selectedEndDate = range.End;
+        _showDatePickerModal = false;
+        if (range.Start.HasValue && range.End.HasValue)
+        {
+            ToastService.Success("Rentang Tanggal Dipilih", $"Menampilkan jadwal {range.Start.Value:dd MMM} - {range.End.Value:dd MMM yyyy}");
+        }
+        else if (range.Start.HasValue)
+        {
+            ToastService.Success("Tanggal Dipilih", $"Menampilkan jadwal {range.Start.Value:dd MMMM yyyy}");
+        }
+    }
+
+    private void GoToHistory()
+    {
+        _showCalendarHistoryModal = false;
+        Navigation.NavigateTo("/history");
+    }
+
+    private void ToggleNotificationPanel()
+    {
+        _showNotificationPanel = !_showNotificationPanel;
+        if (_showNotificationPanel) _showProfilePanel = false;
+    }
+
+    private void CloseNotificationPanel()
+    {
+        _showNotificationPanel = false;
+    }
+
+    private void ToggleProfilePanel()
+    {
+        _showProfilePanel = !_showProfilePanel;
+        if (_showProfilePanel) _showNotificationPanel = false;
+    }
+
+    private void CloseProfilePanel()
+    {
+        _showProfilePanel = false;
+    }
+
+    private void ToggleCalendarHistoryModal()
+    {
+        _showCalendarHistoryModal = !_showCalendarHistoryModal;
+        if (_showCalendarHistoryModal)
+        {
+            _showNotificationPanel = false;
+            _showProfilePanel = false;
+        }
+    }
+    
+    private void ShowUserProfileModal()
+    {
+        _showProfilePanel = false;
+        _showUserProfileModal = true;
+    }
+
+    private bool IsBerandaPage
+    {
+        get
+        {
+            var path = Navigation.ToBaseRelativePath(Navigation.Uri).ToLowerInvariant();
+            var cleanPath = path.Split('?')[0].Trim('/');
+            return string.IsNullOrEmpty(cleanPath) || cleanPath == "beranda";
+        }
     }
 
     protected override void OnInitialized()
     {
-        Navigation.LocationChanged += (_, _) => CloseSidebar();
+        Navigation.LocationChanged += OnLocationChanged;
+        NotificationService.OnChange += SafeStateHasChanged;
+    }
+
+    private void SafeStateHasChanged()
+    {
+        if (_disposed) return;
+        try
+        {
+            InvokeAsync(StateHasChanged);
+        }
+        catch (ObjectDisposedException) { }
+        catch (InvalidOperationException) { }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                var isLoggedIn = await JS.InvokeAsync<string>("localStorage.getItem", "isLoggedIn");
+                if (isLoggedIn != "true")
+                {
+                    Navigation.NavigateTo("/login", forceLoad: true);
+                    return;
+                }
+            }
+            catch { }
+
+            try
+            {
+                var theme = await JS.InvokeAsync<string>("localStorage.getItem", "theme");
+                if (theme == "dark")
+                {
+                    _isDarkMode = true;
+                    await JS.InvokeVoidAsync("document.body.classList.add", "dark-mode");
+                    await JS.InvokeVoidAsync("document.documentElement.setAttribute", "data-theme", "dark");
+                }
+                
+                var sidebarPref = await JS.InvokeAsync<string>("localStorage.getItem", "sidebarWidthState");
+                _isSidebarCollapsed = sidebarPref == "collapsed";
+
+                var playSplit = await JS.InvokeAsync<string>("localStorage.getItem", "playSplitAnimation");
+                if (playSplit == "true")
+                {
+                    _showSplitAnimation = true;
+                    await JS.InvokeVoidAsync("localStorage.removeItem", "playSplitAnimation");
+                    SafeStateHasChanged();
+                    
+                    await Task.Delay(50);
+                    _splitOpening = true;
+                    SafeStateHasChanged();
+                    
+                    await Task.Delay(700);
+                    _showSplitAnimation = false;
+                    _splitOpening = false;
+                    SafeStateHasChanged();
+                }
+                SafeStateHasChanged();
+            }
+            catch { }
+        }
+    }
+
+    private async Task ToggleDarkMode()
+    {
+        _isDarkMode = !_isDarkMode;
+        if (_isDarkMode)
+        {
+            await JS.InvokeVoidAsync("document.body.classList.add", "dark-mode");
+            await JS.InvokeVoidAsync("document.documentElement.setAttribute", "data-theme", "dark");
+            await JS.InvokeVoidAsync("localStorage.setItem", "theme", "dark");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("document.body.classList.remove", "dark-mode");
+            await JS.InvokeVoidAsync("document.documentElement.removeAttribute", "data-theme");
+            await JS.InvokeVoidAsync("localStorage.setItem", "theme", "light");
+        }
+    }
+
+    private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        if (_disposed) return;
+        
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _cts = new CancellationTokenSource();
+        var token = _cts.Token;
+
+        _isNavigating = true;
+        LoadingState.SetLoading(true);
+        SafeStateHasChanged();
+        
+        try
+        {
+            await Task.Delay(300, token);
+            if (!_disposed && !token.IsCancellationRequested)
+            {
+                _isNavigating = false;
+                LoadingState.SetLoading(false);
+                SafeStateHasChanged();
+            }
+
+            var isLoggedIn = await JS.InvokeAsync<string>("localStorage.getItem", "isLoggedIn");
+            if (isLoggedIn != "true")
+            {
+                Navigation.NavigateTo("/login", forceLoad: true);
+            }
+        }
+        catch (OperationCanceledException) { }
+        catch (ObjectDisposedException) { }
+        catch (InvalidOperationException) { }
+        catch { }
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        Navigation.LocationChanged -= OnLocationChanged;
+        NotificationService.OnChange -= SafeStateHasChanged;
+        _cts?.Cancel();
+        _cts?.Dispose();
     }
 }

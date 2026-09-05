@@ -1,0 +1,39 @@
+@namespace booking_room.Components.Shared
+@using booking_room.Services
+@inject IModalService ModalService
+@implements IDisposable
+
+@if (ModalService.Stack.Count > 0)
+{
+    var modal = ModalService.Stack[^1];
+    var zIndex = 1050 + ((ModalService.Stack.Count - 1) * 10);
+    <div class="modal-stack-layer" style="position: relative; z-index: @zIndex;" @key="modal.Id">
+        <DynamicComponent Type="@modal.ComponentType" Parameters="@modal.Parameters" />
+    </div>
+}
+
+@code {
+    private bool _disposed;
+
+    protected override void OnInitialized()
+    {
+        ModalService.OnChange += OnModalServiceChange;
+    }
+
+    private void OnModalServiceChange()
+    {
+        if (_disposed) return;
+        try
+        {
+            InvokeAsync(StateHasChanged);
+        }
+        catch (ObjectDisposedException) { }
+        catch (InvalidOperationException) { }
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        ModalService.OnChange -= OnModalServiceChange;
+    }
+}

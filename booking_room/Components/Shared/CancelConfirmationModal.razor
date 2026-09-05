@@ -1,0 +1,57 @@
+@namespace booking_room.Components.Shared
+@using booking_room.Services
+@inject IModalService ModalService
+
+<AppModal Visible="true" Size="sm" ShowCloseButton="false" OnClose="HandleKeep">
+    <HeaderContent>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 40px; height: 40px; border-radius: 12px; background: #FEE2E2; display: flex; align-items: center; justify-content: center; color: #DC2626; flex-shrink: 0;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+            </div>
+            <div>
+                <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #991B1B;">Batalkan Pemesanan</h3>
+                <p style="margin: 2px 0 0 0; font-size: 0.85rem; color: #64748B;">@RoomName</p>
+            </div>
+        </div>
+    </HeaderContent>
+    <ChildContent>
+        <div style="padding: 8px 0; color: #4B5563; font-size: 0.95rem; line-height: 1.5;">
+            Apakah Anda yakin ingin membatalkan pemesanan ini? Ruangan akan segera dilepas dan tersedia untuk orang lain.
+        </div>
+    </ChildContent>
+    <FooterContent>
+        <button class="btn-secondary-app" @onclick="HandleKeep">
+            Tutup
+        </button>
+        <button class="btn-primary-app" style="background: var(--color-danger-bg); color: var(--color-danger-text);" @onclick="HandleConfirm">
+            Ya, Batalkan
+        </button>
+    </FooterContent>
+</AppModal>
+
+@code {
+    [Parameter] public string RoomName { get; set; } = "";
+    [Parameter] public EventCallback OnKeep { get; set; }
+    [Parameter] public EventCallback OnConfirmCancel { get; set; }
+
+    private async Task HandleKeep()
+    {
+        if (OnKeep.HasDelegate)
+        {
+            await OnKeep.InvokeAsync();
+        }
+        await ModalService.CloseTopAsync(ModalResult.Cancel());
+    }
+
+    private async Task HandleConfirm()
+    {
+        if (OnConfirmCancel.HasDelegate)
+        {
+            await OnConfirmCancel.InvokeAsync();
+        }
+        await ModalService.CloseTopAsync(ModalResult.Ok());
+    }
+}
+

@@ -1,5 +1,5 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="id">
 
 <head>
     <meta charset="utf-8" />
@@ -7,17 +7,23 @@
     <base href="/" />
     <ResourcePreloader />
     <link rel="stylesheet" href="@Assets["lib/bootstrap/dist/css/bootstrap.min.css"]" />
-    <link rel="stylesheet" href="@Assets["app.css"]" />
-    <link rel="stylesheet" href="@Assets["booking_room.styles.css"]" />
+    <link rel="stylesheet" href="app.css?v=@Guid.NewGuid().ToString("N")" />
+    <link rel="stylesheet" href="booking_room.styles.css?v=@Guid.NewGuid().ToString("N")" />
     <ImportMap />
-    <link rel="icon" type="image/png" href="favicon.png" />
-    <HeadOutlet />
+    <link rel="icon" type="image/png" href="icon_psd.png" />
+    <HeadOutlet @rendermode="InteractiveServer" />
 </head>
 
 <body>
-    <Routes />
+    <Routes @rendermode="InteractiveServer" />
     <ReconnectModal />
     <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script src="_content/Blazor-ApexCharts/js/apexcharts.esm.js"></script>
+    <script src="_content/Blazor-ApexCharts/js/blazor-apexcharts.js"></script>
+    <script src="js/modal.js"></script>
+    <script src="js/download.js"></script>
+    <script src="js/sidebar-drag.js"></script>
+    <script src="js/boarding-slider.js"></script>
 </body>
 
 </html>

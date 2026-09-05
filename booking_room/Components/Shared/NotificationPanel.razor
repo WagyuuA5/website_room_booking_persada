@@ -1,0 +1,572 @@
+@namespace booking_room.Components.Shared
+@using booking_room.Services
+@inject INotificationService NotificationService
+@inject IModalService ModalService
+@inject IToastService ToastService
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<Popover Visible="Visible" VisibleChanged="OnVisibleChanged" Title="Notifikasi" Width="380px" ShowHeader="true" ShowFooter="true" Class="notification-popover">
+    <HeaderContent>
+        <div class="notif-header-content">
+            <div class="notif-title-badge-wrap">
+                <span class="notif-title-text">Notifikasi</span>
+                @if (NotificationService.UnreadCount > 0)
+                {
+                    <span class="notif-badge-count">@NotificationService.UnreadCount Baru</span>
+                }
+            </div>
+            @if (NotificationService.UnreadCount > 0)
+            {
+                <button class="notif-mark-all" @onclick="MarkAllAsRead">Tandai Dibaca</button>
+            }
+        </div>
+    </HeaderContent>
+
+    <BodyContent>
+        <div class="notif-tabs">
+            <button class="notif-tab @(activeTab == "All" ? "active" : "")" @onclick='() => SetTab("All")'>Semua</button>
+            <button class="notif-tab @(activeTab == "Unread" ? "active" : "")" @onclick='() => SetTab("Unread")'>
+                Belum Dibaca
+                @if (NotificationService.UnreadCount > 0)
+                {
+                    <span class="tab-dot"></span>
+                }
+            </button>
+            <button class="notif-tab @(activeTab == "System" ? "active" : "")" @onclick='() => SetTab("System")'>Sistem</button>
+        </div>
+
+        @if (isReconnecting)
+        {
+            <div class="notif-reconnecting-bar">
+                <span class="spinner-inline"></span>
+                <span>Menyambungkan ulang...</span>
+            </div>
+        }
+        else if (showManualReconnectButton)
+        {
+            <div class="notif-reconnect-bar">
+                <span>Koneksi terputus. Klik untuk mencoba lagi.</span>
+                <button type="button" class="btn-reconnect-small" @onclick="TryAutoRefresh">Coba Lagi</button>
+            </div>
+        }
+
+        <div class="notif-list">
+            @if (!FilteredNotifications.Any())
+            {
+                <div class="notif-empty">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.5">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    <p>Tidak ada notifikasi saat ini</p>
+                </div>
+            }
+            else
+            {
+                @foreach (var item in FilteredNotifications)
+                {
+                    <div class="notif-item @(!item.IsRead ? "unread" : "")" @onclick="() => HandleNotificationClick(item)">
+                        <div class="notif-icon-col">
+                            @if (item.IconType == "avatar")
+                            {
+                                <img src="@item.AvatarUrl" class="notif-avatar" alt="@item.SourceName" />
+                            }
+                            else
+                            {
+                                <div class="notif-icon-circle @GetIconClass(item.IconType)">
+                                    @if (item.IconType == "clock")
+                                    {
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                    }
+                                    else if (item.IconType == "shield")
+                                    {
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                                    }
+                                    else if (item.IconType == "warning")
+                                    {
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                                    }
+                                    else
+                                    {
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                    }
+                                </div>
+                            }
+                        </div>
+                        <div class="notif-content-col">
+                            <div class="notif-title-row">
+                                <span class="notif-source">@item.SourceName</span>
+                                <div class="notif-meta-right">
+                                    <span class="notif-time">@GetTimeAgo(item.Timestamp)</span>
+                                    @if (!item.IsRead)
+                                    {
+                                        <span class="unread-dot" title="Belum dibaca"></span>
+                                    }
+                                </div>
+                            </div>
+                            <h5 class="notif-heading">@item.Title</h5>
+                            <p class="notif-desc">@item.Description</p>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </BodyContent>
+
+    <FooterContent>
+        <button class="btn-notif-view-all" @onclick='() => { Close(); Navigation.NavigateTo("/pengaturan"); }'>
+            Buka Pengaturan Notifikasi
+        </button>
+    </FooterContent>
+</Popover>
+
+<style>
+    .notif-header-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+    }
+    .notif-title-badge-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .notif-title-text {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--persada-navy-900, #0F1F3D);
+    }
+    body.dark-mode .notif-title-text { color: #F8FAFC; }
+    .notif-badge-count {
+        background: #1F5D9A;
+        color: #FFFFFF;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 999px;
+    }
+    .notif-mark-all {
+        background: transparent;
+        border: none;
+        color: #1F5D9A;
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    body.dark-mode .notif-mark-all { color: #FBBF24; }
+
+    .notif-tabs {
+        display: flex;
+        border-bottom: 1px solid #E2E8F0;
+        padding: 8px 16px;
+        gap: 8px;
+        background: #F8FAFC;
+    }
+    body.dark-mode .notif-tabs {
+        background: rgba(15, 23, 42, 0.4);
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+    .notif-tab {
+        padding: 6px 14px;
+        border: 1px solid transparent;
+        border-radius: 999px;
+        background: transparent;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: #64748B;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.2s ease;
+    }
+    body.dark-mode .notif-tab { color: #94A3B8; }
+    .notif-tab:hover {
+        color: #0F172A;
+        background: rgba(0, 0, 0, 0.04);
+    }
+    body.dark-mode .notif-tab:hover {
+        color: #FFFFFF;
+        background: rgba(255, 255, 255, 0.06);
+    }
+    .notif-tab.active {
+        background: #F59E0B;
+        color: #0F172A;
+        font-weight: 700;
+        border-color: #F59E0B;
+    }
+    body.dark-mode .notif-tab.active {
+        background: #F59E0B;
+        color: #0F172A;
+        border-color: #F59E0B;
+    }
+    .tab-dot {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        background: #DC2626;
+        border-radius: 50%;
+        margin-left: 4px;
+        vertical-align: middle;
+    }
+
+    /* Custom Thin Scrollbar */
+    .notif-list {
+        max-height: 380px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #E2E8F0 transparent;
+    }
+    .notif-list::-webkit-scrollbar {
+        width: 5px;
+    }
+    .notif-list::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .notif-list::-webkit-scrollbar-thumb {
+        background: #E2E8F0;
+        border-radius: 999px;
+        transition: background 0.2s ease;
+    }
+    .notif-list:hover::-webkit-scrollbar-thumb {
+        background: #CBD5E1;
+    }
+    .notif-list::-webkit-scrollbar-button {
+        display: none;
+        width: 0;
+        height: 0;
+    }
+    body.dark-mode .notif-list::-webkit-scrollbar-thumb {
+        background: #334155;
+    }
+    body.dark-mode .notif-list:hover::-webkit-scrollbar-thumb {
+        background: #475569;
+    }
+
+    /* Notification Items */
+    .notif-item {
+        display: flex;
+        gap: 12px;
+        padding: 14px 16px;
+        border-bottom: 1px solid #F1F5F9;
+        border-left: 3.5px solid transparent;
+        background: #FFFFFF;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        position: relative;
+    }
+    body.dark-mode .notif-item {
+        background: #1E293B;
+        border-bottom-color: rgba(255, 255, 255, 0.05);
+    }
+    .notif-item:hover {
+        background: #F8FAFC;
+    }
+    body.dark-mode .notif-item:hover {
+        background: rgba(255, 255, 255, 0.04);
+    }
+    .notif-item.unread {
+        background: #FFFFFF;
+        border-left-color: #F59E0B;
+    }
+    body.dark-mode .notif-item.unread {
+        background: #1E293B;
+        border-left-color: #F59E0B;
+    }
+
+    .notif-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    .notif-icon-circle {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .notif-icon-circle.bg-amber { background: #FEF3C7; color: #D97706; }
+    .notif-icon-circle.bg-purple { background: #F3E8FF; color: #9333EA; }
+    .notif-icon-circle.bg-red { background: #FEE2E2; color: #DC2626; }
+    .notif-icon-circle.bg-navy { background: #DBEAFE; color: #2563EB; }
+
+    .notif-content-col { flex: 1; min-width: 0; }
+    .notif-title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2px;
+    }
+    .notif-source {
+        font-size: 0.6875rem;
+        font-weight: 700;
+        color: #64748B;
+    }
+    .notif-time {
+        font-size: 0.6875rem;
+        color: #94A3B8;
+    }
+    .notif-heading {
+        margin: 0 0 2px 0;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        color: var(--persada-navy-900, #0F1F3D);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    body.dark-mode .notif-heading { color: #F8FAFC; }
+    .notif-desc {
+        margin: 0;
+        font-size: 0.75rem;
+        color: #64748B;
+        line-height: 1.35;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    body.dark-mode .notif-desc { color: #94A3B8; }
+
+    .notif-meta-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .unread-dot {
+        width: 7.5px;
+        height: 7.5px;
+        border-radius: 50%;
+        background: #F59E0B;
+        flex-shrink: 0;
+        box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25);
+    }
+    body.dark-mode .unread-dot { background: #F59E0B; }
+
+    .notif-empty {
+        padding: 40px 20px;
+        text-align: center;
+        color: #94A3B8;
+        font-size: 0.875rem;
+    }
+
+    .btn-notif-view-all {
+        width: 100%;
+        padding: 8px;
+        background: transparent;
+        border: none;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        color: #D97706;
+        cursor: pointer;
+        transition: color 0.15s ease;
+    }
+    .btn-notif-view-all:hover {
+        color: #B45309;
+        text-decoration: underline;
+    }
+    body.dark-mode .btn-notif-view-all { color: #FBBF24; }
+
+    .notif-reconnecting-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 16px;
+        background: #FEF3C7;
+        color: #92400E;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border-bottom: 1px solid #FDE68A;
+    }
+    .spinner-inline {
+        width: 12px;
+        height: 12px;
+        border: 2px solid rgba(146, 64, 14, 0.25);
+        border-top-color: #92400E;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        display: inline-block;
+    }
+    @@keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    .notif-reconnect-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 6px 16px;
+        background: #FEE2E2;
+        color: #991B1B;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border-bottom: 1px solid #FECACA;
+    }
+    .btn-reconnect-small {
+        background: #DC2626;
+        color: #FFFFFF;
+        border: none;
+        border-radius: 999px;
+        padding: 3px 10px;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.15s ease;
+    }
+    .btn-reconnect-small:hover {
+        background: #B91C1C;
+    }
+</style>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private string activeTab = "All";
+    private bool _disposed;
+
+    private int retryCount = 0;
+    private bool isReconnecting = false;
+    private bool showManualReconnectButton = false;
+
+    private async Task<bool> TryFetchNotificationsAsync()
+    {
+        await Task.Delay(100);
+        return true;
+    }
+
+    private async Task TryAutoRefresh()
+    {
+        isReconnecting = true;
+        showManualReconnectButton = false;
+        StateHasChanged();
+        while (retryCount < 3)
+        {
+            await Task.Delay(2000);
+            var success = await TryFetchNotificationsAsync();
+            if (success) { isReconnecting = false; retryCount = 0; StateHasChanged(); return; }
+            retryCount++;
+        }
+        isReconnecting = false;
+        showManualReconnectButton = true;
+        StateHasChanged();
+    }
+
+    protected override void OnInitialized()
+    {
+        NotificationService.OnChange += SafeStateHasChanged;
+    }
+
+    private void SafeStateHasChanged()
+    {
+        if (_disposed) return;
+        try
+        {
+            InvokeAsync(StateHasChanged);
+        }
+        catch (ObjectDisposedException) { }
+        catch (InvalidOperationException) { }
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        NotificationService.OnChange -= SafeStateHasChanged;
+    }
+
+    private void OnVisibleChanged(bool v)
+    {
+        if (!v) Close();
+    }
+
+    private void Close()
+    {
+        OnClose.InvokeAsync();
+    }
+
+    private void SetTab(string tab) => activeTab = tab;
+
+    private void MarkAllAsRead() => NotificationService.MarkAllAsRead();
+
+    private async Task HandleNotificationClick(NotificationItem item)
+    {
+        NotificationService.MarkAsRead(item.Id);
+        Close();
+
+        // 1. Direct path routing if available
+        if (!string.IsNullOrEmpty(item.RoutePath))
+        {
+            Navigation.NavigateTo(item.RoutePath);
+            return;
+        }
+
+        // 2. Modal action types
+        if (item.ActionType == NotificationActionType.OpenModal)
+        {
+            if (item.ModalComponentKey == "CheckInCountdownCard")
+            {
+                await ModalService.ShowAsync<CheckInCountdownCard>(item.ActionParameters ?? new());
+                return;
+            }
+            else if (item.ModalComponentKey == "PendingApprovalsModal")
+            {
+                Navigation.NavigateTo("/status?filter=Menunggu+Persetujuan");
+                return;
+            }
+            else if (item.ModalComponentKey == "ChartDetailModal")
+            {
+                Navigation.NavigateTo("/riwayat");
+                return;
+            }
+        }
+
+        // 3. Fallback intelligent routing based on category
+        if (item.Category == "Security")
+        {
+            Navigation.NavigateTo("/pengaturan");
+        }
+        else if (item.Category == "Reminder" || item.Category == "Invitation")
+        {
+            Navigation.NavigateTo("/status");
+        }
+        else if (item.Category == "System")
+        {
+            Navigation.NavigateTo("/status?filter=Menunggu+Persetujuan");
+        }
+        else if (item.Category == "Report")
+        {
+            Navigation.NavigateTo("/riwayat");
+        }
+        else
+        {
+            ToastService.Info("Notifikasi Dibaca", item.Title);
+        }
+    }
+
+    private IEnumerable<NotificationItem> FilteredNotifications => activeTab switch
+    {
+        "Unread" => NotificationService.Notifications.Where(n => !n.IsRead).OrderByDescending(n => n.Timestamp),
+        "System" => NotificationService.Notifications.Where(n => n.Category == "System" || n.Category == "Security").OrderByDescending(n => n.Timestamp),
+        _ => NotificationService.Notifications.OrderByDescending(n => n.Timestamp)
+    };
+
+    private string GetIconClass(string iconType) => iconType switch
+    {
+        "clock" => "bg-amber",
+        "shield" => "bg-purple",
+        "warning" => "bg-red",
+        _ => "bg-navy"
+    };
+
+    private string GetTimeAgo(DateTime dt)
+    {
+        var diff = DateTime.Now - dt;
+        if (diff.TotalMinutes < 1) return "Baru saja";
+        if (diff.TotalMinutes < 60) return $"{(int)diff.TotalMinutes}m lalu";
+        if (diff.TotalHours < 24) return $"{(int)diff.TotalHours}j lalu";
+        return dt.ToString("dd MMM");
+    }
+}

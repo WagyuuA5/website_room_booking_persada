@@ -1,0 +1,228 @@
+@using booking_room.Services
+@using booking_room.Components.Models
+@inject NavigationManager Navigation
+
+@if (Visible)
+{
+    <div class="profile-dropdown-overlay" @onclick="ClosePanel">
+        <div class="profile-glass-panel" @onclick:stopPropagation="true">
+            <div class="profile-glass-header">
+                <div class="profile-glass-avatar-wrapper">
+                    <div class="profile-avatar-inner">
+                        @if (!string.IsNullOrEmpty(BookingDataStore.CurrentUser.PhotoUrl))
+                        {
+                            <img src="@BookingDataStore.CurrentUser.PhotoUrl" alt="Avatar" class="profile-glass-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'" />
+                            <div class="profile-glass-avatar-initials" style="display:none;">@BookingDataStore.CurrentUser.Initials</div>
+                        }
+                        else
+                        {
+                            <div class="profile-glass-avatar-initials">@BookingDataStore.CurrentUser.Initials</div>
+                        }
+                    </div>
+                    <div class="profile-camera-badge">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                    </div>
+                </div>
+                <div class="profile-glass-user-info">
+                    <h3 class="profile-glass-name">@BookingDataStore.CurrentUser.FullName</h3>
+                    <p class="profile-glass-role">@BookingDataStore.CurrentUser.JobTitle - @BookingDataStore.CurrentUser.Department</p>
+                </div>
+            </div>
+
+            <div class="profile-glass-divider"></div>
+
+            <div class="profile-glass-details">
+                <div class="profile-glass-row">
+                    <span class="profile-glass-label">Email</span>
+                    <span class="profile-glass-value">@BookingDataStore.CurrentUser.Email</span>
+                </div>
+                <div class="profile-glass-row">
+                    <span class="profile-glass-label">Telepon</span>
+                    <span class="profile-glass-value">@BookingDataStore.CurrentUser.Phone</span>
+                </div>
+                <div class="profile-glass-row">
+                    <span class="profile-glass-label">Lokasi</span>
+                    <span class="profile-glass-value">@BookingDataStore.CurrentUser.OfficeLocation</span>
+                </div>
+                <div class="profile-glass-row">
+                    <span class="profile-glass-label">Terakhir Login</span>
+                    <span class="profile-glass-value">@BookingDataStore.CurrentUser.LastLogin</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+}
+
+<style>
+    .profile-dropdown-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: flex;
+        justify-content: flex-end;
+        align-items: flex-start;
+        padding: 80px 24px 24px 24px;
+    }
+
+    .profile-glass-panel {
+        width: 380px;
+        background: rgba(11, 31, 58, 0.75);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 20px;
+        color: #FFFFFF;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        animation: slideIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .profile-glass-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .profile-glass-avatar-wrapper {
+        width: 56px;
+        height: 56px;
+        position: relative;
+        flex-shrink: 0;
+    }
+
+    .profile-avatar-inner {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .profile-camera-badge {
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        width: 20px;
+        height: 20px;
+        background: #10B981;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #0B1F3A;
+        color: white;
+        cursor: pointer;
+        transition: transform 0.2s, background 0.2s;
+    }
+
+    .profile-camera-badge:hover {
+        transform: scale(1.1);
+        background: #059669;
+    }
+
+    .profile-glass-avatar {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .profile-glass-avatar-initials {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #3b82f6, #1e40af);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 1.25rem;
+    }
+
+    .profile-glass-user-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .profile-glass-name {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+    }
+
+    .profile-glass-role {
+        margin: 0;
+        font-size: 0.85rem;
+        color: #94a3b8;
+    }
+
+    .profile-glass-divider {
+        height: 1px;
+        background: rgba(255, 255, 255, 0.1);
+        margin: 20px 0;
+    }
+
+    .profile-glass-details {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .profile-glass-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.85rem;
+    }
+
+    .profile-glass-label {
+        color: #94a3b8;
+    }
+
+    .profile-glass-value {
+        color: #f1f5f9;
+        font-weight: 500;
+    }
+
+    .profile-glass-footer {
+        margin-top: 24px;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .profile-glass-logout {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #FFFFFF;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .profile-glass-logout:hover {
+        background: rgba(239, 68, 68, 0.8);
+        border-color: rgba(239, 68, 68, 0.8);
+    }
+
+    @@keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private async Task ClosePanel() => await OnClose.InvokeAsync();
+}

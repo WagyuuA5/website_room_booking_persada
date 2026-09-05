@@ -1,0 +1,294 @@
+@using booking_room.Components.Models
+
+@if (Variant == SystemAlertVariant.Banner)
+{
+    <div class="system-alert-banner alert-@Tone.ToString().ToLower()">
+        <div class="alert-icon">
+            <InlineSvg Src="@GetIconPath()" Style="width: 24px; height: 24px;" />
+        </div>
+        <div class="alert-content">
+            <h4 class="alert-title">@Title</h4>
+            @if (!string.IsNullOrEmpty(Description))
+            {
+                <p class="alert-description">@Description</p>
+            }
+        </div>
+        <div class="alert-actions">
+            @if (!string.IsNullOrEmpty(SecondaryActionText))
+            {
+                <button class="btn-alert-secondary" @onclick="OnSecondaryAction">@SecondaryActionText</button>
+            }
+            @if (!string.IsNullOrEmpty(PrimaryActionText))
+            {
+                <button class="btn-alert-primary" @onclick="OnPrimaryAction">@PrimaryActionText</button>
+            }
+        </div>
+    </div>
+}
+else if (Variant == SystemAlertVariant.Modal)
+{
+    <div class="system-alert-modal modal-content">
+        <div class="modal-body alert-modal-body">
+            <div class="alert-icon modal-icon alert-@Tone.ToString().ToLower()">
+                <InlineSvg Src="@GetIconPath()" Style="width: 24px; height: 24px;" />
+            </div>
+            <h3 class="alert-title modal-title">@Title</h3>
+            @if (!string.IsNullOrEmpty(Description))
+            {
+                <p class="alert-description modal-desc">@Description</p>
+            }
+            <div class="alert-actions modal-actions">
+                @if (!string.IsNullOrEmpty(SecondaryActionText))
+                {
+                    <button class="btn-alert-secondary" @onclick="HandleSecondary">@SecondaryActionText</button>
+                }
+                @if (!string.IsNullOrEmpty(PrimaryActionText))
+                {
+                    <button class="btn-alert-primary" @onclick="HandlePrimary">@PrimaryActionText</button>
+                }
+            </div>
+        </div>
+    </div>
+}
+else if (Variant == SystemAlertVariant.Toast)
+{
+    <div class="system-alert @ClassVariant @ClassTone" role="alert">
+        <div class="alert-icon">
+            <InlineSvg Src="@GetIconPath()" Style="width: 24px; height: 24px;" />
+        </div>
+        <div class="alert-content">
+            <h4 class="alert-title">@Title</h4>
+            @if (!string.IsNullOrEmpty(Description))
+            {
+                <p class="alert-description">@Description</p>
+            }
+        </div>
+    </div>
+}
+
+<style>
+    .system-alert-banner {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 12px 24px;
+        border-radius: 12px;
+        margin-bottom: 16px;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .system-alert-modal {
+        background: var(--color-white, #FFFFFF);
+        border-radius: var(--radius-card, 20px);
+        width: 100%;
+        max-width: 380px;
+        box-shadow: var(--shadow-modal, 0 20px 60px rgba(0, 0, 0, 0.25));
+        display: flex;
+        flex-direction: column;
+        font-family: 'Inter', sans-serif;
+        text-align: center;
+        padding: 32px 24px;
+    }
+
+    .alert-modal-body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .modal-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 8px;
+    }
+    
+    .modal-icon svg {
+        width: 32px;
+        height: 32px;
+    }
+
+    .system-alert-toast {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 16px;
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: var(--shadow-toast, 0 10px 30px rgba(0, 0, 0, 0.15));
+        border-left: 4px solid transparent;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .alert-success {
+        background: #ECFDF5;
+        border-color: var(--color-success, #10B981);
+    }
+    .alert-success .alert-icon { color: var(--color-success, #10B981); }
+    .alert-success.modal-icon { background: #D1FAE5; }
+
+    .alert-warning {
+        background: #FFFBEB;
+        border-color: var(--color-pending, #F59E0B);
+    }
+    .alert-warning .alert-icon { color: var(--color-pending, #F59E0B); }
+    .alert-warning.modal-icon { background: #FEF3C7; }
+
+    .alert-info {
+        background: #EFF6FF;
+        border-color: var(--color-card-dark, #0B1A3D);
+    }
+    .alert-info .alert-icon { color: var(--color-card-dark, #0B1A3D); }
+    .alert-info.modal-icon { background: #DBEAFE; }
+
+    .alert-danger {
+        background: #FEF2F2;
+        border-color: var(--color-danger, #EF4444);
+    }
+    .alert-danger .alert-icon { color: var(--color-danger, #EF4444); }
+    .alert-danger.modal-icon { background: #FEE2E2; }
+
+    .alert-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .alert-title {
+        margin: 0;
+        font-size: 0.9375rem;
+        font-weight: 700;
+        color: var(--color-card-dark, #0B1A3D);
+    }
+
+    .alert-description {
+        margin: 0;
+        font-size: 0.875rem;
+        color: var(--color-text-muted, #64748B);
+    }
+
+    .modal-title {
+        font-size: 1.25rem;
+    }
+    .modal-desc {
+        font-size: 0.9375rem;
+        margin-bottom: 16px;
+    }
+
+    .alert-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .modal-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .btn-alert-primary, .btn-alert-secondary {
+        padding: 10px 20px;
+        border-radius: var(--radius-pill, 999px);
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+    }
+
+    .modal-actions button {
+        width: 100%;
+    }
+
+    .btn-alert-primary {
+        background: var(--color-accent-gold-1, #FBBF24);
+        color: var(--color-card-dark, #0B1A3D);
+    }
+    .btn-alert-primary:hover {
+        background: var(--color-accent-gold-2, #F59E0B);
+    }
+
+    .btn-alert-secondary {
+        background: transparent;
+        color: var(--color-text-muted, #64748B);
+    }
+    .btn-alert-secondary:hover {
+        background: rgba(0,0,0,0.05);
+    }
+</style>
+
+@code {
+    [Parameter] public SystemAlertVariant Variant { get; set; } = SystemAlertVariant.Banner;
+    [Parameter] public SystemAlertTone Tone { get; set; } = SystemAlertTone.Success;
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public string? PrimaryActionText { get; set; }
+    [Parameter] public EventCallback OnPrimaryAction { get; set; }
+    [Parameter] public string? SecondaryActionText { get; set; }
+    [Parameter] public EventCallback OnSecondaryAction { get; set; }
+    [Parameter] public bool AutoClose { get; set; } = false;
+    [Parameter] public int AutoCloseAfterMs { get; set; } = 3000;
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AutoClose && Variant == SystemAlertVariant.Modal)
+        {
+            await Task.Delay(AutoCloseAfterMs);
+            if (OnClose.HasDelegate)
+            {
+                await OnClose.InvokeAsync();
+            }
+        }
+    }
+
+    private async Task HandlePrimary()
+    {
+        if (OnPrimaryAction.HasDelegate)
+            await OnPrimaryAction.InvokeAsync();
+        else if (OnClose.HasDelegate)
+            await OnClose.InvokeAsync();
+    }
+
+    private async Task HandleSecondary()
+    {
+        if (OnSecondaryAction.HasDelegate)
+            await OnSecondaryAction.InvokeAsync();
+        else if (OnClose.HasDelegate)
+            await OnClose.InvokeAsync();
+    }
+
+    private string ClassVariant => Variant switch
+    {
+        SystemAlertVariant.Banner => "alert-variant-banner",
+        SystemAlertVariant.Modal => "alert-variant-modal",
+        SystemAlertVariant.Toast => "alert-variant-toast",
+        _ => ""
+    };
+
+    private string ClassTone => Tone switch
+    {
+        SystemAlertTone.Success => "alert-tone-success",
+        SystemAlertTone.Warning => "alert-tone-warning",
+        SystemAlertTone.Info => "alert-tone-info",
+        SystemAlertTone.Danger => "alert-tone-danger",
+        _ => ""
+    };
+
+    private string GetIconPath()
+    {
+        return Tone switch
+        {
+            SystemAlertTone.Success => "/icons/icon_alert_success.svg",
+            SystemAlertTone.Warning => "/icons/icon_alert_warning.svg",
+            SystemAlertTone.Info => "/icons/icon_alert_info.svg",
+            SystemAlertTone.Danger => "/icons/icon_alert_danger.svg",
+            _ => "/icons/icon_alert_info.svg"
+        };
+    }
+}

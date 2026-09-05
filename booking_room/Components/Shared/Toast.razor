@@ -1,0 +1,302 @@
+@namespace booking_room.Components.Shared
+@using booking_room.Services
+@inject IToastService ToastService
+@implements IDisposable
+
+@if (ToastService.ActiveToasts.Any())
+{
+    <div class="floating-toast-container" aria-live="polite">
+        @foreach (var toast in ToastService.ActiveToasts)
+        {
+            <div class="floating-toast-card @GetToastTypeClass(toast.Type)" key="@toast.Id">
+                <div class="toast-card-body">
+                    <div class="toast-icon-wrapper @GetToastIconWrapperClass(toast.Type)">
+                        @if (toast.Type == ToastType.Success)
+                        {
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        }
+                        else if (toast.Type == ToastType.Error)
+                        {
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="15" y1="9" x2="9" y2="15"></line>
+                                <line x1="9" y1="9" x2="15" y2="15"></line>
+                            </svg>
+                        }
+                        else if (toast.Type == ToastType.Warning)
+                        {
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                <line x1="12" y1="9" x2="12" y2="13"></line>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                        }
+                        else
+                        {
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                        }
+                    </div>
+
+                    <div class="toast-text-wrapper">
+                        <div class="toast-title">@toast.Title</div>
+                        @if (!string.IsNullOrEmpty(toast.Message))
+                        {
+                            <div class="toast-subtitle">@toast.Message</div>
+                        }
+                    </div>
+
+                    <button type="button" class="toast-close-btn" @onclick="() => ToastService.Remove(toast.Id)" aria-label="Tutup Notifikasi">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Auto-dismiss Progress Bar -->
+                <div class="toast-progress-track">
+                    <div class="toast-progress-fill" style="animation-duration: @(toast.DurationMs)ms;"></div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<style>
+    .floating-toast-container {
+        position: fixed;
+        top: 24px;
+        right: 24px;
+        z-index: 99999;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        pointer-events: none;
+    }
+
+    .floating-toast-card {
+        pointer-events: auto;
+        width: 360px;
+        max-width: calc(100vw - 48px);
+        background: #FFFFFF;
+        border-radius: 14px;
+        box-shadow: 0 10px 25px -5px rgba(15, 31, 61, 0.12), 0 8px 12px -6px rgba(15, 31, 61, 0.08);
+        border: 1px solid #F1F5F9;
+        overflow: hidden;
+        position: relative;
+        animation: toastSlideInExpo 380ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    body.dark-mode .floating-toast-card {
+        background: #1E293B;
+        border-color: #334155;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 12px -6px rgba(0, 0, 0, 0.3);
+    }
+
+    @@keyframes toastSlideInExpo {
+        from {
+            opacity: 0;
+            transform: translateX(50px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+        }
+    }
+
+    .toast-card-body {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 14px 16px;
+    }
+
+    .toast-icon-wrapper {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+    .toast-icon-wrapper.icon-success {
+        background: #DCFCE7;
+        color: #16A34A;
+    }
+
+    .toast-icon-wrapper.icon-error {
+        background: #FEE2E2;
+        color: #DC2626;
+    }
+
+    .toast-icon-wrapper.icon-warning {
+        background: #FEF3C7;
+        color: #D97706;
+    }
+
+    .toast-icon-wrapper.icon-info {
+        background: #DBEAFE;
+        color: #2563EB;
+    }
+
+    body.dark-mode .toast-icon-wrapper.icon-success {
+        background: rgba(22, 163, 74, 0.2);
+        color: #4ADE80;
+    }
+
+    body.dark-mode .toast-icon-wrapper.icon-error {
+        background: rgba(220, 38, 38, 0.2);
+        color: #F87171;
+    }
+
+    body.dark-mode .toast-icon-wrapper.icon-warning {
+        background: rgba(217, 119, 6, 0.2);
+        color: #FBBF24;
+    }
+
+    body.dark-mode .toast-icon-wrapper.icon-info {
+        background: rgba(37, 99, 235, 0.2);
+        color: #60A5FA;
+    }
+
+    .toast-text-wrapper {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .toast-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #0F172A;
+        line-height: 1.35;
+    }
+
+    body.dark-mode .toast-title {
+        color: #F8FAFC;
+    }
+
+    .toast-subtitle {
+        font-size: 12.5px;
+        color: #64748B;
+        line-height: 1.4;
+        margin-top: 3px;
+        word-break: break-word;
+    }
+
+    body.dark-mode .toast-subtitle {
+        color: #94A3B8;
+    }
+
+    .toast-close-btn {
+        background: transparent;
+        border: none;
+        color: #94A3B8;
+        cursor: pointer;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        transition: all 0.15s ease;
+        flex-shrink: 0;
+        margin-top: -2px;
+        margin-right: -4px;
+    }
+
+    .toast-close-btn:hover {
+        background: #F1F5F9;
+        color: #475569;
+    }
+
+    body.dark-mode .toast-close-btn:hover {
+        background: #334155;
+        color: #E2E8F0;
+    }
+
+    /* Countdown progress bar */
+    .toast-progress-track {
+        width: 100%;
+        height: 3px;
+        background: #F1F5F9;
+        overflow: hidden;
+    }
+
+    body.dark-mode .toast-progress-track {
+        background: #334155;
+    }
+
+    .toast-progress-fill {
+        height: 100%;
+        background: #16A34A;
+        animation: toastCountdown linear forwards;
+    }
+
+    .floating-toast-card.toast-type-error .toast-progress-fill {
+        background: #DC2626;
+    }
+
+    .floating-toast-card.toast-type-warning .toast-progress-fill {
+        background: #D97706;
+    }
+
+    .floating-toast-card.toast-type-info .toast-progress-fill {
+        background: #2563EB;
+    }
+
+    @@keyframes toastCountdown {
+        from { width: 100%; }
+        to { width: 0%; }
+    }
+</style>
+
+@code {
+    private bool _disposed;
+
+    protected override void OnInitialized()
+    {
+        ToastService.OnChange += SafeStateHasChanged;
+    }
+
+    private void SafeStateHasChanged()
+    {
+        if (_disposed) return;
+        try
+        {
+            InvokeAsync(StateHasChanged);
+        }
+        catch (ObjectDisposedException) { }
+        catch (InvalidOperationException) { }
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        ToastService.OnChange -= SafeStateHasChanged;
+    }
+
+    private string GetToastTypeClass(ToastType type) => type switch
+    {
+        ToastType.Success => "toast-type-success",
+        ToastType.Error => "toast-type-error",
+        ToastType.Warning => "toast-type-warning",
+        _ => "toast-type-info"
+    };
+
+    private string GetToastIconWrapperClass(ToastType type) => type switch
+    {
+        ToastType.Success => "icon-success",
+        ToastType.Error => "icon-error",
+        ToastType.Warning => "icon-warning",
+        _ => "icon-info"
+    };
+}
+

@@ -1,0 +1,252 @@
+@namespace booking_room.Components.Shared
+@using booking_room.Components.Models
+@inject NavigationManager Navigation
+
+<AppModal Visible="@Visible" VisibleChanged="HandleVisibleChanged" Size="md" ShowCloseButton="false"
+          Title="Menunggu Persetujuan" Subtitle="Tinjau permintaan pemesanan terbaru Anda.">
+    <IconContent>
+        <div class="modal-icon-clipboard">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                <polyline points="9 14 12 17 16 11"></polyline>
+            </svg>
+        </div>
+    </IconContent>
+
+    <BodyContent>
+        <div class="pending-approvals-body">
+            <!-- 2. Daftar Permintaan Vertikal (UI-10) -->
+            <div class="pending-list-scroll">
+                @foreach (var item in _pendingItems)
+                {
+                    <div class="pending-request-row" @onclick="() => OpenScheduleDetail(item)">
+                        <div class="room-type-avatar">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                                <path d="M3 9h18"></path>
+                            </svg>
+                        </div>
+                        <div class="request-main-col">
+                            <div class="row-top">
+                                <h4 class="pending-room-name">@item.RoomName</h4>
+                                <span class="badge-status-pending">
+                                    <span class="dot-amber"></span>
+                                    Menunggu
+                                </span>
+                            </div>
+                            <div class="request-meta-row">
+                                <span class="meta-inline">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                    @item.Date
+                                </span>
+                                <span class="meta-inline">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                    @item.TimeSlot
+                                </span>
+                            </div>
+                            <span class="requester-label">Diminta oleh <strong>@item.RequestedBy</strong></span>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </BodyContent>
+
+    <FooterContent>
+        <!-- 3. Footer: Dua tombol berdampingan (UI-10, UI-04 no X icon) -->
+        <div class="modal-footer-between">
+            <button type="button" class="btn-dark-pill" @onclick="Close">Tutup</button>
+            <button type="button" class="btn-primary-pill" @onclick="NavigateToStatus">Lihat Semua Detail</button>
+        </div>
+    </FooterContent>
+</AppModal>
+
+<style>
+    .modal-icon-clipboard {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-sm, 8px);
+        background: rgba(245, 158, 11, 0.15);
+        color: var(--color-warning, #F59E0B);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .pending-approvals-body {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .pending-list-scroll {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-height: 360px;
+        overflow-y: auto;
+    }
+
+    .pending-request-row {
+        display: flex;
+        gap: 14px;
+        padding: 14px 16px;
+        background: var(--color-neutral-100, #F5F5F7);
+        border: 1px solid var(--color-neutral-200, #E8E8ED);
+        border-radius: var(--radius-md, 14px);
+        cursor: pointer;
+        transition: var(--motion-fast);
+    }
+    .pending-request-row:hover {
+        background: var(--color-white, #FFFFFF);
+        border-color: var(--color-warning, #F59E0B);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        transform: translateY(-1px);
+    }
+    body.dark-mode .pending-request-row {
+        background: rgba(255,255,255,0.04);
+        border-color: rgba(255,255,255,0.08);
+    }
+
+    .room-type-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: #DBEAFE;
+        color: #2563EB;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    body.dark-mode .room-type-avatar {
+        background: rgba(37, 99, 235, 0.25);
+        color: #93C5FD;
+    }
+
+    .request-main-col {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+    }
+
+    .row-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .pending-room-name {
+        margin: 0;
+        font-size: var(--fs-base, 15px);
+        font-weight: var(--fw-bold, 700);
+        color: var(--color-navy, #0F172A);
+    }
+    body.dark-mode .pending-room-name { color: var(--color-white, #FFFFFF); }
+
+    .badge-status-pending {
+        font-size: 11px;
+        font-weight: var(--fw-semibold, 600);
+        color: #D97706;
+        background: rgba(245, 158, 11, 0.15);
+        padding: 3px 8px;
+        border-radius: var(--radius-full, 999px);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .dot-amber { width: 6px; height: 6px; border-radius: 50%; background: #D97706; }
+
+    .request-meta-row {
+        display: flex;
+        gap: 12px;
+        font-size: var(--fs-xs, 12px);
+        color: var(--color-neutral-600, #6E6E73);
+    }
+    .meta-inline {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .requester-label {
+        font-size: var(--fs-xs, 12px);
+        color: var(--color-neutral-400, #86868B);
+    }
+    .requester-label strong {
+        color: var(--color-neutral-600, #6E6E73);
+    }
+    body.dark-mode .requester-label strong { color: var(--color-neutral-200, #E8E8ED); }
+
+    .modal-footer-between {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+    .btn-dark-pill {
+        padding: 8px 24px;
+        border-radius: var(--radius-full, 999px);
+        background: var(--color-navy, #0F172A);
+        color: var(--color-white, #FFFFFF);
+        font-size: var(--fs-sm, 14px);
+        font-weight: var(--fw-semibold, 600);
+        border: none;
+        cursor: pointer;
+        transition: var(--motion-fast);
+    }
+    .btn-dark-pill:hover { opacity: 0.9; }
+
+    .btn-primary-pill {
+        padding: 8px 24px;
+        border-radius: var(--radius-full, 999px);
+        background: var(--color-primary, #F5A623);
+        color: var(--color-navy, #0F172A);
+        font-size: var(--fs-sm, 14px);
+        font-weight: var(--fw-bold, 700);
+        border: none;
+        cursor: pointer;
+        transition: var(--motion-fast);
+    }
+    .btn-primary-pill:hover {
+        filter: brightness(1.05);
+    }
+</style>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+
+    private record PendingItem(string RoomName, string Date, string TimeSlot, string RequestedBy);
+
+    private List<PendingItem> _pendingItems = new()
+    {
+        new("Executive Boardroom A", "27 Agu 2026", "09:00 - 12:00", "Sarah Jenkins"),
+        new("Innovation Lab", "01 Sep 2026", "10:00 - 12:00", "Dimas Prasetyo"),
+        new("Auditorium Utama", "05 Sep 2026", "13:00 - 16:00", "Budi Santoso")
+    };
+
+    private async Task HandleVisibleChanged(bool val)
+    {
+        Visible = val;
+        await VisibleChanged.InvokeAsync(val);
+    }
+
+    private async Task Close()
+    {
+        await HandleVisibleChanged(false);
+    }
+
+    private async Task NavigateToStatus()
+    {
+        await HandleVisibleChanged(false);
+        Navigation.NavigateTo("/status");
+    }
+
+    private async Task OpenScheduleDetail(PendingItem item)
+    {
+        await HandleVisibleChanged(false);
+        Navigation.NavigateTo("/status");
+    }
+}

@@ -1,0 +1,135 @@
+@namespace booking_room.Components.Shared
+
+<span class="status-badge-unified @GetBadgeClass()" style="@GetInlineStyles()">
+    <span class="status-badge-dot"></span>
+    @GetStatusText()
+</span>
+
+<style>
+    .status-badge-unified {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: var(--radius-badge, 999px);
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        white-space: nowrap;
+        line-height: 1.4;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+    }
+
+    .status-badge-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: currentColor;
+        flex-shrink: 0;
+    }
+
+    .status-badge-available {
+        background-color: var(--color-status-available-bg, #E7F8EF);
+        color: var(--color-status-available-text, #16A34A);
+        border-color: var(--color-status-available-border, #BBF7D0);
+    }
+
+    .status-badge-unavailable {
+        background-color: var(--color-status-unavailable-bg, #FDE8E8);
+        color: var(--color-status-unavailable-text, #DC2626);
+        border-color: var(--color-status-unavailable-border, #FECACA);
+    }
+
+    .status-badge-booked {
+        background-color: var(--color-status-booked-bg, #FFF4E5);
+        color: var(--color-status-booked-text, #D97706);
+        border-color: var(--color-status-booked-border, #FED7AA);
+    }
+
+    .status-badge-pending {
+        background-color: var(--color-status-pending-bg, #FFF4E5);
+        color: var(--color-status-pending-text, #D97706);
+        border-color: var(--color-status-pending-border, #FED7AA);
+    }
+
+    .status-badge-approved {
+        background-color: var(--color-status-approved-bg, #E7F8EF);
+        color: var(--color-status-approved-text, #16A34A);
+        border-color: var(--color-status-approved-border, #BBF7D0);
+    }
+
+    .status-badge-rejected {
+        background-color: var(--color-status-rejected-bg, #FDE8E8);
+        color: var(--color-status-rejected-text, #DC2626);
+        border-color: var(--color-status-rejected-border, #FECACA);
+    }
+
+    .status-badge-completed {
+        background-color: var(--color-status-completed-bg, #E8ECFB);
+        color: var(--color-status-completed-text, #3B4BA6);
+        border-color: var(--color-status-completed-border, #C7D2FE);
+    }
+
+    .status-badge-active-session {
+        background-color: #E7F8EF;
+        color: #16A34A;
+        border-color: #BBF7D0;
+    }
+</style>
+
+@code {
+    [Parameter] public string Status { get; set; } = string.Empty;
+    [Parameter] public string? CustomLabel { get; set; }
+    [Parameter] public bool UpperCase { get; set; } = false;
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string? Style { get; set; }
+
+    private string NormalizedStatus => (Status ?? string.Empty).Trim().ToLowerInvariant();
+
+    private string GetBadgeClass()
+    {
+        var baseClass = NormalizedStatus switch
+        {
+            "available" or "tersedia" => "status-badge-available",
+            "unavailable" or "tidak tersedia" or "perawatan" or "maintenance" => "status-badge-unavailable",
+            "booked" or "dipesan" or "dipesan (2 jam ke depan)" or "sedang-berlangsung" or "berlangsung" => "status-badge-booked",
+            "pending" or "menunggu" or "menunggu persetujuan" => "status-badge-pending",
+            "approved" or "disetujui" or "akan datang" or "akan-datang" => "status-badge-approved",
+            "rejected" or "ditolak" or "dibatalkan" or "canceled" or "cancelled" => "status-badge-rejected",
+            "completed" or "selesai" => "status-badge-completed",
+            _ => "status-badge-pending"
+        };
+
+        return string.IsNullOrWhiteSpace(Class) ? baseClass : $"{baseClass} {Class}";
+    }
+
+    private string GetInlineStyles() => Style ?? string.Empty;
+
+    private string GetStatusText()
+    {
+        if (!string.IsNullOrWhiteSpace(CustomLabel))
+        {
+            return UpperCase ? CustomLabel.ToUpperInvariant() : CustomLabel;
+        }
+
+        var label = NormalizedStatus switch
+        {
+            "available" or "tersedia" => "Tersedia",
+            "unavailable" or "tidak tersedia" => "Tidak Tersedia",
+            "perawatan" or "maintenance" => "Perawatan",
+            "booked" => "Dipesan",
+            "dipesan (2 jam ke depan)" => "Dipesan (2 Jam Ke Depan)",
+            "sedang-berlangsung" or "berlangsung" => "Berlangsung",
+            "pending" or "menunggu" or "menunggu persetujuan" => "Menunggu Persetujuan",
+            "approved" or "disetujui" => "Disetujui",
+            "akan datang" or "akan-datang" => "Akan Datang",
+            "rejected" or "ditolak" => "Ditolak",
+            "dibatalkan" or "canceled" or "cancelled" => "Dibatalkan",
+            "completed" or "selesai" => "Selesai",
+            _ => Status
+        };
+
+        return UpperCase ? label.ToUpperInvariant() : label;
+    }
+}

@@ -1,0 +1,70 @@
+@using booking_room.Components.Models
+@using booking_room.Services
+@inject IModalService ModalService
+
+<AppModal Visible="true" Size="sm" ShowCloseButton="false" OnClose="HandleKeep">
+    <HeaderContent>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 40px; height: 40px; border-radius: 12px; background: #FEE2E2; display: flex; align-items: center; justify-content: center; color: #DC2626; flex-shrink: 0;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+            </div>
+            <div>
+                <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #991B1B;">Batalkan Pemesanan</h3>
+                <p style="margin: 2px 0 0 0; font-size: 0.85rem; color: #64748B;">@(Booking?.RoomName ?? "Alpha Boardroom")</p>
+            </div>
+        </div>
+    </HeaderContent>
+    <ChildContent>
+        <div style="padding: 8px 0; color: #4B5563; font-size: 0.95rem; line-height: 1.5; display: flex; flex-direction: column; gap: 16px;">
+            <div>Harap berikan alasan pembatalan pesanan ini. Tindakan ini tidak dapat dibatalkan.</div>
+            
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-size: 0.75rem; font-weight: 700; color: #64748B; letter-spacing: 0.05em;">ALASAN PEMBATALAN</label>
+                <textarea rows="4" placeholder="cth., Rapat dijadwalkan ulang, ruangan tidak lagi dibutuhkan..." 
+                          @bind="_reason" @bind:event="oninput"
+                          style="width: 100%; border-radius: 12px; padding: 12px 14px; border: 1px solid #E2E8F0; background-color: var(--surface-card, #FFFFFF); color: #0F1F3D; font-family: inherit; font-size: 0.9rem; resize: vertical; box-sizing: border-box;"></textarea>
+            </div>
+        </div>
+    </ChildContent>
+    <FooterContent>
+        <button class="btn-secondary-app" @onclick="HandleKeep">
+            Tutup
+        </button>
+        <button class="btn-primary-app" style="background: var(--color-danger-bg); color: var(--color-danger-text);" disabled="@string.IsNullOrWhiteSpace(_reason)" @onclick="SubmitCancel">
+            Ya, Batalkan
+        </button>
+    </FooterContent>
+</AppModal>
+
+@code {
+    [Parameter] public BookingItem? Booking { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback<BookingItem> OnConfirm { get; set; }
+
+    private string _reason = "";
+
+    private async Task SubmitCancel()
+    {
+        if (!string.IsNullOrWhiteSpace(_reason) && Booking != null)
+        {
+            if (OnConfirm.HasDelegate)
+            {
+                await OnConfirm.InvokeAsync(Booking);
+            }
+            ModalService.Close(ModalResult.Ok());
+        }
+    }
+
+    private async Task HandleKeep()
+    {
+        if (OnClose.HasDelegate)
+        {
+            await OnClose.InvokeAsync();
+        }
+        ModalService.Close(ModalResult.Cancel());
+    }
+}
+
+
