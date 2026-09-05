@@ -11,19 +11,19 @@
      @ontouchstart="HandleTouchStart"
      @ontouchend="HandleTouchEnd">
      
-    <!-- Background Slides (Full-Bleed dengan efek Ken Burns & Overlay) -->
+    <!-- Background Slides Full-Bleed (Layar 1: Interior Signage, Layar 2: Gedung Sunset) -->
     <div class="boarding-bg-layer">
         <div class="boarding-bg-slide @(currentSlide == 0 ? "active" : "")">
-            <img src="/images/FOTO GEDEUNG PERSADA.png" alt="Gedung Persada" class="boarding-bg-img ken-burns" />
-        </div>
-        <div class="boarding-bg-slide @(currentSlide == 1 ? "active" : "")">
             <img src="/images/poto 2.jpg" alt="Interior Persada Signage" class="boarding-bg-img ken-burns" />
         </div>
-        <!-- Gradient Overlay: Bawah gelap ke atas transparan untuk keterbacaan teks maksimal -->
+        <div class="boarding-bg-slide @(currentSlide == 1 ? "active" : "")">
+            <img src="/images/FOTO GEDEUNG PERSADA.png" alt="Gedung Persada" class="boarding-bg-img ken-burns" />
+        </div>
+        <!-- Gradient Overlay Langsung ke Foto Latar (Bukan Kotak Teks) -->
         <div class="boarding-overlay"></div>
     </div>
 
-    <!-- Top Bar: Logo PERSADA & Tombol Lewati -->
+    <!-- Top Bar: Logo PERSADA di Kiri & Tombol Lewati di Kanan (Tanpa Tombol Open) -->
     <header class="boarding-topbar">
         <div class="boarding-logo-wrap">
             <img src="/icons/logoo_psd-removebg-preview.svg" alt="Persada Logo" class="boarding-brand-logo" />
@@ -33,48 +33,29 @@
         </button>
     </header>
 
-    <!-- Main Content Area: Glass Card Pop-in -->
-    <main class="boarding-content-container">
-        <div class="boarding-glass-card @(isTransitioning ? "fade-out" : "fade-in")">
+    <!-- Main Content: Teks Hero Langsung di Atas Foto (Tanpa Glass Box/Frame Melayang) -->
+    <main class="boarding-hero-wrapper">
+        <div class="boarding-hero-text @(isTransitioning ? "fade-out" : "fade-in")">
             
-            <div class="boarding-badge">
-                @(currentSlide == 0 ? "SISTEM MANAJEMEN RUANGAN" : "KOLABORASI MODERN")
+            <!-- Badge Pill Solid (Tanpa Blur) -->
+            <div class="boarding-badge-solid">
+                @slides[currentSlide].Badge
             </div>
 
-            <h1 class="boarding-card-title">
+            <!-- Judul Besar Bold dengan Text Shadow Halus -->
+            <h1 class="boarding-title-hero">
                 @slides[currentSlide].Title
             </h1>
 
-            <p class="boarding-card-desc">
+            <!-- Deskripsi Teks Bersih Langsung di Atas Foto -->
+            <p class="boarding-desc-hero">
                 @slides[currentSlide].Description
             </p>
 
-            <!-- Bottom Actions & Dot Pagination -->
-            <div class="boarding-card-footer">
-                <!-- Dot Pagination: 2 Titik (Indikator visual saja, titik aktif lebih lebar) -->
-                <div class="boarding-pagination" aria-label="Indikator halaman">
-                    <span class="boarding-dot @(currentSlide == 0 ? "active" : "")"></span>
-                    <span class="boarding-dot @(currentSlide == 1 ? "active" : "")"></span>
-                </div>
-
-                @if (currentSlide == 1)
-                {
-                    <!-- Layar 2: Tombol Mulai / Lanjut ke Login (Teks saja, tanpa ikon panah) -->
-                    <button type="button" class="btn-boarding-cta" @onclick="CompleteBoarding">
-                        Lanjut ke Login
-                    </button>
-                }
-                else
-                {
-                    <!-- Layar 1: Panduan visual geser tanpa tombol panah -->
-                    <div class="boarding-swipe-hint">
-                        <span>Geser untuk lanjut</span>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                            <polyline points="12 5 19 12 12 19"></polyline>
-                        </svg>
-                    </div>
-                }
+            <!-- Indikator Titik Pagination (Tanpa Kotak Pembungkus, Murni Indikator Halaman) -->
+            <div class="boarding-pagination" aria-label="Indikator halaman">
+                <span class="boarding-dot @(currentSlide == 0 ? "active" : "")"></span>
+                <span class="boarding-dot @(currentSlide == 1 ? "active" : "")"></span>
             </div>
         </div>
     </main>
@@ -130,7 +111,7 @@
 
     /* Efek Ken Burns / Zoom Lambat Dinamis */
     .ken-burns {
-        animation: kenBurnsZoom 20s infinite alternate ease-in-out;
+        animation: kenBurnsZoom 22s infinite alternate ease-in-out;
     }
 
     @@keyframes kenBurnsZoom {
@@ -138,15 +119,15 @@
         100% { transform: scale(1.08); }
     }
 
-    /* Overlay Gradient: bawah gelap, atas tipis */
+    /* Gradient Overlay Langsung pada Foto: Dari transparan di atas ke gelap di bawah untuk kontras teks */
     .boarding-overlay {
         position: absolute;
         inset: 0;
         background: linear-gradient(
             to bottom,
-            rgba(10, 15, 29, 0.45) 0%,
-            rgba(10, 15, 29, 0.25) 40%,
-            rgba(10, 15, 29, 0.75) 80%,
+            rgba(10, 15, 29, 0.25) 0%,
+            rgba(10, 15, 29, 0.35) 35%,
+            rgba(10, 15, 29, 0.72) 70%,
             rgba(10, 15, 29, 0.92) 100%
         );
         pointer-events: none;
@@ -159,7 +140,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 28px 48px;
+        padding: 32px 56px;
     }
 
     .boarding-logo-wrap {
@@ -170,14 +151,15 @@
     .boarding-brand-logo {
         height: 52px;
         width: auto;
-        filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.4));
+        filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.45));
     }
 
+    /* Tombol Lewati di Pojok Kanan Atas (Tanpa Tombol Open Apapun) */
     .btn-boarding-skip {
-        background: rgba(255, 255, 255, 0.14);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.25);
+        background: rgba(255, 255, 255, 0.16);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
         color: #FFFFFF;
         font-size: 0.9rem;
         font-weight: 600;
@@ -185,37 +167,28 @@
         border-radius: 999px;
         cursor: pointer;
         transition: all 0.2s ease;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
     }
 
     .btn-boarding-skip:hover {
-        background: rgba(255, 255, 255, 0.25);
-        border-color: rgba(255, 255, 255, 0.45);
+        background: rgba(255, 255, 255, 0.26);
+        border-color: rgba(255, 255, 255, 0.5);
         transform: translateY(-1px);
     }
 
-    /* Container Konten Utama */
-    .boarding-content-container {
+    /* Kontainer Hero: Teks Langsung di Atas Foto Tanpa Box/Kotak Kaca Melayang */
+    .boarding-hero-wrapper {
         position: relative;
         z-index: 10;
         display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 20px 24px 40px;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 0 56px 40px;
         width: 100%;
+        max-width: 900px;
     }
 
-    /* Dynamic Glassmorphism Card */
-    .boarding-glass-card {
-        background: rgba(255, 255, 255, 0.12);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.25);
-        border-radius: 28px;
-        padding: 36px 40px;
-        max-width: 580px;
-        width: 100%;
-        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    .boarding-hero-text {
         display: flex;
         flex-direction: column;
         gap: 16px;
@@ -223,127 +196,84 @@
         transition: opacity 0.3s ease, transform 0.3s ease;
     }
 
-    .boarding-glass-card.fade-in {
+    .boarding-hero-text.fade-in {
         opacity: 1;
         transform: translateY(0);
     }
 
-    .boarding-glass-card.fade-out {
-        opacity: 0.3;
-        transform: translateY(8px);
+    .boarding-hero-text.fade-out {
+        opacity: 0.2;
+        transform: translateY(6px);
     }
 
-    .boarding-badge {
+    /* Badge Solid Berdiri Sendiri Langsung di Atas Foto (Tanpa Blur) */
+    .boarding-badge-solid {
         display: inline-block;
         align-self: flex-start;
-        background: rgba(245, 166, 35, 0.2);
-        border: 1px solid rgba(245, 166, 35, 0.4);
-        color: #F5A623;
+        background: #F5A623;
+        color: #0F172A;
         font-size: 0.75rem;
-        font-weight: 700;
+        font-weight: 800;
         letter-spacing: 1.2px;
         padding: 6px 14px;
         border-radius: 999px;
         text-transform: uppercase;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
-    .boarding-card-title {
-        font-size: 2.2rem;
+    /* Judul Besar Hero dengan Text Shadow Halus */
+    .boarding-title-hero {
+        font-size: 3rem;
         font-weight: 800;
         color: #FFFFFF;
-        line-height: 1.25;
+        line-height: 1.15;
         margin: 0;
-        letter-spacing: -0.02em;
-        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+        letter-spacing: -0.025em;
+        text-shadow: 0 2px 14px rgba(0, 0, 0, 0.65);
+        max-width: 720px;
     }
 
-    .boarding-card-desc {
-        font-size: 1.05rem;
-        color: rgba(255, 255, 255, 0.88);
-        line-height: 1.6;
+    /* Deskripsi Teks Hero dengan Text Shadow Halus */
+    .boarding-desc-hero {
+        font-size: 1.15rem;
+        color: rgba(255, 255, 255, 0.9);
+        line-height: 1.65;
         margin: 0;
-        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+        text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+        max-width: 620px;
     }
 
-    /* Footer Di Dalam Card */
-    .boarding-card-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 14px;
-        padding-top: 20px;
-        border-top: 1px solid rgba(255, 255, 255, 0.15);
-    }
-
-    /* Dot Pagination (2 Titik) */
+    /* Indikator Titik Pagination (2 Titik Langsung di Bawah Teks) */
     .boarding-pagination {
         display: flex;
         align-items: center;
         gap: 8px;
+        margin-top: 12px;
     }
 
     .boarding-dot {
         height: 8px;
         width: 8px;
         border-radius: 999px;
-        background: rgba(255, 255, 255, 0.35);
+        background: rgba(255, 255, 255, 0.4);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
         transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     .boarding-dot.active {
-        width: 28px;
+        width: 32px;
         background: #F5A623;
-        box-shadow: 0 0 12px rgba(245, 166, 35, 0.6);
+        box-shadow: 0 0 12px rgba(245, 166, 35, 0.7);
     }
 
-    /* Hint Geser / Swipe (Layar 1) */
-    .boarding-swipe-hint {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: rgba(255, 255, 255, 0.85);
-        font-size: 0.9rem;
-        font-weight: 600;
-        animation: hintPulse 2s infinite ease-in-out;
-    }
-
-    @@keyframes hintPulse {
-        0%, 100% { transform: translateX(0); opacity: 0.85; }
-        50% { transform: translateX(4px); opacity: 1; }
-    }
-
-    /* Tombol Aksi Layar 2: Mulai / Lanjut ke Login (Solid Orange Pill, Tanpa Ikon Panah) */
-    .btn-boarding-cta {
-        background: linear-gradient(135deg, #F5A623 0%, #E09010 100%);
-        color: #0F172A;
-        border: none;
-        border-radius: 999px;
-        padding: 13px 32px;
-        font-size: 1rem;
-        font-weight: 700;
-        cursor: pointer;
-        box-shadow: 0 8px 24px rgba(245, 166, 35, 0.35);
-        transition: all 0.2s ease;
-    }
-
-    .btn-boarding-cta:hover {
-        background: linear-gradient(135deg, #FFB834 0%, #F5A623 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 10px 28px rgba(245, 166, 35, 0.45);
-    }
-
-    .btn-boarding-cta:active {
-        transform: translateY(0);
-    }
-
-    /* Footer Bawah */
+    /* Footer Copyright Bawah */
     .boarding-footer {
         position: relative;
         z-index: 10;
-        text-align: center;
+        text-align: left;
         font-size: 0.8rem;
         color: rgba(255, 255, 255, 0.55);
-        padding: 16px 24px 28px;
+        padding: 16px 56px 28px;
     }
 
     /* Responsif */
@@ -354,24 +284,17 @@
         .boarding-brand-logo {
             height: 42px;
         }
-        .boarding-glass-card {
-            padding: 28px 24px;
-            border-radius: 22px;
+        .boarding-hero-wrapper {
+            padding: 0 24px 28px;
         }
-        .boarding-card-title {
-            font-size: 1.65rem;
+        .boarding-title-hero {
+            font-size: 2rem;
         }
-        .boarding-card-desc {
-            font-size: 0.95rem;
+        .boarding-desc-hero {
+            font-size: 1rem;
         }
-        .boarding-card-footer {
-            flex-direction: column;
-            gap: 16px;
-            align-items: flex-start;
-        }
-        .btn-boarding-cta {
-            width: 100%;
-            text-align: center;
+        .boarding-footer {
+            padding: 12px 24px 20px;
         }
     }
 </style>
@@ -385,17 +308,21 @@
     private double _pointerStartX = 0;
     private double _pointerStartY = 0;
 
-    private record SlideData(string Title, string Description);
+    private record SlideData(string Badge, string Title, string Description);
 
+    // Slide 1: Interior signage ("Satu Sistem, Semua Kebutuhan Ruangan")
+    // Slide 2: Foto gedung ("Kelola Ruang Rapat Perusahaan Anda")
     private readonly SlideData[] slides = new[]
     {
         new SlideData(
-            "Kelola Ruang Rapat Perusahaan Anda",
-            "Solusi cerdas manajemen ruang rapat yang terstruktur, efisien, dan siap mendukung produktivitas kolaborasi bisnis Anda."
-        ),
-        new SlideData(
+            "KOLABORASI MODERN",
             "Satu Sistem, Semua Kebutuhan Ruangan",
             "Kemudahan reservasi cepat, persetujuan admin real-time, dan pemantauan ketersediaan fasilitas dalam satu platform terpadu."
+        ),
+        new SlideData(
+            "SISTEM MANAJEMEN RUANGAN",
+            "Kelola Ruang Rapat Perusahaan Anda",
+            "Solusi cerdas manajemen ruang rapat yang terstruktur, efisien, dan siap mendukung produktivitas kolaborasi bisnis Anda."
         )
     };
 
@@ -413,23 +340,12 @@
         _pointerStartY = e.ClientY;
     }
 
-    private void HandlePointerUp(PointerEventArgs e)
+    private async Task HandlePointerUp(PointerEventArgs e)
     {
         var deltaX = e.ClientX - _pointerStartX;
         var deltaY = e.ClientY - _pointerStartY;
 
-        // Hanya deteksi gesture horizontal jika jarak horizontal > vertical
-        if (Math.Abs(deltaX) > Math.Abs(deltaY) && Math.Abs(deltaX) > 40)
-        {
-            if (deltaX < 0 && currentSlide == 0)
-            {
-                GoToSlide(1);
-            }
-            else if (deltaX > 0 && currentSlide == 1)
-            {
-                GoToSlide(0);
-            }
-        }
+        await ProcessSwipeGesture(deltaX, deltaY);
     }
 
     private void HandleTouchStart(TouchEventArgs e)
@@ -441,20 +357,37 @@
         }
     }
 
-    private void HandleTouchEnd(TouchEventArgs e)
+    private async Task HandleTouchEnd(TouchEventArgs e)
     {
         if (e.ChangedTouches.Length > 0)
         {
             var deltaX = e.ChangedTouches[0].ClientX - _pointerStartX;
             var deltaY = e.ChangedTouches[0].ClientY - _pointerStartY;
 
-            if (Math.Abs(deltaX) > Math.Abs(deltaY) && Math.Abs(deltaX) > 40)
+            await ProcessSwipeGesture(deltaX, deltaY);
+        }
+    }
+
+    private async Task ProcessSwipeGesture(double deltaX, double deltaY)
+    {
+        // Hanya deteksi gesture jika pergeseran horizontal lebih dominan daripada vertikal (> 40px)
+        if (Math.Abs(deltaX) > Math.Abs(deltaY) && Math.Abs(deltaX) > 40)
+        {
+            if (deltaX < 0) // Geser ke kiri (maju)
             {
-                if (deltaX < 0 && currentSlide == 0)
+                if (currentSlide == 0)
                 {
                     GoToSlide(1);
                 }
-                else if (deltaX > 0 && currentSlide == 1)
+                else if (currentSlide == 1)
+                {
+                    // Swipe melewati slide terakhir -> otomatis arahkan ke halaman Login
+                    await CompleteBoarding();
+                }
+            }
+            else if (deltaX > 0) // Geser ke kanan (mundur)
+            {
+                if (currentSlide == 1)
                 {
                     GoToSlide(0);
                 }
