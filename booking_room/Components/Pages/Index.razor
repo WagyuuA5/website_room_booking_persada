@@ -1,55 +1,9 @@
-@page "/"
+@page "/legacy-index"
 @inject NavigationManager Navigation
-@inject IJSRuntime JS
-
-<div style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #F8FAFC; gap: 16px;">
-    <img src="/icons/logoo_psd-removebg-preview.svg" alt="Persada Logo" style="height: 48px; width: auto; opacity: 0.8;" />
-    <div style="display: flex; gap: 6px;">
-        <span class="dot-loading" style="width: 8px; height: 8px; border-radius: 50%; background: #1F5D9A; animation: dotBounce 1.4s infinite ease-in-out both;"></span>
-        <span class="dot-loading" style="width: 8px; height: 8px; border-radius: 50%; background: #1F5D9A; animation: dotBounce 1.4s infinite ease-in-out both; animation-delay: 0.2s;"></span>
-        <span class="dot-loading" style="width: 8px; height: 8px; border-radius: 50%; background: #1F5D9A; animation: dotBounce 1.4s infinite ease-in-out both; animation-delay: 0.4s;"></span>
-    </div>
-</div>
-
-<style>
-    @@keyframes dotBounce {
-        0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
-        40% { transform: scale(1); opacity: 1; }
-    }
-</style>
 
 @code {
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override void OnInitialized()
     {
-        if (firstRender)
-        {
-            try
-            {
-                var seen = await JS.InvokeAsync<string>("localStorage.getItem", "persada-onboarding-seen");
-                var hasSeen = await JS.InvokeAsync<string>("localStorage.getItem", "hasSeenBoarding");
-                if (seen == "true" || hasSeen == "true")
-                {
-                    var isLoggedIn = await JS.InvokeAsync<string>("localStorage.getItem", "isLoggedIn");
-                    if (isLoggedIn == "true")
-                    {
-                        var role = await JS.InvokeAsync<string>("localStorage.getItem", "userRole");
-                        if (role == "Admin") Navigation.NavigateTo("/dashboard");
-                        else Navigation.NavigateTo("/beranda");
-                    }
-                    else
-                    {
-                        Navigation.NavigateTo("/login");
-                    }
-                }
-                else
-                {
-                    Navigation.NavigateTo("/boarding");
-                }
-            }
-            catch
-            {
-                Navigation.NavigateTo("/login");
-            }
-        }
+        Navigation.NavigateTo("/", replace: true);
     }
 }

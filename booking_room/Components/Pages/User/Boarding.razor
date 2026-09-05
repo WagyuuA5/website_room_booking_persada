@@ -1,62 +1,69 @@
+@page "/"
 @page "/boarding"
 @layout booking_room.Components.Layout.AuthLayout
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
+@implements IAsyncDisposable
 
 <PageTitle>Pengenalan — Persada Ruangan</PageTitle>
 
-<div class="boarding-viewport" 
-     @onpointerdown="HandlePointerDown"
-     @onpointerup="HandlePointerUp"
-     @ontouchstart="HandleTouchStart"
-     @ontouchend="HandleTouchEnd">
-     
-    <!-- Background Slides Full-Bleed (Layar 1: Gedung Sunset/Eksterior, Layar 2: Gedung Sudut/Interior) -->
-    <div class="boarding-bg-layer">
-        <div class="boarding-bg-slide @(currentSlide == 0 ? "active" : "")">
+<div class="boarding-viewport" id="boardingViewport">
+    <!-- Background Slides Full-Bleed dengan Parallax -->
+    <div class="boarding-bg-layer" id="boardingBgLayer">
+        <div class="boarding-bg-slide" id="boardingBg0">
             <img src="/images/FOTO_GEDUNG_PERSADA.png" alt="Gedung Persada Eksterior" class="boarding-bg-img ken-burns" />
         </div>
-        <div class="boarding-bg-slide @(currentSlide == 1 ? "active" : "")">
+        <div class="boarding-bg-slide" id="boardingBg1">
             <img src="/images/FOTO_GEDUNG_PERSADA (2).png" alt="Gedung Persada Sudut" class="boarding-bg-img ken-burns" />
         </div>
-        <!-- Gradient Overlay Langsung ke Foto Latar (Bukan Kotak Teks) -->
+        <!-- Gradient Overlay Langsung ke Foto Latar -->
         <div class="boarding-overlay"></div>
     </div>
 
-    <!-- Top Bar: Logo PERSADA di Kiri & Tombol Lewati di Kanan (Tanpa Tombol Open) -->
+    <!-- Top Bar: Logo PERSADA di Kiri & Tombol Lewati di Kanan -->
     <header class="boarding-topbar">
         <div class="boarding-logo-wrap">
             <img src="/icons/logoo_psd-removebg-preview.svg" alt="Persada Logo" class="boarding-brand-logo" />
         </div>
-        <button type="button" class="btn-boarding-skip" @onclick="SkipBoarding">
+        <button type="button" class="btn-boarding-skip" id="btnBoardingSkip" @onclick="SkipBoarding">
             Lewati
         </button>
     </header>
 
-    <!-- Main Content: Teks Hero Langsung di Atas Foto (Tanpa Glass Box/Frame Melayang) -->
-    <main class="boarding-hero-wrapper">
-        <div class="boarding-hero-text @(isTransitioning ? "fade-out" : "fade-in")">
-            
-            <!-- Badge Pill Solid (Tanpa Blur) -->
-            <div class="boarding-badge-solid">
-                @slides[currentSlide].Badge
+    <!-- Main Content: Teks Hero Langsung di Atas Foto dengan Transisi Modern -->
+    <main class="boarding-hero-wrapper" id="boardingHeroWrapper">
+        <div class="boarding-slides-track" id="boardingSlidesTrack">
+            <!-- Slide 0 -->
+            <div class="boarding-hero-text" id="boardingSlide0">
+                <div class="boarding-badge-solid">
+                    KOLABORASI MODERN
+                </div>
+                <h1 class="boarding-title-hero">
+                    Satu Sistem, Semua Kebutuhan Ruangan
+                </h1>
+                <p class="boarding-desc-hero">
+                    Kemudahan reservasi cepat, persetujuan admin real-time, dan pemantauan ketersediaan fasilitas dalam satu platform terpadu.
+                </p>
             </div>
 
-            <!-- Judul Besar Bold dengan Text Shadow Halus -->
-            <h1 class="boarding-title-hero">
-                @slides[currentSlide].Title
-            </h1>
-
-            <!-- Deskripsi Teks Bersih Langsung di Atas Foto -->
-            <p class="boarding-desc-hero">
-                @slides[currentSlide].Description
-            </p>
-
-            <!-- Indikator Titik Pagination (Tanpa Kotak Pembungkus, Murni Indikator Halaman) -->
-            <div class="boarding-pagination" aria-label="Indikator halaman">
-                <span class="boarding-dot @(currentSlide == 0 ? "active" : "")"></span>
-                <span class="boarding-dot @(currentSlide == 1 ? "active" : "")"></span>
+            <!-- Slide 1 -->
+            <div class="boarding-hero-text" id="boardingSlide1">
+                <div class="boarding-badge-solid">
+                    SISTEM MANAJEMEN RUANGAN
+                </div>
+                <h1 class="boarding-title-hero">
+                    Kelola Ruang Rapat Perusahaan Anda
+                </h1>
+                <p class="boarding-desc-hero">
+                    Solusi cerdas manajemen ruang rapat yang terstruktur, efisien, dan siap mendukung produktivitas kolaborasi bisnis Anda.
+                </p>
             </div>
+        </div>
+
+        <!-- Indikator Titik Pagination (Murni Visual, Tanpa Tombol / Navigasi Klik) -->
+        <div class="boarding-pagination" aria-label="Indikator posisi slide">
+            <span class="boarding-dot active" id="boardingDot0"></span>
+            <span class="boarding-dot" id="boardingDot1"></span>
         </div>
     </main>
 
@@ -64,10 +71,8 @@
     <footer class="boarding-footer">
         &copy; 2026 PT Personel Alih Daya Tbk. Sistem Manajemen Pemesanan Ruangan.
     </footer>
-</div>
-
-<style>
-    /* Viewport Utama Full Bleed */
+</div><style>
+    /* Viewport Utama Full Bleed & Gesture Touch-Action */
     .boarding-viewport {
         position: relative;
         width: 100vw;
@@ -77,28 +82,36 @@
         flex-direction: column;
         justify-content: space-between;
         user-select: none;
+        -webkit-user-select: none;
         touch-action: pan-y;
+        cursor: grab;
         background-color: #0A0F1D;
         font-family: inherit;
     }
 
-    /* Background Full Bleed Layers */
+    .boarding-viewport:active {
+        cursor: grabbing;
+    }
+
+    /* Background Full Bleed Layers dengan Parallax */
     .boarding-bg-layer {
         position: absolute;
         inset: 0;
         z-index: 1;
         overflow: hidden;
+        pointer-events: none;
     }
 
     .boarding-bg-slide {
         position: absolute;
         inset: 0;
-        opacity: 0;
-        transition: opacity 0.8s ease-in-out;
+        will-change: transform, opacity;
+        transform: translate3d(0, 0, 0);
     }
 
-    .boarding-bg-slide.active {
-        opacity: 1;
+    #boardingBg1 {
+        opacity: 0;
+        transform: translate3d(25%, 0, 0);
     }
 
     .boarding-bg-img {
@@ -109,9 +122,9 @@
         transform: scale(1);
     }
 
-    /* Efek Ken Burns / Zoom Lambat Dinamis */
+    /* Efek Ken Burns / Zoom Dinamis Halus */
     .ken-burns {
-        animation: kenBurnsZoom 22s infinite alternate ease-in-out;
+        animation: kenBurnsZoom 24s infinite alternate ease-in-out;
     }
 
     @@keyframes kenBurnsZoom {
@@ -119,16 +132,16 @@
         100% { transform: scale(1.08); }
     }
 
-    /* Gradient Overlay Langsung pada Foto: Dari transparan di atas ke gelap di bawah untuk kontras teks */
+    /* Gradient Overlay Gelap ke Terang untuk Keterbacaan Teks */
     .boarding-overlay {
         position: absolute;
         inset: 0;
         background: linear-gradient(
             to bottom,
-            rgba(10, 15, 29, 0.25) 0%,
-            rgba(10, 15, 29, 0.35) 35%,
-            rgba(10, 15, 29, 0.72) 70%,
-            rgba(10, 15, 29, 0.92) 100%
+            rgba(10, 15, 29, 0.28) 0%,
+            rgba(10, 15, 29, 0.38) 35%,
+            rgba(10, 15, 29, 0.74) 68%,
+            rgba(10, 15, 29, 0.94) 100%
         );
         pointer-events: none;
     }
@@ -154,7 +167,7 @@
         filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.45));
     }
 
-    /* Tombol Lewati di Pojok Kanan Atas (Tanpa Tombol Open Apapun) */
+    /* Tombol Lewati di Pojok Kanan Atas */
     .btn-boarding-skip {
         background: rgba(255, 255, 255, 0.16);
         backdrop-filter: blur(8px);
@@ -176,7 +189,7 @@
         transform: translateY(-1px);
     }
 
-    /* Kontainer Hero: Teks Langsung di Atas Foto Tanpa Box/Kotak Kaca Melayang */
+    /* Kontainer Hero: Teks Langsung di Atas Foto */
     .boarding-hero-wrapper {
         position: relative;
         z-index: 10;
@@ -188,22 +201,30 @@
         max-width: 900px;
     }
 
+    /* CSS Grid Track untuk Layering Slide Teks */
+    .boarding-slides-track {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr;
+        width: 100%;
+        position: relative;
+    }
+
     .boarding-hero-text {
+        grid-column: 1;
+        grid-row: 1;
         display: flex;
         flex-direction: column;
         gap: 16px;
         text-align: left;
-        transition: opacity 0.3s ease, transform 0.3s ease;
+        will-change: transform, opacity;
+        transform: translate3d(0, 0, 0) scale(1);
     }
 
-    .boarding-hero-text.fade-in {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
-    .boarding-hero-text.fade-out {
-        opacity: 0.2;
-        transform: translateY(6px);
+    #boardingSlide1 {
+        opacity: 0;
+        pointer-events: none;
+        transform: translate3d(100vw, 0, 0) scale(0.96);
     }
 
     /* Badge Solid Berdiri Sendiri Langsung di Atas Foto (Tanpa Blur) */
@@ -221,7 +242,7 @@
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
-    /* Judul Besar Hero dengan Text Shadow Halus */
+    /* Judul Besar Hero dengan Text Shadow */
     .boarding-title-hero {
         font-size: 3rem;
         font-weight: 800;
@@ -230,25 +251,26 @@
         margin: 0;
         letter-spacing: -0.025em;
         text-shadow: 0 2px 14px rgba(0, 0, 0, 0.65);
-        max-width: 720px;
+        max-width: 740px;
     }
 
-    /* Deskripsi Teks Hero dengan Text Shadow Halus */
+    /* Deskripsi Teks Hero */
     .boarding-desc-hero {
         font-size: 1.15rem;
-        color: rgba(255, 255, 255, 0.9);
+        color: rgba(255, 255, 255, 0.92);
         line-height: 1.65;
         margin: 0;
         text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
-        max-width: 620px;
+        max-width: 640px;
     }
 
-    /* Indikator Titik Pagination (2 Titik Langsung di Bawah Teks) */
+    /* Indikator Titik Pagination (Murni Indikator Visual, Tanpa Tombol) */
     .boarding-pagination {
         display: flex;
         align-items: center;
         gap: 8px;
-        margin-top: 12px;
+        margin-top: 18px;
+        pointer-events: none;
     }
 
     .boarding-dot {
@@ -257,7 +279,7 @@
         border-radius: 999px;
         background: rgba(255, 255, 255, 0.4);
         box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-        transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        transition: all 0.45s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     .boarding-dot.active {
@@ -276,7 +298,7 @@
         padding: 16px 56px 28px;
     }
 
-    /* Responsif */
+    /* Responsif Mobile & Tablet */
     @@media (max-width: 768px) {
         .boarding-topbar {
             padding: 20px 24px;
@@ -304,27 +326,7 @@
     public int? Slide { get; set; }
 
     private int currentSlide = 0;
-    private bool isTransitioning = false;
-    private double _pointerStartX = 0;
-    private double _pointerStartY = 0;
-
-    private record SlideData(string Badge, string Title, string Description);
-
-    // Slide 1: Interior signage ("Satu Sistem, Semua Kebutuhan Ruangan")
-    // Slide 2: Foto gedung ("Kelola Ruang Rapat Perusahaan Anda")
-    private readonly SlideData[] slides = new[]
-    {
-        new SlideData(
-            "KOLABORASI MODERN",
-            "Satu Sistem, Semua Kebutuhan Ruangan",
-            "Kemudahan reservasi cepat, persetujuan admin real-time, dan pemantauan ketersediaan fasilitas dalam satu platform terpadu."
-        ),
-        new SlideData(
-            "SISTEM MANAJEMEN RUANGAN",
-            "Kelola Ruang Rapat Perusahaan Anda",
-            "Solusi cerdas manajemen ruang rapat yang terstruktur, efisien, dan siap mendukung produktivitas kolaborasi bisnis Anda."
-        )
-    };
+    private DotNetObjectReference<Boarding>? _dotNetRef;
 
     protected override void OnParametersSet()
     {
@@ -334,78 +336,29 @@
         }
     }
 
-    private void HandlePointerDown(PointerEventArgs e)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        _pointerStartX = e.ClientX;
-        _pointerStartY = e.ClientY;
-    }
-
-    private async Task HandlePointerUp(PointerEventArgs e)
-    {
-        var deltaX = e.ClientX - _pointerStartX;
-        var deltaY = e.ClientY - _pointerStartY;
-
-        await ProcessSwipeGesture(deltaX, deltaY);
-    }
-
-    private void HandleTouchStart(TouchEventArgs e)
-    {
-        if (e.Touches.Length > 0)
+        if (firstRender)
         {
-            _pointerStartX = e.Touches[0].ClientX;
-            _pointerStartY = e.Touches[0].ClientY;
-        }
-    }
-
-    private async Task HandleTouchEnd(TouchEventArgs e)
-    {
-        if (e.ChangedTouches.Length > 0)
-        {
-            var deltaX = e.ChangedTouches[0].ClientX - _pointerStartX;
-            var deltaY = e.ChangedTouches[0].ClientY - _pointerStartY;
-
-            await ProcessSwipeGesture(deltaX, deltaY);
-        }
-    }
-
-    private async Task ProcessSwipeGesture(double deltaX, double deltaY)
-    {
-        // Hanya deteksi gesture jika pergeseran horizontal lebih dominan daripada vertikal (> 40px)
-        if (Math.Abs(deltaX) > Math.Abs(deltaY) && Math.Abs(deltaX) > 40)
-        {
-            if (deltaX < 0) // Geser ke kiri (maju)
+            try
             {
-                if (currentSlide == 0)
-                {
-                    GoToSlide(1);
-                }
-                else if (currentSlide == 1)
-                {
-                    // Swipe melewati slide terakhir -> otomatis arahkan ke halaman Login
-                    await CompleteBoarding();
-                }
+                _dotNetRef = DotNetObjectReference.Create(this);
+                await JS.InvokeVoidAsync("BoardingSlider.init", _dotNetRef, currentSlide);
             }
-            else if (deltaX > 0) // Geser ke kanan (mundur)
-            {
-                if (currentSlide == 1)
-                {
-                    GoToSlide(0);
-                }
-            }
+            catch { }
         }
     }
 
-    private void GoToSlide(int slideIndex)
+    [JSInvokable]
+    public void OnSlideChanged(int slide)
     {
-        if (slideIndex == currentSlide) return;
-        isTransitioning = true;
-        currentSlide = slideIndex;
-        _ = Task.Run(async () =>
-        {
-            await Task.Delay(250);
-            isTransitioning = false;
-            await InvokeAsync(StateHasChanged);
-        });
+        currentSlide = slide;
+    }
+
+    [JSInvokable]
+    public async Task OnCompleteBoarding()
+    {
+        await CompleteBoarding();
     }
 
     private async Task SkipBoarding()
@@ -422,5 +375,15 @@
         }
         catch { }
         Navigation.NavigateTo("/login");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("BoardingSlider.destroy");
+        }
+        catch { }
+        _dotNetRef?.Dispose();
     }
 }
