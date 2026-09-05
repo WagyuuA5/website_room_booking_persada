@@ -35,7 +35,7 @@
             <!-- Card 1: Ruangan Tersedia Sekarang -->
             <div class="stat-card stat-card--success" @onclick="OpenAvailableRoomsModal" role="button" tabindex="0">
                 <div class="stat-card-icon-wrap stat-card-icon-wrap--success">
-                    <img src="/icon/icon_dshboard.svg" class="icon-md" alt="" />
+                    <img src="/icon/icon_room_available.svg" class="icon-md" alt="Ruangan Tersedia" />
                 </div>
                 <div class="stat-card-body">
                     <span class="stat-card-label">RUANGAN TERSEDIA SEKARANG</span>
@@ -865,14 +865,33 @@
     .stat-card--success { border-left-color: var(--color-success); }
     .stat-card--warning { border-left-color: var(--color-primary); }
     .stat-card-icon-wrap {
-        width: 44px; height: 44px;
-        border-radius: var(--radius-md);
+        width: 48px; height: 48px;
+        border-radius: 12px;
         display: flex; align-items: center; justify-content: center;
         flex-shrink: 0;
+        transition: transform 0.2s ease;
     }
-    .stat-card-icon-wrap--success { background: var(--color-success-light); }
-    .stat-card-icon-wrap--warning { background: var(--color-primary-light); }
-    .stat-card-icon-wrap--success img { filter: none; }
+    .stat-card-icon-wrap--success {
+        background: #DCFCE7;
+        border: 1px solid rgba(22, 163, 74, 0.22);
+    }
+    body.dark-mode .stat-card-icon-wrap--success {
+        background: rgba(34, 197, 94, 0.2);
+        border-color: rgba(34, 197, 94, 0.35);
+    }
+    .stat-card-icon-wrap--warning {
+        background: #FEF3C7;
+        border: 1px solid rgba(245, 166, 35, 0.25);
+    }
+    body.dark-mode .stat-card-icon-wrap--warning {
+        background: rgba(245, 166, 35, 0.2);
+        border-color: rgba(245, 166, 35, 0.35);
+    }
+    .stat-card-icon-wrap img {
+        width: 24px;
+        height: 24px;
+        object-fit: contain;
+    }
     .stat-card-body { display: flex; flex-direction: column; gap: 2px; }
     .stat-card-label {
         font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
