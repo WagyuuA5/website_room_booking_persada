@@ -1,12 +1,17 @@
 /**
  * wwwroot/js/boarding-slider.js
- * Controller Animasi Swipe & Tap Onboarding PERSADA (Revisi V71)
- * - Tap-to-Advance: Tap Slide 1 -> Slide 2, Tap Slide 2 -> /login
- * - Real-time 1:1 Pointer Tracking (Touch & Mouse Drag)
+ * Controller Animasi Onboarding PERSADA (Revisi V72)
+ * - Dual Zone Tap (Gaya Instagram / WhatsApp Stories):
+ *   * Tap KANAN (clientX >= width / 2): Maju ke slide berikutnya / ke /login di slide terakhir
+ *   * Tap KIRI (clientX < width / 2): Mundur ke slide sebelumnya / tetap diam di slide 0
+ * - Visual Feedback: Ripple koordinat & zone flash halus (~200ms)
+ * - Stories Progress Bar di bagian atas layar: real-time & multi-slide state sync
+ * - Desktop Directional Cursor: Cues visual panah kiri/kanan pada non-touch devices
+ * - Real-time 1:1 Pointer Tracking (Swipe / Touch Drag) tetap berdampingan
  * - Modern Easing: cubic-bezier(0.22, 1, 0.36, 1) [450ms]
- * - Parallax background movement
+ * - Parallax background movement (~25%)
  * - Fade + Scale transition on hero text
- * - Elastic / Rubber-band resistance at boundaries
+ * - Elastic boundary resistance & bounce
  * - Full synchronization with Blazor state
  */
 window.BoardingSlider = {
@@ -39,6 +44,9 @@ window.BoardingSlider = {
 };
 
 class BoardingSliderInstance {
+    static RIGHT_CURSOR = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28' fill='none'%3E%3Ccircle cx='14' cy='14' r='12' fill='rgba(0,0,0,0.45)' stroke='rgba(255,255,255,0.8)' stroke-width='1.5'/%3E%3Cpath d='M12 9l5 5-5 5' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\") 14 14, e-resize";
+    static LEFT_CURSOR = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28' fill='none'%3E%3Ccircle cx='14' cy='14' r='12' fill='rgba(0,0,0,0.45)' stroke='rgba(255,255,255,0.8)' stroke-width='1.5'/%3E%3Cpath d='M16 9l-5 5 5 5' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\") 14 14, w-resize";
+
     constructor(viewport, dotNetHelper, initialSlide) {
         this.viewport = viewport;
         this.dotNetHelper = dotNetHelper;
@@ -51,6 +59,11 @@ class BoardingSliderInstance {
         this.slide1 = document.getElementById('boardingSlide1');
         this.dot0 = document.getElementById('boardingDot0');
         this.dot1 = document.getElementById('boardingDot1');
+        this.stories0 = document.getElementById('storiesProgress0');
+        this.stories1 = document.getElementById('storiesProgress1');
+        this.rippleContainer = document.getElementById('boardingRippleContainer');
+        this.flashLeft = document.getElementById('zoneFlashLeft');
+        this.flashRight = document.getElementById('zoneFlashRight');
 
         // Pointer / Drag State
         this.isPointerDown = false;
@@ -74,8 +87,10 @@ class BoardingSliderInstance {
         this.onPointerMove = this.handlePointerMove.bind(this);
         this.onPointerUp = this.handlePointerUp.bind(this);
         this.onResize = this.handleResize.bind(this);
+        this.onHoverMove = this.handleHoverMove.bind(this);
 
         this.viewport.addEventListener('pointerdown', this.onPointerDown);
+        this.viewport.addEventListener('pointermove', this.onHoverMove);
         window.addEventListener('pointermove', this.onPointerMove);
         window.addEventListener('pointerup', this.onPointerUp);
         window.addEventListener('pointercancel', this.onPointerUp);
@@ -87,6 +102,7 @@ class BoardingSliderInstance {
 
     destroy() {
         this.viewport.removeEventListener('pointerdown', this.onPointerDown);
+        this.viewport.removeEventListener('pointermove', this.onHoverMove);
         window.removeEventListener('pointermove', this.onPointerMove);
         window.removeEventListener('pointerup', this.onPointerUp);
         window.removeEventListener('pointercancel', this.onPointerUp);
@@ -96,6 +112,18 @@ class BoardingSliderInstance {
     handleResize() {
         if (!this.isDragging && !this.isCompleting) {
             this.applySlideState(this.currentSlide, false);
+        }
+    }
+
+    handleHoverMove(e) {
+        if (this.isDragging || this.isCompleting) return;
+        if (e.pointerType === 'touch') return;
+
+        const width = this.viewport.clientWidth || window.innerWidth;
+        if (e.clientX >= width / 2) {
+            this.viewport.style.cursor = BoardingSliderInstance.RIGHT_CURSOR;
+        } else {
+            this.viewport.style.cursor = this.currentSlide === 0 ? 'default' : BoardingSliderInstance.LEFT_CURSOR;
         }
     }
 
@@ -134,6 +162,7 @@ class BoardingSliderInstance {
                 if (Math.abs(deltaX) >= Math.abs(deltaY)) {
                     this.isHorizDrag = true;
                     this.isDragging = true;
+                    this.viewport.style.cursor = 'grabbing';
                     this.removeTransitions();
                     try {
                         this.viewport.setPointerCapture(e.pointerId);
@@ -210,7 +239,7 @@ class BoardingSliderInstance {
             this.bg1.style.opacity = bgOp1;
         }
 
-        // Dot indicators in real-time
+        // Dot indicators & Stories progress bar in real-time
         if (this.dot0 && this.dot1) {
             if (progress < 0.5) {
                 this.dot0.classList.add('active');
@@ -218,6 +247,14 @@ class BoardingSliderInstance {
             } else {
                 this.dot0.classList.remove('active');
                 this.dot1.classList.add('active');
+            }
+        }
+        if (this.stories0 && this.stories1) {
+            this.stories0.classList.add('active');
+            if (progress < 0.5) {
+                this.stories1.classList.remove('active');
+            } else {
+                this.stories1.classList.add('active');
             }
         }
     }
@@ -241,13 +278,28 @@ class BoardingSliderInstance {
 
         this.isPointerDown = false;
 
-        // CHECK 1: TAP TO ADVANCE (Instagram / WhatsApp Stories style)
-        // If user tapped without dragging significantly
+        // CHECK 1: TAP TO ADVANCE (Dual-Zone Instagram / WhatsApp Stories Style)
         if (!this.isDragging && totalDistance < 14 && duration < 500) {
-            if (this.currentSlide === 0) {
-                this.goToSlide(1);
+            const width = this.viewport.clientWidth || window.innerWidth;
+            const isRightSide = (e.clientX >= width / 2);
+
+            // Visual feedback: zone flash & ripple
+            this.triggerTapVisualFeedback(e.clientX, e.clientY, isRightSide);
+
+            if (isRightSide) {
+                // Tap KANAN: maju ke slide berikutnya atau ke Login jika sudah di slide terakhir
+                if (this.currentSlide === 0) {
+                    this.goToSlide(1);
+                } else {
+                    this.completeToLogin();
+                }
             } else {
-                this.completeToLogin();
+                // Tap KIRI: mundur ke slide sebelumnya atau tetap diam jika di slide 0
+                if (this.currentSlide > 0) {
+                    this.goToSlide(this.currentSlide - 1);
+                } else {
+                    this.triggerBoundaryBounce(0);
+                }
             }
             return;
         }
@@ -274,6 +326,49 @@ class BoardingSliderInstance {
                     this.goToSlide(1);
                 }
             }
+        }
+    }
+
+    triggerTapVisualFeedback(clientX, clientY, isRightSide) {
+        // 1. Zone Flash
+        const zoneFlash = isRightSide ? this.flashRight : this.flashLeft;
+        if (zoneFlash) {
+            zoneFlash.classList.add('flash');
+            setTimeout(() => {
+                zoneFlash.classList.remove('flash');
+            }, 200);
+        }
+
+        // 2. Circular Ripple at tap coordinates
+        if (this.rippleContainer) {
+            const rect = this.viewport.getBoundingClientRect();
+            const relX = clientX - rect.left;
+            const relY = clientY - rect.top;
+
+            const ripple = document.createElement('div');
+            ripple.className = 'boarding-tap-ripple';
+            ripple.style.left = relX + 'px';
+            ripple.style.top = relY + 'px';
+            this.rippleContainer.appendChild(ripple);
+
+            setTimeout(() => {
+                if (ripple.parentNode) {
+                    ripple.parentNode.removeChild(ripple);
+                }
+            }, 300);
+        }
+    }
+
+    triggerBoundaryBounce(slideIndex) {
+        if (slideIndex === 0 && this.slide0) {
+            this.slide0.style.transition = 'transform 140ms ease-out';
+            this.slide0.style.transform = 'translate3d(14px, 0, 0) scale(1)';
+            setTimeout(() => {
+                if (this.currentSlide === 0 && this.slide0) {
+                    this.slide0.style.transition = 'transform 220ms cubic-bezier(0.22, 1, 0.36, 1)';
+                    this.slide0.style.transform = 'translate3d(0, 0, 0) scale(1)';
+                }
+            }, 140);
         }
     }
 
@@ -322,6 +417,8 @@ class BoardingSliderInstance {
             }
             if (this.dot0) this.dot0.classList.add('active');
             if (this.dot1) this.dot1.classList.remove('active');
+            if (this.stories0) this.stories0.classList.add('active');
+            if (this.stories1) this.stories1.classList.remove('active');
         } else {
             if (this.slide0) {
                 this.slide0.classList.remove('active');
@@ -347,6 +444,16 @@ class BoardingSliderInstance {
             }
             if (this.dot0) this.dot0.classList.remove('active');
             if (this.dot1) this.dot1.classList.add('active');
+            if (this.stories0) this.stories0.classList.add('active');
+            if (this.stories1) this.stories1.classList.add('active');
+        }
+
+        // Update desktop cursor according to current slide
+        const currentMouseX = this.currentX || (width * 0.75);
+        if (currentMouseX >= width / 2) {
+            this.viewport.style.cursor = BoardingSliderInstance.RIGHT_CURSOR;
+        } else {
+            this.viewport.style.cursor = this.currentSlide === 0 ? 'default' : BoardingSliderInstance.LEFT_CURSOR;
         }
     }
 

@@ -20,6 +20,21 @@
         <div class="boarding-overlay"></div>
     </div>
 
+    <!-- Stories Progress Bar Tipis di Bagian Atas Layar (Gaya Instagram / WhatsApp Stories) -->
+    <div class="boarding-stories-bar" id="boardingStoriesBar" aria-label="Stories Progress">
+        <div class="stories-segment">
+            <div class="stories-fill @(currentSlide >= 0 ? "active" : "")" id="storiesProgress0"></div>
+        </div>
+        <div class="stories-segment">
+            <div class="stories-fill @(currentSlide >= 1 ? "active" : "")" id="storiesProgress1"></div>
+        </div>
+    </div>
+
+    <!-- Visual Feedback: Container Ripple & Zone Flash -->
+    <div class="boarding-ripple-container" id="boardingRippleContainer"></div>
+    <div class="boarding-zone-flash left" id="zoneFlashLeft"></div>
+    <div class="boarding-zone-flash right" id="zoneFlashRight"></div>
+
     <!-- Top Bar: Logo PERSADA di Kiri & Tombol Lewati di Kanan -->
     <header class="boarding-topbar">
         <div class="boarding-logo-wrap">
@@ -154,6 +169,97 @@
             rgba(10, 15, 29, 0.94) 100%
         );
         pointer-events: none;
+    }
+
+    /* Stories Progress Bar (Gaya Instagram / WhatsApp Stories) */
+    .boarding-stories-bar {
+        position: absolute;
+        top: 14px;
+        left: 56px;
+        right: 56px;
+        display: flex;
+        gap: 8px;
+        z-index: 25;
+        pointer-events: none;
+    }
+
+    .stories-segment {
+        flex: 1;
+        height: 3.5px;
+        background: rgba(255, 255, 255, 0.28);
+        border-radius: 999px;
+        overflow: hidden;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+    }
+
+    .stories-fill {
+        width: 0%;
+        height: 100%;
+        background: #FFFFFF;
+        border-radius: 999px;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.75);
+        transition: width 350ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .stories-fill.active {
+        width: 100%;
+    }
+
+    /* Feedback Visual: Ripple & Zone Flash */
+    .boarding-ripple-container {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        pointer-events: none;
+        z-index: 6;
+    }
+
+    .boarding-tap-ripple {
+        position: absolute;
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.06) 45%, transparent 70%);
+        transform: translate(-50%, -50%) scale(0.2);
+        animation: tapRippleAnim 280ms cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+        pointer-events: none;
+    }
+
+    @@keyframes tapRippleAnim {
+        0% {
+            transform: translate(-50%, -50%) scale(0.2);
+            opacity: 1;
+        }
+        100% {
+            transform: translate(-50%, -50%) scale(2.6);
+            opacity: 0;
+        }
+    }
+
+    .boarding-zone-flash {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 50%;
+        pointer-events: none;
+        z-index: 5;
+        opacity: 0;
+        transition: opacity 200ms ease;
+    }
+
+    .boarding-zone-flash.left {
+        left: 0;
+        background: linear-gradient(to right, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 60%, transparent 100%);
+    }
+
+    .boarding-zone-flash.right {
+        right: 0;
+        background: linear-gradient(to left, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 60%, transparent 100%);
+    }
+
+    .boarding-zone-flash.flash {
+        opacity: 1;
     }
 
     /* Top Bar */
@@ -322,11 +428,20 @@
 
     /* Responsif Mobile & Tablet */
     @@media (max-width: 768px) {
+        .boarding-stories-bar {
+            top: 10px;
+            left: 20px;
+            right: 20px;
+            gap: 6px;
+        }
+        .stories-segment {
+            height: 3px;
+        }
         .boarding-topbar {
-            padding: 20px 24px;
+            padding: 24px 20px 16px;
         }
         .boarding-brand-logo {
-            height: 42px;
+            height: 40px;
         }
         .boarding-hero-wrapper {
             padding: 0 24px 28px;
