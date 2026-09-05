@@ -20,16 +20,6 @@
         <div class="boarding-overlay"></div>
     </div>
 
-    <!-- Stories Progress Bar Tipis di Bagian Atas Layar (Gaya Instagram / WhatsApp Stories) -->
-    <div class="boarding-stories-bar" id="boardingStoriesBar" aria-label="Stories Progress">
-        <div class="stories-segment">
-            <div class="stories-fill @(currentSlide >= 0 ? "active" : "")" id="storiesProgress0"></div>
-        </div>
-        <div class="stories-segment">
-            <div class="stories-fill @(currentSlide >= 1 ? "active" : "")" id="storiesProgress1"></div>
-        </div>
-    </div>
-
     <!-- Visual Feedback: Container Ripple & Zone Flash -->
     <div class="boarding-ripple-container" id="boardingRippleContainer"></div>
     <div class="boarding-zone-flash left" id="zoneFlashLeft"></div>
@@ -169,41 +159,6 @@
             rgba(10, 15, 29, 0.94) 100%
         );
         pointer-events: none;
-    }
-
-    /* Stories Progress Bar (Gaya Instagram / WhatsApp Stories) */
-    .boarding-stories-bar {
-        position: absolute;
-        top: 14px;
-        left: 56px;
-        right: 56px;
-        display: flex;
-        gap: 8px;
-        z-index: 25;
-        pointer-events: none;
-    }
-
-    .stories-segment {
-        flex: 1;
-        height: 3.5px;
-        background: rgba(255, 255, 255, 0.28);
-        border-radius: 999px;
-        overflow: hidden;
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
-    }
-
-    .stories-fill {
-        width: 0%;
-        height: 100%;
-        background: #FFFFFF;
-        border-radius: 999px;
-        box-shadow: 0 0 10px rgba(255, 255, 255, 0.75);
-        transition: width 350ms cubic-bezier(0.22, 1, 0.36, 1);
-    }
-
-    .stories-fill.active {
-        width: 100%;
     }
 
     /* Feedback Visual: Ripple & Zone Flash */
@@ -428,20 +383,11 @@
 
     /* Responsif Mobile & Tablet */
     @@media (max-width: 768px) {
-        .boarding-stories-bar {
-            top: 10px;
-            left: 20px;
-            right: 20px;
-            gap: 6px;
-        }
-        .stories-segment {
-            height: 3px;
-        }
         .boarding-topbar {
-            padding: 24px 20px 16px;
+            padding: 20px 24px;
         }
         .boarding-brand-logo {
-            height: 40px;
+            height: 42px;
         }
         .boarding-hero-wrapper {
             padding: 0 24px 28px;

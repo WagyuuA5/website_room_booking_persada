@@ -59,8 +59,6 @@ class BoardingSliderInstance {
         this.slide1 = document.getElementById('boardingSlide1');
         this.dot0 = document.getElementById('boardingDot0');
         this.dot1 = document.getElementById('boardingDot1');
-        this.stories0 = document.getElementById('storiesProgress0');
-        this.stories1 = document.getElementById('storiesProgress1');
         this.rippleContainer = document.getElementById('boardingRippleContainer');
         this.flashLeft = document.getElementById('zoneFlashLeft');
         this.flashRight = document.getElementById('zoneFlashRight');
@@ -239,7 +237,7 @@ class BoardingSliderInstance {
             this.bg1.style.opacity = bgOp1;
         }
 
-        // Dot indicators & Stories progress bar in real-time
+        // Dot indicators in real-time
         if (this.dot0 && this.dot1) {
             if (progress < 0.5) {
                 this.dot0.classList.add('active');
@@ -247,14 +245,6 @@ class BoardingSliderInstance {
             } else {
                 this.dot0.classList.remove('active');
                 this.dot1.classList.add('active');
-            }
-        }
-        if (this.stories0 && this.stories1) {
-            this.stories0.classList.add('active');
-            if (progress < 0.5) {
-                this.stories1.classList.remove('active');
-            } else {
-                this.stories1.classList.add('active');
             }
         }
     }
@@ -417,8 +407,6 @@ class BoardingSliderInstance {
             }
             if (this.dot0) this.dot0.classList.add('active');
             if (this.dot1) this.dot1.classList.remove('active');
-            if (this.stories0) this.stories0.classList.add('active');
-            if (this.stories1) this.stories1.classList.remove('active');
         } else {
             if (this.slide0) {
                 this.slide0.classList.remove('active');
@@ -444,8 +432,6 @@ class BoardingSliderInstance {
             }
             if (this.dot0) this.dot0.classList.remove('active');
             if (this.dot1) this.dot1.classList.add('active');
-            if (this.stories0) this.stories0.classList.add('active');
-            if (this.stories1) this.stories1.classList.add('active');
         }
 
         // Update desktop cursor according to current slide
